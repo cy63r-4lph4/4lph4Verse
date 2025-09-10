@@ -1,0 +1,28 @@
+{
+  "name": "4lph4verse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The 4lph4Verse monorepo - apps, contracts, SDK, services.",
+"scripts": {
+  "start": "turbo dev --parallel",
+  "build-all": "turbo build",
+  "lint-all": "turbo lint",
+  "test-all": "turbo test"
+},
+
+  "keywords": [],
+  "author": "cy63r_4lph4",
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.1",
+  "workspaces": [
+    "apps/*",
+    "contracts",
+    "packages/*",
+    "services/*",
+    "scripts"
+  ],
+  "devDependencies": {
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
+  }
+}

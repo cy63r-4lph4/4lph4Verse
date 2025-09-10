@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@verse/contracts/*": ["contracts/*/src"],
+      "@verse/sdk": ["packages/sdk/src"],
+      "@verse/ui": ["packages/ui/src"],
+      "@verse/config": ["packages/config/src"]
+    }
+  }
+}
