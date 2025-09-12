@@ -2,15 +2,13 @@
   "files": [],
   "references": [
     { "path": "./apps/hirex-web" },
-    { "path": "./apps/leasevault-web" },
-    { "path": "./apps/verse-dashboard" },
+    { "path": "./apps/verse-core" },
     { "path": "./contracts/core" },
-    { "path": "./contracts/hirex" },
-    { "path": "./contracts/utils" },
-    { "path": "./packages/sdk" },
-    { "path": "./packages/ui" },
-    { "path": "./packages/config" },
-    { "path": "./services/faucet" },
-    { "path": "./services/relayer" }
+    // { "path": "./packages/sdk" },
+    // { "path": "./packages/ui" },
+    // { "path": "./packages/config" },
+    // { "path": "./services/faucet" },
+    // { "path": "./services/relayer" },
+    { "path": "./packages/providers" }
   ]
 }

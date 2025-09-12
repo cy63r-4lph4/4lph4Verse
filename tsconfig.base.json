@@ -9,10 +9,21 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@verse/contracts/*": ["contracts/*/src"],
-      "@verse/sdk": ["packages/sdk/src"],
-      "@verse/ui": ["packages/ui/src"],
-      "@verse/config": ["packages/config/src"]
+      "@verse/core/*": ["contracts/core/src/*"],
+      "@verse/contracts/hirex/*": ["contracts/hirex/src/*"],
+      "@verse/contracts/utils/*": ["contracts/utils/src/*"],
+
+      "@verse/sdk/*": ["packages/sdk/src/*"],
+      "@verse/ui/*": ["packages/ui/src/*"],
+      "@verse/config/*": ["packages/config/src/*"],
+      "@verse/providers/*": ["packages/providers/*"],
+
+      "@verse/services/faucet/*": ["services/faucet/src/*"],
+      "@verse/services/relayer/*": ["services/relayer/src/*"],
+
+      "@verse/hirex/*": ["apps/hirex-web/*"],
+      "@verse/leasevault/*": ["apps/leasevault-web/*"],
+      "@verse/*": ["apps/verse-core/app/*"]
     }
   }
 }
