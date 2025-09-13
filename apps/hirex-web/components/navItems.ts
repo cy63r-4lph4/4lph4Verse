@@ -1,0 +1,27 @@
+// apps/hirecore/app/navItems.ts
+import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
+import {
+  HomeIcon,
+  UsersIcon,
+  PlusCircleIcon,
+  ClipboardIcon,
+  ClipboardDocumentListIcon,
+  CurrencyDollarIcon,
+  BanknotesIcon,
+  BriefcaseIcon,
+} from "@heroicons/react/24/outline";
+
+export const workerNavItems: NavbarItem[] = [
+  { label: "Home", href: "/", icon: HomeIcon },
+  { label: "Find Tasks", href: "/tasks", icon: BriefcaseIcon },
+  { label: "My Applications", href: "/applications", icon: ClipboardDocumentListIcon },
+  { label: "Earnings", href: "/earnings", icon: CurrencyDollarIcon },
+];
+
+export const clientNavItems: NavbarItem[] = [
+  { label: "Home", href: "/", icon: HomeIcon },
+  { label: "Find Workers", href: "/workers", icon: UsersIcon },
+  { label: "Post Task", href: "/post-task", icon: PlusCircleIcon },
+  { label: "My Tasks", href: "/my-tasks", icon: ClipboardIcon },
+  { label: "Payments", href: "/payments", icon: BanknotesIcon },
+];

@@ -23,6 +23,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "../../packages/sdk/ConnectWalletButton.tsx"  ],
   "exclude": ["node_modules"]
 }

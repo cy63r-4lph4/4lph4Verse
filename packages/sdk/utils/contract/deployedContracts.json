@@ -1,0 +1,10 @@
+{
+  "LeaseVault": {
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "abi": []
+  },
+  "HireX": {
+    "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    "abi": []
+  }
+}

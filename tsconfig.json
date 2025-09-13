@@ -4,11 +4,8 @@
     { "path": "./apps/hirex-web" },
     { "path": "./apps/verse-core" },
     { "path": "./contracts/core" },
-    // { "path": "./packages/sdk" },
-    // { "path": "./packages/ui" },
-    // { "path": "./packages/config" },
-    // { "path": "./services/faucet" },
-    // { "path": "./services/relayer" },
+    { "path": "./packages/sdk" },
+    { "path": "./packages/ui" },
     { "path": "./packages/providers" }
   ]
 }

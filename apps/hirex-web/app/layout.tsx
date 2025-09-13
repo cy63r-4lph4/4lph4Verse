@@ -1,6 +1,12 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
+import ConnectWalletButton from "@verse/sdk/ConnectWalletButton";
+import { workerNavItems, clientNavItems } from "../components/navItems";
+import { useState } from "react";
 import "./globals.css";
+import { Web3Provider } from "@verse/providers/index";
+import  HireCoreNavbar  from "@verse/hirex/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,22 +18,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "HireX",
-  description: "Your gateway to the best hiring solutions.",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  
+
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`  cyber-grid`}
       >
-        {children}
+        <Web3Provider>
+          <HireCoreNavbar />
+        </Web3Provider>
+        <main className="pt-4">{children}</main>
       </body>
     </html>
   );

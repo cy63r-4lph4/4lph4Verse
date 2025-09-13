@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import WalletButton from "@verse/components/WalletButton";
+import WalletButton from "@verse/sdk/ConnectWalletButton";
 import ClaimPanel from "@verse/components/ClaimPannel";
 import Footer from "@verse/components/Footer";
 import UtilityCards from "@verse/components/UtilityCards";

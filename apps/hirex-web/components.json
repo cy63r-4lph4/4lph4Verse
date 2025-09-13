@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "app/globals.css",
+    "baseColor": "stone",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@verse/hirex/components",
+    "utils": "@verse/hirex/lib/utils",
+    "ui": "@verse/hirex/components/ui",
+    "lib": "@verse/hirex/lib",
+    "hooks": "@verse/hirex/hooks"
+  },
+  "registries": {}
+}
