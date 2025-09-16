@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { cn } from "@verse/hirex/lib/utils";
+import { cn } from "apps/hirecore-web/lib/utils";
 
 type InfiniteScrollerProps = {
   children: React.ReactNode;
@@ -57,20 +57,20 @@ export const InfiniteScroller: React.FC<InfiniteScrollerProps> = ({
     }
   };
 
- return (
+  return (
     <div
       ref={containerRef}
       className={cn(
-        'scroller relative z-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]',
+        "scroller relative z-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]",
         className
       )}
     >
       <div
         ref={scrollerRef}
         className={cn(
-          'flex min-w-full shrink-0 gap-6 py-4 w-max flex-nowrap',
-          start && 'animate-scroll',
-          pauseOnHover && 'hover:[animation-play-state:paused]'
+          "flex min-w-full shrink-0 gap-6 py-4 w-max flex-nowrap",
+          start && "animate-scroll",
+          pauseOnHover && "hover:[animation-play-state:paused]"
         )}
       >
         {children}

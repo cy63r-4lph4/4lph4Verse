@@ -1,4 +1,4 @@
-import { TaskDisplayType } from "@verse/hirex/types/task";
+import { TaskDisplayType } from "apps/hirecore-web/types/task";
 import { Baby, Box, Car, ChefHat, Clock, Dog, GraduationCap, Hammer, Leaf, Lightbulb, MapPin, Paintbrush, Scissors, Search, Shield, Wrench, Zap } from "lucide-react";
 
 export const SERVICES=[

@@ -6,9 +6,9 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { Button } from "../components/ui/button";
 import { Search } from "lucide-react";
 import { motion } from "motion/react";
-import { FEATURES, SERVICES } from "@verse/hirex/utils/Constants";
-import { Card, CardContent } from "@verse/hirex/components/ui/card";
-import { InfiniteScroller } from "@verse/hirex/components/ui/infinite-scroller";
+import { FEATURES, SERVICES } from "apps/hirecore-web/utils/Constants";
+import { Card, CardContent } from "apps/hirecore-web/components/ui/card";
+import { InfiniteScroller } from "apps/hirecore-web/components/ui/infinite-scroller";
 
 export default function Home() {
   return (

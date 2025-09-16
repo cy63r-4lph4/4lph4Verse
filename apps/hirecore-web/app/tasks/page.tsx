@@ -4,9 +4,9 @@ import {
   MOCK_TASKS,
   CATEGORIES,
   LOCATIONS,
-} from "@verse/hirex/utils/Constants";
+} from "apps/hirecore-web/utils/Constants";
 import { useEffect, useState } from "react";
-import { TaskDisplayType, UrgencyType } from "@verse/hirex/types/task";
+import { TaskDisplayType, UrgencyType } from "apps/hirecore-web/types/task";
 import { Clock, Filter, MapPin, Search, Star } from "lucide-react";
 import { motion } from "motion/react";
 import {
@@ -14,19 +14,19 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@verse/hirex/components/ui/card";
-import { Input } from "@verse/hirex/components/ui/input";
-import { Badge } from "@verse/hirex/components/ui/badge";
+} from "apps/hirecore-web/components/ui/card";
+import { Input } from "apps/hirecore-web/components/ui/input";
+import { Badge } from "apps/hirecore-web/components/ui/badge";
 import Link from "next/link";
-import { Button } from "@verse/hirex/components/ui/button";
+import { Button } from "apps/hirecore-web/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@verse/hirex/components/ui/select";
-import { TaskSkeleton } from "@verse/hirex/components/Skeleton";
+} from "apps/hirecore-web/components/ui/select";
+import { TaskSkeleton } from "apps/hirecore-web/components/Skeleton";
 
 export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -334,10 +334,10 @@ export default function Page() {
                                 task.status === "in-progress"
                                   ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                                   : task.status === "completed"
-                                  ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                  : task.status === "cancelled"
-                                  ? "bg-red-500/20 text-red-400 border-red-500/30"
-                                  : "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                    ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                    : task.status === "cancelled"
+                                      ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                      : "bg-blue-500/20 text-blue-400 border-blue-500/30"
                               } border`}
                             >
                               {task.status}

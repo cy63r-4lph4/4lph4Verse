@@ -1,4 +1,8 @@
-import { Card, CardContent, CardHeader } from "@verse/hirex/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "apps/hirecore-web/components/ui/card";
 
 function SkeletonLine({ className }: { className?: string }) {
   return (

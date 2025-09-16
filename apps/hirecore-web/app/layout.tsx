@@ -6,7 +6,7 @@ import { workerNavItems, clientNavItems } from "../components/navItems";
 import { useState } from "react";
 import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
-import  HireCoreNavbar  from "@verse/hirex/components/Navbar";
+import HireCoreNavbar from "apps/hirecore-web/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,13 +23,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  
-
   return (
     <html lang="en">
-      <body
-        className={`  cyber-grid`}
-      >
+      <body className={`  cyber-grid`}>
         <Web3Provider>
           <HireCoreNavbar />
         </Web3Provider>
