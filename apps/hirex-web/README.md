@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ HireCore — Frontend dApp
 
-## Getting Started
+> **HireCore** is the first dApp of the **4lph4Verse** ecosystem and the registered project for **Proof of Ship**.  
+> It’s a decentralized task & reputation platform for skilled and unskilled labor.
 
-First, run the development server:
+This frontend is built with **Next.js (App Router)**, **TailwindCSS**, and **Wagmi/viem** for Web3 integration.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+---
+
+## ✨ Features (MVP)
+
+- 🌐 Connect wallet (RainbowKit + Wagmi).
+- 👤 On-chain **profiles & reputation** (no CV required).
+- 📋 Browse and create tasks.
+- 🔒 Escrow payments in **Alph4 CØRE Token (CØRE)**.
+- 💧 Built-in faucet for onboarding new users.
+
+---
+
+## 📂 Project Structure
+
+```text
+apps/hirecore/
+│
+├── app/               # Next.js App Router pages
+├── components/        # UI + reusable components
+├── hooks/             # Custom React hooks
+├── lib/               # Web3 utils & helpers
+├── public/            # Static assets
+└── README.md          # You're here 🚀
+⚙️ Setup & Development
+Navigate into HireCore app
+
+cd apps/hirecore
+Install dependencies
+
+
+pnpm install
+Setup environment variables
+
+
+
+
 pnpm dev
-# or
-bun dev
+Build for production
+
+
+pnpm build
+pnpm start
+🔗 Smart Contracts
+HireCore currently integrates with the CØRE Token + Faucet deployed from contracts/core.
+
+Contract addresses are synced from:
+
+
+packages/sdk/utils/contract/deployedContracts.ts
+📜 Ship Log (Frontend)
+2025-09-15 — Bootstrapped HireCore with Next.js App Router.
+
+2025-09-16 — Integrated wallet connect + contract bindings.
+
+2025-09-16 — Connected to Celo Sepolia deployment.
+
+🧭 Next Steps
+Add task creation flow with escrow lock.
+
+Display on-chain profiles with reputation scores.
+
+Integrate gasless UX via relayer.
+
+Expand dashboard UI with filters, search, and categories.
+
+---
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
