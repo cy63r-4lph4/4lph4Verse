@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /**
- * CoreFaucetMeta — Faucet with EIP-712 signed claims (meta-tx style).
+ * CoreFaucet — Faucet with EIP-712 signed claims (meta-tx style).
  * - Users sign a typed message off-chain: (to, nonce, deadline)
  * - Relayer submits claimWithSig(to, nonce, deadline, signature) and pays CELO gas
  * - Nonces and deadline prevent replay
@@ -38,7 +38,7 @@ contract CoreFaucet is Ownable, EIP712 {
         IERC20 core_,
         uint256 amountPerClaim_,
         uint256 cooldownSeconds_
-    ) EIP712("CoreFaucet", "1") {
+    ) Ownable(msg.sender) EIP712("CoreFaucet", "1") {
         require(address(core_) != address(0), "zero token");
         core = core_;
         amountPerClaim = amountPerClaim_;
@@ -59,6 +59,7 @@ contract CoreFaucet is Ownable, EIP712 {
         );
         uint256 balance = core.balanceOf(address(this));
         require(balance >= amountPerClaim, "faucet empty");
+        require(!paused, "faucet paused");
 
         lastClaimTimestamp[msg.sender] = block.timestamp;
         require(core.transfer(msg.sender, amountPerClaim), "transfer failed");

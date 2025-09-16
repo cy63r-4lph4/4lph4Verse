@@ -8,16 +8,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @title CoreToken (CØRE)
  * @notice ERC20 with:
  *  - owner mint / burn
- *  - transfer fee (basis points) that goes to treasury or is burned
+ *  - transfer fee (bps) that goes to treasury or is burned
  *  - fee exemption list
  *  - adjustable treasury address
- *  - designed for testnet deployment first (Celo Alfajores)
  */
 contract CoreToken is ERC20, Ownable {
-    // fee is in basis points (bps). 10000 bps = 100%. Example: 50 bps = 0.5%
-    uint256 public feeBps;
+    uint256 public feeBps; // e.g. 50 = 0.5%
     address public treasury;
-    bool public feeBurns; // if true, fee is burned; else fee sent to treasury
+    bool public feeBurns;
 
     mapping(address => bool) public isFeeExempt;
 
@@ -31,75 +29,78 @@ contract CoreToken is ERC20, Ownable {
         string memory symbol_,
         uint256 initialSupply_,
         address treasury_,
-        uint256 feeBps_, // e.g., 50 = 0.5%
+        uint256 feeBps_,
         bool feeBurns_
-    ) ERC20(name_, symbol_) {
+    ) ERC20(name_, symbol_) Ownable(msg.sender) {
         require(treasury_ != address(0), "treasury required");
         _mint(msg.sender, initialSupply_);
         treasury = treasury_;
         feeBps = feeBps_;
         feeBurns = feeBurns_;
-        // owner and treasury exempt by default
         isFeeExempt[msg.sender] = true;
-        isFeeExempt[treasury] = true;
+        isFeeExempt[treasury_] = true;
     }
 
-    // owner-only mint (treasury-controlled flows can call via multisig later)
     function mint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);
     }
 
-    // owner-only burn
     function burn(address from, uint256 amount) external onlyOwner {
         _burn(from, amount);
     }
 
-    // configure fee (bps)
     function setFeeBps(uint256 newBps) external onlyOwner {
-        require(newBps <= 2000, "fee too high"); // guard: max 20%
+        require(newBps <= 2000, "fee too high"); // max 20%
         emit FeeBpsUpdated(feeBps, newBps);
         feeBps = newBps;
     }
 
-    // configure treasury
     function setTreasury(address newTreasury) external onlyOwner {
         require(newTreasury != address(0), "zero address");
         emit TreasuryUpdated(treasury, newTreasury);
         treasury = newTreasury;
     }
 
-    // enable/disable burning of fee
     function setFeeBurnMode(bool newMode) external onlyOwner {
         emit FeeBurnModeUpdated(feeBurns, newMode);
         feeBurns = newMode;
     }
 
-    // fee exemption (for contracts, trusted addresses)
     function setFeeExempt(address account, bool exempt) external onlyOwner {
         isFeeExempt[account] = exempt;
         emit FeeExemptUpdated(account, exempt);
     }
 
-    // override transfer behavior to take fee when applicable
-    function _transfer(address sender, address recipient, uint256 amount) internal virtual override {
-        if (feeBps == 0 || isFeeExempt[sender] || isFeeExempt[recipient]) {
-            super._transfer(sender, recipient, amount);
+    /**
+     * @dev Override OZ v5 _update which is called by mint, burn, and transfers.
+     */
+    function _update(
+        address from,
+        address to,
+        uint256 value
+    ) internal virtual override {
+        // Minting (from == 0) or Burning (to == 0) => no fee
+        if (from == address(0) || to == address(0)) {
+            super._update(from, to, value);
             return;
         }
 
-        uint256 fee = (amount * feeBps) / 10000;
-        uint256 after = amount - fee;
-        // If feeBurns, burn from sender (reduces total supply), else send to treasury
+        // Normal transfer with potential fee
+        if (feeBps == 0 || isFeeExempt[from] || isFeeExempt[to]) {
+            super._update(from, to, value);
+            return;
+        }
+
+        uint256 fee = (value * feeBps) / 10000;
+        uint256 afterFee = value - fee;
+
         if (feeBurns) {
-            // burn fee from sender, then transfer remainder
-            // ensure sender has enough balance (ERC20 does this already)
-            // burn uses internal _burn which reduces sender balance and totalSupply
-            _burn(sender, fee);
-            super._transfer(sender, recipient, after);
+            // burn fee directly
+            super._update(from, address(0), fee);
+            super._update(from, to, afterFee);
         } else {
-            // transfer fee to treasury, remainder to recipient
-            super._transfer(sender, treasury, fee);
-            super._transfer(sender, recipient, after);
+            super._update(from, treasury, fee);
+            super._update(from, to, afterFee);
         }
     }
 }

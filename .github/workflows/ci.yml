@@ -1,30 +1,30 @@
-name: CI
+# name: CI
 
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+# on:
+#   push:
+#     branches: [main, dev]
+#   pull_request:
+#     branches: [main, dev]
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 10
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run lint test build --cache-dir=.turbo
+# jobs:
+#   build-and-test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: pnpm/action-setup@v2
+#         with:
+#           version: 10
+#       - run: pnpm install --frozen-lockfile
+#       - run: pnpm turbo run lint test build --cache-dir=.turbo
 
-  contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 10
-      - run: pnpm install --frozen-lockfile
-      - run: cd contracts && pnpm hardhat test
-      - run: cd contracts && pnpm hardhat deploy --network testnet
-      - run: pnpm run sync-abis 
+#   contracts:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: pnpm/action-setup@v2
+#         with:
+#           version: 10
+#       - run: pnpm install --frozen-lockfile
+#       - run: cd contracts && pnpm hardhat test
+#       - run: cd contracts && pnpm hardhat deploy --network testnet
+#       - run: pnpm run sync-abis

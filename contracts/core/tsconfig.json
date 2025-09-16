@@ -1,6 +1,13 @@
 /* Based on https://github.com/tsconfig/bases/blob/501da2bcd640cf95c95805783e1012b992338f28/bases/node22.json */
 {
   "compilerOptions": {
+    "types": [
+      "hardhat",
+      "@nomicfoundation/hardhat-toolbox-viem",
+      "node",
+      "chai",
+      "mocha"
+    ],
     "lib": ["es2023"],
     "module": "node16",
     "target": "es2022",

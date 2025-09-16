@@ -1,5 +1,8 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "contracts/*"
-  - "services/*"
+  - apps/*
+  - packages/*
+  - contracts/*
+  - services/*
+
+patchedDependencies:
+  hardhat: patches/hardhat.patch
