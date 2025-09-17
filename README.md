@@ -9,12 +9,15 @@
 
 Faucet system working with direct claims (no relayer)🎉
 
-#Frontend deployed on vercel:
+Frontend deployed on vercel:
+
 https://4lph4-verse-verse-core.vercel.app/   
-#celo sepolia smart contracts:
+# celo sepolia smart contracts:
 CoreToken: 0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94
+
 CoreFaucet: 0xb5d8887AB09AdB5983AACEed4e1AbB9267407823
 
+---
 ## 📂 Repository Structure
 
 ```text
@@ -36,7 +39,7 @@ CoreFaucet: 0xb5d8887AB09AdB5983AACEed4e1AbB9267407823
 
 ---
 
-##💡 Active Project: HireCore
+💡 Active Project: HireCore
 
 HireCore is the Proof of Ship registered project.
 It’s a decentralized task & reputation protocol for skilled & unskilled labor.
@@ -56,6 +59,7 @@ Frontend dApp → apps/hirecore
 Contracts → contracts/core (CØRE + Faucet)
 
 SDK → packages/sdk/utils/contract/deployedContracts.ts
+---
 
 ⚙️ Setup
 Clone repo
@@ -93,13 +97,17 @@ This generates synced contract bindings in:
 
 packages/sdk/utils/contract/deployedContracts.json
 packages/sdk/utils/contract/deployedContracts.ts
+---
 
-#🌍 Current Deployments
-Network Chain ID CoreToken Address CoreFaucet Address Last Updated
-Localhost 31337 0x... 0x... 2025-09-16
-Celo Sepolia 11142220 0x... 0x... 2025-09-16
+## 🌍 Current Deployments
 
-#📜 Ship Log (Proof of Ship)
+| Network          | Chain ID    | CoreToken Address                           | CoreFaucet Address                          | Last Updated  |
+|------------------|-------------|---------------------------------------------|---------------------------------------------|---------------|
+| **Celo Sepolia** | 11142220    | `0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94`| `0xb5d8887AB09AdB5983AACEed4e1AbB9267407823`| 2025-09-16    |
+
+---
+
+## 📜 Ship Log (Proof of Ship)
 2025-09-10 — Setup monorepo structure (apps, contracts, sdk, services).
 
 2025-09-12 — Added CoreToken + Faucet contracts.
@@ -109,8 +117,9 @@ Celo Sepolia 11142220 0x... 0x... 2025-09-16
 2025-09-16 — Integrated Ignition deployments + export script.
 
 2025-09-16 — Successfully deployed to Celo Sepolia testnet 🎉.
+---
 
-#🧭 Next Steps
+## 🧭 Next Steps
 Expand HireCore frontend (task creation, escrow flows).
 
 Integrate profile + ENS manager contract.
@@ -119,4 +128,3 @@ Develop a gasless UX with relayer.
 
 Deploy Alph4 CØRE token to multiple chains.
 
----
