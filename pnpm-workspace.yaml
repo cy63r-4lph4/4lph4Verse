@@ -5,4 +5,3 @@ packages:
   - services/*
 
 patchedDependencies:
-  hardhat: patches/hardhat.patch

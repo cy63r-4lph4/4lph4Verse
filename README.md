@@ -5,6 +5,11 @@
 
 ---
 
+## 🚀 Update
+
+Faucet system working with direct claims (no relayer)🎉
+apps/verse-core/
+
 ## 📂 Repository Structure
 
 ```text
@@ -22,7 +27,12 @@
 ├── services/         # Backend/microservices (future expansion)
 │
 └── scripts/          # Utility scripts
-💡 Active Project: HireCore
+```
+
+---
+
+##💡 Active Project: HireCore
+
 HireCore is the Proof of Ship registered project.
 It’s a decentralized task & reputation protocol for skilled & unskilled labor.
 
@@ -45,17 +55,14 @@ SDK → packages/sdk/utils/contract/deployedContracts.ts
 ⚙️ Setup
 Clone repo
 
-
 git clone https://github.com/cy63r-4lph4/4lph4Verse.git
 cd 4lph4Verse
 Install dependencies
-
 
 pnpm install
 Setup env vars
 
 Create .env in contracts/core/:
-
 
 DEPLOYER_PRIVATE_KEY=.....00000.....
 TREASURY_PRIVATE_KEY=......0000......
@@ -79,13 +86,12 @@ Export deployment info
 pnpm hardhat run scripts/export-deployment.ts --network celosepolia
 This generates synced contract bindings in:
 
-
 packages/sdk/utils/contract/deployedContracts.json
 packages/sdk/utils/contract/deployedContracts.ts
 🌍 Current Deployments
-Network	Chain ID	CoreToken Address	CoreFaucet Address	Last Updated
-Localhost	31337	0x...	0x...	2025-09-16
-Celo Sepolia	11142220	0x...	0x...	2025-09-16
+Network Chain ID CoreToken Address CoreFaucet Address Last Updated
+Localhost 31337 0x... 0x... 2025-09-16
+Celo Sepolia 11142220 0x... 0x... 2025-09-16
 
 📜 Ship Log (Proof of Ship)
 2025-09-10 — Setup monorepo structure (apps, contracts, sdk, services).
@@ -107,7 +113,4 @@ Develop a gasless UX with relayer.
 
 Deploy Alph4 CØRE token to multiple chains.
 
-
-
 ---
-```

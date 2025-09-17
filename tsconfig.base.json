@@ -10,7 +10,7 @@
     "baseUrl": ".",
     "paths": {
       "@verse/core/*": ["contracts/core/src/*"],
-      "@verse/contracts/hirex/*": ["contracts/hirex/src/*"],
+      "@verse/contracts/hirecore/*": ["contracts/hirecore/src/*"],
       "@verse/contracts/utils/*": ["contracts/utils/src/*"],
 
       "@verse/sdk/*": ["packages/sdk/*"],

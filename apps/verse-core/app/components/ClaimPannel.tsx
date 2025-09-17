@@ -1,9 +1,11 @@
 "use client";
-
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ClaimPanel() {
-  const [status, setStatus] = useState<"ready" | "loading" | "success" | "error" | "cooldown">("ready");
+  const [status, setStatus] = useState<
+    "ready" | "loading" | "success" | "error" | "cooldown"
+  >("ready");
   const [cooldown, setCooldown] = useState<number>(0);
 
   async function handleClaim() {
@@ -16,8 +18,9 @@ export default function ClaimPanel() {
       setStatus("success");
       // Simulate cooldown
       setCooldown(24 * 60 * 60);
-    } catch (err) {
+    } catch  {
       setStatus("error");
+      toast.error("Claim failed, try again.");
     }
   }
 
@@ -32,9 +35,15 @@ export default function ClaimPanel() {
       </button>
 
       {status === "ready" && <p className="text-gray-400">Ready to claim</p>}
-      {status === "success" && <p className="text-green-400">✅ 20 CØRE successfully claimed!</p>}
-      {status === "error" && <p className="text-red-400">❌ Claim failed, try again.</p>}
-      {status === "cooldown" && <p className="text-yellow-400">⏳ Claim again in {cooldown / 3600}h</p>}
+      {status === "success" && (
+        <p className="text-green-400">✅ 20 CØRE successfully claimed!</p>
+      )}
+      {status === "error" && (
+        <p className="text-red-400">❌ Claim failed, try again.</p>
+      )}
+      {status === "cooldown" && (
+        <p className="text-yellow-400">⏳ Claim again in {cooldown / 3600}h</p>
+      )}
     </div>
   );
 }
