@@ -8,8 +8,16 @@
 ## 🚀 Update
 
 Faucet system working with direct claims (no relayer)🎉
-apps/verse-core/
 
+Frontend deployed on vercel:
+
+https://4lph4-verse-verse-core.vercel.app/   
+# celo sepolia smart contracts:
+CoreToken: 0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94
+
+CoreFaucet: 0xb5d8887AB09AdB5983AACEed4e1AbB9267407823
+
+---
 ## 📂 Repository Structure
 
 ```text
@@ -31,7 +39,7 @@ apps/verse-core/
 
 ---
 
-##💡 Active Project: HireCore
+💡 Active Project: HireCore
 
 HireCore is the Proof of Ship registered project.
 It’s a decentralized task & reputation protocol for skilled & unskilled labor.
@@ -51,49 +59,55 @@ Frontend dApp → apps/hirecore
 Contracts → contracts/core (CØRE + Faucet)
 
 SDK → packages/sdk/utils/contract/deployedContracts.ts
+---
 
 ⚙️ Setup
 Clone repo
-
+```bash
 git clone https://github.com/cy63r-4lph4/4lph4Verse.git
 cd 4lph4Verse
+```
 Install dependencies
-
+```bash
 pnpm install
+```
 Setup env vars
 
 Create .env in contracts/core/:
-
+```text
 DEPLOYER_PRIVATE_KEY=.....00000.....
 TREASURY_PRIVATE_KEY=......0000......
 CELO_RPC=https://forno.celo.org
 CELO_SEPOLIA_RPC=https://forno.celo-sepolia.celo-testnet.org/
-🧪 Tests
-
-cd contracts/core
-pnpm hardhat test
-🚀 Deployment Flow
-We use Hardhat Ignition + viem for declarative deployments.
+```
 
 Localhost
-
+```
 pnpm run deploy --filter contracts/core --network localhost
+```
 Testnet (Celo Sepolia)
-
+```
 pnpm run deploy --filter contracts/core --network celosepolia
+```
 Export deployment info
-
+```
 pnpm hardhat run scripts/export-deployment.ts --network celosepolia
+```
 This generates synced contract bindings in:
 
 packages/sdk/utils/contract/deployedContracts.json
 packages/sdk/utils/contract/deployedContracts.ts
-🌍 Current Deployments
-Network Chain ID CoreToken Address CoreFaucet Address Last Updated
-Localhost 31337 0x... 0x... 2025-09-16
-Celo Sepolia 11142220 0x... 0x... 2025-09-16
+---
 
-📜 Ship Log (Proof of Ship)
+## 🌍 Current Deployments
+
+| Network          | Chain ID    | CoreToken Address                           | CoreFaucet Address                          | Last Updated  |
+|------------------|-------------|---------------------------------------------|---------------------------------------------|---------------|
+| **Celo Sepolia** | 11142220    | `0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94`| `0xb5d8887AB09AdB5983AACEed4e1AbB9267407823`| 2025-09-16    |
+
+---
+
+## 📜 Ship Log (Proof of Ship)
 2025-09-10 — Setup monorepo structure (apps, contracts, sdk, services).
 
 2025-09-12 — Added CoreToken + Faucet contracts.
@@ -103,8 +117,9 @@ Celo Sepolia 11142220 0x... 0x... 2025-09-16
 2025-09-16 — Integrated Ignition deployments + export script.
 
 2025-09-16 — Successfully deployed to Celo Sepolia testnet 🎉.
+---
 
-🧭 Next Steps
+## 🧭 Next Steps
 Expand HireCore frontend (task creation, escrow flows).
 
 Integrate profile + ENS manager contract.
@@ -113,4 +128,3 @@ Develop a gasless UX with relayer.
 
 Deploy Alph4 CØRE token to multiple chains.
 
----
