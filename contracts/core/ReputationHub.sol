@@ -5,7 +5,8 @@ pragma solidity ^0.8.20;
  * VerseReputationHub (UUPS Upgradeable)
  *
  * - Central hub for reputation across all 4lph4Verse apps.
- * - Only registered apps (via VerseAppRegistry) can write metrics.
+ * - Apps don’t need to pass their appId; hub auto-detects via VerseAppRegistry.
+ * - Only registered app.writer contracts can write.
  * - Tracks per-app and per-token activity for each Verse profile.
  * - Delegates scoring logic to pluggable score models per app.
  */
@@ -14,16 +15,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-interface IVerseAppRegistry {
-    struct App {
-        string name;
-        address writer;
-        address scoreModel;
-        uint16 weightBps;
-        bool active;
-    }
-    function getApp(bytes32 appId) external view returns (App memory);
-}
+import "../interfaces/IVerseAppRegistry.sol";
 
 contract VerseReputationHub is Initializable, UUPSUpgradeable, AccessControlUpgradeable {
     // ---------- Roles ----------
@@ -70,18 +62,22 @@ contract VerseReputationHub is Initializable, UUPSUpgradeable, AccessControlUpgr
 
     function _authorizeUpgrade(address) internal override onlyRole(ADMIN_ROLE) {}
 
-    // ---------- Modifiers ----------
-    modifier onlyApp(bytes32 appId) {
-        IVerseAppRegistry.App memory app = appRegistry.getApp(appId);
-        require(app.active, "app inactive");
-        require(app.writer == msg.sender, "not app writer");
-        _;
+    // ---------- Internals ----------
+    /// @notice Find the appId that matches msg.sender as writer
+    function _resolveAppId() internal view returns (bytes32 appId) {
+        bytes32[] memory ids = appRegistry.allAppIds();
+        for (uint256 i = 0; i < ids.length; i++) {
+            IVerseAppRegistry.App memory app = appRegistry.getApp(ids[i]);
+            if (app.active && app.writer == msg.sender) {
+                return ids[i];
+            }
+        }
+        revert("caller not registered writer");
     }
 
     // ---------- Core: Write ----------
-    function logCompleted(uint256 verseId, bytes32 appId, address token, uint256 amount)
-        external onlyApp(appId)
-    {
+    function logCompleted(uint256 verseId, address token, uint256 amount) external {
+        bytes32 appId = _resolveAppId();
         Activity storage a = activities[verseId][appId];
         a.completedCount += 1;
         if (token != address(0) && amount > 0) {
@@ -90,9 +86,8 @@ contract VerseReputationHub is Initializable, UUPSUpgradeable, AccessControlUpgr
         emit ActivityLogged(verseId, appId, "completed", amount, token);
     }
 
-    function logCancelled(uint256 verseId, bytes32 appId)
-        external onlyApp(appId)
-    {
+    function logCancelled(uint256 verseId) external {
+        bytes32 appId = _resolveAppId();
         Activity storage a = activities[verseId][appId];
         a.cancelledCount += 1;
         emit ActivityLogged(verseId, appId, "cancelled", 0, address(0));
@@ -107,7 +102,6 @@ contract VerseReputationHub is Initializable, UUPSUpgradeable, AccessControlUpgr
         return (a.completedCount, a.cancelledCount, a.tokenEarned[token]);
     }
 
-    // For global aggregators: returns raw data, global score should be computed via off-chain or aggregator contract
     function getRawCounts(uint256 verseId, bytes32 appId)
         external view
         returns (uint64 completed, uint64 cancelled)

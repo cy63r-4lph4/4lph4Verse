@@ -1,15 +1,12 @@
 /**
  * 4lph4Verse — Deployment Exporter
  *
- * This script aggregates Hardhat Ignition deployments and generates
- * a strongly-typed contract registry for the SDK.
+ * Aggregates Hardhat Ignition deployments into a global contract registry
+ * for the SDK.
  *
- * ✅ Supports multiple networks (merges by chainId)
- * ✅ Auto-detects chainId from Ignition folder names
- * ✅ Outputs both JSON (runtime) and TS (typed import)
- *
- * Run after each deployment:
- *   pnpm hardhat run scripts/export-deployment.ts --network <network>
+ * ✅ Merges multiple networks (instead of overwrite)
+ * ✅ Adds chainNames for convenience
+ * ✅ Strongly-typed TS export
  */
 
 import fs from "fs";
@@ -25,9 +22,18 @@ const __dirname = path.dirname(__filename);
 const DEPLOYMENTS_DIR = path.resolve(__dirname, "../ignition/deployments");
 
 // SDK target output
-const EXPORT_DIR = path.resolve(__dirname, "../../../packages/sdk/utils/contract");
+const EXPORT_DIR = path.resolve(__dirname, "../../packages/sdk/utils/contract");
 const JSON_PATH = path.join(EXPORT_DIR, "deployedContracts.json");
 const TS_PATH = path.join(EXPORT_DIR, "deployedContracts.ts");
+
+// Known chainId ↔ name mapping
+const chainNames: Record<number, string> = {
+  31337: "localhost",
+  42220: "celo",
+  11142220: "celoSepolia",
+  44787: "alfajores",
+  62320: "baklava",
+};
 
 function loadChainDeployments() {
   if (!fs.existsSync(DEPLOYMENTS_DIR)) {
@@ -45,7 +51,6 @@ function loadChainDeployments() {
     const chainId = parseInt(chainDir.replace("chain-", ""));
     const basePath = path.join(DEPLOYMENTS_DIR, chainDir);
 
-    // Must exist
     const addressesPath = path.join(basePath, "deployed_addresses.json");
     if (!fs.existsSync(addressesPath)) {
       console.warn(`⚠️ Skipping ${chainDir}, no deployed_addresses.json`);
@@ -54,7 +59,6 @@ function loadChainDeployments() {
 
     const addresses = JSON.parse(fs.readFileSync(addressesPath, "utf-8"));
 
-    // Load artifacts per contract
     const contracts: Record<string, any> = {};
     for (const [futureId, address] of Object.entries(addresses)) {
       const artifactPath = path.join(basePath, `artifacts/${futureId}.json`);
@@ -64,11 +68,11 @@ function loadChainDeployments() {
       }
       const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf-8"));
 
-      const contractName = futureId.split("#")[1] || futureId; // e.g. CoreModule#CoreToken → CoreToken
+      const contractName = futureId.split("#")[1] || futureId;
       contracts[contractName] = {
         address,
         abi: artifact.abi,
-        deployedOnBlock: 0, // optional: parse from journal.jsonl if needed
+        deployedOnBlock: 0,
       };
     }
 
@@ -81,28 +85,53 @@ function loadChainDeployments() {
 async function main() {
   console.log("🔍 Aggregating Ignition deployments...");
 
-  const contracts = loadChainDeployments();
+  const newDeployments = loadChainDeployments();
+
+  // Merge with existing file if present
+  let existing: Record<number, any> = {};
+  if (fs.existsSync(JSON_PATH)) {
+    existing = JSON.parse(fs.readFileSync(JSON_PATH, "utf-8"));
+  }
+
+  const merged: Record<number, any> = { ...existing };
+  for (const [chainId, contracts] of Object.entries(newDeployments)) {
+    merged[chainId as any] = {
+      ...(existing[chainId as any] || {}),
+      ...contracts,
+    };
+  }
 
   fs.mkdirSync(EXPORT_DIR, { recursive: true });
 
   // JSON output
-  fs.writeFileSync(JSON_PATH, JSON.stringify(contracts, null, 2));
+  fs.writeFileSync(
+    JSON_PATH,
+    JSON.stringify({ chainNames, deployments: merged }, null, 2)
+  );
 
   // TS output
   const tsContent = `/**
  * 4lph4Verse Deployed Contracts — Auto-generated
- * Do not edit by hand. Run \`pnpm hardhat run scripts/export-deployment.ts --network <network>\` instead.
+ * Do not edit by hand.
  */
 
-export const deployedContracts = ${JSON.stringify(contracts, null, 2)} as const;
+export const chainNames = ${JSON.stringify(chainNames, null, 2)} as const;
+
+export const deployedContracts = ${JSON.stringify(merged, null, 2)} as const;
 
 export type DeployedContracts = typeof deployedContracts;
 `;
 
-  const formatted = await prettier.format(tsContent, { parser: "typescript" });
+  let formatted = tsContent;
+  try {
+    formatted = await prettier.format(tsContent, { parser: "typescript" });
+  } catch (e) {
+    console.warn("⚠️ Prettier not found, writing raw TS");
+  }
+
   fs.writeFileSync(TS_PATH, formatted);
 
-  console.log(`✅ Export complete → 
+  console.log(`✅ Export complete →
 - JSON: ${JSON_PATH}
 - TS:   ${TS_PATH}`);
 }

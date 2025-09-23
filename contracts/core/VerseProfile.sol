@@ -5,23 +5,25 @@ pragma solidity ^0.8.20;
  * @title VerseProfile
  * @notice Universal identity layer for the 4lph4Verse
  *
+ * Phase 1 design (direct interactions):
+ * - No ERC2771 / relayer plumbing.
+ * - Plain _msgSender() usage (EOA or AA smart account will call directly).
+ * - Upgradeable via UUPS.
+ *
  * Features:
  * - One profile (VerseID) per wallet
  * - Global unique handle (e.g., @cy63r_4lph4)
  * - Per-app nicknames (scoped to appId)
- * - ENS link (primary namehash snapshot; optional)
- * - Minimal onchain state (rich metadata offchain: IPFS/Arweave JSON)
- * - Dapp-agnostic: no reputation or scoring logic here
+ * - ENS link (optional)
+ * - Minimal onchain state (rich metadata offchain)
  *
- * Reputation and scoring are externalized to:
- * - VerseReputationHub (logs actions, per-app counters)
- * - ScoreModels (per-app + global scoring formulas)
+ * Reputation & scoring live outside this contract (ReputationHub, ScoreModels).
  */
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract VerseProfile is
     Initializable,
@@ -36,15 +38,15 @@ contract VerseProfile is
     struct Profile {
         address owner;
         string verseHandle; // unique across Verse
-        string metadataURI; // ipfs://... JSON (bio, avatar, socials, skills, etc.)
-        bytes32 ensNamehash; // optional ENS link
+        string metadataURI; // ipfs://... JSON
+        bytes32 ensNamehash; // optional
         uint64 createdAt;
     }
 
     // -------- Storage --------
     uint256 public nextProfileId;
     mapping(uint256 => Profile) private profiles; // verseId => Profile
-    mapping(address => uint256) public profileOf; // wallet => verseId (1:1 in v1)
+    mapping(address => uint256) public profileOf; // wallet => verseId
     mapping(bytes32 => uint256) private handleToId; // keccak(lowercase(handle)) => verseId
 
     // per-app nicknames
@@ -71,14 +73,22 @@ contract VerseProfile is
         string nickname
     );
 
+    // -------- UUPS pattern: disable impl init --------
+    constructor() {
+        _disableInitializers();
+    }
+
     // -------- Init / Upgrade --------
     function initialize(address admin) external initializer {
         require(admin != address(0), "bad admin");
+
         __UUPSUpgradeable_init();
         __Pausable_init();
         __AccessControl_init();
+
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ADMIN_ROLE, admin);
+
         nextProfileId = 1;
     }
 
@@ -88,11 +98,12 @@ contract VerseProfile is
 
     // -------- Helpers --------
     function _key(string memory s) internal pure returns (bytes32) {
-        return keccak256(bytes(s)); // frontend must lowercase before sending
+        // Frontend should pre-lowercase; contract stays simple.
+        return keccak256(bytes(s));
     }
 
     function _requireOwner(uint256 verseId) internal view {
-        require(profiles[verseId].owner == msg.sender, "not owner");
+        require(profiles[verseId].owner == _msgSender(), "not owner");
     }
 
     // -------- Views --------
@@ -139,7 +150,12 @@ contract VerseProfile is
         return appNickToId[appId][_key(nickname)];
     }
 
-    /// Returns the best display handle for app context (nickname -> verseHandle -> fallback offchain ENS/address)
+    /// @notice Returns true if a wallet already has a VerseProfile
+    function hasProfile(address user) external view returns (bool) {
+        return profileOf[user] != 0;
+    }
+
+    /// Best display handle for an app context (nickname -> verseHandle -> fallback offchain)
     function getDisplayHandle(
         uint256 verseId,
         bytes32 appId
@@ -155,24 +171,27 @@ contract VerseProfile is
         string calldata metadataURI,
         bytes32 ensNamehash
     ) external whenNotPaused returns (uint256 verseId) {
-        require(profileOf[msg.sender] == 0, "already have profile");
+        address sender = _msgSender();
+        require(profileOf[sender] == 0, "already have profile");
 
         verseId = nextProfileId++;
         profiles[verseId] = Profile({
-            owner: msg.sender,
+            owner: sender,
             verseHandle: "",
             metadataURI: metadataURI,
             ensNamehash: ensNamehash,
             createdAt: uint64(block.timestamp)
         });
-        profileOf[msg.sender] = verseId;
-        emit ProfileCreated(verseId, msg.sender, metadataURI);
+        profileOf[sender] = verseId;
+
+        emit ProfileCreated(verseId, sender, metadataURI);
 
         if (bytes(verseHandle).length != 0)
             _setVerseHandle(verseId, verseHandle);
         if (ensNamehash != bytes32(0)) emit ENSLinked(verseId, ensNamehash);
     }
 
+    /// Anyone may ensure a profile exists for `user` (gas-payer could be a relayer/app offchain)
     function ensureProfile(
         address user,
         string calldata metadataURIIfNew
@@ -190,6 +209,7 @@ contract VerseProfile is
             createdAt: uint64(block.timestamp)
         });
         profileOf[user] = verseId;
+
         emit ProfileCreated(verseId, user, metadataURIIfNew);
     }
 
@@ -247,6 +267,7 @@ contract VerseProfile is
         profiles[verseId].owner = newOwner;
         profileOf[old] = 0;
         profileOf[newOwner] = verseId;
+
         emit OwnerChanged(verseId, old, newOwner);
     }
 
@@ -257,12 +278,17 @@ contract VerseProfile is
         string calldata nickname
     ) external whenNotPaused {
         _requireOwner(verseId);
+
+        // empty nickname clears value
         bytes32 key = _key(nickname);
         uint256 existing = appNickToId[appId][key];
         require(existing == 0 || existing == verseId, "app nickname taken");
 
+        // clear previous if set
         string memory old = appNickOf[verseId][appId];
-        if (bytes(old).length != 0) appNickToId[appId][_key(old)] = 0;
+        if (bytes(old).length != 0) {
+            appNickToId[appId][_key(old)] = 0;
+        }
 
         if (bytes(nickname).length != 0) {
             appNickToId[appId][key] = verseId;
@@ -270,10 +296,11 @@ contract VerseProfile is
         } else {
             appNickOf[verseId][appId] = "";
         }
+
         emit AppNicknameSet(verseId, appId, nickname);
     }
 
-    // -------- Admin --------
+    // -------- Pause controls --------
     function pause() external onlyRole(ADMIN_ROLE) {
         _pause();
     }
@@ -283,5 +310,5 @@ contract VerseProfile is
     }
 
     // -------- Upgrade gap --------
-    uint256[42] private __gap;
+    uint256[41] private __gap;
 }

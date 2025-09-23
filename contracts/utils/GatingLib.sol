@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./BadgeRegistry.sol";
-
+import { IBadgeRegistry as BadgeRegistry } from "../interfaces/IBadgeRegistry.sol";
 library GatingLib {
     /// @notice Returns true if user has an active badge
     function hasBadge(

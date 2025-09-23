@@ -8,20 +8,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import * as dotenv from "dotenv";
 
-
-
-
-
-
 // Polyfill __dirname for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load env variables
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const config: HardhatUserConfig = {
-   plugins: [hardhatIgnitionViemPlugin],
+  plugins: [hardhatIgnitionViemPlugin],
   solidity: {
     version: "0.8.28",
     settings: {
@@ -32,14 +27,18 @@ const config: HardhatUserConfig = {
     },
   },
 
+  paths: {
+    sources: "./contracts",       // <--- this covers core, hirecore, utils
+    cache: "./cache",
+    artifacts: "./artifacts",
+    tests: "./test",              // you can consolidate `tests/` + `test/` here
+    ignition: "./ignition",
+  },
+
   networks: {
     localhost: {
       type: "http",
       url: "http://127.0.0.1:8545",
-      // accounts: [
-      //   configVariable("DEPLOYER_PRIVATE_KEY")!,
-      //   configVariable("TREASURY_PRIVATE_KEY")!,
-      // ],
       chainId: 31337,
     },
 

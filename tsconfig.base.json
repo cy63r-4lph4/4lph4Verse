@@ -10,8 +10,8 @@
     "baseUrl": ".",
     "paths": {
       "@verse/core/*": ["contracts/core/src/*"],
-      "@verse/contracts/hirecore/*": ["contracts/hirecore/src/*"],
-      "@verse/contracts/utils/*": ["contracts/utils/src/*"],
+      "@verse/contracts/hirecore/*": ["contracts/hirecore/*"],
+      "@verse/contracts/utils/*": ["contracts/utils/*"],
 
       "@verse/sdk/*": ["packages/sdk/*"],
       "@verse/ui/*": ["packages/ui/*"],
@@ -21,9 +21,9 @@
       "@verse/services/faucet/*": ["services/faucet/src/*"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],
 
-      "@verse/hirex/*": ["apps/hirex-web/*"],
-      "@verse/leasevault/*": ["apps/leasevault-web/*"],
-      "@verse/*": ["apps/verse-core/app/*"]
+      "@verse/hirecore-web/*": ["apps/hirecore-web/*"],
+      "@verse/leasevault-web/*": ["apps/leasevault-web/*"],
+      "@verse-core/*": ["apps/verse-core/app/*"]
     }
   }
 }
