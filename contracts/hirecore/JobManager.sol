@@ -20,7 +20,6 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-
 // ---------- External Interfaces ----------
 import "../interfaces/IVerseProfile.sol";
 import "../interfaces/IVerseReputationHub.sol";
@@ -49,7 +48,6 @@ contract HireCoreJobManager is
     // ---------- Roles ----------
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RESOLVER_ROLE = keccak256("RESOLVER_ROLE");
-    bytes32 public constant APP_ID = keccak256("HireCore");
 
     // ---------- Types ----------
     enum JobStatus {
@@ -90,6 +88,17 @@ contract HireCoreJobManager is
         uint64 deadline;
         string metadataURI;
         Milestone[] milestones;
+    }
+
+    struct CreateJobParams {
+        address worker;
+        address paymentToken;
+        uint64 deadline;
+        string metadataURI;
+        JobType jobType;
+        uint256[] amounts;
+        uint64[] dueDates;
+        bool[] requiresDeliverable;
     }
 
     // ---------- Storage ----------
@@ -293,27 +302,64 @@ contract HireCoreJobManager is
      * @notice Create a job. For JobType.Simple pass a single milestone via arrays len=1.
      *         For JobType.Milestone, arrays must be same length (>1).
      *
-     * @param worker            recipient worker
-     * @param paymentToken      ERC20 token address or address(0) for native (if enabled)
-     * @param deadline          unix ts
-     * @param metadataURI       offchain JSON
-     * @param jobType           Simple or Milestone
-     * @param amounts           milestone amounts; must sum to totalAmount
-     * @param dueDates          milestone due dates
-     * @param requiresDeliverable flags per milestone
-     * @param uriIfNewProfile   metadata URI to use if a new profile must be ensured
+     * @param p createjobparams
      */
     function createJob(
+        CreateJobParams calldata p
+    ) external whenNotPaused returns (uint256 jobId) {
+        _validateJob(
+            p.worker,
+            p.paymentToken,
+            p.deadline,
+            p.jobType,
+            p.amounts,
+            p.dueDates,
+            p.requiresDeliverable
+        );
+
+        // ensure Verse profiles
+        uint256 hirerVerseId = verseProfile.profileOf(_msgSender());
+        require(hirerVerseId != 0, "hirer: no profile");
+
+        uint256 workerVerseId = verseProfile.profileOf(p.worker);
+        require(workerVerseId != 0, "worker: no profile");
+        uint256 total = _sumAmounts(p.amounts);
+        uint16 effFee = _effectiveFeeBps(_msgSender(), p.worker);
+
+        jobId = nextJobId++;
+        _initJob(
+            jobId,
+            p.worker,
+            p.paymentToken,
+            p.deadline,
+            p.metadataURI,
+            p.jobType,
+            total,
+            effFee
+        );
+
+        _addMilestones(jobId, p.amounts, p.dueDates, p.requiresDeliverable);
+
+        emit JobCreated(
+            jobId,
+            _msgSender(),
+            p.worker,
+            p.jobType,
+            p.paymentToken,
+            total,
+            effFee
+        );
+    }
+
+    function _validateJob(
         address worker,
         address paymentToken,
         uint64 deadline,
-        string calldata metadataURI,
         JobType jobType,
         uint256[] calldata amounts,
         uint64[] calldata dueDates,
-        bool[] calldata requiresDeliverable,
-        string calldata uriIfNewProfile
-    ) external whenNotPaused returns (uint256 jobId) {
+        bool[] calldata requiresDeliverable
+    ) internal view {
         require(worker != address(0), "bad worker");
         require(deadline > block.timestamp, "bad deadline");
         require(
@@ -324,28 +370,32 @@ contract HireCoreJobManager is
         require(amounts.length > 0, "no milestones");
         if (jobType == JobType.Simple) require(amounts.length == 1, "simple=1");
 
-        // payment token rules
         if (paymentToken == address(0)) {
             require(nativePaymentsEnabled, "native off");
         } else {
             require(allowedPaymentToken[paymentToken], "token not allowed");
         }
+    }
 
-        // ensure Verse profiles exist (no-op if they do)
-        if (address(verseProfile) != address(0)) {
-            verseProfile.ensureProfile(_msgSender(), uriIfNewProfile);
-            verseProfile.ensureProfile(worker, uriIfNewProfile);
-        }
-
-        uint256 total = 0;
+    function _sumAmounts(
+        uint256[] calldata amounts
+    ) internal pure returns (uint256 total) {
         for (uint256 i = 0; i < amounts.length; i++) {
             total += amounts[i];
         }
         require(total > 0, "zero total");
+    }
 
-        uint16 effFee = _effectiveFeeBps(_msgSender(), worker);
-
-        jobId = nextJobId++;
+    function _initJob(
+        uint256 jobId,
+        address worker,
+        address paymentToken,
+        uint64 deadline,
+        string calldata metadataURI,
+        JobType jobType,
+        uint256 total,
+        uint16 effFee
+    ) internal {
         Job storage j = jobs[jobId];
         j.hirer = _msgSender();
         j.worker = worker;
@@ -358,7 +408,15 @@ contract HireCoreJobManager is
         j.createdAt = uint64(block.timestamp);
         j.deadline = deadline;
         j.metadataURI = metadataURI;
+    }
 
+    function _addMilestones(
+        uint256 jobId,
+        uint256[] calldata amounts,
+        uint64[] calldata dueDates,
+        bool[] calldata requiresDeliverable
+    ) internal {
+        Job storage j = jobs[jobId];
         for (uint256 i = 0; i < amounts.length; i++) {
             j.milestones.push(
                 Milestone({
@@ -372,16 +430,6 @@ contract HireCoreJobManager is
                 })
             );
         }
-
-        emit JobCreated(
-            jobId,
-            j.hirer,
-            worker,
-            jobType,
-            paymentToken,
-            total,
-            effFee
-        );
     }
 
     function updateJobMetadataURI(
@@ -547,12 +595,19 @@ contract HireCoreJobManager is
         j.fundedAmount -= amt;
         m.released = true;
 
+        // split fee + pay out
         (uint256 fee, uint256 net) = _splitFee(j.feeBpsAtCreation, amt);
         _payout(j.paymentToken, j.worker, net);
         _payout(j.paymentToken, treasury, fee);
 
         emit MilestoneReleased(jobId, milestoneIndex, net, fee);
 
+        if (address(reputationHub) != address(0)) {
+            uint256 workerVerseId = verseProfile.profileOf(j.worker);
+            reputationHub.logCompleted(workerVerseId, j.paymentToken, net);
+        }
+
+        // update job status
         bool allReleased = true;
         for (uint256 i = 0; i < j.milestones.length; i++) {
             if (!j.milestones[i].released) {
@@ -562,15 +617,6 @@ contract HireCoreJobManager is
         }
         if (allReleased) {
             j.status = JobStatus.Released;
-              uint256 workerVerseId = verseProfile.ensureProfile(j.worker, "");
-
-        if (address(reputationHub) != address(0)) {
-            reputationHub.logCompleted(
-                workerVerseId,
-                j.paymentToken,
-                _sumMilestones(j)
-            );
-        }
         } else if (j.status == JobStatus.Funded) {
             j.status = JobStatus.InProgress;
         }
@@ -619,9 +665,9 @@ contract HireCoreJobManager is
 
         j.status = JobStatus.Released; // terminal state after resolution
         emit JobResolved(jobId, netToWorker, hirerRefund, fee);
-        uint256 workerVerseId = verseProfile.ensureProfile(j.worker, "");
 
         if (address(reputationHub) != address(0)) {
+            uint256 workerVerseId = verseProfile.profileOf(j.worker);
             if (netToWorker > 0) {
                 reputationHub.logCompleted(
                     workerVerseId,
@@ -634,7 +680,6 @@ contract HireCoreJobManager is
         }
     }
 
-    
     /**
      * @notice Hirer cancels the job (no dispute). Refunds remaining funded escrow to hirer.
      *         Can be used when no milestones are delivered or parties agree offchain.
@@ -658,14 +703,10 @@ contract HireCoreJobManager is
         }
 
         emit JobCancelled(jobId, refund);
-        uint256 workerVerseId = verseProfile.ensureProfile(j.worker, "");
 
         if (address(reputationHub) != address(0)) {
-            reputationHub.logCompleted(
-                workerVerseId,
-                j.paymentToken,
-                _sumMilestones(j)
-            );
+            uint256 workerVerseId = verseProfile.profileOf(j.worker);
+            reputationHub.logCancelled(workerVerseId);
         }
     }
 
@@ -758,12 +799,6 @@ contract HireCoreJobManager is
     ) internal pure returns (uint256 fee, uint256 net) {
         fee = (amount * bps) / 10_000;
         net = amount - fee;
-    }
-
-    function _sumMilestones(Job storage j) internal view returns (uint256 s) {
-        for (uint256 i = 0; i < j.milestones.length; i++) {
-            s += j.milestones[i].amount;
-        }
     }
 
     function _effectiveFeeBps(

@@ -191,28 +191,6 @@ contract VerseProfile is
         if (ensNamehash != bytes32(0)) emit ENSLinked(verseId, ensNamehash);
     }
 
-    /// Anyone may ensure a profile exists for `user` (gas-payer could be a relayer/app offchain)
-    function ensureProfile(
-        address user,
-        string calldata metadataURIIfNew
-    ) external whenNotPaused returns (uint256 verseId) {
-        require(user != address(0), "bad user");
-        verseId = profileOf[user];
-        if (verseId != 0) return verseId;
-
-        verseId = nextProfileId++;
-        profiles[verseId] = Profile({
-            owner: user,
-            verseHandle: "",
-            metadataURI: metadataURIIfNew,
-            ensNamehash: bytes32(0),
-            createdAt: uint64(block.timestamp)
-        });
-        profileOf[user] = verseId;
-
-        emit ProfileCreated(verseId, user, metadataURIIfNew);
-    }
-
     // -------- Owner actions --------
     function setVerseHandle(
         uint256 verseId,

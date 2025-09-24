@@ -18,22 +18,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-interface IScoreModel {
-    function scoreOf(uint256 verseId) external view returns (uint256);
-}
-
-interface IVerseAppRegistry {
-    struct App {
-        string name;
-        address writer;
-        address scoreModel;
-        uint16 weightBps;   // 0..10000
-        bool active;
-    }
-
-    function getApp(bytes32 appId) external view returns (App memory);
-    function allAppIds() external view returns (bytes32[] memory);
-}
+import "@verse/contracts/interfaces/IVerseAppRegistry.sol";
+import "@verse/contracts/interfaces/IScoreModel.sol";
 
 contract VerseScoreAggregator is Initializable, UUPSUpgradeable, AccessControlUpgradeable {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");

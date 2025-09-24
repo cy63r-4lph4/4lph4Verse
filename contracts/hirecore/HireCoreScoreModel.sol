@@ -19,21 +19,18 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-interface IReputationHub {
-    function getRawCounts(uint256 verseId, bytes32 appId)
-        external
-        view
-        returns (uint64 completed, uint64 cancelled);
-}
+import "../interfaces/IScoreModel.sol";
+import "../interfaces/IVerseReputationHub.sol";
 
-interface IScoreModel {
-    function scoreOf(uint256 verseId) external view returns (uint256);
-}
-
-contract HireCoreScoreModel is Initializable, UUPSUpgradeable, AccessControlUpgradeable, IScoreModel {
+contract HireCoreScoreModel is
+    Initializable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable,
+    IScoreModel
+{
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    IReputationHub public hub;
+    IVerseReputationHub public hub;
     bytes32 public constant APP_ID = keccak256("HireCore");
 
     // scoring parameters
@@ -51,27 +48,29 @@ contract HireCoreScoreModel is Initializable, UUPSUpgradeable, AccessControlUpgr
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ADMIN_ROLE, admin);
 
-        hub = IReputationHub(hub_);
-        completedWeight = 100;   // default: +100 points per completed
-        cancelledPenalty = 50;   // default: -50 points per cancelled
+        hub = IVerseReputationHub(hub_);
+        completedWeight = 100; // default: +100 points per completed
+        cancelledPenalty = 50; // default: -50 points per cancelled
 
         emit HubSet(hub_);
         emit WeightsUpdated(completedWeight, cancelledPenalty);
     }
 
-    function _authorizeUpgrade(address) internal override onlyRole(ADMIN_ROLE) {}
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(ADMIN_ROLE) {}
 
     // --- Admin controls ---
     function setHub(address hub_) external onlyRole(ADMIN_ROLE) {
         require(hub_ != address(0), "zero");
-        hub = IReputationHub(hub_);
+        hub = IVerseReputationHub(hub_);
         emit HubSet(hub_);
     }
 
-    function setWeights(uint256 completedWeight_, uint256 cancelledPenalty_)
-        external
-        onlyRole(ADMIN_ROLE)
-    {
+    function setWeights(
+        uint256 completedWeight_,
+        uint256 cancelledPenalty_
+    ) external onlyRole(ADMIN_ROLE) {
         completedWeight = completedWeight_;
         cancelledPenalty = cancelledPenalty_;
         emit WeightsUpdated(completedWeight_, cancelledPenalty_);
@@ -79,7 +78,10 @@ contract HireCoreScoreModel is Initializable, UUPSUpgradeable, AccessControlUpgr
 
     // --- Score calculation ---
     function scoreOf(uint256 verseId) external view override returns (uint256) {
-        (uint64 completed, uint64 cancelled) = hub.getRawCounts(verseId, APP_ID);
+        (uint64 completed, uint64 cancelled) = hub.getRawCounts(
+            verseId,
+            APP_ID
+        );
 
         // safe math: cancellation penalty cannot underflow
         uint256 score = (completed * completedWeight);

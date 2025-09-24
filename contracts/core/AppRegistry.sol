@@ -20,9 +20,8 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-interface IScoreModel {
-    function scoreOf(uint256 verseId) external view returns (uint256);
-}
+import "@verse/contracts/interfaces/IVerseAppRegistry.sol";
+import "@verse/contracts/interfaces/IScoreModel.sol";
 
 contract VerseAppRegistry is
     Initializable,

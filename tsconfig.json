@@ -3,8 +3,6 @@
   "references": [
     { "path": "./apps/hirecore-web" },
     { "path": "./apps/verse-core" },
-    { "path": "./contracts/core" },
-    { "path": "./contracts/hirecore" },
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },
     { "path": "./packages/providers" }

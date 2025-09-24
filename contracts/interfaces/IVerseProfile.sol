@@ -37,11 +37,6 @@ interface IVerseProfile {
         bytes32 ensNamehash
     ) external returns (uint256 verseId);
 
-    function ensureProfile(
-        address user,
-        string calldata metadataURIIfNew
-    ) external returns (uint256 verseId);
-
     function setVerseHandle(uint256 verseId, string calldata newHandle) external;
 
     function setMetadataURI(uint256 verseId, string calldata newURI) external;

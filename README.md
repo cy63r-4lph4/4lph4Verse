@@ -7,17 +7,11 @@
 
 ## 🚀 Update
 
-Faucet system working with direct claims (no relayer)🎉
-
-Frontend deployed on vercel:
-
-https://4lph4-verse-verse-core.vercel.app/   
-# celo sepolia smart contracts:
-CoreToken: 0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94
-
-CoreFaucet: 0xb5d8887AB09AdB5983AACEed4e1AbB9267407823
+Majour Verse Contracts deployed🎉
+which includes verseProfile, badge registry ..etc
 
 ---
+
 ## 📂 Repository Structure
 
 ```text
@@ -58,22 +52,26 @@ Frontend dApp → apps/hirecore
 
 Contracts → contracts/core (CØRE + Faucet)
 
-SDK → packages/sdk/utils/contract/deployedContracts.ts
----
+## SDK → packages/sdk/utils/contract/deployedContracts.ts
 
 ⚙️ Setup
 Clone repo
+
 ```bash
 git clone https://github.com/cy63r-4lph4/4lph4Verse.git
 cd 4lph4Verse
 ```
+
 Install dependencies
+
 ```bash
 pnpm install
 ```
+
 Setup env vars
 
 Create .env in contracts/core/:
+
 ```text
 DEPLOYER_PRIVATE_KEY=.....00000.....
 TREASURY_PRIVATE_KEY=......0000......
@@ -82,32 +80,53 @@ CELO_SEPOLIA_RPC=https://forno.celo-sepolia.celo-testnet.org/
 ```
 
 Localhost
+
 ```
 pnpm run deploy --filter contracts/core --network localhost
 ```
+
 Testnet (Celo Sepolia)
+
 ```
 pnpm run deploy --filter contracts/core --network celosepolia
 ```
+
 Export deployment info
+
 ```
 pnpm hardhat run scripts/export-deployment.ts --network celosepolia
 ```
+
 This generates synced contract bindings in:
 
 packages/sdk/utils/contract/deployedContracts.json
 packages/sdk/utils/contract/deployedContracts.ts
+
 ---
 
 ## 🌍 Current Deployments
 
-| Network          | Chain ID    | CoreToken Address                           | CoreFaucet Address                          | Last Updated  |
-|------------------|-------------|---------------------------------------------|---------------------------------------------|---------------|
-| **Celo Sepolia** | 11142220    | `0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94`| `0xb5d8887AB09AdB5983AACEed4e1AbB9267407823`| 2025-09-16    |
+Celo Sepolia (11142220)
+
+Last updated: 2025-09-23
+
+| Contract               | Address                                      | Explorer                                                                                       |
+| ---------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **CoreToken**          | `0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94` | [View](https://celo-sepolia.blockscout.com/address/0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94) |
+| **CoreFaucet**         | `0xb5d8887AB09AdB5983AACEed4e1AbB9267407823` | [View](https://celo-sepolia.blockscout.com/address/0xb5d8887AB09AdB5983AACEed4e1AbB9267407823) |
+| **HireCoreJobBoard**   | `0x56a5BA686856F0787ce1B0278ED55D359A1D050e` | [View](https://celo-sepolia.blockscout.com/address/0x56a5BA686856F0787ce1B0278ED55D359A1D050e) |
+| **HireCoreJobManager** | `0x775808914a3f338eebaEd255fD4Ba6403546b57a` | [View](https://celo-sepolia.blockscout.com/address/0x775808914a3f338eebaEd255fD4Ba6403546b57a) |
+| **HireCoreScoreModel** | `0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA` | [View](https://celo-sepolia.blockscout.com/address/0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA) |
+| **VerseProfile**       | `0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E` | [View](https://celo-sepolia.blockscout.com/address/0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E) |
+| **AppRegistry**        | `0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735` | [View](https://celo-sepolia.blockscout.com/address/0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735) |
+| **BadgeRegistry**      | `0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE` | [View](https://celo-sepolia.blockscout.com/address/0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE) |
+| **ReputationHub**      | `0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F` | [View](https://celo-sepolia.blockscout.com/address/0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F) |
+| **ScoreAggregator**    | `0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66` | [View](https://celo-sepolia.blockscout.com/address/0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66) |
 
 ---
 
 ## 📜 Ship Log (Proof of Ship)
+
 2025-09-10 — Setup monorepo structure (apps, contracts, sdk, services).
 
 2025-09-12 — Added CoreToken + Faucet contracts.
@@ -117,14 +136,14 @@ packages/sdk/utils/contract/deployedContracts.ts
 2025-09-16 — Integrated Ignition deployments + export script.
 
 2025-09-16 — Successfully deployed to Celo Sepolia testnet 🎉.
+2025-09-23 — Deployed HireCore + Verse contracts on Celo Sepolia, organized under MasterModule for coordinated deployment.
+
 ---
 
 ## 🧭 Next Steps
-Expand HireCore frontend (task creation, escrow flows).
 
-Integrate profile + ENS manager contract.
+Expand HireCore frontend (task creation, escrow flows).
 
 Develop a gasless UX with relayer.
 
 Deploy Alph4 CØRE token to multiple chains.
-

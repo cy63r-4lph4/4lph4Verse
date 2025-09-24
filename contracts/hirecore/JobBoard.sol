@@ -25,35 +25,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @dev Minimal interface to JobManager (which manages lifecycle & funds).
-interface IJobManager {
-    enum JobType {
-        Simple,
-        Milestone,
-        Streaming
-    }
-
-    struct Milestone {
-        uint256 amount;
-        uint64 dueDate;
-        bool requiresDeliverable;
-        string note;
-        string deliverableURI;
-    }
-
-    struct CreateJobParams {
-        address worker;
-        JobType jobType;
-        address paymentToken;
-        uint64 deadline;
-        string metadataURI;
-        Milestone[] milestones;
-    }
-
-    function createJob(
-        CreateJobParams calldata p,
-        string calldata profileURIIfNew
-    ) external returns (uint256 jobId);
-}
+import "../interfaces/IJobManager.sol";
 
 contract HireCoreJobBoard is
     UUPSUpgradeable,
@@ -66,9 +38,9 @@ contract HireCoreJobBoard is
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // ---------- Config ----------
-    IERC20 public coreToken;       // anti-spam deposit token
-    address public treasury;       // slashed deposits go here
-    uint256 public minDeposit;     // minimum deposit per post
+    IERC20 public coreToken; // anti-spam deposit token
+    address public treasury; // slashed deposits go here
+    uint256 public minDeposit; // minimum deposit per post
     IJobManager public jobManager; // JobManager contract (spawn jobs)
 
     // ---------- Types ----------
@@ -80,6 +52,19 @@ contract HireCoreJobBoard is
         uint256 deposit;
         string metadataURI;
         bool open;
+    }
+
+    struct AcceptParams {
+        uint256 postId;
+        uint256 appIndex;
+        address worker;
+        address paymentToken;
+        uint64 deadline;
+        string metadataURI;
+        IJobManager.JobType jobType;
+        uint256[] amounts;
+        uint64[] dueDates;
+        bool[] requiresDeliverable;
     }
 
     struct Application {
@@ -162,7 +147,9 @@ contract HireCoreJobBoard is
         nextPostId = 1;
     }
 
-    function _authorizeUpgrade(address) internal override onlyRole(ADMIN_ROLE) {}
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(ADMIN_ROLE) {}
 
     // ---------- Hirer: Create Post ----------
     /**
@@ -250,27 +237,21 @@ contract HireCoreJobBoard is
     // ---------- Hirer: Accept ----------
     /**
      * @notice Accept a worker's application, closes the post, spawns a Job in JobManager.
-     * @param postId Post ID.
-     * @param appIndex Index of application to accept.
-     * @param agreement Full job agreement for JobManager.
-     * @param profileURIIfNew URI for profile bootstrap if worker has no profile.
+     * @param params Accept parameters.
      */
     function accept(
-        uint256 postId,
-        uint256 appIndex,
-        IJobManager.CreateJobParams calldata agreement,
-        string calldata profileURIIfNew
+        AcceptParams calldata params
     ) external nonReentrant returns (uint256 jobId) {
-        JobPost storage p = posts[postId];
+        JobPost storage p = posts[params.postId];
         require(p.hirer == msg.sender, "only hirer");
         require(p.open, "closed");
         require(block.timestamp < p.expiry, "expired");
 
-        Application storage a = applications[postId][appIndex];
+        Application storage a = applications[params.postId][params.appIndex];
         require(!a.withdrawn, "withdrawn");
-        require(agreement.worker == a.worker, "worker mismatch");
-        require(agreement.paymentToken == p.paymentToken, "token mismatch");
-        require(agreement.milestones.length > 0, "milestones required");
+        require(params.worker == a.worker, "worker mismatch");
+        require(params.paymentToken == p.paymentToken, "token mismatch");
+        require(params.amounts.length > 0, "milestones required");
 
         p.open = false;
 
@@ -280,10 +261,23 @@ contract HireCoreJobBoard is
             p.deposit = 0;
         }
 
-        jobId = jobManager.createJob(agreement, profileURIIfNew);
+        // forward to JobManager
+        IJobManager.CreateJobParams memory jmParams = IJobManager
+            .CreateJobParams({
+                worker: params.worker,
+                paymentToken: params.paymentToken,
+                deadline: params.deadline,
+                metadataURI: params.metadataURI,
+                jobType: params.jobType,
+                amounts: params.amounts,
+                dueDates: params.dueDates,
+                requiresDeliverable: params.requiresDeliverable
+            });
 
-        emit ApplicationAccepted(postId, appIndex, jobId);
-        emit PostClosed(postId, msg.sender);
+        jobId = jobManager.createJob(jmParams);
+
+        emit ApplicationAccepted(params.postId, params.appIndex, jobId);
+        emit PostClosed(params.postId, msg.sender);
     }
 
     // ---------- Hirer: Close ----------
@@ -339,20 +333,32 @@ contract HireCoreJobBoard is
         coreToken = IERC20(newCoreToken);
     }
 
-    function setJobManager(address newJobManager) external onlyRole(ADMIN_ROLE) {
+    function setJobManager(
+        address newJobManager
+    ) external onlyRole(ADMIN_ROLE) {
         require(newJobManager != address(0), "zero");
         jobManager = IJobManager(newJobManager);
     }
 
     // ---------- Views ----------
-    function getApplicationsCount(uint256 postId) external view returns (uint256) {
+    function getApplicationsCount(
+        uint256 postId
+    ) external view returns (uint256) {
         return applications[postId].length;
     }
 
-    function getApplication(uint256 postId, uint256 appIndex)
+    function getApplication(
+        uint256 postId,
+        uint256 appIndex
+    )
         external
         view
-        returns (address worker, uint256 bidAmount, string memory proposalURI, bool withdrawn)
+        returns (
+            address worker,
+            uint256 bidAmount,
+            string memory proposalURI,
+            bool withdrawn
+        )
     {
         Application storage a = applications[postId][appIndex];
         return (a.worker, a.bidAmount, a.proposalURI, a.withdrawn);

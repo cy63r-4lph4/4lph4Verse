@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./IScoreModel.sol";
-import "./IVerseReputationHub.sol";
+import "@verse/contracts/interfaces/IScoreModel.sol";
+import "@verse/contracts/interfaces/IVerseReputationHub.sol";
 
 // ---------- External Interfaces ----------
 
@@ -14,13 +14,13 @@ abstract contract ScoreModelBase is IScoreModel {
     bytes32 public immutable appId;
 
     /// @notice Reputation hub address (read-only).
-    IReputationHubMinimal public immutable reputationHub;
+    IVerseReputationHub public immutable reputationHub;
 
     constructor(bytes32 _appId, address _hub) {
         require(_appId != 0, "bad appId");
         require(_hub != address(0), "bad hub");
         appId = _appId;
-        reputationHub = IReputationHubMinimal(_hub);
+        reputationHub = IVerseReputationHub(_hub);
     }
 
     /// @inheritdoc IScoreModel

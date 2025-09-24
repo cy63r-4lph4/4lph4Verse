@@ -19,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ignition deployments live here
-const DEPLOYMENTS_DIR = path.resolve(__dirname, "../ignition/deployments");
+const DEPLOYMENTS_DIR = path.resolve(__dirname, "../../ignition/deployments");
 
 // SDK target output
 const EXPORT_DIR = path.resolve(__dirname, "../../packages/sdk/utils/contract");
