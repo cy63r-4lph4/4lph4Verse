@@ -88,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile Drawer */}
-      
+
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -96,45 +96,48 @@ export const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className={`md:hidden py-4 border-t border-border bg-card ${
-              theme.backdrop ||
-              "bg-white/95 backdrop-blur border-b border-border"
-            }`}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`md:hidden border-t border-white/10 backdrop-blur-xl glass-effect shadow-xl`}
           >
-            <div className="flex flex-col space-y-2 px-6 bg-">
+            <div className="flex flex-col space-y-2 px-6 py-4">
               {menuItems.map(({ href, label, icon: Icon, onClick }) => {
                 const ItemContent = (
-                  <>
-                    {Icon && (
-                      <span className="flex-shrink-0">
-                        <Icon className="w-5 h-5" />
-                      </span>
-                    )}
-                    <span className="text-base">{label}</span>
-                  </>
+                  <span className="flex items-center gap-3">
+                    {Icon && <Icon className="w-5 h-5 text-indigo-400" />}
+                    <span className="text-base font-medium">{label}</span>
+                  </span>
                 );
 
                 return href ? (
                   <Link
                     key={label}
                     href={href}
-                    className={`${linkBase} ${linkDefault}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-4 py-3 rounded-lg transition 
+                text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400`}
                   >
                     {ItemContent}
                   </Link>
                 ) : (
                   <button
                     key={label}
-                    onClick={onClick}
-                    className={`${linkBase} ${linkDefault}`}
+                    onClick={() => {
+                      onClick?.();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center px-4 py-3 rounded-lg transition 
+                text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400`}
                   >
                     {ItemContent}
                   </button>
                 );
               })}
 
-              {/* Wallet / profile / etc */}
+              {/* Divider for clarity */}
+              <div className="h-px bg-white/10 my-3" />
+
+              {/* Right Controls (e.g. Wallet, Role Switcher) */}
+              <div className="flex flex-col gap-2">{rightControls}</div>
             </div>
           </motion.div>
         )}

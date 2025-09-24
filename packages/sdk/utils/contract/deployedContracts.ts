@@ -11,6 +11,8 @@ export const chainNames = {
   "11142220": "celoSepolia",
 } as const;
 
+
+
 export const deployedContracts = {
   "11142220": {
     CoreFaucet: {

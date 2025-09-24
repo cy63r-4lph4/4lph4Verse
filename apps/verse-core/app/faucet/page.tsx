@@ -11,7 +11,7 @@ import {
 import type { Abi } from "viem";
 import { deployedContracts } from "@verse/sdk/utils/contract/deployedContracts";
 import ConnectWalletButton from "@verse/sdk/ConnectWalletButton";
-import TxErrorCard from "@verse/components/ErrorCard";
+import TxErrorCard from "@verse-core/components/ErrorCard";
 import { TimeUtils } from "@verse/sdk/utils/time/timeUtils";
 
 type Eip1193Provider = {

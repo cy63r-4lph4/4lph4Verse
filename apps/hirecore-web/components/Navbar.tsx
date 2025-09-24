@@ -5,7 +5,7 @@ import { Navbar } from "@verse/ui/Navbar/Navbar";
 import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import ConnectWalletButton from "@verse/sdk/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
-import { User2, Settings, Briefcase, Users } from "lucide-react";
+import { Settings, Briefcase, Users } from "lucide-react";
 
 export default function HireCoreNavbar() {
   const [userRole, setUserRole] = useState<"worker" | "client">("worker");
@@ -31,8 +31,7 @@ export default function HireCoreNavbar() {
             className="text-sm font-medium"
           />
 
-          {/* Profile icon */}
-          <User2 className="hidden md:block w-5 h-5 text-white" />
+         
 
           {/* Role switcher */}
           <div className="hidden md:block relative">

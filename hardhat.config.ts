@@ -1,15 +1,16 @@
 import type { HardhatUserConfig } from "hardhat/config";
-import { configVariable } from "hardhat/config";
+import { configVariable } from "hardhat/config"; // if you’re using your own config util
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
 import hardhatIgnitionViemPlugin from "@nomicfoundation/hardhat-ignition-viem";
+import "@nomicfoundation/hardhat-verify"; 
+
+
 import fs from "fs";
-
-
 import path from "path";
 import { fileURLToPath } from "url";
 import * as dotenv from "dotenv";
-
+import { celoSepolia } from "viem/chains";
 
 function getRemappings() {
   return fs
@@ -36,7 +37,7 @@ const config: HardhatUserConfig = {
         runs: 200,
       },
     },
-    // 👇 Add this so Hardhat compiles OZ proxy contracts too
+    // 👇 build OZ proxy contracts too
     npmFilesToBuild: [
       "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol",
       "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
@@ -94,6 +95,46 @@ const config: HardhatUserConfig = {
       chainId: 62320,
     },
   },
+
+  verify: {
+    etherscan: {
+      enabled: true,
+      apiKey: configVariable("ETHERSCAN_API_KEY")!,
+    },
+    blockscout: {
+      enabled: true,
+    }
+  },
+
+ chainDescriptors: {
+      11142220: {
+        name: "CeloSepolia",
+        blockExplorers: {
+          blockscout: {
+            name: "Celo Sepolia Blockscout",
+            url: "https://celo-sepolia.blockscout.com",
+            apiUrl: "https://celo-sepolia.blockscout.com/api",
+          },
+           etherscan: {
+          name: "Celo Sepolia Etherscan",
+          url: "https://celo-sepolia.blockscout.com",
+          apiUrl: "https://celo-sepolia.blockscout.com/api",
+        },
+        },
+       
+      },
+
+      42220: {
+        name: "Celo",
+        blockExplorers: {
+          blockscout: {
+            name: "Celo Blockscout",
+            url: "https://explorer.celo.org/mainnet",
+            apiUrl: "https://explorer.celo.org/mainnet/api",
+          },
+          
+        },
+      },}
 };
 
 export default config;
