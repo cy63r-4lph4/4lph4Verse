@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion"; // switched to framer-motion
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOutsideClick } from "../../sdk/hooks/useOutsideClick";
 import type { NavbarItem, NavbarTheme } from "./Navbar.types";
@@ -33,16 +33,35 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 ${
-        theme.backdrop || "bg-white/90 backdrop-blur border-b border-border"
+        theme.backdrop ||
+        "bg-zinc-950/80 backdrop-blur-md border-b border-white/10"
       }`}
     >
       {/* Container */}
-      <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between h-14 sm:h-16">
         {/* Logo */}
-        <div className={theme.logoStyle || "text-xl font-bold"}>{logo}</div>
+        <div className={theme.logoStyle || "text-xl font-bold"}>
+          <span className="hidden sm:inline">{logo}</span>
+          <span className="sm:hidden text-lg font-bold">HC</span>
+        </div>
+
+        {/* Tablet Menu (icon-only) */}
+        <div className="hidden sm:flex md:hidden items-center gap-3">
+          {menuItems.map(({ href, icon: Icon, label }) =>
+            href ? (
+              <Link
+                key={label}
+                href={href}
+                className="p-2 rounded-lg hover:bg-indigo-500/20"
+              >
+                {Icon && <Icon className="w-5 h-5 text-indigo-400" />}
+              </Link>
+            ) : null
+          )}
+        </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex  items-center gap-3 space-x-4">
+        <div className="hidden md:flex items-center gap-3 space-x-4">
           {menuItems.map(({ href, label, icon: Icon, onClick }) => {
             const ItemContent = (
               <span className="flex items-center gap-2">
@@ -72,51 +91,43 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-4">{rightControls}</div>
+        <div className="flex items-center gap-3">{rightControls}</div>
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden p-2 rounded-lg  hover:bg-black/5 transition"
+          className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
         >
           {isMobileMenuOpen ? (
             <XMarkIcon className="w-6 h-6 text-white" />
           ) : (
-            <Bars3Icon className={`w-6 h-6 text-foreground text-white`} />
+            <Bars3Icon className="w-6 h-6 text-white" />
           )}
         </button>
       </div>
 
       {/* Mobile Drawer */}
-
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
             ref={mobileMenuRef}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`md:hidden border-t border-white/10 backdrop-blur-xl glass-effect shadow-xl`}
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "-100%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+            className="absolute top-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg rounded-b-2xl"
           >
-            <div className="flex flex-col space-y-2 px-6 py-4">
-              {menuItems.map(({ href, label, icon: Icon, onClick }) => {
-                const ItemContent = (
-                  <span className="flex items-center gap-3">
-                    {Icon && <Icon className="w-5 h-5 text-indigo-400" />}
-                    <span className="text-base font-medium">{label}</span>
-                  </span>
-                );
-
-                return href ? (
+            <div className="flex flex-col px-6 py-4">
+              {menuItems.map(({ href, label, icon: Icon, onClick }) =>
+                href ? (
                   <Link
                     key={label}
                     href={href}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400 transition"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center px-4 py-3 rounded-lg transition 
-                text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400`}
                   >
-                    {ItemContent}
+                    {Icon && <Icon className="w-5 h-5 text-indigo-400" />}
+                    <span className="text-base font-medium">{label}</span>
                   </Link>
                 ) : (
                   <button
@@ -125,19 +136,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onClick?.();
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`flex items-center px-4 py-3 rounded-lg transition 
-                text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400`}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400 transition"
                   >
-                    {ItemContent}
+                    {Icon && <Icon className="w-5 h-5 text-indigo-400" />}
+                    <span className="text-base font-medium">{label}</span>
                   </button>
-                );
-              })}
+                )
+              )}
 
-              {/* Divider for clarity */}
-              <div className="h-px bg-white/10 my-3" />
-
-              {/* Right Controls (e.g. Wallet, Role Switcher) */}
-              <div className="flex flex-col gap-2">{rightControls}</div>
+              <div className="mt-4 border-t border-white/10 pt-4">
+                {rightControls}
+              </div>
             </div>
           </motion.div>
         )}

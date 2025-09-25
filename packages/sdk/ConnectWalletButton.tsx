@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { Coins, User2, Copy, LogOut } from "lucide-react";
 import { useBalance } from "./hooks/useBalance";
 import { useState } from "react";
+import WalletDropdown from "./WalletDropdown";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -105,66 +106,13 @@ export default function ConnectWalletButton({
 
                     {/* 🔽 Custom dropdown menu */}
                     {menuOpen && (
-                      <div className="absolute top-12 right-0 w-64 rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl bg-zinc-900/80 z-50 p-4">
-                        {/* Wallet Address */}
-                        <div className="mb-3">
-                          <p className="text-xs font-mono break-words text-gray-400">
-                            {account?.address}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          {/* Copy Address */}
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                account?.address || ""
-                              );
-                              setMenuOpen(false);
-                            }}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-indigo-500/20 hover:text-indigo-400 transition"
-                          >
-                            <Copy className="w-4 h-4 text-indigo-400" />
-                            Copy Address
-                          </button>
-
-                          {/* Switch Network */}
-                          <button
-                            onClick={openChainModal}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-yellow-500/20 hover:text-yellow-400 transition"
-                          >
-                            <Coins className="w-4 h-4 text-yellow-400" />
-                            Switch Network
-                          </button>
-
-                          {/* Faucet Link */}
-                          <a
-                            href="https://4lph4-verse-verse-core.vercel.app/faucet"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-emerald-500/20 hover:text-emerald-400 transition"
-                          >
-                            <Coins className="w-4 h-4 text-emerald-400" />
-                            Claim Faucet
-                          </a>
-
-                          {/* Disconnect */}
-                          <button
-                            onClick={() => {
-                              // TODO: Replace with wagmi.disconnect() for real wallet disconnect
-                              localStorage.clear();
-                              window.location.reload();
-                            }}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-red-500/20 hover:text-red-400 transition"
-                          >
-                            <LogOut className="w-4 h-4 text-red-400" />
-                            Disconnect
-                          </button>
-                        </div>
-                      </div>
+                      <WalletDropdown
+                        account={account}
+                        openChainModal={openChainModal}
+                        menuOpen={menuOpen}
+                        setMenuOpen={setMenuOpen}
+                      />
                     )}
-
-                    
                   </div>
                 )}
               </div>

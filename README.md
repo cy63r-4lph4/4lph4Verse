@@ -7,8 +7,8 @@
 
 ## 🚀 Update
 
-Majour Verse Contracts deployed🎉
-which includes verseProfile, badge registry ..etc
+HireCore frontend deployed on vercel🎉
+url: https://4lph4-verse-hirecore.vercel.app/
 
 ---
 
@@ -122,6 +122,14 @@ Last updated: 2025-09-23
 | **BadgeRegistry**      | `0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE` | [View](https://celo-sepolia.blockscout.com/address/0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE) |
 | **ReputationHub**      | `0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F` | [View](https://celo-sepolia.blockscout.com/address/0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F) |
 | **ScoreAggregator**    | `0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66` | [View](https://celo-sepolia.blockscout.com/address/0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66) |
+
+## 🌐 Frontend Deployments
+
+| App           | URL                                                                              |
+| ------------- | -------------------------------------------------------------------------------- |
+| **HireCore**  | [hirecore.vercel.app](https://4lph4-verse-hirecore.vercel.app/)                  |
+| **VerseCore** | [verse-core.vercel.app](https://4lph4-verse-verse-core.vercel.app/)              |
+| **Faucet**    | [verse-core.vercel.app/faucet](https://4lph4-verse-verse-core.vercel.app/faucet) |
 
 ---
 
