@@ -6,6 +6,7 @@ import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import ConnectWalletButton from "@verse/sdk/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
+import Image from "next/image";
 
 export default function HireCoreNavbar() {
   const [userRole, setUserRole] = useState<"worker" | "client">("worker");
@@ -17,9 +18,33 @@ export default function HireCoreNavbar() {
   return (
     <Navbar
       logo={
-        <span className="text-2xl font-extrabold font-orbitron bg-gradient-to-r from-indigo-500 to-emerald-400 bg-clip-text text-transparent">
-          HireCore
-        </span>
+        <div className="flex items-center gap-2">
+          {/* Logo Image */}
+          <Image
+            src="/logo.png"
+            alt="HireCore Logo"
+            width={52}
+            height={52}
+            className="rounded-md"
+          />
+
+          {/* Logo Text */}
+          <span className="text-2xl font-extrabold font-orbitron bg-gradient-to-r from-indigo-500 to-emerald-400 bg-clip-text text-transparent">
+            HireCore
+          </span>
+        </div>
+      }
+      logoSm={
+        <div className="flex items-center gap-2">
+          {/* Logo Image */}
+          <Image
+            src="/logo.png"
+            alt="HireCore Logo"
+            width={40}
+            height={40}
+            className="rounded-md"
+          />
+        </div>
       }
       menuItems={menuItems}
       rightControls={
@@ -30,8 +55,6 @@ export default function HireCoreNavbar() {
             rounded="lg"
             className="text-sm font-medium"
           />
-
-         
 
           {/* Role switcher */}
           <div className="hidden md:block relative">

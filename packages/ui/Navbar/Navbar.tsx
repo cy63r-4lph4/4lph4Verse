@@ -9,6 +9,7 @@ import type { NavbarItem, NavbarTheme } from "./Navbar.types";
 
 type NavbarProps = {
   logo: React.ReactNode;
+  logoSm?: React.ReactNode;
   menuItems: NavbarItem[];
   rightControls?: React.ReactNode;
   theme?: NavbarTheme;
@@ -16,6 +17,7 @@ type NavbarProps = {
 
 export const Navbar: React.FC<NavbarProps> = ({
   logo,
+  logoSm,
   menuItems,
   rightControls,
   theme = {},
@@ -42,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Logo */}
         <div className={theme.logoStyle || "text-xl font-bold"}>
           <span className="hidden sm:inline">{logo}</span>
-          <span className="sm:hidden text-lg font-bold">HC</span>
+          <span className="sm:hidden text-lg font-bold">{logoSm}</span>
         </div>
 
         {/* Tablet Menu (icon-only) */}
