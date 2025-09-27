@@ -51,8 +51,8 @@ export default function RootLayout({
       <body className={`  cyber-grid`}>
         <Web3Provider>
           <HireCoreNavbar />
+          <main className="pt-4">{children}</main>
         </Web3Provider>
-        <main className="pt-4">{children}</main>
       </body>
     </html>
   );
