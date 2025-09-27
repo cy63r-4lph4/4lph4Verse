@@ -13,6 +13,7 @@ export type ConnectWalletButtonProps = {
   variant?: "primary" | "secondary" | "ghost";
   rounded?: "none" | "sm" | "md" | "lg" | "full";
   showNetwork?: boolean;
+  faucet?: boolean;
 };
 
 export default function ConnectWalletButton({
@@ -20,6 +21,7 @@ export default function ConnectWalletButton({
   variant = "primary",
   rounded = "md",
   showNetwork = false,
+  faucet = false,
 }: ConnectWalletButtonProps) {
   const baseStyles =
     "px-4 py-2 font-semibold transition-colors flex items-center gap-3";
@@ -45,14 +47,22 @@ export default function ConnectWalletButton({
   return (
     <div className="flex justify-center relative">
       <ConnectButton.Custom>
-        {({ account, chain, openChainModal, openConnectModal, mounted }) => {
+        {({
+          account,
+          chain,
+          openChainModal,
+          openConnectModal,
+          openAccountModal,
+          mounted,
+        }) => {
           const ready = mounted;
           const connected = ready && account && chain;
 
           return (
             <div className="flex items-center gap-4">
               {/* 🪙 Core Token Balance */}
-              {connected && address && balance !== undefined && (
+              
+              {!faucet &&connected && address && balance !== undefined && (
                 <div className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
                   <Coins className="w-5 h-5 text-yellow-400" />
                   <span className="text-sm text-white">
@@ -90,7 +100,22 @@ export default function ConnectWalletButton({
                       onClick={() => setMenuOpen((o) => !o)}
                       type="button"
                     >
-                      <User2 className="md:block w-5 h-5 text-white" />
+                      {faucet ? (
+                        <div className="flex items-center gap-3">
+                          <button onClick={openAccountModal} type="button">
+                            {account.displayName}
+                          </button>
+                          <button
+                            onClick={openChainModal}
+                            type="button"
+                            className="hidden md:inline"
+                          >
+                            {chain.name}
+                          </button>
+                        </div>
+                      ) : (
+                        <User2 className="md:block w-5 h-5 text-white" />
+                      )}
                     </button>
 
                     {/* 🌐 Optional network name */}
@@ -105,7 +130,7 @@ export default function ConnectWalletButton({
                     )}
 
                     {/* 🔽 Custom dropdown menu */}
-                    {menuOpen && (
+                    {!faucet && menuOpen && (
                       <WalletDropdown
                         account={account}
                         openChainModal={openChainModal}

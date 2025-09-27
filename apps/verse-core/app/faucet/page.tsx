@@ -201,7 +201,7 @@ export default function FaucetPage() {
         4lph4Verse Faucet
       </h1>
 
-      <ConnectWalletButton variant="primary" rounded="lg" className="mb-6" />
+      <ConnectWalletButton variant="primary" rounded="lg" className="mb-6" faucet />
 
       {mounted && isConnected && coreFaucet?.address && (
         <div className="w-full max-w-md p-6 rounded-2xl border border-cyan-400/20 shadow-2xl space-y-5 bg-white/5 backdrop-blur-md">
