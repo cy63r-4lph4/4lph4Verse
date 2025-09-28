@@ -12,7 +12,7 @@
     "deploy:hirecore": "hardhat ignition deploy ignition/modules/HireCoreModule.ts --network ${npm_config_network:-localhost}",
     "deploy:leasevault": "hardhat ignition deploy ignition/modules/LeaseVaultModule.ts --network ${npm_config_network:-localhost}",
     "deploy:all": "pnpm run deploy:core && pnpm run deploy:hirecore && pnpm run deploy:leasevault && pnpm run export",
-  "export": "ts-node --esm scripts/utils/export-deployment.ts",
+    "export": "ts-node --esm scripts/utils/export-deployment.ts",
     "verify": "hardhat run scripts/utils/verify.ts --network ${npm_config_network:-localhost}",
     "clean": "rimraf artifacts cache ignition/deployments packages/sdk/utils/contract/deployedContracts.*"
   },
@@ -61,6 +61,7 @@
     "@openzeppelin/contracts": "5.0.2",
     "@openzeppelin/contracts-upgradeable": "5.0.2",
     "@rainbow-me/rainbowkit": "^2.2.8",
+    "@storacha/client": "^1.8.0",
     "@tanstack/react-query": "^5.87.4",
     "daisyui": "^5.1.10",
     "framer-motion": "^12.23.21",

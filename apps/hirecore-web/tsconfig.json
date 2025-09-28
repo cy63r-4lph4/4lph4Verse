@@ -24,7 +24,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "../../packages/sdk/wallet/ConnectWalletButton.tsx",
-    "utils"
+    "utils",
+    "../../packages/sdk/utils/storacha/client.ts",
+    "../../packages/sdk/utils/storacha/upload.ts"
   ],
   "exclude": ["node_modules"]
 }

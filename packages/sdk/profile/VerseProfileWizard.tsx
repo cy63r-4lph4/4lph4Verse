@@ -8,7 +8,11 @@ import { X, Loader2, Check, Wand2, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { Stepper } from "./components/Stepper";
 import { ModalWrapper } from "./components/ModalWrapper";
-import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
+import {
+  ChainId,
+  getDeployedContract,
+} from "../utils/contract/deployedContracts";
+import { uploadProfileToStoracha } from "./lib/uploadToStoracha";
 
 /** ------------------------------------------------------
  *  4lph4Verse — VerseProfile Wizard (SDK-ready)
@@ -111,7 +115,10 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   const [step, setStep] = useState<number>(0); // 0 Welcome → 1 Identity → 2+ Extensions → Review → Success
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const FALLBACK_AVATAR = "/placeholder-soul.png";
+  const [progress, setProgress] = useState<
+    "idle" | "uploading" | "writing" | "done"
+  >("idle");
   const [state, setState] = useState<ProfileState>({
     handle: "",
     displayName: "",
@@ -121,7 +128,7 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   });
 
   const extSteps = useMemo(() => extensions.filter(Boolean), [extensions]);
-  const totalSteps = 2 + extSteps.length + 2; // welcome + identity + ext... + review + success (success not counted in stepper)
+  //   const totalSteps = 2 + extSteps.length + 2; // welcome + identity + ext... + review + success (success not counted in stepper)
 
   const { writeContractAsync } = useWriteContract();
   const chainId = useChainId() as ChainId;
@@ -129,34 +136,79 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   const contractAbi = getDeployedContract(chainId, "VerseProfile").abi;
   const functionName = "createProfile";
 
-  async function defaultWrite(profile: ProfileState) {
-    if (!contractAddress || !contractAbi)
-      throw new Error("Missing contract wiring: contractAddress/contractAbi");
-    // Example args — adjust to your VerseProfile contract signature
-    // e.g. createProfile(handle, displayName, bio, avatarURI)
-    await writeContractAsync({
+  async function defaultWrite(state: any) {
+    if (!state.handle || !state.displayName) {
+      throw new Error("Missing profile data");
+    }
+
+    const { cid } = await uploadProfileToStoracha({
+      handle: state.handle,
+      displayName: state.displayName,
+      bio: state.bio,
+      avatar: state.avatar || "/placeholder-soul.png",
+      extras: state.extras,
+    });
+
+    return writeContractAsync({
       address: contractAddress,
       abi: contractAbi,
-      functionName: functionName as any,
-      args: [profile.handle, profile.displayName, profile.bio, profile.avatar],
+      functionName: functionName,
+      args: [
+        state.handle,
+        `ipfs://${cid}`, // metadataURI
+        "0x0", // ENS hash (optional for now)
+      ],
     });
   }
 
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
+    setProgress("uploading");
+
     try {
       if (!address) throw new Error("Connect wallet to continue");
-      if (!state.handle || !state.displayName)
+      if (!state.handle || !state.displayName) {
         throw new Error("Please complete your handle and display name");
-      if (onChainWrite) await onChainWrite(state);
-      else await defaultWrite(state);
-      setStep(step + 1); // go to success
+      }
+
+      // Upload metadata first
+      const { cid } = await uploadProfileToStoracha({
+        handle: state.handle,
+        displayName: state.displayName,
+        bio: state.bio,
+        avatar: state.avatar || FALLBACK_AVATAR,
+        extras: state.extras,
+      });
+
+      setProgress("writing");
+
+      // Then write to chain
+      await writeContractAsync({
+        address: contractAddress,
+        abi: contractAbi,
+        functionName: functionName,
+        args: [
+          state.handle,
+          `ipfs://${cid}`,
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      });
+
+      setProgress("done");
+      setStep(step + 1); // success
       onComplete?.(state);
     } catch (e: any) {
-      setError(e?.message ?? "Failed to create profile");
+      setError(
+        progress === "uploading"
+          ? "Failed to upload profile to Storacha"
+          : progress === "writing"
+            ? "Failed to write profile on-chain"
+            : "Something went wrong"
+      );
     } finally {
       setSubmitting(false);
+      setProgress("idle");
     }
   }
 
@@ -198,8 +250,8 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
           {/* Description */}
           <p className="mt-4 text-gray-300 max-w-lg mx-auto">
             Let's forge your{" "}
-            <span className="text-indigo-400">Verse Identity</span>
-            {" "}and unlock the <span className="text-emerald-400">ecosystem</span>.
+            <span className="text-indigo-400">Verse Identity</span> and unlock
+            the <span className="text-emerald-400">ecosystem</span>.
           </p>
 
           {/* CTA */}
@@ -315,6 +367,9 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   }
 
   function renderReview() {
+    if (state.avatar == "") {
+      setState((s) => ({ ...s, avatar: FALLBACK_AVATAR }));
+    }
     return (
       <GlassCard>
         <h2 className="font-orbitron text-xl sm:text-2xl font-bold text-white mb-4">
@@ -359,7 +414,10 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
           <PrimaryButton onClick={handleSubmit} disabled={submitting}>
             {submitting ? (
               <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Creating…
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {progress === "uploading" && "Saving to Storacha…"}
+                {progress === "writing" && "Creating on-chain profile…"}
+                {progress === "done" && "Finalizing…"}
               </span>
             ) : (
               <span className="inline-flex items-center gap-2">

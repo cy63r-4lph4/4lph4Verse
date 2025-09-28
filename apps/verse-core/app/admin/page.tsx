@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { deployedContracts } from "@verse/sdk/utils/contract/deployedContracts";
 import { Abi } from "viem";
-import ConnectWalletButton from "@verse/sdk/ConnectWalletButton";
+import ConnectWalletButton from "@verse/sdk/wallet/ConnectWalletButton";
 
 const chainId = 11142220; // celoSepolia
 const coreToken = deployedContracts[chainId]["CoreToken"];

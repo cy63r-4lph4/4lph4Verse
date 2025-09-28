@@ -35,7 +35,7 @@ export function CustomConnectModal({
       setPendingId(null);
       onClose();
     } catch (err) {
-      console.error("Connection failed", err);
+    //   console.error("Connection failed", err);
       setPendingId(null);
     }
   }

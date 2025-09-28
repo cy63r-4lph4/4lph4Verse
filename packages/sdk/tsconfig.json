@@ -16,7 +16,9 @@
     "**/*.tsx",
     "**/*.json",
     "wallet/ConnectWalletButton.tsx",
-    "wallet/WalletDropdown.tsx"
+    "wallet/WalletDropdown.tsx",
+    "utils/storacha/upload.ts",
+    "utils/storacha/client.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
