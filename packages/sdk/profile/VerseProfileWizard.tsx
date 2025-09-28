@@ -3,7 +3,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
-import type { Abi } from "viem";
 import { X, Loader2, Check, Wand2, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { Stepper } from "./components/Stepper";

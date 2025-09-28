@@ -19,11 +19,15 @@ export async function POST(req: NextRequest) {
       cid,
       url: `https://${cid}.ipfs.storacha.link/profile.json`,
     });
-  } catch (e: any) {
-    console.error("Storacha upload failed:", e);
-    return NextResponse.json(
-      { error: e?.message ?? "Upload failed" },
-      { status: 500 }
-    );
+  } catch (e: unknown) {
+  console.error("Storacha upload failed:", e);
+
+  let message = "Upload failed";
+  if (e instanceof Error) {
+    message = e.message;
   }
+
+  return NextResponse.json({ error: message }, { status: 500 });
+}
+
 }
