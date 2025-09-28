@@ -22,7 +22,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-, "../../packages/sdk/ConnectWalletButton.tsx"  ],
+    ".next/types/**/*.ts",
+    "../../packages/sdk/wallet/ConnectWalletButton.tsx"
+  ],
   "exclude": ["node_modules"]
 }

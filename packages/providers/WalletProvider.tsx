@@ -3,17 +3,15 @@
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import {
-  celoSepolia,
-  
-} from "wagmi/chains";
+import { celo, celoSepolia } from "wagmi/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 
 // Configure Wagmi + RainbowKit
 const config = createConfig({
-  chains: [celoSepolia,],
+  chains: [celoSepolia, celo],
   transports: {
     [celoSepolia.id]: http(),
+    [celo.id]: http(),
   },
 });
 

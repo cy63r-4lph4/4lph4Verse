@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useOutsideClick } from "./hooks/useOutsideClick";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 import { Coins, Copy, LogOut } from "lucide-react";
 
 export default function WalletDropdown({

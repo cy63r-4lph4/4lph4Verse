@@ -14,6 +14,8 @@
       "@verse/contracts/utils/*": ["contracts/utils/*"],
 
       "@verse/sdk/*": ["packages/sdk/*"],
+      "@verse/assets/*": ["packages/brand-assets/public/*"],
+
       "@verse/ui/*": ["packages/ui/*"],
       "@verse/config/*": ["packages/config/src/*"],
       "@verse/providers/*": ["packages/providers/*"],

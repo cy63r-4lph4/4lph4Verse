@@ -11,6 +11,12 @@
     "rootDir": ".",
     "skipLibCheck": true
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.json",
+    "wallet/ConnectWalletButton.tsx",
+    "wallet/WalletDropdown.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

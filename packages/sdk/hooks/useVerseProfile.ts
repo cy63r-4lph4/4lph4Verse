@@ -3,7 +3,7 @@
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import type { Abi } from "viem";
 import { useMemo, useCallback } from "react";
-import { deployedContracts } from "../utils/contract/deployedContracts";
+import { ChainId, ContractNames, getDeployedContract } from "../utils/contract/deployedContracts";
 
 /* ---------- Your public shapes (no tanstack types) ---------- */
 type MinimalProfile = {
@@ -37,25 +37,24 @@ export function useVerseProfile(
   opts: UseVerseProfileOptions = {}
 ): UseVerseProfileResult {
   const { address } = useAccount();
-  const chainId = useChainId();
+  const chainId = useChainId() as ChainId;
 
   const {
-    contractName = "VerseProfile",
     readFunctionName = "getProfile",
     select,
   } = opts;
 
   // resolve contract from generated deployments
   const contract = useMemo(() => {
-    const key = String(chainId) as keyof typeof deployedContracts;
-    const found = (deployedContracts as Record<string, any>)[chainId]?.[contractName];
+    const key = chainId;
+    const found = getDeployedContract(key,'VerseProfile');
     return found
       ? {
           address: found.address as `0x${string}`,
           abi: found.abi as Abi,
         }
       : undefined;
-  }, [chainId, contractName]);
+  }, [chainId, "VerseProfile"]);
 
   const read = useReadContract({
     abi: contract?.abi,

@@ -2,11 +2,14 @@
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import clsx from "clsx";
-import { useAccount } from "wagmi";
-import { Coins, User2, Copy, LogOut } from "lucide-react";
-import { useBalance } from "./hooks/useBalance";
-import { useState } from "react";
+import { useAccount, useDisconnect } from "wagmi";
+import { Coins, User2 } from "lucide-react";
+import { useBalance } from "../hooks/useBalance";
+import { useEffect, useState } from "react";
 import WalletDropdown from "./WalletDropdown";
+import { useCheckProfile } from "../hooks/useCheckAccount";
+import { VerseProfileWizard } from "../profile";
+import { CustomConnectModal } from "../wallet/ConnectModal";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -43,6 +46,19 @@ export default function ConnectWalletButton({
   const { address } = useAccount();
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { hasProfile, isLoading } = useCheckProfile();
+  const [showModal, setShowModal] = useState(false);
+  const { disconnect } = useDisconnect();
+  const [showConnectModal, setShowConnectModal] = useState(false);
+
+  const handleCloseModal = () => {
+    disconnect();
+    setShowModal(false);
+  };
+
+  const handleProfileCreated = () => {
+    setShowModal(false);
+  };
 
   return (
     <div className="flex justify-center relative">
@@ -57,12 +73,17 @@ export default function ConnectWalletButton({
         }) => {
           const ready = mounted;
           const connected = ready && account && chain;
+          useEffect(() => {
+            if (!isLoading && !hasProfile) {
+              setShowModal(true);
+            }
+          }, [connected, isLoading, hasProfile]);
 
           return (
             <div className="flex items-center gap-4">
               {/* 🪙 Core Token Balance */}
-              
-              {!faucet &&connected && address && balance !== undefined && (
+
+              {!faucet && connected && address && balance !== undefined && (
                 <div className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
                   <Coins className="w-5 h-5 text-yellow-400" />
                   <span className="text-sm text-white">
@@ -80,7 +101,10 @@ export default function ConnectWalletButton({
                 )}
               >
                 {!connected ? (
-                  <button onClick={openConnectModal} type="button">
+                  <button
+                    onClick={() => setShowConnectModal(true)} 
+                    type="button"
+                  >
                     Connect Wallet
                   </button>
                 ) : chain.unsupported ? (
@@ -145,6 +169,44 @@ export default function ConnectWalletButton({
           );
         }}
       </ConnectButton.Custom>
+
+      {showModal && (
+        <VerseProfileWizard
+          asModal
+          onClose={handleCloseModal}
+          onComplete={handleProfileCreated}
+          // contractAddress={deployedContracts[11142220].VerseProfile.address}
+          // contractAbi={deployedContracts[11142220].VerseProfile.abi}
+          extensions={[
+            {
+              id: "hirecore",
+              title: "HireCore Setup",
+              description: "Tell us how you want to use HireCore",
+              fields: [
+                {
+                  type: "select",
+                  name: "role",
+                  label: "Role",
+                  options: ["Worker", "Client"],
+                  required: true,
+                },
+                {
+                  type: "tags",
+                  name: "skills",
+                  label: "Skills / Interests",
+                  placeholder: "e.g. Electrician, Plumber",
+                },
+              ],
+            },
+          ]}
+        />
+      )}
+       {/* 🚀 Custom Connect Modal */}
+      <CustomConnectModal
+        open={showConnectModal}
+        onClose={() => setShowConnectModal(false)}
+      />
     </div>
+    
   );
 }
