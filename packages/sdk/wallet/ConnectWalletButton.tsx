@@ -46,43 +46,49 @@ export default function ConnectWalletButton({
   const { address } = useAccount();
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { hasProfile, isLoading } = useCheckProfile();
+
+  // 🔑 Profile check hook
+  const { hasProfile, isLoading, refetch } = useCheckProfile();
+
+  // 🔑 Modal & success states
   const [showModal, setShowModal] = useState(false);
-  const { disconnect } = useDisconnect();
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const { disconnect } = useDisconnect();
 
   const handleCloseModal = () => {
-    disconnect();
+    if (!success || !hasProfile) {
+      disconnect();
+    }
     setShowModal(false);
   };
 
-  const handleProfileCreated = () => {
+  const handleProfileCreated = async () => {
+    setSuccess(true);
     setShowModal(false);
+
+    // ✅ Ensure hook updates after contract write
+    await refetch();
   };
 
   return (
     <div className="flex justify-center relative">
       <ConnectButton.Custom>
-        {({
-          account,
-          chain,
-          openChainModal,
-          openConnectModal,
-          openAccountModal,
-          mounted,
-        }) => {
+        {({ account, chain, openChainModal, openAccountModal, mounted }) => {
           const ready = mounted;
           const connected = ready && account && chain;
+
           useEffect(() => {
-            if (!isLoading && !hasProfile) {
+            // ✅ only trigger once per session until profile exists
+            if (connected && !isLoading && !hasProfile && !success) {
               setShowModal(true);
             }
-          }, [connected, isLoading, hasProfile]);
+          }, [connected, isLoading, hasProfile, success]);
 
           return (
             <div className="flex items-center gap-4">
               {/* 🪙 Core Token Balance */}
-
               {!faucet && connected && address && balance !== undefined && (
                 <div className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
                   <Coins className="w-5 h-5 text-yellow-400" />
@@ -102,7 +108,7 @@ export default function ConnectWalletButton({
               >
                 {!connected ? (
                   <button
-                    onClick={() => setShowConnectModal(true)} 
+                    onClick={() => setShowConnectModal(true)}
                     type="button"
                   >
                     Connect Wallet
@@ -170,13 +176,12 @@ export default function ConnectWalletButton({
         }}
       </ConnectButton.Custom>
 
+      {/* 🧩 Profile Wizard Modal */}
       {showModal && (
         <VerseProfileWizard
           asModal
           onClose={handleCloseModal}
           onComplete={handleProfileCreated}
-          // contractAddress={deployedContracts[11142220].VerseProfile.address}
-          // contractAbi={deployedContracts[11142220].VerseProfile.abi}
           extensions={[
             {
               id: "hirecore",
@@ -201,12 +206,12 @@ export default function ConnectWalletButton({
           ]}
         />
       )}
-       {/* 🚀 Custom Connect Modal */}
+
+      {/* 🚀 Custom Connect Modal */}
       <CustomConnectModal
         open={showConnectModal}
         onClose={() => setShowConnectModal(false)}
       />
     </div>
-    
   );
 }

@@ -12,6 +12,8 @@ import {
   getDeployedContract,
 } from "../utils/contract/deployedContracts";
 import { uploadProfileToStoracha } from "./lib/uploadToStoracha";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import {config} from "@verse/providers/index"
 
 /** ------------------------------------------------------
  *  4lph4Verse — VerseProfile Wizard (SDK-ready)
@@ -99,15 +101,7 @@ export type VerseProfileWizardProps = {
 
 /* ----------------------------- Component ----------------------------- */
 export default function VerseProfileWizard(props: VerseProfileWizardProps) {
-  const {
-    dapp,
-    asModal,
-    onClose,
-    onComplete,
-    onChainWrite,
-    className,
-    extensions = [],
-  } = props;
+  const { dapp, asModal, onClose, onComplete, extensions = [] } = props;
 
   const { address } = useAccount();
 
@@ -167,6 +161,8 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
 
     try {
       if (!address) throw new Error("Connect wallet to continue");
+      console.log(address);
+
       if (!state.handle || !state.displayName) {
         throw new Error("Please complete your handle and display name");
       }
@@ -183,7 +179,7 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
       setProgress("writing");
 
       // Then write to chain
-      await writeContractAsync({
+      const tx = await writeContractAsync({
         address: contractAddress,
         abi: contractAbi,
         functionName: functionName,
@@ -193,9 +189,12 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         ],
       });
-
+      await waitForTransactionReceipt(config, {
+        hash: tx,
+        confirmations: 1,
+      });
       setProgress("done");
-      setStep(step + 1); // success
+      setStep(step + 1);
       onComplete?.(state);
     } catch (e: any) {
       setError(
