@@ -47,10 +47,8 @@ export default function ConnectWalletButton({
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // 🔑 Profile check hook
   const { hasProfile, isLoading, refetch } = useCheckProfile();
 
-  // 🔑 Modal & success states
   const [showModal, setShowModal] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -67,20 +65,24 @@ export default function ConnectWalletButton({
   const handleProfileCreated = async () => {
     setSuccess(true);
     setShowModal(false);
-
-    // ✅ Ensure hook updates after contract write
     await refetch();
   };
 
   return (
     <div className="flex justify-center relative">
       <ConnectButton.Custom>
-        {({ account, chain, openChainModal, openAccountModal, mounted }) => {
+        {({
+          account,
+          chain,
+          openChainModal,
+          openAccountModal,
+          openConnectModal,
+          mounted,
+        }) => {
           const ready = mounted;
           const connected = ready && account && chain;
 
           useEffect(() => {
-            // ✅ only trigger once per session until profile exists
             if (connected && !isLoading && !hasProfile && !success) {
               setShowModal(true);
             }
@@ -108,7 +110,13 @@ export default function ConnectWalletButton({
               >
                 {!connected ? (
                   <button
-                    onClick={() => setShowConnectModal(true)}
+                    onClick={() => {
+                      if (faucet) {
+                        openConnectModal?.(); // ✅ default RainbowKit modal
+                      } else {
+                        setShowConnectModal(true); // ✅ custom modal
+                      }
+                    }}
                     type="button"
                   >
                     Connect Wallet
@@ -123,32 +131,30 @@ export default function ConnectWalletButton({
                   >
                     Wrong network
                   </button>
+                ) : faucet ? (
+                  // ✅ Faucet page: show direct RainbowKit buttons, no wrapper button
+                  <div className="flex items-center gap-3">
+                    <button onClick={openAccountModal} type="button">
+                      {account.displayName}
+                    </button>
+                    <button
+                      onClick={openChainModal}
+                      type="button"
+                      className="hidden md:inline"
+                    >
+                      {chain.name}
+                    </button>
+                  </div>
                 ) : (
+                  // ✅ Normal pages: dropdown toggle
                   <div className="flex items-center gap-3 relative">
-                    {/* 👤 Account button toggles custom menu */}
                     <button
                       onClick={() => setMenuOpen((o) => !o)}
                       type="button"
                     >
-                      {faucet ? (
-                        <div className="flex items-center gap-3">
-                          <button onClick={openAccountModal} type="button">
-                            {account.displayName}
-                          </button>
-                          <button
-                            onClick={openChainModal}
-                            type="button"
-                            className="hidden md:inline"
-                          >
-                            {chain.name}
-                          </button>
-                        </div>
-                      ) : (
-                        <User2 className="md:block w-5 h-5 text-white" />
-                      )}
+                      <User2 className="md:block w-5 h-5 text-white" />
                     </button>
 
-                    {/* 🌐 Optional network name */}
                     {showNetwork && (
                       <button
                         onClick={openChainModal}
@@ -159,8 +165,7 @@ export default function ConnectWalletButton({
                       </button>
                     )}
 
-                    {/* 🔽 Custom dropdown menu */}
-                    {!faucet && menuOpen && (
+                    {menuOpen && (
                       <WalletDropdown
                         account={account}
                         openChainModal={openChainModal}
