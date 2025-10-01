@@ -15,13 +15,11 @@ export const workerNavItems: NavbarItem[] = [
   { label: "Home", href: "/", icon: HomeIcon },
   { label: "Find Tasks", href: "/tasks", icon: BriefcaseIcon },
   { label: "My Applications", href: "/applications", icon: ClipboardDocumentListIcon },
-  { label: "Earnings", href: "/earnings", icon: CurrencyDollarIcon },
 ];
 
 export const clientNavItems: NavbarItem[] = [
   { label: "Home", href: "/", icon: HomeIcon },
   { label: "Find Workers", href: "/workers", icon: UsersIcon },
   { label: "Post Task", href: "/post-task", icon: PlusCircleIcon },
-  { label: "My Tasks", href: "/my-tasks", icon: ClipboardIcon },
-  { label: "Payments", href: "/payments", icon: BanknotesIcon },
+  { label: "My Tasks", href: "/mytasks", icon: ClipboardIcon },
 ];

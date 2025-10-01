@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@verse/ui/Navbar/Navbar";
 import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import ConnectWalletButton from "@verse/sdk/wallet/ConnectWalletButton";
@@ -12,6 +12,22 @@ export default function HireCoreNavbar() {
   const [userRole, setUserRole] = useState<"worker" | "client">("worker");
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
+  // Load role from localStorage on mount
+  useEffect(() => {
+    const storedRole = localStorage.getItem("hirecore_user_role") as
+      | "worker"
+      | "client"
+      | null;
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+  }, []);
+
+  // Save role to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("hirecore_user_role", userRole);
+  }, [userRole]);
+
   const menuItems: NavbarItem[] =
     userRole === "worker" ? workerNavItems : clientNavItems;
 
@@ -19,7 +35,6 @@ export default function HireCoreNavbar() {
     <Navbar
       logo={
         <div className="flex items-center gap-2">
-          {/* Logo Image */}
           <Image
             src="/logo.png"
             alt="HireCore Logo"
@@ -27,8 +42,6 @@ export default function HireCoreNavbar() {
             height={52}
             className="rounded-md"
           />
-
-          {/* Logo Text */}
           <span className="text-2xl font-extrabold font-orbitron bg-gradient-to-r from-indigo-500 to-emerald-400 bg-clip-text text-transparent">
             HireCore
           </span>
@@ -36,7 +49,6 @@ export default function HireCoreNavbar() {
       }
       logoSm={
         <div className="flex items-center gap-2">
-          {/* Logo Image */}
           <Image
             src="/logo.png"
             alt="HireCore Logo"
@@ -49,14 +61,12 @@ export default function HireCoreNavbar() {
       menuItems={menuItems}
       rightControls={
         <div className="flex items-center gap-4 relative">
-          {/* Wallet */}
           <ConnectWalletButton
             variant="secondary"
             rounded="lg"
             className="text-sm font-medium"
           />
 
-          {/* Role switcher */}
           <div className="hidden md:block relative">
             <button
               onClick={() => setShowRoleMenu((prev) => !prev)}
