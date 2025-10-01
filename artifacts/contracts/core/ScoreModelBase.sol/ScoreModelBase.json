@@ -1,0 +1,59 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "ScoreModelBase",
+  "sourceName": "contracts/core/ScoreModelBase.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "appId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "reputationHub",
+      "outputs": [
+        {
+          "internalType": "contract IVerseReputationHub",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        }
+      ],
+      "name": "scoreOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/core/ScoreModelBase.sol",
+  "buildInfoId": "solc-0_8_28-7667ea983908a5e74bc5e23fabe8eb0495a7b2d7"
+}

@@ -2,9 +2,11 @@
 
 import { useAccount, useReadContract, useChainId } from "wagmi";
 import type { Abi } from "viem";
-import { deployedContracts } from "../utils/contract/deployedContracts";
 import { TokenUtils } from "../utils/token/tokenUtils";
-
+import {
+  ChainId,
+  getDeployedContract,
+} from "../utils/contract/deployedContracts"; 
 /**
  * useBalance
  * Fetches the balance of a deployed contract token (ERC20).
@@ -15,10 +17,10 @@ export function useBalance(): {
   refetch: () => void;
 } {
   const { address } = useAccount();
-  const chainId = useChainId();
+  const chainId = useChainId() as ChainId;
   const contractName = "CoreToken";
 
-  const contract = (deployedContracts as Record<string, any>)[chainId]?.[contractName];
+  const contract = getDeployedContract(chainId,contractName);
 
   const { data, isLoading, refetch } = useReadContract({
     abi: contract?.abi as Abi,
@@ -31,12 +33,12 @@ export function useBalance(): {
   });
 
   const balance = data
-    ? TokenUtils.compact(data as bigint, 18) // format your balance
+    ? TokenUtils.compact(data as bigint, 18) 
     : "0.00";
 
   return {
     balance,
     isLoading,
-    refetch: refetch as () => void, // cast to a simple callable
+    refetch: refetch as () => void, 
   };
 }

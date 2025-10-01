@@ -57,7 +57,7 @@ importers:
         specifier: ^1.3.8
         version: 1.4.0
       viem:
-        specifier: ^2.37.5
+        specifier: ^2.37.9
         version: 2.37.9(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       wagmi:
         specifier: ^2.16.9
@@ -1962,6 +1962,9 @@ packages:
 
   '@types/node@22.18.6':
     resolution: {integrity: sha512-r8uszLPpeIWbNKtvWRt/DbVi5zbqZyj1PTmhRMqBMvDnaz1QpmSKujUtJLrqGZeoM8v72MfYggDceY4K1itzWQ==}
+
+  '@types/node@22.18.8':
+    resolution: {integrity: sha512-pAZSHMiagDR7cARo/cch1f3rXy0AEXwsVsVH09FcyeJVAzCnGgmYis7P3JidtTUjyadhTeSo8TgRPswstghDaw==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -8308,7 +8311,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 6.0.0
-      '@types/node': 22.18.6
+      '@types/node': 22.18.8
 
   '@types/json-schema@7.0.15': {}
 
@@ -8335,6 +8338,10 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/node@22.18.6':
+    dependencies:
+      undici-types: 6.21.0
+
+  '@types/node@22.18.8':
     dependencies:
       undici-types: 6.21.0
 

@@ -1,10 +1,10 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
 import HireCoreNavbar from "apps/hirecore-web/components/Navbar";
 
 // apps/hirecore-web/app/layout.tsx
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "HireCore",
@@ -31,7 +31,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
 }: {
@@ -43,7 +42,8 @@ export default function RootLayout({
         <Web3Provider>
           <HireCoreNavbar />
           <main className="pt-4">
-         {children}
+            {children}
+            <Toaster richColors position="top-right" />
           </main>
         </Web3Provider>
       </body>

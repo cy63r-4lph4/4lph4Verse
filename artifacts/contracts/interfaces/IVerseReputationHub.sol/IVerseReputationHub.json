@@ -1,0 +1,118 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "IVerseReputationHub",
+  "sourceName": "contracts/interfaces/IVerseReputationHub.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "appId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getActivity",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "completed",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "cancelled",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint256",
+          "name": "earned",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "appId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRawCounts",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "completed",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "cancelled",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        }
+      ],
+      "name": "logCancelled",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "logCompleted",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/interfaces/IVerseReputationHub.sol",
+  "buildInfoId": "solc-0_8_28-0ce2fe61ed25c65d7e7e19a6c176feb58bc478a2"
+}

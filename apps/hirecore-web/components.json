@@ -12,11 +12,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@verse/hirex/components",
-    "utils": "@verse/hirex/lib/utils",
-    "ui": "@verse/hirex/components/ui",
-    "lib": "@verse/hirex/lib",
-    "hooks": "@verse/hirex/hooks"
+    "components": "@verse/hirecore-web/components",
+    "utils": "@verse/hirecore-web/lib/utils",
+    "ui": "@verse/hirecore-web/components/ui",
+    "lib": "@verse/hirecore-we/lib",
+    "hooks": "@verse/hirecore-web/hooks"
   },
   "registries": {}
 }

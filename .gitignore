@@ -35,9 +35,9 @@ coverage/
 # -----------------
 # Contracts
 # -----------------
-artifacts/
+# artifacts
 cache/
-deployments/
+# deployments/
 typechain-types/
 
 # -----------------

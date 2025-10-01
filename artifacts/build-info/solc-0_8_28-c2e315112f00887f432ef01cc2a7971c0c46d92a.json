@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-c2e315112f00887f432ef01cc2a7971c0c46d92a",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/interfaces/IVerseProfile.sol": "project/contracts/interfaces/IVerseProfile.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IVerseProfile.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IVerseProfile\n/// @notice Interface for interacting with the VerseProfile identity contract.\ninterface IVerseProfile {\n    // -------- Views --------\n    function getProfile(\n        uint256 verseId\n    )\n        external\n        view\n        returns (\n            address owner,\n            string memory verseHandle,\n            string memory metadataURI,\n            bytes32 ensNamehash,\n            uint64 createdAt\n        );\n\n    function verseIdByHandle(string calldata handle) external view returns (uint256);\n\n    function getAppNickname(uint256 verseId, bytes32 appId) external view returns (string memory);\n\n    function verseIdByAppNickname(bytes32 appId, string calldata nickname) external view returns (uint256);\n\n    function hasProfile(address user) external view returns (bool);\n\n    function getDisplayHandle(uint256 verseId, bytes32 appId) external view returns (string memory);\n\n    function profileOf(address user) external view returns (uint256);\n\n    // -------- Mutative --------\n    function createProfile(\n        string calldata verseHandle,\n        string calldata metadataURI,\n        bytes32 ensNamehash\n    ) external returns (uint256 verseId);\n\n    function setVerseHandle(uint256 verseId, string calldata newHandle) external;\n\n    function setMetadataURI(uint256 verseId, string calldata newURI) external;\n\n    function linkENS(uint256 verseId, bytes32 namehash) external;\n\n    function transferOwnershipOfProfile(uint256 verseId, address newOwner) external;\n\n    function setAppNickname(uint256 verseId, bytes32 appId, string calldata nickname) external;\n}\n"
+      }
+    }
+  }
+}

@@ -17,122 +17,122 @@
         "deployedOnBlock": 0
       },
       "HireCoreJobBoardImpl": {
-        "address": "0x47Ee34e86Bf00CaC60f0E4A74cf135a07bF9D8a8",
+        "address": "0x474098f2EBab5c422a4ACe883DD41948673c34c2",
         "abi": "HireCoreJobBoardImpl_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreJobManagerImpl": {
-        "address": "0xA4a56053Ec9a7f6B2c66D9Ef3098BED80BdA585C",
+        "address": "0xeC5c58b733152Bc49d6BE1a0958Dd3d710eDD3F2",
         "abi": "HireCoreJobManagerImpl_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreScoreModelImpl": {
-        "address": "0x7c52855bd68e8d3428aad3B44604C6c3Dab70a4a",
+        "address": "0xB2e2E3BF4B58Db8e179e6DFD8037E05eDC8De3Db",
         "abi": "HireCoreScoreModelImpl_11142220",
         "deployedOnBlock": 0
       },
       "AppRegistryImpl": {
-        "address": "0xfd311636AF65F9f6cCa13a0a508d1988F50A2733",
+        "address": "0x2e929C052ab0fFb45de92Ce3f3329BcE95698c38",
         "abi": "AppRegistryImpl_11142220",
         "deployedOnBlock": 0
       },
       "BadgeRegistryImpl": {
-        "address": "0x1b398652b2dA52E737f6b9276e8617EE6ac0ca70",
+        "address": "0x4E8BE118D8dc98D82BcdaCbECDf736c70EAb10B1",
         "abi": "BadgeRegistryImpl_11142220",
         "deployedOnBlock": 0
       },
       "ReputationHubImpl": {
-        "address": "0x8b333d3AbF1E60aDc395a9aC96F94FFCeAc7997d",
+        "address": "0x51BE3370fBd5E117033a158a8218775f162854D7",
         "abi": "ReputationHubImpl_11142220",
         "deployedOnBlock": 0
       },
       "ScoreAggregatorImpl": {
-        "address": "0x4C522BD407A2d50eBF2aF12233F0653ffa0609a9",
+        "address": "0xcFb2B238762a9158aD985606F8CA5CE34e3ad317",
         "abi": "ScoreAggregatorImpl_11142220",
         "deployedOnBlock": 0
       },
       "VerseProfileImpl": {
-        "address": "0xfEbC66328BE2302B08Eb8676a957bAc4eE768Da2",
+        "address": "0x52EE8E43148a8b18Ee952b5c51ba0FA99FD30d60",
         "abi": "VerseProfileImpl_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreJobBoardProxy": {
-        "address": "0x56a5BA686856F0787ce1B0278ED55D359A1D050e",
+        "address": "0xe2f6AAC0BfB6C4221d0e9180661C9D3A1B498F87",
         "abi": "HireCoreJobBoardProxy_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreJobManagerProxy": {
-        "address": "0x775808914a3f338eebaEd255fD4Ba6403546b57a",
+        "address": "0x2f8f52e88d4f4f0D22fEEb072fE238eE14ca2EEF",
         "abi": "HireCoreJobManagerProxy_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreScoreModelProxy": {
-        "address": "0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA",
+        "address": "0x0B9f200CB81E224Ca6b1D4A774922d2DE809910d",
         "abi": "HireCoreScoreModelProxy_11142220",
         "deployedOnBlock": 0
       },
       "AppRegistryProxy": {
-        "address": "0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735",
+        "address": "0xc1B7bBa4be08FecFfbf2fAc9063B3e7072A77320",
         "abi": "AppRegistryProxy_11142220",
         "deployedOnBlock": 0
       },
       "BadgeRegistryProxy": {
-        "address": "0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE",
+        "address": "0x1e0f9BF4876321737E8d72C836218DE3564F848E",
         "abi": "BadgeRegistryProxy_11142220",
         "deployedOnBlock": 0
       },
       "ReputationHubProxy": {
-        "address": "0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F",
+        "address": "0x6B95CDD3439C643336611227701533ab5d12357f",
         "abi": "ReputationHubProxy_11142220",
         "deployedOnBlock": 0
       },
       "ScoreAggregatorProxy": {
-        "address": "0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66",
+        "address": "0x2108B68F23bA2bDE60148E87F8FE136F21b4fAd3",
         "abi": "ScoreAggregatorProxy_11142220",
         "deployedOnBlock": 0
       },
       "VerseProfileProxy": {
-        "address": "0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E",
+        "address": "0x5e041CAF759403c4Ae1a3f8179270571FC31719E",
         "abi": "VerseProfileProxy_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreJobBoard": {
-        "address": "0x56a5BA686856F0787ce1B0278ED55D359A1D050e",
+        "address": "0xe2f6AAC0BfB6C4221d0e9180661C9D3A1B498F87",
         "abi": "HireCoreJobBoard_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreJobManager": {
-        "address": "0x775808914a3f338eebaEd255fD4Ba6403546b57a",
+        "address": "0x2f8f52e88d4f4f0D22fEEb072fE238eE14ca2EEF",
         "abi": "HireCoreJobManager_11142220",
         "deployedOnBlock": 0
       },
       "HireCoreScoreModel": {
-        "address": "0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA",
+        "address": "0x0B9f200CB81E224Ca6b1D4A774922d2DE809910d",
         "abi": "HireCoreScoreModel_11142220",
         "deployedOnBlock": 0
       },
       "AppRegistry": {
-        "address": "0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735",
+        "address": "0xc1B7bBa4be08FecFfbf2fAc9063B3e7072A77320",
         "abi": "AppRegistry_11142220",
         "deployedOnBlock": 0
       },
       "BadgeRegistry": {
-        "address": "0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE",
+        "address": "0x1e0f9BF4876321737E8d72C836218DE3564F848E",
         "abi": "BadgeRegistry_11142220",
         "deployedOnBlock": 0
       },
       "ReputationHub": {
-        "address": "0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F",
+        "address": "0x6B95CDD3439C643336611227701533ab5d12357f",
         "abi": "ReputationHub_11142220",
         "deployedOnBlock": 0
       },
       "ScoreAggregator": {
-        "address": "0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66",
+        "address": "0x2108B68F23bA2bDE60148E87F8FE136F21b4fAd3",
         "abi": "ScoreAggregator_11142220",
         "deployedOnBlock": 0
       },
       "VerseProfile": {
-        "address": "0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E",
+        "address": "0x5e041CAF759403c4Ae1a3f8179270571FC31719E",
         "abi": "VerseProfile_11142220",
         "deployedOnBlock": 0
       }
