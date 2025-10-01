@@ -13,7 +13,7 @@ import {
 } from "../utils/contract/deployedContracts";
 import { uploadProfileToStoracha } from "./lib/uploadToStoracha";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { config } from "@verse/providers"
+import { config } from "@verse/providers/"
 
 /** ------------------------------------------------------
  *  4lph4Verse — VerseProfile Wizard (SDK-ready)
