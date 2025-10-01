@@ -3,7 +3,16 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+       "env": [
+        "DEPLOYER_PRIVATE_KEY",
+        "CELO_RPC",
+        "TREASURY_PRIVATE_KEY",
+        "CELO_SEPOLIA_RPC",
+        "PROJECT_ID",
+        "STORACHA_SPACE_DID",
+        "ADMIN_EMAIL"
+      ]
     },
     "lint": {
       "outputs": []

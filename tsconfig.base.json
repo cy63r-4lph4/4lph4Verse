@@ -2,29 +2,41 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "bundler", // or "nodenext"
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@verse/core/*": ["contracts/core/src/*"],
-      "@verse/contracts/hirecore/*": ["contracts/hirecore/*"],
-      "@verse/contracts/utils/*": ["contracts/utils/*"],
-
+      "@verse/sdk": ["packages/sdk"],
       "@verse/sdk/*": ["packages/sdk/*"],
-      "@verse/assets/*": ["packages/brand-assets/public/*"],
 
-      "@verse/ui/*": ["packages/ui/*"],
-      "@verse/config/*": ["packages/config/src/*"],
+      "@verse/providers": ["packages/providers"],
       "@verse/providers/*": ["packages/providers/*"],
 
+      "@verse/ui": ["packages/ui"],
+      "@verse/ui/*": ["packages/ui/*"],
+
+      "@verse/config": ["packages/config"],
+      "@verse/config/*": ["packages/config/*"],
+
+      "@verse/assets": ["packages/brand-assets/public"],
+      "@verse/assets/*": ["packages/brand-assets/public/*"],
+
+      "@verse/services/faucet": ["services/faucet/src"],
       "@verse/services/faucet/*": ["services/faucet/src/*"],
+
+      "@verse/services/relayer": ["services/relayer/src"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],
 
+      "@verse/hirecore-web": ["apps/hirecore-web"],
       "@verse/hirecore-web/*": ["apps/hirecore-web/*"],
+
+      "@verse/leasevault-web": ["apps/leasevault-web"],
       "@verse/leasevault-web/*": ["apps/leasevault-web/*"],
+
+      "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"]
     }
   }

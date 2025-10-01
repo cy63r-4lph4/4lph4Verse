@@ -1,11 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",            // ✅ Add this
+    "jsx": "react-jsx",            
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
     "outDir": "dist",
     "rootDir": ".",
     "skipLibCheck": true,

@@ -254,7 +254,11 @@ importers:
 
   packages/providers: {}
 
-  packages/sdk: {}
+  packages/sdk:
+    dependencies:
+      '@verse/providers':
+        specifier: workspace:*
+        version: link:../providers
 
 packages:
 

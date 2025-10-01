@@ -14,7 +14,6 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from "@verse/hirecore-web/components/ui/tabs";
 import { LayoutGrid, List, Briefcase, Clock, XCircle } from "lucide-react";
 
@@ -95,7 +94,7 @@ export default function WorkerApplicationsPage() {
             My Applications
           </h1>
           <p className="text-gray-300">
-            Track all the tasks you've applied for and their status
+            Track all the tasks you&apos;ve applied for and their status
           </p>
         </motion.div>
 

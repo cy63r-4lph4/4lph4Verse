@@ -1,7 +1,7 @@
 // app/post-task/page.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -14,12 +14,10 @@ import StepBudget from "./steps/StepBudget";
 import StepReview from "./steps/StepReview";
 import StepLocation from "./steps/StepLocation";
 
+import { TaskFormData, TaskPayload } from "@verse/hirecore-web/utils/Interfaces";
+import { useSubmitTask } from "@verse/hirecore-web/hooks/useSubmitTask";
 
-import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
-import { CATEGORIES } from "@verse/hirecore-web/utils/Constants";
-// import { CORE_TOKEN_ADDRESS } from "@verse/hirecore-web/utils/chain"; // (optional) if you keep a default
-
-// (optional) small helper: simple top progress bar
+// (optional) simple top progress bar
 function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = (step / total) * 100;
   return (
@@ -51,19 +49,11 @@ export default function PostTaskPage() {
     attachments: [],
     budget: "",
     timeEstimate: "",
-    duration: "",           // seconds in string, e.g. "86400"
-    paymentToken: "",       // set via Step 4
+    duration: "", // seconds in string, e.g. "86400"
+    paymentToken: "", // set via Step 4
   });
 
-  // ---- contract submit (uses your existing hook)
-  // You already had this in your old one-pager:
-  // const { submitTask, loading } = useSubmitTask();
-  // For clarity we keep it optional; uncomment if available:
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { submitTask, loading } = require("@verse/hirecore-web/hooks/useSubmitTask") as {
-    submitTask: (payload: any) => Promise<void>;
-    loading: boolean;
-  };
+  const { submitTask, loading } = useSubmitTask();
 
   const canGoBack = step > 1;
   const canGoNext = step < TOTAL_STEPS;
@@ -74,15 +64,15 @@ export default function PostTaskPage() {
       toast("Please fix the following", { description: errors.join(" • ") });
       return;
     }
-    if (step < TOTAL_STEPS) setStep(s => s + 1);
+    if (step < TOTAL_STEPS) setStep((s) => s + 1);
   }
 
   function back() {
-    if (step > 1) setStep(s => s - 1);
+    if (step > 1) setStep((s) => s - 1);
   }
 
   // ---- Review submit handler
-  async function handleSubmit() {
+  const handleSubmit = useCallback(async () => {
     const finalErrors = validateAll(formData);
     if (finalErrors.length) {
       toast("Missing required info", { description: finalErrors.join(" • ") });
@@ -92,17 +82,20 @@ export default function PostTaskPage() {
     try {
       setSubmitting(true);
 
-      // Build payload for your existing hook; keep it close to your old one
-      const payload = {
+      const payload: TaskPayload & {
+        budget: number;
+        duration?: number;
+        skills: string[];
+      } = {
         ...formData,
         budget: parseInt(formData.budget || "0", 10),
-        duration: formData.duration ? parseInt(formData.duration, 10) : undefined,
+        duration: formData.duration
+          ? parseInt(formData.duration, 10)
+          : undefined,
         skills: formData.skills
           .split(",")
-          .map(s => s.trim())
+          .map((s) => s.trim())
           .filter(Boolean),
-        // If you keep a default token address, fall back to it:
-        // paymentToken: formData.paymentToken || CORE_TOKEN_ADDRESS,
       };
 
       await submitTask(payload);
@@ -117,7 +110,7 @@ export default function PostTaskPage() {
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [formData, router, submitTask]);
 
   const stepView = useMemo(() => {
     switch (step) {
@@ -140,7 +133,7 @@ export default function PostTaskPage() {
       default:
         return null;
     }
-  }, [step, formData, submitting, loading]);
+  }, [step, formData, submitting, loading, handleSubmit]);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -163,7 +156,9 @@ export default function PostTaskPage() {
         {/* Progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-400">Step {step} of {TOTAL_STEPS}</span>
+            <span className="text-sm text-gray-400">
+              Step {step} of {TOTAL_STEPS}
+            </span>
           </div>
           <ProgressBar step={step} total={TOTAL_STEPS} />
         </div>
@@ -185,7 +180,11 @@ export default function PostTaskPage() {
 
         {/* Nav buttons */}
         <div className="mt-6 flex items-center justify-between">
-          <Button variant="outline" disabled={!canGoBack || submitting || loading} onClick={back}>
+          <Button
+            variant="outline"
+            disabled={!canGoBack || submitting || loading}
+            onClick={back}
+          >
             Back
           </Button>
 
@@ -224,7 +223,6 @@ function validateStep(step: number, d: TaskFormData): string[] {
   }
   if (step === 2) {
     if (!d.description?.trim()) errs.push("Description is required");
-    // skills optional, but recommended
   }
   if (step === 3) {
     if (!d.location?.trim()) errs.push("Location is required (type or detect)");
@@ -232,8 +230,6 @@ function validateStep(step: number, d: TaskFormData): string[] {
   if (step === 4) {
     if (!d.budget?.trim()) errs.push("Budget is required");
     if (!d.duration?.trim()) errs.push("Duration is required");
-    // paymentToken optional if your hook sets a default; else:
-    // if (!d.paymentToken?.trim()) errs.push("Payment token is required");
   }
   return errs;
 }

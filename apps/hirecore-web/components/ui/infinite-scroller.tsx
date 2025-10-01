@@ -22,7 +22,7 @@ export const InfiniteScroller: React.FC<InfiniteScrollerProps> = ({
 
   useEffect(() => {
     addAnimation();
-  }, []);
+  });
 
   const addAnimation = () => {
     if (containerRef.current && scrollerRef.current) {

@@ -86,17 +86,17 @@ export default function Page() {
       return () => window.removeEventListener("scroll", handleScroll);
     }
   }, [isFiltered]);
-  const displayedTasks = isFiltered
-    ? filteredTasks
-    : filteredTasks.slice(0, visibleCount);
+  // const displayedTasks = isFiltered
+  //   ? filteredTasks
+  //   : filteredTasks.slice(0, visibleCount);
 
   const [page, setPage] = useState(1);
   const pageSize = 4;
 
-  const paginatedTasks = filteredTasks.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  // const paginatedTasks = filteredTasks.slice(
+  //   (page - 1) * pageSize,
+  //   page * pageSize
+  // );
 
   const getUrgencyColor = (urgency: UrgencyType) => {
     switch (urgency) {

@@ -6,8 +6,6 @@ import {
   PlusCircleIcon,
   ClipboardIcon,
   ClipboardDocumentListIcon,
-  CurrencyDollarIcon,
-  BanknotesIcon,
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 

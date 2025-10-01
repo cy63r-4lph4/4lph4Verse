@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Coordinates } from "utils/interfaces";
+import { Coordinates } from "../utils/interfaces";
 
 export function useGeolocation() {
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);

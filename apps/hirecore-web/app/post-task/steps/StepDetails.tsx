@@ -82,17 +82,15 @@ export default function StepDetails({
                   const files = e.target.files
                     ? Array.from(e.target.files)
                     : [];
-                  // For now just store file names in formData (later → upload to IPFS)
-                  handleChange(
-                    "attachments" as keyof TaskFormData,
-                    files.map((f) => f.name) as any
-                  );
+                  const fileNames: string[] = files.map((f) => f.name);
+
+                  handleChange("attachments", fileNames);
                 }}
               />
             </label>
-            {formData.attachments && (
+            {formData.attachments.length > 0 && (
               <span className="text-sm text-gray-300 truncate">
-                {formData.attachments}
+                {formData.attachments.join(", ")}
               </span>
             )}
           </div>
