@@ -24,6 +24,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "../../packages/sdk/wallet/ConnectWalletButton.tsx"
-  ],
+, "../../packages/ui/components/ErrorCard.tsx"  ],
   "exclude": ["node_modules"]
 }

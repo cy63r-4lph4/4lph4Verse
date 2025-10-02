@@ -1,12 +1,11 @@
 {
-  "name": "@verse/sdk",
+  "name": "@verse/ui",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist"],
   "dependencies": {
-  "@verse/providers": "workspace:*",
-  "@verse/ui": "workspace:*"
+  "@verse/sdk": "workspace:*"
 
 }
 ,

@@ -2,9 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion"; // switched to framer-motion
+import { motion, AnimatePresence } from "framer-motion"; 
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useOutsideClick } from "../../sdk/hooks/useOutsideClick";
+import { useOutsideClick } from "@verse/sdk";
 import type { NavbarItem, NavbarTheme } from "./Navbar.types";
 
 type NavbarProps = {

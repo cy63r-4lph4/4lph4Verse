@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import WalletDropdown from "./WalletDropdown";
 import { useCheckProfile } from "../hooks/useCheckAccount";
 import { VerseProfileWizard } from "../profile";
-import { CustomConnectModal } from "../wallet/ConnectModal";
+import { VerseConnectModal } from "../wallet/ConnectModal";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -213,7 +213,7 @@ export default function ConnectWalletButton({
       )}
 
       {/* 🚀 Custom Connect Modal */}
-      <CustomConnectModal
+      <VerseConnectModal
         open={showConnectModal}
         onClose={() => setShowConnectModal(false)}
       />

@@ -13,7 +13,7 @@ import {
 } from "../utils/contract/deployedContracts";
 import { uploadProfileToStoracha } from "./lib/uploadToStoracha";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { config } from "@verse/providers"
+import { useConfig } from "wagmi";
 
 /** ------------------------------------------------------
  *  4lph4Verse — VerseProfile Wizard (SDK-ready)
@@ -119,6 +119,7 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
     avatar: "",
     extras: {},
   });
+  const config = useConfig();
 
   const extSteps = useMemo(() => extensions.filter(Boolean), [extensions]);
   //   const totalSteps = 2 + extSteps.length + 2; // welcome + identity + ext... + review + success (success not counted in stepper)
@@ -161,7 +162,6 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
 
     try {
       if (!address) throw new Error("Connect wallet to continue");
-      console.log(address);
 
       if (!state.handle || !state.displayName) {
         throw new Error("Please complete your handle and display name");
@@ -912,7 +912,7 @@ function TagsInput({
                 onClick={() => removeTag(i)}
                 aria-label={`remove ${t}`}
               >
-                ×
+                x
               </button>
             </span>
           ))}

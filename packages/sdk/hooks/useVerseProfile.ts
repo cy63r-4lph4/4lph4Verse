@@ -3,7 +3,7 @@
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import type { Abi } from "viem";
 import { useMemo, useCallback } from "react";
-import { ChainId, ContractNames, getDeployedContract } from "../utils/contract/deployedContracts";
+import { ChainId,  getDeployedContract } from "../utils/contract/deployedContracts";
 
 /* ---------- Your public shapes (no tanstack types) ---------- */
 type MinimalProfile = {
