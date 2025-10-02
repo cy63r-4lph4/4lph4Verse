@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@verse/ui/Navbar/Navbar";
 import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
-import ConnectWalletButton from "@verse/sdk/wallet/ConnectWalletButton";
+import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import Image from "next/image";

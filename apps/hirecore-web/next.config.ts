@@ -9,9 +9,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const nextConfig: NextConfig = {
-  // env: {
-  //   NEXT_PUBLIC_STORACHA_SPACE_DID: process.env.NEXT_PUBLIC_STORACHA_SPACE_DID,
-  // },
+  
 };
 
 export default nextConfig;

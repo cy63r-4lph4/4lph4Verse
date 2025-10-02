@@ -6,7 +6,7 @@ import { Loader2, X, QrCode } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QRStyler } from "./QrStyler";
-import TxErrorCard from "@verse/ui/components/ErrorCard";
+import TxErrorCard from "../components/ErrorCard";
 
 /* --------------------- Mobile detection hook --------------------- */
 function useIsMobile(breakpoint = 768) {

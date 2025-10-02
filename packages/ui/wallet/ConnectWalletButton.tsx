@@ -4,10 +4,10 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import clsx from "clsx";
 import { useAccount, useDisconnect } from "wagmi";
 import { Coins, User2 } from "lucide-react";
-import { useBalance } from "../hooks/useBalance";
+import { useBalance } from "@verse/sdk/hooks/useBalance";
 import { useEffect, useState } from "react";
 import WalletDropdown from "./WalletDropdown";
-import { useCheckProfile } from "../hooks/useCheckAccount";
+import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
 import { VerseProfileWizard } from "../profile";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 

@@ -268,15 +268,17 @@ importers:
       '@verse/providers':
         specifier: workspace:*
         version: link:../providers
-      '@verse/ui':
-        specifier: workspace:*
-        version: link:../ui
 
   packages/ui:
     dependencies:
       '@verse/sdk':
         specifier: workspace:*
         version: link:../sdk
+      '@verse/services':
+        specifier: workspace:*
+        version: link:../../services
+
+  services: {}
 
 packages:
 

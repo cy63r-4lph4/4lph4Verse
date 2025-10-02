@@ -10,8 +10,8 @@ import { ModalWrapper } from "./components/ModalWrapper";
 import {
   ChainId,
   getDeployedContract,
-} from "../utils/contract/deployedContracts";
-import { uploadProfileToStoracha } from "./lib/uploadToStoracha";
+} from "@verse/sdk/utils/contract/deployedContracts";
+import { uploadProfileToStoracha } from "@verse/services/storacha";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { useConfig } from "wagmi";
 

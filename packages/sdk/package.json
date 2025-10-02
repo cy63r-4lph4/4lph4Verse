@@ -5,9 +5,7 @@
   "types": "dist/index.d.ts",
   "files": ["dist"],
   "dependencies": {
-  "@verse/providers": "workspace:*",
-  "@verse/ui": "workspace:*"
-
+  "@verse/providers": "workspace:*"
 }
 ,
   "scripts": {

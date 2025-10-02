@@ -6,6 +6,8 @@
     { "path": "./apps/verse-core" },
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },
-    { "path": "./packages/providers" }
+    { "path": "./packages/providers" },
+     { "path": "./services" }
+
   ]
 }
