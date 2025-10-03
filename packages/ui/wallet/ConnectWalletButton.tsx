@@ -111,11 +111,7 @@ export default function ConnectWalletButton({
                 {!connected ? (
                   <button
                     onClick={() => {
-                      if (faucet) {
-                        openConnectModal?.(); // ✅ default RainbowKit modal
-                      } else {
-                        setShowConnectModal(true); // ✅ custom modal
-                      }
+                      setShowConnectModal(true); // ✅ custom modal
                     }}
                     type="button"
                   >
@@ -181,8 +177,7 @@ export default function ConnectWalletButton({
         }}
       </ConnectButton.Custom>
 
-      {/* 🧩 Profile Wizard Modal */}
-      {showModal && (
+      {showModal && !faucet && (
         <VerseProfileWizard
           asModal
           onClose={handleCloseModal}
@@ -212,7 +207,6 @@ export default function ConnectWalletButton({
         />
       )}
 
-      {/* 🚀 Custom Connect Modal */}
       <VerseConnectModal
         open={showConnectModal}
         onClose={() => setShowConnectModal(false)}

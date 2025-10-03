@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+
+
+@source "../../../packages/ui/**/*.{ts,tsx}";
+@source "../../../packages/sdk/**/*.{ts,tsx}";
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
