@@ -7,29 +7,14 @@ import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import Image from "next/image";
+import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
 
 export default function HireCoreNavbar() {
-  const [userRole, setUserRole] = useState<"worker" | "client">("worker");
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-
-  // Load role from localStorage on mount
-  useEffect(() => {
-    const storedRole = localStorage.getItem("hirecore_user_role") as
-      | "worker"
-      | "client"
-      | null;
-    if (storedRole) {
-      setUserRole(storedRole);
-    }
-  }, []);
-
-  // Save role to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("hirecore_user_role", userRole);
-  }, [userRole]);
+  const { role, setRole } = useUserRole();
 
   const menuItems: NavbarItem[] =
-    userRole === "worker" ? workerNavItems : clientNavItems;
+    role === "worker" ? workerNavItems : clientNavItems;
 
   return (
     <Navbar
@@ -78,22 +63,22 @@ export default function HireCoreNavbar() {
               <div className="absolute right-0 mt-2 w-40 rounded-lg shadow-lg bg-gray-900 border border-white/10">
                 <button
                   onClick={() => {
-                    setUserRole("worker");
+                    setRole("worker");
                     setShowRoleMenu(false);
                   }}
                   className={`flex items-center gap-2 w-full px-4 py-2 text-sm rounded-md hover:bg-gray-800 transition ${
-                    userRole === "worker" ? "text-indigo-400" : "text-gray-200"
+                    role === "worker" ? "text-indigo-400" : "text-gray-200"
                   }`}
                 >
                   <Briefcase className="w-4 h-4" /> Worker
                 </button>
                 <button
                   onClick={() => {
-                    setUserRole("client");
+                    setRole("client");
                     setShowRoleMenu(false);
                   }}
                   className={`flex items-center gap-2 w-full px-4 py-2 text-sm rounded-md hover:bg-gray-800 transition ${
-                    userRole === "client" ? "text-emerald-400" : "text-gray-200"
+                    role === "client" ? "text-emerald-400" : "text-gray-200"
                   }`}
                 >
                   <Users className="w-4 h-4" /> Client

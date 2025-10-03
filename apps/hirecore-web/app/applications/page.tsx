@@ -16,6 +16,7 @@ import {
   TabsTrigger,
 } from "@verse/hirecore-web/components/ui/tabs";
 import { LayoutGrid, List, Briefcase, Clock, XCircle } from "lucide-react";
+import VerseTabs from "@verse/hirecore-web/components/VerseTab";
 
 interface Application {
   id: number;
@@ -58,11 +59,18 @@ const mockApplications: Application[] = [
 ];
 
 export default function WorkerApplicationsPage() {
+  const [activeTab, setActiveTab] = useState("all");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "accepted" | "rejected" | "withdrawn"
   >("all");
-
+  const tabs = [
+    { value: "all", label: "All" },
+    { value: "pending", label: "Pending" },
+    { value: "accepted", label: "Accepted" },
+    { value: "rejected", label: "Rejected" },
+    { value: "withdrawn", label: "Withdrawn" },
+  ];
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "accepted":
@@ -75,9 +83,8 @@ export default function WorkerApplicationsPage() {
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     }
   };
-
   const filteredApps = mockApplications.filter(
-    (app) => statusFilter === "all" || app.status === statusFilter
+    (app) => activeTab === "all" || app.status === activeTab
   );
 
   return (
@@ -99,177 +106,124 @@ export default function WorkerApplicationsPage() {
         </motion.div>
 
         {/* Tabs + View Toggle */}
-        <div className="flex items-center justify-between gap-4">
-          <Tabs
-            value={statusFilter}
-            onValueChange={(val) =>
-              setStatusFilter(val as Application["status"] | "all")
-            }
-            className="flex-1"
-          >
-            <TabsList className="w-full  grid-cols-5 bg-white/10 border border-white/20 rounded-none">
-              <TabsTrigger
-                value="all"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                All
-              </TabsTrigger>
-              <TabsTrigger
-                value="pending"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Pending
-              </TabsTrigger>
-              <TabsTrigger
-                value="accepted"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Accepted
-              </TabsTrigger>
-              <TabsTrigger
-                value="rejected"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Rejected
-              </TabsTrigger>
-              <TabsTrigger
-                value="withdrawn"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Withdrawn
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* View toggle */}
-          <div className="flex gap-2 shrink-0 rounded-none">
-            <Button
-              size="icon"
-              variant={view === "list" ? "default" : "outline"}
-              onClick={() => setView("list")}
-              className="rounded-none"
-            >
-              <List className="w-5 h-5" />
-            </Button>
-            <Button
-              size="icon"
-              variant={view === "grid" ? "default" : "outline"}
-              onClick={() => setView("grid")}
-              className="rounded-none"
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Applications */}
-        {filteredApps.length > 0 ? (
-          view === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredApps.map((app) => (
-                <motion.div
-                  key={app.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <Card className="glass-effect border-white/20 hover:border-blue-500/50 h-full rounded-xl overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="text-white text-lg">
-                        {app.taskTitle}
-                      </CardTitle>
-                      <p className="text-gray-400 text-sm">{app.category}</p>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Briefcase className="w-4 h-4 text-blue-400" />
-                        Client: {app.clientName}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Clock className="w-4 h-4 text-purple-400" />
-                        Applied {app.appliedAt}
-                      </div>
-                      <div className="text-white font-bold">
-                        {app.budget}{" "}
-                        <span className="text-gray-400 text-xs">CØRE</span>
-                      </div>
-                      <Badge className={`${getStatusBadge(app.status)} border`}>
-                        {app.status}
-                      </Badge>
-
-                      {app.status === "pending" && (
-                        <div className="flex gap-2 pt-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="hover:bg-white/10"
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Withdraw
-                          </Button>
+        <VerseTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          viewMode={view}
+          onViewModeChange={setView}
+        >
+          {/* Applications */}
+          {filteredApps.length > 0 ? (
+            view === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredApps.map((app) => (
+                  <motion.div
+                    key={app.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{ y: -4 }}
+                  >
+                    <Card className="glass-effect border-white/20 hover:border-blue-500/50 h-full rounded-xl overflow-hidden">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">
+                          {app.taskTitle}
+                        </CardTitle>
+                        <p className="text-gray-400 text-sm">{app.category}</p>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <Briefcase className="w-4 h-4 text-blue-400" />
+                          Client: {app.clientName}
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredApps.map((app) => (
-                <Card
-                  key={app.id}
-                  className="glass-effect border-white/20 hover:border-blue-500/50"
-                >
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div>
-                      <h3 className="text-white font-semibold">
-                        {app.taskTitle}
-                      </h3>
-                      <p className="text-gray-400 text-sm">{app.category}</p>
-                      <p className="text-gray-300 text-xs">
-                        Client: {app.clientName} • Applied {app.appliedAt}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-white font-bold">
-                          {app.budget} CØRE
-                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <Clock className="w-4 h-4 text-purple-400" />
+                          Applied {app.appliedAt}
+                        </div>
+                        <div className="text-white font-bold">
+                          {app.budget}{" "}
+                          <span className="text-gray-400 text-xs">CØRE</span>
+                        </div>
                         <Badge
                           className={`${getStatusBadge(app.status)} border`}
                         >
                           {app.status}
                         </Badge>
+
+                        {app.status === "pending" && (
+                          <div className="flex gap-2 pt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="hover:bg-white/10"
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              Withdraw
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredApps.map((app) => (
+                  <Card
+                    key={app.id}
+                    className="glass-effect border-white/20 hover:border-blue-500/50"
+                  >
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div>
+                        <h3 className="text-white font-semibold">
+                          {app.taskTitle}
+                        </h3>
+                        <p className="text-gray-400 text-sm">{app.category}</p>
+                        <p className="text-gray-300 text-xs">
+                          Client: {app.clientName} • Applied {app.appliedAt}
+                        </p>
                       </div>
-                      {app.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="hover:bg-white/10"
-                        >
-                          Withdraw
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )
-        ) : (
-          <Card className="glass-effect border-white/20">
-            <CardContent className="text-center py-12">
-              <h3 className="text-white font-semibold mb-2">
-                No applications found
-              </h3>
-              <p className="text-gray-400">
-                Try switching filters or apply for tasks.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-white font-bold">
+                            {app.budget} CØRE
+                          </p>
+                          <Badge
+                            className={`${getStatusBadge(app.status)} border`}
+                          >
+                            {app.status}
+                          </Badge>
+                        </div>
+                        {app.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="hover:bg-white/10"
+                          >
+                            Withdraw
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )
+          ) : (
+            <Card className="glass-effect border-white/20">
+              <CardContent className="text-center py-12">
+                <h3 className="text-white font-semibold mb-2">
+                  No applications found
+                </h3>
+                <p className="text-gray-400">
+                  Try switching filters or apply for tasks.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </VerseTabs>
       </div>
     </div>
   );

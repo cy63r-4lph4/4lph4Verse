@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   List as ListIcon,
 } from "lucide-react";
+import VerseTabs from "@verse/hirecore-web/components/VerseTab";
 
 interface Task {
   id: number;
@@ -63,6 +64,13 @@ export default function TasksPage() {
     if (activeTab === "all") return mockTasks;
     return mockTasks.filter((t) => t.status === activeTab);
   }, [activeTab]);
+  const tabs = [
+    { value: "all", label: "All" },
+    { value: "open", label: "Open" },
+    { value: "in-progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
 
   const getStatusBadge = (status: Task["status"]) => {
     switch (status) {
@@ -96,147 +104,93 @@ export default function TasksPage() {
             Manage all your posted tasks and track their progress
           </p>
         </motion.div>
-
-        {/* Tabs + View Toggle */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Tabs List stretched full width */}
-            <TabsList className="flex-1  grid-cols-5 bg-white/10 border border-white/20  rounded-none">
-              <TabsTrigger
-                value="all"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                All
-              </TabsTrigger>
-              <TabsTrigger
-                value="open"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Open
-              </TabsTrigger>
-              <TabsTrigger
-                value="in-progress"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                In Progress
-              </TabsTrigger>
-              <TabsTrigger
-                value="completed"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Completed
-              </TabsTrigger>
-              <TabsTrigger
-                value="cancelled"
-                className="text-white data-[state=active]:bg-blue-600 rounded-none"
-              >
-                Cancelled
-              </TabsTrigger>
-            </TabsList>
-
-            {/* View Toggle */}
-            <div className="flex gap-2 shrink-0 ">
-              <Button
-                size="icon"
-                variant={viewMode === "grid" ? "default" : "outline"}
-                onClick={() => setViewMode("grid")}
-                className="rounded-none"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </Button>
-              <Button
-                size="icon"
-                variant={viewMode === "list" ? "default" : "outline"}
-                onClick={() => setViewMode("list")}
-                className="rounded-none"
-              >
-                <ListIcon className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
+        <VerseTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"></div>
           {/* Tab Content */}
-          <TabsContent value={activeTab} className="mt-6">
-            {filteredTasks.length > 0 ? (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    : "space-y-4"
-                }
-              >
-                {filteredTasks.map((task) => (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+          {filteredTasks.length > 0 ? (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  : "space-y-4"
+              }
+            >
+              {filteredTasks.map((task) => (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card
+                    className={`glass-effect border-white/20 hover:border-blue-500/50 transition-all ${
+                      viewMode === "list" ? "w-full" : "h-full"
+                    }`}
                   >
-                    <Card
-                      className={`glass-effect border-white/20 hover:border-blue-500/50 transition-all ${
-                        viewMode === "list" ? "w-full" : "h-full"
+                    <CardContent
+                      className={`${
+                        viewMode === "list"
+                          ? "flex items-center justify-between py-4"
+                          : "space-y-4 py-6"
                       }`}
                     >
-                      <CardContent
-                        className={`${
-                          viewMode === "list"
-                            ? "flex items-center justify-between py-4"
-                            : "space-y-4 py-6"
-                        }`}
-                      >
-                        {/* Left Info */}
-                        <div className={viewMode === "list" ? "flex-1" : ""}>
-                          <h4 className="text-white font-semibold">
-                            {task.title}
-                          </h4>
-                          <p className="text-gray-400 text-sm flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> Posted {task.postedAt}
-                            <MapPin className="w-4 h-4 ml-3" /> {task.location}
-                          </p>
-                        </div>
+                      {/* Left Info */}
+                      <div className={viewMode === "list" ? "flex-1" : ""}>
+                        <h4 className="text-white font-semibold">
+                          {task.title}
+                        </h4>
+                        <p className="text-gray-400 text-sm flex items-center gap-2">
+                          <Clock className="w-4 h-4" /> Posted {task.postedAt}
+                          <MapPin className="w-4 h-4 ml-3" /> {task.location}
+                        </p>
+                      </div>
 
-                        {/* Right Info */}
-                        <div
-                          className={
-                            viewMode === "list"
-                              ? "flex items-center gap-4"
-                              : "flex flex-col items-end gap-3"
-                          }
+                      {/* Right Info */}
+                      <div
+                        className={
+                          viewMode === "list"
+                            ? "flex items-center gap-4"
+                            : "flex flex-col items-end gap-3"
+                        }
+                      >
+                        <Badge
+                          className={`${getStatusBadge(task.status)} border`}
                         >
-                          <Badge
-                            className={`${getStatusBadge(task.status)} border`}
-                          >
-                            {task.status}
-                          </Badge>
-                          <div className="core-token font-semibold">
-                            {task.budget} CØRE
-                          </div>
-                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                            Manage
-                          </Button>
+                          {task.status}
+                        </Badge>
+                        <div className="core-token font-semibold">
+                          {task.budget} CØRE
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <Card className="glass-effect border-white/20">
-                <CardContent className="text-center py-12">
-                  <Plus className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">
-                    No tasks yet
-                  </h3>
-                  <p className="text-gray-400 mb-4">
-                    Start by posting your first task and hire skilled workers.
-                  </p>
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    Post a Task
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+                        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                          Manage
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <Card className="glass-effect border-white/20">
+              <CardContent className="text-center py-12">
+                <Plus className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">No tasks yet</h3>
+                <p className="text-gray-400 mb-4">
+                  Start by posting your first task and hire skilled workers.
+                </p>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  Post a Task
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </VerseTabs>{" "}
       </div>
     </div>
   );

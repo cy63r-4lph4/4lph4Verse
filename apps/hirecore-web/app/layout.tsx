@@ -1,3 +1,4 @@
+import { UserRoleProvider } from "@verse/hirecore-web/context/UserRoleContext";
 import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
 import HireCoreNavbar from "apps/hirecore-web/components/Navbar";
@@ -39,13 +40,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`  cyber-grid`}>
-        <Web3Provider>
-          <HireCoreNavbar />
-          <main className="pt-4">
-            {children}
-            <Toaster richColors position="top-right" />
-          </main>
-        </Web3Provider>
+        <UserRoleProvider>
+          <Web3Provider>
+            <HireCoreNavbar />
+            <main className="pt-4">
+              {children}
+              <Toaster richColors position="top-right" />
+            </main>
+          </Web3Provider>
+        </UserRoleProvider>
       </body>
     </html>
   );
