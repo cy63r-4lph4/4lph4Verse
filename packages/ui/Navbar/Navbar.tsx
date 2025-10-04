@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion"; 
+import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOutsideClick } from "@verse/sdk";
 import type { NavbarItem, NavbarTheme } from "./Navbar.types";
@@ -13,6 +13,7 @@ type NavbarProps = {
   menuItems: NavbarItem[];
   rightControls?: React.ReactNode;
   theme?: NavbarTheme;
+  mobileExtras?: React.ReactNode; // 👈 NEW
 };
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   menuItems,
   rightControls,
   theme = {},
+  mobileExtras,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         "bg-zinc-950/80 backdrop-blur-md border-b border-white/10"
       }`}
     >
-      {/* Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between h-14 sm:h-16">
         {/* Logo */}
         <div className={theme.logoStyle || "text-xl font-bold"}>
@@ -92,12 +93,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </div>
 
-        {/* Right Controls */}
-        <div className="flex items-center gap-3">{rightControls}</div>
+        {/* Right Controls (hidden on mobile) */}
+        <div className="flex items-center gap-3">
+          {rightControls}
+        </div>
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
+          className="sm:hidden p-2 rounded-lg hover:bg-white/10 transition"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
         >
           {isMobileMenuOpen ? (
@@ -146,9 +149,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )
               )}
 
-              <div className="mt-4 border-t border-white/10 pt-4">
-                {rightControls}
-              </div>
+              {mobileExtras && (
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  {mobileExtras}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

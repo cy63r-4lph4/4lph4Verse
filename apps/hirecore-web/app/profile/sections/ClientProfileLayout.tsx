@@ -15,7 +15,7 @@ import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Progress } from "@verse/hirecore-web/components/ui/progress";
 import { TabsContent } from "@verse/hirecore-web/components/ui/tabs";
 import VerseTabs, { TabItem } from "@verse/hirecore-web/components/VerseTab";
-import { useState } from "react";
+import { ComponentType, ReactNode, useState } from "react";
 
 export default function ClientProfileLayout() {
   const reputation = 76;
@@ -158,12 +158,18 @@ export default function ClientProfileLayout() {
     </motion.div>
   );
 }
-
-function Stat({ label, value, icon: Icon, color }: any) {
+interface StatProps {
+  label: string;
+  value: string | number;
+  color: string;
+  icon: ComponentType<{ className?: string }>;
+}
+function Stat({ label, value, icon: Icon, color }: StatProps) {
   return (
     <div className="flex justify-between text-gray-300">
       <span className="flex items-center gap-2">
-        <Icon className={`w-4 h-4 ${color}`} /> {label}
+        <Icon className={`w-4 h-4 ${color}`} />
+        {label}
       </span>
       <span className="font-bold text-white">{value}</span>
     </div>

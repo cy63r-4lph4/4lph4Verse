@@ -9,25 +9,15 @@ import {
   Briefcase,
   Banknote,
   ClipboardList,
-  Wallet,
   Star,
-  Activity,
-  LayoutGrid,
-  List,
   Clock,
-  Coins,
 } from "lucide-react";
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Progress } from "@verse/hirecore-web/components/ui/progress";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@verse/hirecore-web/components/ui/tabs";
+import { TabsContent } from "@verse/hirecore-web/components/ui/tabs";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
-import { useState } from "react";
+import { ComponentType, useState } from "react";
 import VerseTabs, { TabItem } from "@verse/hirecore-web/components/VerseTab";
 
 // 🧪 Mock Worker Data
@@ -251,8 +241,13 @@ export default function WorkerProfileLayout() {
     </motion.div>
   );
 }
-
-function Stat({ label, value, icon: Icon, color }: any) {
+interface StatProps {
+  label: string;
+  value: string | number;
+  color: string;
+  icon: ComponentType<{ className?: string }>;
+}
+function Stat({ label, value, icon: Icon, color }: StatProps) {
   return (
     <div className="flex justify-between text-gray-300">
       <span className="flex items-center gap-2">

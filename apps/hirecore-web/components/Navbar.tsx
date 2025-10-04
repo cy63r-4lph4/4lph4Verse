@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { Navbar } from "@verse/ui/Navbar/Navbar";
 import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
-import Image from "next/image";
 import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
 
 export default function HireCoreNavbar() {
@@ -45,13 +45,15 @@ export default function HireCoreNavbar() {
       }
       menuItems={menuItems}
       rightControls={
-        <div className="flex items-center gap-4 relative">
+        <>
+          {/* Wallet Connect (hidden on mobile handled in Navbar) */}
           <ConnectWalletButton
             variant="secondary"
             rounded="lg"
             className="text-sm font-medium"
           />
 
+          {/* Role Switcher (desktop only) */}
           <div className="hidden md:block relative">
             <button
               onClick={() => setShowRoleMenu((prev) => !prev)}
@@ -86,6 +88,31 @@ export default function HireCoreNavbar() {
               </div>
             )}
           </div>
+        </>
+      }
+      mobileExtras={
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setRole("worker")}
+            className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition ${
+              role === "worker"
+                ? "text-indigo-400 bg-indigo-500/10"
+                : "text-gray-200 hover:bg-gray-800"
+            }`}
+          >
+            <Briefcase className="w-5 h-5" /> Worker
+          </button>
+
+          <button
+            onClick={() => setRole("client")}
+            className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition ${
+              role === "client"
+                ? "text-emerald-400 bg-emerald-500/10"
+                : "text-gray-200 hover:bg-gray-800"
+            }`}
+          >
+            <Users className="w-5 h-5" /> Client
+          </button>
         </div>
       }
       theme={{
