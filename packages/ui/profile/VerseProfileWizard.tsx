@@ -101,7 +101,7 @@ export type VerseProfileWizardProps = {
 
 /* ----------------------------- Component ----------------------------- */
 export default function VerseProfileWizard(props: VerseProfileWizardProps) {
-  const { dapp, asModal, onClose, onComplete, extensions = [] } = props;
+  const { asModal, onClose, onComplete, extensions = [] } = props;
 
   const { address } = useAccount();
 
@@ -736,7 +736,7 @@ function AvatarPicker({
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-zinc-800/40 p-4 text-center">
+    <div className="rounded-xl border border-white/10 bg-zinc-800/40 p-3 sm:p-4 text-center">
       <div className="mx-auto mb-3 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-zinc-900">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
