@@ -50,7 +50,7 @@ Faucet to onboard new users with test tokens.
 Location in repo:
 Frontend dApp → apps/hirecore
 
-Contracts → contracts/core (CØRE + Faucet)
+Contracts → contracts/core (CØRE + Faucet) & contracts/hirecore (JobBoard + JobManager + ScoreModel)
 
 ## SDK → packages/sdk/utils/contract/deployedContracts.ts
 
@@ -73,10 +73,13 @@ Setup env vars
 Create .env in contracts/core/:
 
 ```text
-DEPLOYER_PRIVATE_KEY=.....00000.....
-TREASURY_PRIVATE_KEY=......0000......
+DEPLOYER_PRIVATE_KEY={0xyour_deployer_private_key}
+TREASURY_PRIVATE_KEY={0xyour_treasury_private_key}
 CELO_RPC=https://forno.celo.org
 CELO_SEPOLIA_RPC=https://forno.celo-sepolia.celo-testnet.org/
+ETHERSCAN_API_KEY={Your_etherscan_api_key}
+NEXT_PUBLIC_PROJECT_ID={your_project_id_from_reown_cloud}
+STORACHA_SPACE_DID=did:key:{Your_storacha_delegation_did}
 ```
 
 Localhost
@@ -94,7 +97,7 @@ pnpm run deploy --filter contracts/core --network celosepolia
 Export deployment info
 
 ```
-pnpm hardhat run scripts/export-deployment.ts --network celosepolia
+pnpm export
 ```
 
 This generates synced contract bindings in:
@@ -145,6 +148,7 @@ Last updated: 2025-09-23
 
 2025-09-16 — Successfully deployed to Celo Sepolia testnet 🎉.
 2025-09-23 — Deployed HireCore + Verse contracts on Celo Sepolia, organized under MasterModule for coordinated deployment.
+2025-09-26 — Added a profile page
 
 ---
 
@@ -152,6 +156,6 @@ Last updated: 2025-09-23
 
 Expand HireCore frontend (task creation, escrow flows).
 
-Develop a gasless UX with relayer.
+Develop a smart wallet for (account abstraction to enable seamless ux for non-crypto native users).
 
-Deploy Alph4 CØRE token to multiple chains.
+Deploy Alph4 CØRE token to multiple chains (lisk and base).
