@@ -10,7 +10,7 @@ import WalletDropdown from "./WalletDropdown";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
 import { VerseProfileWizard } from "../profile";
 import { VerseConnectModal } from "../wallet/ConnectModal";
-import { ExtensionStep } from "profile/VerseProfileWizard";
+import { ExtensionStep } from "../profile/VerseProfileWizard";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -18,7 +18,7 @@ export type ConnectWalletButtonProps = {
   rounded?: "none" | "sm" | "md" | "lg" | "full";
   showNetwork?: boolean;
   faucet?: boolean;
-  extensions?: ExtensionStep[]; 
+  extensions?: ExtensionStep[];
 };
 
 export default function ConnectWalletButton({
@@ -67,7 +67,7 @@ export default function ConnectWalletButton({
 
   const handleProfileCreated = async () => {
     setSuccess(true);
-    setShowModal(false);
+    // setShowModal(false);
     await refetch();
   };
 
