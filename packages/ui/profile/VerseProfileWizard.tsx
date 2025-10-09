@@ -63,17 +63,30 @@ export type ExtensionField =
       options: string[];
       required?: boolean;
     }
-  | { type: "tags"; name: string; label: string; placeholder?: string };
+  | {
+      type: "tags";
+      name: string;
+      label: string;
+      placeholder?: string;
+      required?: boolean; // ✅ Add this
+    };
 
 export type ExtensionStep = {
-  id: string; // dapp key, e.g. "hirecore"
+  id: string;
   title: string;
   description?: string;
-  fields?: ExtensionField[]; // quick config fields
+  fields?: ExtensionField[];
+  defaults?: Record<string, any>;
+
   render?: (
     state: ProfileState,
     setState: React.Dispatch<React.SetStateAction<ProfileState>>
-  ) => React.ReactNode; // advanced
+  ) => React.ReactNode;
+  validate?: (state: ProfileState) => string | null;
+  optional?: boolean;
+
+  shouldRender?: (state: ProfileState) => boolean;
+  order?: number;
 };
 
 export type ProfileState = {
@@ -105,7 +118,7 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
 
   const { address } = useAccount();
 
-  const [step, setStep] = useState<number>(0); // 0 Welcome → 1 Identity → 2+ Extensions → Review → Success
+  const [step, setStep] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const FALLBACK_AVATAR = "/placeholder-soul.png";
@@ -122,13 +135,12 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   const config = useConfig();
 
   const extSteps = useMemo(() => extensions.filter(Boolean), [extensions]);
-  //   const totalSteps = 2 + extSteps.length + 2; // welcome + identity + ext... + review + success (success not counted in stepper)
-
   const { writeContractAsync } = useWriteContract();
   const chainId = useChainId() as ChainId;
   const contractAddress = getDeployedContract(chainId, "VerseProfile").address;
   const contractAbi = getDeployedContract(chainId, "VerseProfile").abi;
   const functionName = "createProfile";
+  const TEST_MODE = false;
 
   async function defaultWrite(state: any) {
     if (!state.handle || !state.displayName) {
@@ -158,55 +170,67 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
-    setProgress("uploading");
 
-    try {
-      if (!address) throw new Error("Connect wallet to continue");
+    if (TEST_MODE) {
+      console.log("🧪 Running in TEST_MODE - skipping upload/write");
+      setTimeout(() => {
+        setProgress("done");
+        setStep(step + 1);
+        setSubmitting(false);
+        setProgress("idle");
+      }, 500);
+      return;
+    } else {
+      setProgress("uploading");
 
-      if (!state.handle || !state.displayName) {
-        throw new Error("Please complete your handle and display name");
+      try {
+        if (!address) throw new Error("Connect wallet to continue");
+
+        if (!state.handle || !state.displayName) {
+          throw new Error("Please complete your handle and display name");
+        }
+
+        // Upload metadata first
+        const { cid } = await uploadProfileToStoracha({
+          handle: state.handle,
+          displayName: state.displayName,
+          bio: state.bio,
+          avatar: state.avatar || FALLBACK_AVATAR,
+          extras: state.extras,
+        });
+
+        setProgress("writing");
+
+        // Then write to chain
+        const tx = await writeContractAsync({
+          address: contractAddress,
+          abi: contractAbi,
+          functionName: functionName,
+          args: [
+            state.handle,
+            `ipfs://${cid}`,
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+          ],
+        });
+        await waitForTransactionReceipt(config, {
+          hash: tx,
+          confirmations: 1,
+        });
+        setProgress("done");
+        setStep(step + 1);
+        onComplete?.(state);
+      } catch (e: any) {
+        setError(
+          progress === "uploading"
+            ? "Failed to upload profile to Storacha"
+            : progress === "writing"
+              ? "Failed to write profile on-chain"
+              : "Something went wrong"
+        );
+      } finally {
+        setSubmitting(false);
+        setProgress("idle");
       }
-
-      // Upload metadata first
-      const { cid } = await uploadProfileToStoracha({
-        handle: state.handle,
-        displayName: state.displayName,
-        bio: state.bio,
-        avatar: state.avatar || FALLBACK_AVATAR,
-        extras: state.extras,
-      });
-
-      setProgress("writing");
-
-      // Then write to chain
-      const tx = await writeContractAsync({
-        address: contractAddress,
-        abi: contractAbi,
-        functionName: functionName,
-        args: [
-          state.handle,
-          `ipfs://${cid}`,
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
-      });
-      await waitForTransactionReceipt(config, {
-        hash: tx,
-        confirmations: 1,
-      });
-      setProgress("done");
-      setStep(step + 1);
-      onComplete?.(state);
-    } catch (e: any) {
-      setError(
-        progress === "uploading"
-          ? "Failed to upload profile to Storacha"
-          : progress === "writing"
-            ? "Failed to write profile on-chain"
-            : "Something went wrong"
-      );
-    } finally {
-      setSubmitting(false);
-      setProgress("idle");
     }
   }
 
@@ -268,6 +292,20 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   }
 
   function renderIdentity() {
+    const handleNext = () => {
+      if (!state.handle || state.handle.trim() === "") {
+        setError("Handle is required.");
+        return;
+      }
+      if (!state.displayName || state.displayName.trim() === "") {
+        setError("Display Name is required.");
+        return;
+      }
+
+      setError(null);
+      setStep(2);
+    };
+
     return (
       <GlassCard>
         <h2 className="font-orbitron text-xl sm:text-2xl font-bold text-white mb-4">
@@ -313,9 +351,15 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
           </div>
         </div>
 
+        {error && (
+          <div className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-md p-2">
+            {error}
+          </div>
+        )}
+
         <WizardNav
           back={() => setStep(0)}
-          next={() => setStep(2)}
+          next={handleNext}
           nextLabel={extSteps.length ? "Continue" : "Review"}
         />
       </GlassCard>
@@ -325,6 +369,22 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   function renderExtension(index: number) {
     const ext = extSteps[index];
     const extKey = ext?.id || `ext-${index}`;
+
+    const handleNext = () => {
+      const extData = state.extras || {};
+      const missingRequired = ext.fields?.find(
+        (f) => f.required && !extData[f.name]
+      );
+
+      if (missingRequired) {
+        setError(`${missingRequired.label} is required.`);
+        return;
+      }
+
+      // ✅ 3. If everything's fine, move to the next step
+      setError(null);
+      setStep(step + 1);
+    };
 
     return (
       <GlassCard>
@@ -355,9 +415,15 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
           </div>
         )}
 
+        {error && (
+          <div className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-md p-2">
+            {error}
+          </div>
+        )}
+
         <WizardNav
           back={() => setStep(step - 1)}
-          next={() => setStep(step + 1)}
+          next={handleNext}
           nextLabel={index === extSteps.length - 1 ? "Review" : "Continue"}
         />
       </GlassCard>

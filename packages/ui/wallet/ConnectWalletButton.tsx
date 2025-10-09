@@ -10,6 +10,7 @@ import WalletDropdown from "./WalletDropdown";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
 import { VerseProfileWizard } from "../profile";
 import { VerseConnectModal } from "../wallet/ConnectModal";
+import { ExtensionStep } from "profile/VerseProfileWizard";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -17,6 +18,7 @@ export type ConnectWalletButtonProps = {
   rounded?: "none" | "sm" | "md" | "lg" | "full";
   showNetwork?: boolean;
   faucet?: boolean;
+  extensions?: ExtensionStep[]; 
 };
 
 export default function ConnectWalletButton({
@@ -25,6 +27,7 @@ export default function ConnectWalletButton({
   rounded = "md",
   showNetwork = false,
   faucet = false,
+  extensions,
 }: ConnectWalletButtonProps) {
   const baseStyles =
     "px-4 py-2 font-semibold transition-colors flex items-center gap-3";
@@ -182,28 +185,7 @@ export default function ConnectWalletButton({
           asModal
           onClose={handleCloseModal}
           onComplete={handleProfileCreated}
-          extensions={[
-            {
-              id: "hirecore",
-              title: "HireCore Setup",
-              description: "Tell us how you want to use HireCore",
-              fields: [
-                {
-                  type: "select",
-                  name: "role",
-                  label: "Role",
-                  options: ["Worker", "Client"],
-                  required: true,
-                },
-                {
-                  type: "tags",
-                  name: "skills",
-                  label: "Skills / Interests",
-                  placeholder: "e.g. Electrician, Plumber",
-                },
-              ],
-            },
-          ]}
+          extensions={extensions}
         />
       )}
 

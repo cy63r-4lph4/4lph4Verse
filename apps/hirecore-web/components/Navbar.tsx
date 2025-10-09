@@ -8,6 +8,7 @@ import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
+import { ExtensionStep } from "@verse/ui/profile/VerseProfileWizard";
 
 export default function HireCoreNavbar() {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
@@ -15,6 +16,52 @@ export default function HireCoreNavbar() {
 
   const menuItems: NavbarItem[] =
     role === "worker" ? workerNavItems : clientNavItems;
+
+  const hirecoreExtension: ExtensionStep = {
+    id: "hirecore",
+    title: "HireCore Setup",
+    description: "Tell us how you want to use HireCore",
+    fields: [
+      {
+        type: "select",
+        name: "role",
+        label: "How do you want to use HireCore?",
+        options: ["Worker", "Client", "Both"],
+        required: true,
+      },
+      {
+        type: "select",
+        name: "accountType",
+        label: "Account Type",
+        options: ["Individual", "Business"],
+        required: true,
+      },
+      {
+        type: "tags",
+        name: "skills",
+        label: "Skills / Services Offered",
+        placeholder: "e.g. Electrician, Plumber, Mobile Developer",
+      },
+      {
+        type: "tags",
+        name: "hiringCategories",
+        label: "What kind of work do you hire for?",
+        placeholder: "e.g. Plumbing, Graphic Design, Construction",
+      },
+      {
+        type: "select",
+        name: "availability",
+        label: "Availability",
+        options: ["Full-time", "Part-time", "Weekends", "On Call", "Remote"],
+      },
+      {
+        type: "select",
+        name: "preferredPayment",
+        label: "Preferred Payment Method",
+        options: ["CØRE Token", "USDT", "Celo cUSD", "Other"],
+      },
+    ],
+  };
 
   return (
     <Navbar
@@ -51,6 +98,7 @@ export default function HireCoreNavbar() {
             variant="secondary"
             rounded="lg"
             className="text-sm font-medium"
+            extensions={[hirecoreExtension]}
           />
 
           {/* Role Switcher (desktop only) */}
