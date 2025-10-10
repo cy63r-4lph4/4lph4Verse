@@ -24,11 +24,11 @@ export async function uploadProfileToPinata(profile: {
   // 🧩 2️⃣ If it's a string, ensure it's not a local/public path
   else if (typeof profile.avatar === "string") {
     const isLocalAsset =
-      profile.avatar.startsWith("/") ||                // e.g. /images/avatar.png
-      profile.avatar.includes("images/") ||           // e.g. /public/images/
-      profile.avatar.startsWith("http://localhost") ||// dev URLs
-      profile.avatar.startsWith("blob:") ||           // temporary blob URLs
-      profile.avatar.endsWith(".png") ||              // static fallback file
+      profile.avatar.startsWith("/") ||                
+      profile.avatar.includes("images/") ||           
+      profile.avatar.startsWith("http://localhost") ||
+      profile.avatar.startsWith("blob:") ||          
+      profile.avatar.endsWith(".png") ||              
       profile.avatar.endsWith(".jpg") ||
       profile.avatar.endsWith(".jpeg");
 

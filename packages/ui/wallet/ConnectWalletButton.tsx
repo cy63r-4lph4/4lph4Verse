@@ -5,12 +5,13 @@ import clsx from "clsx";
 import { useAccount, useDisconnect } from "wagmi";
 import { Coins, User2 } from "lucide-react";
 import { useBalance } from "@verse/sdk/hooks/useBalance";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import WalletDropdown from "./WalletDropdown";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
-import { VerseProfileWizard } from "../profile";
+import { useVerseProfile, VerseProfileWizard } from "../profile";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { ExtensionStep } from "../profile/VerseProfileWizard";
+import { VerseChainModal } from "../wallet/ChainModal";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -49,8 +50,15 @@ export default function ConnectWalletButton({
   const { address } = useAccount();
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showChainModal, setShowChainModal] = useState(false);
 
   const { hasProfile, isLoading, refetch } = useCheckProfile();
+  const {
+    profile,
+    verseID,
+    isLoading: profileLoading,
+    refetch: refreshProfile,
+  } = useVerseProfile(!hasProfile);
 
   const [showModal, setShowModal] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(false);
@@ -69,19 +77,13 @@ export default function ConnectWalletButton({
     setSuccess(true);
     setShowModal(false);
     await refetch();
+    await refreshProfile();
   };
 
   return (
     <div className="flex justify-center relative">
       <ConnectButton.Custom>
-        {({
-          account,
-          chain,
-          openChainModal,
-          openAccountModal,
-          openConnectModal,
-          mounted,
-        }) => {
+        {({ account, chain, openChainModal, openAccountModal, mounted }) => {
           const ready = mounted;
           const connected = ready && account && chain;
 
@@ -122,7 +124,7 @@ export default function ConnectWalletButton({
                   </button>
                 ) : chain.unsupported ? (
                   <button
-                    onClick={openChainModal}
+                    onClick={() => setShowChainModal(true)}
                     type="button"
                     className={
                       baseStyles + " bg-red-600 text-white hover:bg-red-700"
@@ -150,15 +152,39 @@ export default function ConnectWalletButton({
                     <button
                       onClick={() => setMenuOpen((o) => !o)}
                       type="button"
+                      className="relative flex items-center"
                     >
-                      <User2 className="md:block w-5 h-5 text-white" />
+                      {profileLoading ? (
+                        // 🌀 Loading spinner
+                        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      ) : profile?.avatar ? (
+                        // 🧩 User avatar
+                        <div className="bg-white rounded-full overflow-hidden w-8 h-8">
+                          <img
+                            src={
+                              profile.avatar.startsWith("ipfs://")
+                                ? profile.avatar.replace(
+                                    "ipfs://",
+                                    "https://gateway.pinata.cloud/ipfs/"
+                                  )
+                                : profile.avatar
+                            }
+                            alt="User avatar"
+                            className="w-8 h-8 rounded-full object-cover border border-white/20"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 border border-white/20">
+                          <User2 className="w-5 h-5 text-white/80" />
+                        </div>
+                      )}
                     </button>
 
                     {showNetwork && (
                       <button
-                        onClick={openChainModal}
+                        onClick={() => setShowChainModal(true)}
                         type="button"
-                        className="hidden md:inline"
+                        className="hidden md:inline text-sm text-gray-300 hover:text-white"
                       >
                         {chain.name}
                       </button>
@@ -167,7 +193,7 @@ export default function ConnectWalletButton({
                     {menuOpen && (
                       <WalletDropdown
                         account={account}
-                        openChainModal={openChainModal}
+                        openChainModal={() => setShowChainModal(true)}
                         menuOpen={menuOpen}
                         setMenuOpen={setMenuOpen}
                       />
@@ -188,6 +214,10 @@ export default function ConnectWalletButton({
           extensions={extensions}
         />
       )}
+      <VerseChainModal
+        open={showChainModal}
+        onClose={() => setShowChainModal(false)}
+      />
 
       <VerseConnectModal
         open={showConnectModal}
