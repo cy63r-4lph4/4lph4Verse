@@ -67,7 +67,7 @@ export default function ConnectWalletButton({
 
   const handleProfileCreated = async () => {
     setSuccess(true);
-    // setShowModal(false);
+    setShowModal(false);
     await refetch();
   };
 

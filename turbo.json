@@ -10,8 +10,10 @@
         "TREASURY_PRIVATE_KEY",
         "CELO_SEPOLIA_RPC",
         "NEXT_PUBLIC_PROJECT_ID",
-        "STORACHA_SPACE_DID",
-        "ADMIN_EMAIL"
+       "NEXT_PUBLIC_GATEWAY_URL",
+        "PINATA_API_KEY",
+        "PINATA_API_SECRET"
+
       ]
     },
     "lint": {

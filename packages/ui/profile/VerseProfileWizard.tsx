@@ -11,7 +11,7 @@ import {
   ChainId,
   getDeployedContract,
 } from "@verse/sdk/utils/contract/deployedContracts";
-import { uploadProfileToStoracha } from "@verse/services/storacha";
+import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { useConfig } from "wagmi";
 
@@ -142,31 +142,6 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
   const functionName = "createProfile";
   const TEST_MODE = false;
 
-  async function defaultWrite(state: any) {
-    if (!state.handle || !state.displayName) {
-      throw new Error("Missing profile data");
-    }
-
-    const { cid } = await uploadProfileToStoracha({
-      handle: state.handle,
-      displayName: state.displayName,
-      bio: state.bio,
-      avatar: state.avatar || "/placeholder-soul.png",
-      extras: state.extras,
-    });
-
-    return writeContractAsync({
-      address: contractAddress,
-      abi: contractAbi,
-      functionName: functionName,
-      args: [
-        state.handle,
-        `ipfs://${cid}`, // metadataURI
-        "0x0", // ENS hash (optional for now)
-      ],
-    });
-  }
-
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
@@ -180,57 +155,59 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
         setProgress("idle");
       }, 500);
       return;
-    } else {
-      setProgress("uploading");
+    }
 
-      try {
-        if (!address) throw new Error("Connect wallet to continue");
+    setProgress("uploading");
 
-        if (!state.handle || !state.displayName) {
-          throw new Error("Please complete your handle and display name");
-        }
-
-        // Upload metadata first
-        const { cid } = await uploadProfileToStoracha({
-          handle: state.handle,
-          displayName: state.displayName,
-          bio: state.bio,
-          avatar: state.avatar || FALLBACK_AVATAR,
-          extras: state.extras,
-        });
-
-        setProgress("writing");
-
-        // Then write to chain
-        const tx = await writeContractAsync({
-          address: contractAddress,
-          abi: contractAbi,
-          functionName: functionName,
-          args: [
-            state.handle,
-            `ipfs://${cid}`,
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-          ],
-        });
-        await waitForTransactionReceipt(config, {
-          hash: tx,
-          confirmations: 1,
-        });
-        setProgress("done");
-        setStep(step + 1);
-        onComplete?.(state);
-      } catch (e: any) {
-        setError(
-          progress === "uploading"
-            ? "Failed to upload profile to Storacha"
-            : progress === "writing"
-              ? "Failed to write profile on-chain"
-              : "Something went wrong"
-        );
-      } finally {
-        setSubmitting(false);
-        setProgress("idle");
+    try {
+      if (!address) throw new Error("Connect wallet to continue");
+      if (!state.handle || !state.displayName) {
+        throw new Error("Please complete your handle and display name");
       }
+
+      // 1️⃣ Upload everything to Pinata (handles avatar + JSON)
+      const { metadataCID } = await uploadProfileToPinata({
+        handle: state.handle,
+        displayName: state.displayName,
+        bio: state.bio,
+        avatar: state.avatar || FALLBACK_AVATAR,
+        extras: state.extras,
+      });
+
+      setProgress("writing");
+
+      // 2️⃣ Write the IPFS metadata URI on-chain
+      const tx = await writeContractAsync({
+        address: contractAddress,
+        abi: contractAbi,
+        functionName: functionName,
+        args: [
+          state.handle,
+          `ipfs://${metadataCID}`,
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      });
+
+      await waitForTransactionReceipt(config, {
+        hash: tx,
+        confirmations: 1,
+      });
+
+      setProgress("done");
+      setStep(step + 1);
+      onComplete?.(state);
+    } catch (e: any) {
+      console.error("❌ Profile creation failed:", e);
+      setError(
+        progress === "uploading"
+          ? "Failed to upload profile to Pinata"
+          : progress === "writing"
+            ? "Failed to write profile on-chain"
+            : "Something went wrong"
+      );
+    } finally {
+      setSubmitting(false);
+      setProgress("idle");
     }
   }
 
@@ -479,7 +456,7 @@ export default function VerseProfileWizard(props: VerseProfileWizardProps) {
             {submitting ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {progress === "uploading" && "Saving to Storacha…"}
+                {progress === "uploading" && "Saving to Pinata…"}
                 {progress === "writing" && "Creating on-chain profile…"}
                 {progress === "done" && "Finalizing…"}
               </span>

@@ -70,6 +70,7 @@
     "lucide-react": "^0.544.0",
     "motion": "^12.23.12",
     "next": "^15.5.3",
+    "pinata": "^2.5.1",
     "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
