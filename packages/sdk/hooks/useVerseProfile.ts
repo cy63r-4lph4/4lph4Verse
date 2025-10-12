@@ -6,7 +6,7 @@ import {
   ChainId,
   getDeployedContract,
 } from "../utils/contract/deployedContracts";
-import { fetchFromPinata } from "../../../services/pinata";
+import { fetchFromPinata } from "@verse/services/pinata";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;

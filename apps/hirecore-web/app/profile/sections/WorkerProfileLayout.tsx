@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  User,
   Edit,
   MapPin,
   Briefcase,
@@ -17,51 +16,52 @@ import { Progress } from "@verse/hirecore-web/components/ui/progress";
 import { TabsContent } from "@verse/hirecore-web/components/ui/tabs";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
-import { ComponentType, useState } from "react";
 import VerseTabs, { TabItem } from "@verse/hirecore-web/components/VerseTab";
+import Image from "next/image";
+import { ComponentType, useState } from "react";
 
-// 🧪 Mock Worker Data
-const workerData = {
-  name: "David Chen",
-  handle: "@david_chef",
-  location: "Accra, GH",
-  reputation: 88,
-  earnings: 4200,
-  completedTasks: 47,
-  pendingApplications: 5,
-  rating: 4.9,
-};
+interface Application {
+  id: string | number;
+  title: string;
+  category: string;
+  clientName: string;
+  budget: number;
+  status: "pending" | "accepted" | "rejected" | "withdrawn";
+  appliedAt: string;
+}
 
-// 🧪 Mock Applications
-const mockApplications = [
-  {
-    id: 1,
-    title: "Catering for wedding reception",
-    budget: 850,
-    status: "accepted",
-    appliedAt: "2 days ago",
-  },
-  {
-    id: 2,
-    title: "Private chef for dinner",
-    budget: 500,
-    status: "pending",
-    appliedAt: "1 week ago",
-  },
-];
+interface WorkerProfile {
+  displayName?: string;
+  handle?: string;
+  avatar?: string;
+  location?: string;
+  reputation?: number;
+  earnings?: number;
+  completedTasks?: number;
+  pendingApplications?: number;
+  rating?: number;
+  applications?: Application[];
+  bio?: string;
+}
 
-export default function WorkerProfileLayout() {
-  const {
-    name,
-    handle,
-    location,
-    reputation,
-    earnings,
-    completedTasks,
-    pendingApplications,
-    rating,
-  } = workerData;
+export interface WorkerProfileLayoutProps {
+  profile: WorkerProfile;
+}
+
+export default function WorkerProfileLayout({ profile }: WorkerProfileLayoutProps) {
   const [activeTab, setActiveTab] = useState("overview");
+
+  // destructure with fallbacks
+  const name = profile?.displayName || "Unnamed Worker";
+  const handle = profile?.handle || "unknown";
+  const avatar = profile?.avatar || "/default-avatar.png";
+  const location = profile?.location || "Unknown Realm 🌍";
+  const reputation = profile?.reputation ?? 70;
+  const earnings = profile?.earnings ?? 0;
+  const completedTasks = profile?.completedTasks ?? 0;
+  const pendingApplications = profile?.pendingApplications ?? 0;
+  const rating = profile?.rating ?? 0;
+  const applications = profile?.applications || [];
 
   const tabs: TabItem[] = [
     { value: "overview", label: "Overview" },
@@ -80,10 +80,14 @@ export default function WorkerProfileLayout() {
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Top Actions */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" className="text-gray-300 hover:bg-white/10">
+          <Button
+            variant="ghost"
+            className="text-gray-300 hover:bg-white/10"
+            onClick={() => history.back()}
+          >
             <ArrowLeft className="w-5 h-5 mr-2" /> Back
           </Button>
-          <Button className="bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-700 hover:to-emerald-600">
+          <Button className="bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700">
             <Edit className="w-5 h-5 mr-2" /> Edit Profile
           </Button>
         </div>
@@ -98,13 +102,23 @@ export default function WorkerProfileLayout() {
           >
             {/* Profile Card */}
             <div className="text-center p-8 glass-effect rounded-2xl border border-white/20">
-              <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-indigo-500 flex items-center justify-center text-white mb-4 shadow-lg">
-                <User className="w-16 h-16" />
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-emerald-500/40 shadow-lg">
+                <Image
+                  src={
+                    avatar.startsWith("ipfs://")
+                      ? `https://${avatar.replace("ipfs://", "")}.ipfs.dweb.link`
+                      : avatar
+                  }
+                  alt="Worker avatar"
+                  width={128}
+                  height={128}
+                  className="object-cover w-full h-full"
+                />
               </div>
-              <h1 className="text-3xl font-bold text-white font-orbitron">
+              <h1 className="text-3xl font-bold text-white font-orbitron mt-4">
                 {name}
               </h1>
-              <p className="text-gray-400">{handle}</p>
+              <p className="text-gray-400">@{handle}</p>
               <div className="mt-3 flex items-center justify-center gap-1 text-gray-300 text-sm">
                 <MapPin className="w-4 h-4" />
                 {location}
@@ -119,10 +133,10 @@ export default function WorkerProfileLayout() {
               </h3>
               <div className="flex items-center gap-4">
                 <Progress value={reputation} className="w-full" />
-                <span className="text-indigo-400 font-bold">{reputation}%</span>
+                <span className="text-emerald-400 font-bold">{reputation}%</span>
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                Your performance score based on task history & reviews.
+                Performance score based on completed tasks & reviews.
               </p>
             </div>
 
@@ -172,18 +186,22 @@ export default function WorkerProfileLayout() {
                 value="overview"
                 className="mt-6 glass-effect p-6 rounded-2xl border border-white/20 text-gray-300"
               >
-                Welcome back,{" "}
-                <span className="text-indigo-400 font-semibold">{name}</span> 👋
-                This is your worker overview.
+                {profile?.bio ? (
+                  <p>{profile.bio}</p>
+                ) : (
+                  <p className="text-gray-400 italic">
+                    No biography available yet.
+                  </p>
+                )}
               </TabsContent>
 
               {/* Applications */}
               <TabsContent value="applications" className="mt-6 space-y-4">
-                {mockApplications.length > 0 ? (
-                  mockApplications.map((app) => (
+                {applications.length > 0 ? (
+                  applications.map((app: Application) => (
                     <Card
                       key={app.id}
-                      className="glass-effect border-white/20 hover:border-blue-500/50 transition"
+                      className="glass-effect border-white/20 hover:border-indigo-500/50 transition"
                     >
                       <CardContent className="flex items-center justify-between p-4">
                         <div>
@@ -192,7 +210,7 @@ export default function WorkerProfileLayout() {
                           </h3>
                           <p className="text-gray-400 text-sm flex items-center gap-2">
                             <Clock className="w-4 h-4" /> Applied{" "}
-                            {app.appliedAt}
+                            {app.appliedAt || "recently"}
                           </p>
                         </div>
                         <div className="text-right">
@@ -203,6 +221,8 @@ export default function WorkerProfileLayout() {
                             className={`${
                               app.status === "accepted"
                                 ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                : app.status === "rejected"
+                                ? "bg-red-500/20 text-red-400 border-red-500/30"
                                 : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                             } border mt-2`}
                           >
@@ -234,13 +254,14 @@ export default function WorkerProfileLayout() {
               >
                 Recent activity log coming soon 📝
               </TabsContent>
-            </VerseTabs>{" "}
+            </VerseTabs>
           </motion.div>
         </div>
       </div>
     </motion.div>
   );
 }
+
 interface StatProps {
   label: string;
   value: string | number;

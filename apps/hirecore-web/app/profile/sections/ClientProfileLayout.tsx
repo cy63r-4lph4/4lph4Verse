@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  User,
   Edit,
   MapPin,
   Briefcase,
@@ -15,15 +14,41 @@ import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Progress } from "@verse/hirecore-web/components/ui/progress";
 import { TabsContent } from "@verse/hirecore-web/components/ui/tabs";
 import VerseTabs, { TabItem } from "@verse/hirecore-web/components/VerseTab";
-import { ComponentType, ReactNode, useState } from "react";
+import Image from "next/image";
+import { ComponentType, useState } from "react";
 
-export default function ClientProfileLayout() {
-  const reputation = 76;
-  const totalSpent = 3450;
-  const postedTasks = 18;
-  const activeHires = 4;
-  const rating = 4.8;
+interface ClientProfile extends Record<string, unknown> {
+  displayName?: string;
+  handle?: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  reputation?: number;
+  totalSpent?: number;
+  postedTasks?: number;
+  activeHires?: number;
+  rating?: number;
+}
+
+export interface ClientProfileLayoutProps {
+  profile: ClientProfile;
+}
+
+export default function ClientProfileLayout({
+  profile,
+}: ClientProfileLayoutProps) {
   const [activeTab, setActiveTab] = useState("overview");
+
+  // pull values from profile (with fallbacks)
+  const displayName = profile?.displayName || "Unnamed User";
+  const handle = profile?.handle || "unknown";
+  const avatar = profile?.avatar || "/default-avatar.png";
+  const location = profile?.location || "Earth Realm 🌍";
+  const reputation = profile?.reputation ?? 72;
+  const totalSpent = profile?.totalSpent ?? 0;
+  const postedTasks = profile?.postedTasks ?? 0;
+  const activeHires = profile?.activeHires ?? 0;
+  const rating = profile?.rating ?? 0;
 
   const tabs: TabItem[] = [
     { value: "overview", label: "Overview" },
@@ -41,7 +66,11 @@ export default function ClientProfileLayout() {
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Top Actions */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" className="text-gray-300 hover:bg-white/10">
+          <Button
+            variant="ghost"
+            className="text-gray-300 hover:bg-white/10"
+            onClick={() => history.back()}
+          >
             <ArrowLeft className="w-5 h-5 mr-2" /> Back
           </Button>
           <Button className="bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-700 hover:to-emerald-600">
@@ -59,16 +88,26 @@ export default function ClientProfileLayout() {
           >
             {/* Profile Card */}
             <div className="text-center p-8 glass-effect rounded-2xl border border-white/20">
-              <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-white mb-4 shadow-lg">
-                <User className="w-16 h-16" />
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-indigo-500/40 shadow-lg">
+                <Image
+                  src={
+                    avatar.startsWith("ipfs://")
+                      ? `https://${avatar.replace("ipfs://", "")}.ipfs.dweb.link`
+                      : avatar
+                  }
+                  alt="User avatar"
+                  width={128}
+                  height={128}
+                  className="object-cover w-full h-full"
+                />
               </div>
-              <h1 className="text-3xl font-bold text-white font-orbitron">
-                Sarah Mitchell
+              <h1 className="text-3xl font-bold text-white font-orbitron mt-4">
+                {displayName}
               </h1>
-              <p className="text-gray-400">@sarah_m</p>
+              <p className="text-gray-400">@{handle}</p>
               <div className="mt-3 flex items-center justify-center gap-1 text-gray-300 text-sm">
                 <MapPin className="w-4 h-4" />
-                New York, NY
+                {location}
               </div>
             </div>
 
@@ -83,7 +122,7 @@ export default function ClientProfileLayout() {
                 <span className="text-indigo-400 font-bold">{reputation}%</span>
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                Your trust score based on hiring history and activity.
+                Trust score based on hiring history and activity.
               </p>
             </div>
 
@@ -133,7 +172,11 @@ export default function ClientProfileLayout() {
                 value="overview"
                 className="mt-6 glass-effect p-6 rounded-2xl border border-white/20 text-gray-300"
               >
-                Overview content here.
+                {profile?.bio ? (
+                  <p>{profile.bio}</p>
+                ) : (
+                  <p className="text-gray-400 italic">No bio provided yet.</p>
+                )}
               </TabsContent>
 
               {/* Tasks */}
@@ -158,6 +201,7 @@ export default function ClientProfileLayout() {
     </motion.div>
   );
 }
+
 interface StatProps {
   label: string;
   value: string | number;

@@ -276,6 +276,9 @@ importers:
       '@verse/providers':
         specifier: workspace:*
         version: link:../providers
+      '@verse/services':
+        specifier: workspace:*
+        version: link:../../services
 
   packages/ui:
     dependencies:

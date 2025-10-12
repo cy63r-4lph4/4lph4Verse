@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useOutsideClick } from "@verse/sdk/hooks/useOutsideClick";
-import { Coins, Copy, LogOut } from "lucide-react";
+import { Coins, Copy, LogOut, User2 } from "lucide-react";
 import { AddressUtils } from "@verse/sdk";
 
 export default function WalletDropdown({
@@ -18,6 +18,7 @@ export default function WalletDropdown({
   const cacheKey = `verseProfile:${account?.address.toLowerCase()}`;
   const cached = localStorage.getItem(cacheKey);
   const profile = cached ? JSON.parse(cached) : null;
+
   // close when clicking outside
   useOutsideClick(menuRef, () => setMenuOpen(false));
 
@@ -38,7 +39,7 @@ export default function WalletDropdown({
           {profile?.displayName || "Unnamed User"}
         </p>
         <p className="text-sm font-mono break-words text-gray-200">
-         {AddressUtils.shorten(account?.address || "")}
+          {AddressUtils.shorten(account?.address || "")}
         </p>
       </div>
 
@@ -71,6 +72,16 @@ export default function WalletDropdown({
         >
           <Coins className="w-4 h-4 text-emerald-400" /> Claim Faucet
         </a>
+
+        {/* 🔹 View Profile */}
+        {profile && (
+          <a
+            href={`/profile/${profile?.handle || account?.address}`}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-blue-500/20 hover:text-blue-400 transition"
+          >
+            <User2 className="w-4 h-4 text-blue-400" /> View Profile
+          </a>
+        )}
 
         {/* Disconnect */}
         <button
