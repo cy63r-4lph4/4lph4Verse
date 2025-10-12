@@ -3,6 +3,8 @@
 /* -------------------------------------------------- */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+
 
 /* Ensure all UI packages are scanned */
 @source "../../../packages/ui/**/*.{ts,tsx}";

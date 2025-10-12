@@ -1,4 +1,3 @@
-// app/post-task/page.tsx
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Card } from "@verse/hirecore-web/components/ui/card";
+
 import StepOverview from "./steps/StepOverview";
 import StepDetails from "./steps/StepDetails";
 import StepBudget from "./steps/StepBudget";
@@ -17,14 +17,16 @@ import StepLocation from "./steps/StepLocation";
 import { TaskFormData, TaskPayload } from "@verse/hirecore-web/utils/Interfaces";
 import { useSubmitTask } from "@verse/hirecore-web/hooks/useSubmitTask";
 
-// (optional) simple top progress bar
+/* -------------------- Progress Bar -------------------- */
 function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = (step / total) * 100;
   return (
-    <div className="w-full h-2 rounded bg-white/10 overflow-hidden">
-      <div
-        className="h-2 bg-gradient-to-r from-blue-500 to-purple-500 transition-all"
-        style={{ width: `${pct}%` }}
+    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="h-2 bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-400 shadow-[0_0_10px_rgba(79,70,229,0.5)]"
       />
     </div>
   );
@@ -33,7 +35,6 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
 export default function PostTaskPage() {
   const router = useRouter();
   const TOTAL_STEPS = 5;
-
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,8 +50,8 @@ export default function PostTaskPage() {
     attachments: [],
     budget: "",
     timeEstimate: "",
-    duration: "", // seconds in string, e.g. "86400"
-    paymentToken: "", // set via Step 4
+    duration: "",
+    paymentToken: "",
   });
 
   const { submitTask, loading } = useSubmitTask();
@@ -58,20 +59,19 @@ export default function PostTaskPage() {
   const canGoBack = step > 1;
   const canGoNext = step < TOTAL_STEPS;
 
-  function next() {
+  const next = () => {
     const errors = validateStep(step, formData);
     if (errors.length) {
       toast("Please fix the following", { description: errors.join(" • ") });
       return;
     }
     if (step < TOTAL_STEPS) setStep((s) => s + 1);
-  }
+  };
 
-  function back() {
+  const back = () => {
     if (step > 1) setStep((s) => s - 1);
-  }
+  };
 
-  // ---- Review submit handler
   const handleSubmit = useCallback(async () => {
     const finalErrors = validateAll(formData);
     if (finalErrors.length) {
@@ -81,7 +81,6 @@ export default function PostTaskPage() {
 
     try {
       setSubmitting(true);
-
       const payload: TaskPayload & {
         budget: number;
         duration?: number;
@@ -89,24 +88,19 @@ export default function PostTaskPage() {
       } = {
         ...formData,
         budget: parseInt(formData.budget || "0", 10),
-        duration: formData.duration
-          ? parseInt(formData.duration, 10)
-          : undefined,
-        skills: formData.skills
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        duration: formData.duration ? parseInt(formData.duration, 10) : undefined,
+        skills: formData.skills.split(",").map((s) => s.trim()).filter(Boolean),
       };
 
       await submitTask(payload);
 
-      toast("🎉 Task Posted Successfully!", {
-        description: "Your task has been posted and is now visible to workers.",
+      toast.success("🎉 Task Posted Successfully!", {
+        description: "Your task is now visible to workers.",
       });
       router.push("/find-tasks");
     } catch (err) {
       const msg = (err as Error)?.message || "Failed to post task";
-      toast("❌ Error", { description: msg });
+      toast.error("❌ Error", { description: msg });
     } finally {
       setSubmitting(false);
     }
@@ -115,19 +109,17 @@ export default function PostTaskPage() {
   const stepView = useMemo(() => {
     switch (step) {
       case 1:
-        return <StepOverview formData={formData} setFormData={setFormData} />;
+        return <StepOverview formData={formData} setFormDataAction={setFormData} />;
       case 2:
-        return <StepDetails formData={formData} setFormData={setFormData} />;
+        return <StepDetails formData={formData} setFormDataAction={setFormData} />;
       case 3:
-        return <StepLocation formData={formData} setFormData={setFormData} />;
+        return <StepLocation formData={formData} setFormDataAction={setFormData} />;
       case 4:
-        return <StepBudget formData={formData} setFormData={setFormData} />;
+        return <StepBudget formData={formData} setFormDataAction={setFormData} />;
       case 5:
         return (
           <StepReview
             formData={formData}
-            onSubmit={handleSubmit}
-            submitting={submitting || loading}
           />
         );
       default:
@@ -136,8 +128,8 @@ export default function PostTaskPage() {
   }, [step, formData, submitting, loading, handleSubmit]);
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="relative min-h-screen pt-24 pb-28 px-3 sm:px-6 md:px-8">
+      <div className="max-w-4xl mx-auto flex flex-col">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -145,45 +137,47 @@ export default function PostTaskPage() {
           transition={{ duration: 0.35 }}
           className="mb-8 text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold gradient-text mb-3">
+          <h1 className="text-4xl md:text-5xl font-orbitron font-bold bg-gradient-to-r from-blue-500 via-purple-400 to-emerald-400 text-transparent bg-clip-text mb-3">
             Post a Task
           </h1>
-          <p className="text-gray-300">
-            Describe your job, set a budget, and let the right talent step in.
+          <p className="text-gray-400 text-sm md:text-base">
+            Describe your job, set your budget, and let the right talent find you.
           </p>
         </motion.div>
 
         {/* Progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-500 tracking-wide">
               Step {step} of {TOTAL_STEPS}
             </span>
           </div>
           <ProgressBar step={step} total={TOTAL_STEPS} />
         </div>
 
-        {/* Step card */}
+        {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
+            exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.25 }}
+            className="flex-1"
           >
-            <Card className="glass-effect border-white/20 p-6">
+            <Card className="glass-effect border border-white/10 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg backdrop-blur-xl">
               {stepView}
             </Card>
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav buttons */}
-        <div className="mt-6 flex items-center justify-between">
+        {/* Bottom nav */}
+        <div className="fixed bottom-0 left-0 w-full backdrop-blur-xl bg-black/40 border-t border-white/10 p-4 sm:p-6 flex items-center justify-between md:static md:mt-6 rounded-t-2xl md:rounded-none">
           <Button
             variant="outline"
             disabled={!canGoBack || submitting || loading}
             onClick={back}
+            className="w-1/2 sm:w-auto"
           >
             Back
           </Button>
@@ -192,7 +186,7 @@ export default function PostTaskPage() {
             <Button
               onClick={next}
               disabled={submitting || loading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-1/2 sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all"
             >
               Next
             </Button>
@@ -200,7 +194,7 @@ export default function PostTaskPage() {
             <Button
               onClick={handleSubmit}
               disabled={submitting || loading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-1/2 sm:w-auto bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700"
             >
               {submitting || loading ? "Posting..." : "Confirm & Post Task"}
             </Button>
@@ -212,7 +206,6 @@ export default function PostTaskPage() {
 }
 
 /* -------------------- validation helpers -------------------- */
-
 function validateStep(step: number, d: TaskFormData): string[] {
   const errs: string[] = [];
   if (step === 1) {
@@ -225,7 +218,7 @@ function validateStep(step: number, d: TaskFormData): string[] {
     if (!d.description?.trim()) errs.push("Description is required");
   }
   if (step === 3) {
-    if (!d.location?.trim()) errs.push("Location is required (type or detect)");
+    if (!d.location?.trim()) errs.push("Location is required");
   }
   if (step === 4) {
     if (!d.budget?.trim()) errs.push("Budget is required");

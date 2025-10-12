@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@verse/hirecore-web/components/ui/input";
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@verse/hirecore-web/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@verse/hirecore-web/components/ui/card";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
@@ -11,79 +11,70 @@ import { TIMEESTIMATE } from "@verse/hirecore-web/utils/Constants";
 
 interface StepBudgetProps {
   formData: TaskFormData;
-  setFormData: React.Dispatch<React.SetStateAction<TaskFormData>>;
+  setFormDataAction: React.Dispatch<React.SetStateAction<TaskFormData>>;
 }
 
-export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
+export default function StepBudget({ formData, setFormDataAction }: StepBudgetProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = <K extends keyof TaskFormData>(field: K, value: TaskFormData[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field as string]: "" })); // clear error on change
+    setFormDataAction(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field as string]: "" }));
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.budget || Number(formData.budget) <= 0) {
-      newErrors.budget = "Budget must be greater than 0.";
-    }
-
-    if (!formData.duration) {
-      newErrors.duration = "Duration is required.";
-    }
-
-    if (!formData.paymentToken) {
-      newErrors.paymentToken = "Please select a payment token.";
-    }
-
-    return newErrors;
-  };
-
-  // Example: pre-fill defaults on mount
   useEffect(() => {
     if (!formData.duration) {
-      setFormData(prev => ({ ...prev, duration: String(3 * 86400) })); // default 3 days
+      setFormDataAction(prev => ({ ...prev, duration: String(3 * 86400) }));
     }
-  }, []);
+  }, [formData.duration, setFormDataAction]);
+
+  // example conversion rate; replace with live oracle later
+  const usdEstimate = useMemo(() => {
+    const rate = 0.12; // 1 CORE ≈ $0.12
+    return formData.budget ? (Number(formData.budget) * rate).toFixed(2) : "0.00";
+  }, [formData.budget]);
 
   return (
-    <Card className="glass-effect border-white/20">
+    <Card className="glass-effect border border-white/10 rounded-2xl backdrop-blur-xl">
       <CardHeader>
-        <CardTitle className="text-white text-xl">Step 4: Budget & Timeline</CardTitle>
+        <CardTitle className="text-xl md:text-2xl font-semibold text-white">
+          Step 4 · Budget & Timeline
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Budget */}
-        <div>
-          <label className="block text-white font-medium mb-2">
+
+      <CardContent className="space-y-8">
+        {/* --- Budget --- */}
+        <div className="space-y-2">
+          <label className="block text-white font-medium">
             Budget (CØRE Tokens) <span className="text-red-400">*</span>
           </label>
           <div className="relative">
             <Input
               type="number"
+              min={1}
               placeholder="150"
               value={formData.budget}
               onChange={e => handleChange("budget", e.target.value)}
               className={`bg-white/10 border ${
                 errors.budget ? "border-red-500" : "border-white/20"
-              } text-white placeholder:text-gray-400 pr-16`}
-              min={1}
+              } text-white placeholder:text-gray-400 pr-20`}
             />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 core-token text-sm font-bold">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-sm text-emerald-300">
               CØRE
             </span>
           </div>
+          <div className="flex justify-between text-xs text-gray-400">
+            <p>≈ ${usdEstimate} USD</p>
+            <p>Min 1 CØRE</p>
+          </div>
           {errors.budget && (
-            <p className="text-red-400 text-xs mt-1">{errors.budget}</p>
+            <p className="text-red-400 text-xs">{errors.budget}</p>
           )}
-          <p className="text-gray-400 text-xs mt-1">
-            Minimum 1 CØRE. Make sure your wallet has enough balance.
-          </p>
         </div>
 
-        {/* Duration */}
-        <div>
-          <label className="block text-white font-medium mb-2">
+        {/* --- Duration --- */}
+        <div className="space-y-2">
+          <label className="block text-white font-medium">
             Duration (Expiry) <span className="text-red-400">*</span>
           </label>
           <Select
@@ -97,7 +88,7 @@ export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
             >
               <SelectValue placeholder="Select duration" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-white/20">
+            <SelectContent className="bg-black/80 border border-white/20 backdrop-blur-xl">
               {[...Array(30)].map((_, i) => {
                 const days = i + 1;
                 return (
@@ -113,16 +104,16 @@ export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
             </SelectContent>
           </Select>
           {errors.duration && (
-            <p className="text-red-400 text-xs mt-1">{errors.duration}</p>
+            <p className="text-red-400 text-xs">{errors.duration}</p>
           )}
-          <p className="text-gray-400 text-xs mt-1">
-            Duration sets when the task post expires (1-30 days).
+          <p className="text-gray-400 text-xs">
+            Determines how long your task stays visible (1 – 30 days).
           </p>
         </div>
 
-        {/* Time Estimate (Optional) */}
-        <div>
-          <label className="block text-white font-medium mb-2">
+        {/* --- Time Estimate (optional) --- */}
+        <div className="space-y-2">
+          <label className="block text-white font-medium">
             Estimated Time (for metadata)
           </label>
           <Select
@@ -132,7 +123,7 @@ export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue placeholder="Select time estimate" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-white/20">
+            <SelectContent className="bg-black/80 border border-white/20 backdrop-blur-xl">
               {TIMEESTIMATE.map(time => (
                 <SelectItem
                   key={time.value}
@@ -146,9 +137,9 @@ export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
           </Select>
         </div>
 
-        {/* Payment Token */}
-        <div>
-          <label className="block text-white font-medium mb-2">
+        {/* --- Payment Token --- */}
+        <div className="space-y-2">
+          <label className="block text-white font-medium">
             Payment Token <span className="text-red-400">*</span>
           </label>
           <Select
@@ -162,17 +153,17 @@ export default function StepBudget({ formData, setFormData }: StepBudgetProps) {
             >
               <SelectValue placeholder="Select token" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-white/20">
+            <SelectContent className="bg-black/80 border border-white/20 backdrop-blur-xl">
               <SelectItem value="0xCoreTokenAddress" className="text-white hover:bg-white/10">
                 CØRE Token
               </SelectItem>
               <SelectItem value="0xAnotherTokenAddress" className="text-white hover:bg-white/10">
-                cUSD (stablecoin)
+                cUSD (Stablecoin)
               </SelectItem>
             </SelectContent>
           </Select>
           {errors.paymentToken && (
-            <p className="text-red-400 text-xs mt-1">{errors.paymentToken}</p>
+            <p className="text-red-400 text-xs">{errors.paymentToken}</p>
           )}
         </div>
       </CardContent>
