@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useGeolocation } from "@verse/sdk/hooks/useGeolocation";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 import type { Map as LeafletMap, LeafletEvent } from "leaflet";
+import { Portal } from "@radix-ui/react-select";
 
 // 🗺️ Lazy-load react-leaflet for SSR safety
 const MapContainer = dynamic(
@@ -217,7 +218,7 @@ export default function StepLocation({
 
   /* ----------------- Render ----------------- */
   return (
-    <Card className="glass-effect border border-white/10 rounded-2xl backdrop-blur-xl">
+    <Card className="glass-effect border border-white/10 rounded-2xl backdrop">
       <CardHeader>
         <CardTitle className="text-xl md:text-2xl font-semibold text-white">
           Step 3 · Location
@@ -246,7 +247,6 @@ export default function StepLocation({
                   <Loader2 className="w-4 h-4 text-white animate-spin" />
                 </div>
               )}
-
               <AnimatePresence>
                 {suggestions.length > 0 && (
                   <motion.ul
@@ -254,7 +254,9 @@ export default function StepLocation({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute mt-1 w-full bg-black/80 border border-white/10 rounded-lg text-sm text-gray-200 backdrop-blur-xl z-20 max-h-60 overflow-y-auto shadow-xl"
+                    className="absolute mt-1 w-full bg-black/80 border border-white/10 
+                 rounded-lg text-sm text-gray-200 backdrop-blur-xl 
+                 z-[1000] max-h-60 overflow-y-auto shadow-xl"
                   >
                     {suggestions.map((s, i) => (
                       <li
@@ -271,16 +273,17 @@ export default function StepLocation({
                       </li>
                     ))}
                   </motion.ul>
-                )}
-              </AnimatePresence>
-            </div>
 
-            <Button
-              type="button"
-              onClick={handleDetect}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 px-3"
-            >
+                )}
+            </AnimatePresence>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleDetect}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 px-3"
+          >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (

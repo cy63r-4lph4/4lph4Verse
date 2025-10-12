@@ -11,7 +11,7 @@ export interface TaskFormData {
   budget: string;           // raw input as string
   timeEstimate: string;
   duration: string;         // raw input as string
-  attachments: string[];
+  attachments: (string | File)[];
   paymentToken: string;
 }
 
@@ -26,7 +26,7 @@ export interface TaskPayload {
   skills: string[];         
   budget: number;           
   timeEstimate: string;
-  duration?: number;        
-  attachments: string[];
+  duration?: number;
+  attachments: (string | File)[];
   paymentToken: string;
 }

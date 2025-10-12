@@ -60,9 +60,12 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
   const { address } = useAccount();
   const chainId = useChainId() as ChainId;
   const { verseID, isLoading: idLoading } = useGetVerseID();
-
   const contract = getDeployedContract(chainId, "VerseProfile");
-  const enabled = !skip && Boolean(verseID && contract?.address);
+
+  const [profile, setProfile] = useState<any>(null);
+  const [cacheLoaded, setCacheLoaded] = useState(false);
+
+  const enabled = Boolean(!skip && verseID && contract?.address && cacheLoaded);
 
   const { data, isLoading, error, refetch } = useReadContract({
     abi: contract.abi,
@@ -75,26 +78,35 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
     },
   });
 
-  const [profile, setProfile] = useState<any>(null);
+  /* -----------------------------------------------------------
+   * 1️⃣ Always check cache first (even if skip=true)
+   * ----------------------------------------------------------- */
+  useEffect(() => {
+    if (!address) return;
 
-useEffect(() => {
-  if (!address || !verseID) return;
+    const cacheKey = `verseProfile:${address.toLowerCase()}`;
+    const cached = localStorage.getItem(cacheKey);
 
-  const cacheKey = `verseProfile:${address.toLowerCase()}`;
-  const cached = localStorage.getItem(cacheKey);
-
-  if (cached) {
-    try {
-      const parsed = JSON.parse(cached);
-      setProfile(parsed);
-      return;
-    } catch {
-      localStorage.removeItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setProfile(parsed);
+      } catch {
+        localStorage.removeItem(cacheKey);
+      }
     }
-  }
 
-  (async () => {
-    if (data && Array.isArray(data)) {
+    // mark cache as checked so wagmi can start fetching if allowed
+    setCacheLoaded(true);
+  }, [address]);
+
+  /* -----------------------------------------------------------
+   * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
+   * ----------------------------------------------------------- */
+  useEffect(() => {
+    if (!data || !Array.isArray(data) || skip) return;
+
+    (async () => {
       const [owner, handle, metadataURI, ens, createdAt] = data;
 
       if (metadataURI?.startsWith("ipfs://")) {
@@ -109,29 +121,38 @@ useEffect(() => {
             createdAt: Number(createdAt),
             ...json,
           };
+
           setProfile(fullProfile);
-          localStorage.setItem(cacheKey, JSON.stringify(fullProfile));
+          localStorage.setItem(
+            `verseProfile:${address?.toLowerCase()}`,
+            JSON.stringify(fullProfile)
+          );
         } catch (err) {
           console.error("Failed to load metadata:", err);
         }
       }
-    }
-  })();
-}, [data, verseID, address]);
+    })();
+  }, [data, verseID, address, skip]);
 
-
+  /* -----------------------------------------------------------
+   * 3️⃣ Manual refresh clears cache + forces new fetch
+   * ----------------------------------------------------------- */
   const refresh = async () => {
-    if (skip) return;
-    localStorage.removeItem(`verseProfile:${address?.toLowerCase()}`);
+    if (!address) return;
+    const cacheKey = `verseProfile:${address.toLowerCase()}`;
+    localStorage.removeItem(cacheKey);
+    setCacheLoaded(false);
     await refetch();
   };
 
   return {
-    verseID: skip ? null : verseID,
-    profile: skip ? null : profile,
-    isLoading: skip ? false : idLoading || isLoading,
-    error: skip ? null : error,
+    verseID,
+    profile,
+    isLoading: idLoading || isLoading,
+    error,
     refetch: refresh,
   };
 }
+
+
 

@@ -18,7 +18,33 @@
 @plugin "daisyui" {
   themes: light, dark;
 }
+@plugin "tailwind-scrollbar";
+/* Chrome, Edge, and Safari */
+::-webkit-scrollbar {
+  width: 6px; /* slim vertical scrollbar */
+  height: 6px; /* slim horizontal scrollbar */
+}
 
+::-webkit-scrollbar-track {
+  background: rgba(12, 12, 20, 0.4); /* subtle dark rail */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2563eb 0%, #4f46e5 40%, #10b981 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 4px rgba(79, 70, 229, 0.6);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3b82f6 0%, #6366f1 40%, #34d399 100%);
+}
+
+/* Firefox (thin scrollbar support) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4f46e5 rgba(12, 12, 20, 0.4);
+}
 /* -------------------------------------------------- */
 /* 2. DaisyUI Theme Tokens (brand colors, radii, etc) */
 /* -------------------------------------------------- */

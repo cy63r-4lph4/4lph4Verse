@@ -16,12 +16,12 @@ import {
   FileText,
   Paperclip,
   Info,
+  ExternalLink,
 } from "lucide-react";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 
 interface StepReviewProps {
   formData: TaskFormData;
-  
 }
 
 export default function StepReview({ formData }: StepReviewProps) {
@@ -46,6 +46,7 @@ export default function StepReview({ formData }: StepReviewProps) {
               {formData.title || "Untitled Task"}
             </h3>
           </div>
+
           <p className="text-gray-300 text-sm leading-relaxed">
             {formData.description || "No description provided."}
           </p>
@@ -56,23 +57,52 @@ export default function StepReview({ formData }: StepReviewProps) {
             <Field icon={MapPin} label="Location" value={formData.location || "No location"} />
             <Field icon={Banknote} label="Budget" value={`${formData.budget || 0} CØRE`} />
             <Field icon={Clock} label="Time Estimate" value={formData.timeEstimate || "N/A"} />
-            <Field icon={CalendarDays} label="Duration" value={durationDays ? `${durationDays} days` : "N/A"} />
+            <Field
+              icon={CalendarDays}
+              label="Duration"
+              value={durationDays ? `${durationDays} days` : "N/A"}
+            />
           </div>
 
-          {/* Attachments */}
+          {/* --- Attachments --- */}
           {formData.attachments?.length > 0 && (
             <div className="mt-4 border-t border-white/10 pt-3">
               <div className="flex items-center gap-2 mb-2">
                 <Paperclip className="w-4 h-4 text-gray-300" />
-                <h4 className="text-gray-300 font-medium text-sm">
-                  Attachments
-                </h4>
+                <h4 className="text-gray-300 font-medium text-sm">Attachments</h4>
               </div>
-              <ul className="list-disc list-inside text-gray-400 text-sm space-y-1">
-                {formData.attachments.map((file, idx) => (
-                  <li key={idx}>{file}</li>
-                ))}
-              </ul>
+
+              <div className="flex flex-wrap gap-2">
+                {formData.attachments.map((file, idx) => {
+                  const name =
+                    typeof file === "string"
+                      ? file.startsWith("ipfs://")
+                        ? file.replace("ipfs://", "").slice(0, 10) + "..."
+                        : file.split("/").pop()
+                      : file.name;
+
+                  const isIpfs = typeof file === "string" && file.startsWith("ipfs://");
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-md text-xs text-gray-300 hover:bg-white/15 transition"
+                    >
+                      <Paperclip className="w-3.5 h-3.5 text-indigo-300" />
+                      <span className="truncate max-w-[140px]">{name}</span>
+                      {isIpfs && (
+                        <a
+                          href={`https://ipfs.io/ipfs/${file.replace("ipfs://", "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-400 hover:text-indigo-300"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
