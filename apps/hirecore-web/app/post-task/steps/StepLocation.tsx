@@ -16,8 +16,14 @@ import { toast } from "sonner";
 import { useGeolocation } from "@verse/sdk/hooks/useGeolocation";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 import type { Map as LeafletMap, LeafletEvent } from "leaflet";
-import { Portal } from "@radix-ui/react-select";
 
+type NominatimItem = {
+  display_name: string;
+  lat: string;
+  lon: string;
+  importance?: number;
+  place_rank?: number;
+};
 // 🗺️ Lazy-load react-leaflet for SSR safety
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
@@ -42,7 +48,7 @@ export default function StepLocation({
   setFormDataAction: React.Dispatch<React.SetStateAction<TaskFormData>>;
 }) {
   const { coordinates, error, loading, detectLocation } = useGeolocation();
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -51,7 +57,11 @@ export default function StepLocation({
     if (typeof window === "undefined") return;
     (async () => {
       const L = await import("leaflet");
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      delete (
+        L.Icon.Default.prototype as unknown as {
+          _getIconUrl?: string;
+        }
+      )._getIconUrl;
 
       L.Icon.Default.mergeOptions({
         iconRetinaUrl:
@@ -195,8 +205,8 @@ export default function StepLocation({
       const data: NominatimItem[] = await res.json();
       const deduped = dedupeByNameAndDistance(data, 0.35, 3);
       setSuggestions(deduped);
-    } catch (e: any) {
-      if (e?.name !== "AbortError") console.error(e);
+    } catch (e) {
+      if (e instanceof Error && e.name !== "AbortError") console.error(e);
     } finally {
       setIsSearching(false);
     }
@@ -273,17 +283,16 @@ export default function StepLocation({
                       </li>
                     ))}
                   </motion.ul>
-
                 )}
-            </AnimatePresence>
-          </div>
+              </AnimatePresence>
+            </div>
 
-          <Button
-            type="button"
-            onClick={handleDetect}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 px-3"
-          >
+            <Button
+              type="button"
+              onClick={handleDetect}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 px-3"
+            >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
