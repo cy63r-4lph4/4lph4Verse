@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { defineChain, createPublicClient, http } from "viem";
 import { getDeployedContract,ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/services/pinata/fetchFromPinata";
+import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
+import { TaskPost } from "@verse/hirecore-web/utils/Interfaces";
 
 const cache = new Map<string, CachedPayload>();
 const CACHE_TTL = 60_000; // 1 minute
@@ -18,18 +20,7 @@ interface CachedPayload {
   timestamp: number;
 }
 
-interface TaskPost {
-  id: number;
-  hirer: `0x${string}`;
-  paymentToken: `0x${string}`;
-  budget: number;
-  deposit: number;
-  expiry: number;
-  metadata: Record<string, unknown>;
-  category: string;
-  location: string;
-  urgency: string;
-}
+
 
 // ✅ Canonical Celo Sepolia configuration
 export const celoSepolia = defineChain({
@@ -129,18 +120,24 @@ export async function GET(req: Request) {
           metadata = { title: `Task #${postId}`, description: "Metadata unavailable" };
         }
 
-        return {
-          id: postId,
-          hirer,
-          paymentToken,
-          budget: Number(budgetMax) / 1e18,
-          deposit: Number(deposit) / 1e18,
-          expiry: Number(expiry),
-          metadata,
-          category: metadata.category ?? "general",
-          location: metadata.location ?? "unknown",
-          urgency: metadata.urgency ?? "medium",
-        };
+   return {
+  id: postId,
+  hirer,
+  postedBy: metadata?.verse?.handle ? `@${metadata.verse.handle}` : "Unknown",
+  postedTime: metadata?.createdAt
+    ? new Date(metadata.createdAt).toLocaleDateString()
+    : "Unknown",
+  paymentToken,
+  budget: Number(TokenUtils.format(budgetMax, 18)),
+  deposit: Number(TokenUtils.format(deposit, 18)),
+  expiry: Number(expiry),
+  metadata,
+  category: metadata.category ?? "general",
+  location: metadata.location ?? "unknown",
+  urgency: metadata.urgency ?? "medium",
+  skills: metadata.skills ?? [],
+};
+
       } catch (err) {
         console.warn(`⚠️ Skipping post ${postId}:`, err);
         return null;

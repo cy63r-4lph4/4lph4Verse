@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useAccount,
-  useChainId,
-  useReadContract,
-  useWriteContract,
-} from "wagmi";
-import { waitForTransactionReceipt } from "wagmi/actions";
+import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
 import { config } from "@verse/providers";
 import {
   ChainId,
@@ -15,39 +9,10 @@ import {
 } from "@verse/sdk/utils/contract/deployedContracts";
 import type { TaskPayload } from "@verse/hirecore-web/utils/Interfaces";
 import { uploadFileToPinata, uploadJsonToPinata } from "@verse/services/pinata";
+import { TokenUtils } from "@verse/sdk";
+import { signTypedData, waitForTransactionReceipt } from "wagmi/actions";
+import { encodeFunctionData } from "viem";
 
-/* --------------------------------------------------
- * Retry-safe receipt waiter for Celo / slow RPCs
- * -------------------------------------------------- */
-export async function waitForTxReceiptSafe(
-  hash: `0x${string}`,
-  { retries = 15, delayMs = 3000 }: { retries?: number; delayMs?: number } = {}
-) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await waitForTransactionReceipt(config, {
-        hash,
-        confirmations: 1,
-        pollingInterval: delayMs,
-        retryCount: 3,
-      });
-    } catch (err: any) {
-      if (err.message?.includes("block is out of range")) {
-        console.warn(
-          `[waitForTxReceiptSafe] Block not indexed yet (try ${i + 1}/${retries})`
-        );
-        await new Promise((r) => setTimeout(r, delayMs));
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw new Error("Timeout waiting for transaction receipt");
-}
-
-/* --------------------------------------------------
- * useSubmitTask Hook
- * -------------------------------------------------- */
 type PostStage =
   | "idle"
   | "checking_profile"
@@ -55,7 +20,7 @@ type PostStage =
   | "uploading_attachments"
   | "uploading_metadata"
   | "approving_deposit"
-  | "writing"
+  | "relaying"
   | "done"
   | "error";
 
@@ -69,18 +34,18 @@ export function useSubmitTask() {
   });
   const [loading, setLoading] = useState(false);
 
-  // --- Deployed contracts ---
+  // Deployed contracts
   const jobBoard = getDeployedContract(chainId, "HireCoreJobBoard");
   const coreTokenContract = getDeployedContract(chainId, "CoreToken");
 
-  // --- On-chain reads ---
+  // On-chain reads
   const { data: minDepositData } = useReadContract({
     abi: jobBoard.abi,
     address: jobBoard.address,
     functionName: "minDeposit",
   });
 
-  const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
+  const { data: allowanceData } = useReadContract({
     abi: coreTokenContract.abi,
     address: coreTokenContract.address,
     functionName: "allowance",
@@ -153,7 +118,7 @@ export function useSubmitTask() {
       const { cid: metadataCID } = await uploadJsonToPinata(metadata, "task");
       const metadataURI = `ipfs://${metadataCID}`;
 
-      /* ----------------- 3️⃣ Approve deposit if needed ----------------- */
+      /* ----------------- 3️⃣ Ensure allowance ----------------- */
       setStatus({
         stage: "checking_allowance",
         message: "Checking allowance for JobBoard deposit…",
@@ -166,55 +131,94 @@ export function useSubmitTask() {
           message: "Approving minimum deposit for HireCore JobBoard…",
         });
 
-        // Reset first if nonzero (safer)
         if (allowance > 0n) {
-          const resetTx = await writeContractAsync({
+          const resetHash = await writeContractAsync({
             abi: coreTokenContract.abi,
             address: coreTokenContract.address,
             functionName: "approve",
             args: [jobBoard.address, 0n],
           });
-          await waitForTxReceiptSafe(resetTx);
+
+          await waitForTransactionReceipt(config, {
+            hash: resetHash,
+            confirmations: 1,
+          });
         }
 
-        const approveTx = await writeContractAsync({
+        const approveHash = await writeContractAsync({
           abi: coreTokenContract.abi,
           address: coreTokenContract.address,
           functionName: "approve",
           args: [jobBoard.address, required],
         });
-        await waitForTxReceiptSafe(approveTx);
+
+        await waitForTransactionReceipt(config, {
+          hash: approveHash,
+          confirmations: 1,
+        });
       }
 
-      /* ----------------- 4️⃣ Post task on-chain ----------------- */
+      /* ----------------- 4️⃣ Sign Task Intent ----------------- */
       setStatus({
-        stage: "writing",
-        message: "Creating on-chain post…",
+        stage: "relaying",
+        message: "Preparing and signing task intent…",
       });
 
-      const txHash = await writeContractAsync({
-        abi: jobBoard.abi,
-        address: jobBoard.address,
-        functionName: "createPost",
-        args: [
-          coreTokenContract.address,
-          BigInt(formData.budget),
-          BigInt(formData.duration ?? 0), // must be seconds (1d–30d)
-          metadataURI,
-        ],
+
+const encodedArgs = encodeFunctionData({
+  abi: jobBoard.abi,
+  functionName: "createPost",
+  args: [
+    coreTokenContract.address,
+    TokenUtils.parse(formData.budget ?? "0", 18),
+    BigInt(formData.duration ?? 0),
+    metadataURI,
+  ],
+});
+
+const data = {
+  to: jobBoard.address as `0x${string}`,
+  functionName: "createPost",
+  args: encodedArgs, 
+};
+
+      const signature = await signTypedData(config, {
+        account: address,
+        domain: {
+          name: "HireCoreJobBoard",
+          version: "1.0",
+          chainId,
+          verifyingContract: jobBoard.address,
+        },
+        types: {
+          TaskIntent: [
+            { name: "to", type: "address" },
+            { name: "functionName", type: "string" },
+            { name: "args", type: "bytes" },
+          ],
+        },
+        primaryType: "TaskIntent",
+        message: data,
       });
 
-      setStatus({
-        stage: "writing",
-        message: "⏳ Waiting for transaction confirmation…",
+      /* ----------------- 5️⃣ Relay through API ----------------- */
+      const response = await fetch("/api/relay/task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data,
+          signature,
+          chainId,
+        }),
       });
 
-      const receipt = await waitForTxReceiptSafe(txHash);
-      if (receipt.status !== "success")
-        throw new Error("Transaction failed on-chain");
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Relay failed");
+      }
 
-      setStatus({ stage: "done", message: "🎉 Task posted successfully!" });
-      return metadataURI;
+      setStatus({ stage: "done", message: "🎉 Task relayed successfully!" });
+      return result.txHash;
     } catch (err: any) {
       console.error("❌ Task submission failed:", err);
       setStatus({

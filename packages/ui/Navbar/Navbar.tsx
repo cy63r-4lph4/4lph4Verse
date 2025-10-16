@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between h-14 sm:h-16">
         {/* Logo */}
-        <div className={theme.logoStyle || "text-xl font-bold"}>
+        <div className={`${theme.logoStyle || "text-xl font-bold"} cursor-pointer`} onClick={() => window.location.href = '/'}>
           <span className="hidden sm:inline">{logo}</span>
           <span className="sm:hidden text-lg font-bold">{logoSm}</span>
         </div>

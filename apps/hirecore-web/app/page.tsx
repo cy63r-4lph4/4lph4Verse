@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { Button } from "../components/ui/button";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { FEATURES, SERVICES } from "apps/hirecore-web/utils/Constants";
 import { Card, CardContent } from "apps/hirecore-web/components/ui/card";
@@ -35,23 +35,20 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/tasks">
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-3">
-                  <Search className="w-5 h-5 mr-2" />
-                  Find Tasks
-                </Button>
-              </Link>
+                <Link href="/find-tasks">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-3 rounded-none">
+                    <Search className="w-5 h-5 mr-2" />
+                    Find Tasks
+                  </Button>
+                </Link>
 
-              <Link href="/post-task">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto neon-border text-lg px-8 py-3 bg-transparent hover:bg-white/10"
-                >
-                  <PlusIcon className="w-5 h-5 mr-2" />
-                  Post a Task
-                </Button>
-              </Link>
-            </div>
+                <Link href="/post-task">
+                  <Button variant="outline" className="w-full sm:w-auto neon-border text-lg px-8 py-3 bg-transparent hover:bg-white/10 ">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Post a Task
+                  </Button>
+                </Link>
+              </div>
           </motion.div>
 
           {/* Floating background bubbles */}
@@ -116,7 +113,7 @@ export default function Home() {
                   whileHover={{ y: -5 }}
                   className="group w-[180px] flex-shrink-0"
                 >
-                  <Card className="glass-effect border-white/20 hover:border-white/40 transition-all duration-300 cursor-pointer h-full">
+                  <Card className="glass-effect border-white/20 hover:border-white/40 transition-all duration-300 cursor-pointer h-full rounded-none">
                     <CardContent className="p-6 text-center">
                       <div
                         className={`w-12 h-12 mx-auto mb-4 rounded-lg bg-gradient-to-br ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}

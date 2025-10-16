@@ -45,7 +45,7 @@ export default function StepBudget({
 
   // example conversion rate; replace with live oracle later
   const usdEstimate = useMemo(() => {
-    const rate = 0.12; // 1 CORE ≈ $0.12
+    const rate = 0.82; // 1 CORE ≈ $0.82
     return formData.budget
       ? (Number(formData.budget) * rate).toFixed(2)
       : "0.00";
