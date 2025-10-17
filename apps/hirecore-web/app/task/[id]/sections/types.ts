@@ -8,6 +8,7 @@ id: number;
 title: string;
 description: string;
 postedBy: string; 
+hirer?: `0x${string}`
 postedTime: string;
 location?: string;
 timeEstimate?: string;

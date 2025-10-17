@@ -10,10 +10,13 @@ import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
+import { useAccount } from "wagmi";
 
 export default function TaskDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { address: userAddress } = useAccount();
+
   const id = params?.id as string | undefined;
 
   const [showChat, setShowChat] = useState(false);
@@ -84,8 +87,9 @@ export default function TaskDetailsPage() {
       </div>
     );
   }
+  const isClient = userAddress?.toLowerCase() === t.hirer?.toLowerCase();
 
-  const isClient = t.postedBy === "You";
+  console.log(isClient, t.hirer, userAddress);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
