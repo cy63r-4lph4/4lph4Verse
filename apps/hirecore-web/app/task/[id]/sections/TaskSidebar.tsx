@@ -56,10 +56,14 @@ export default function TaskSidebar({
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+              <img
+                src={task.postedByProfile?.avatar || "/default-avatar.png"}
+                alt={task.postedByProfile?.displayName || "Unknown"}
+                className="w-12 h-12 rounded-full"
+              />
             </div>
             <div>
-              <div className="text-white font-semibold">{task.postedBy}</div>
+              <div className="text-white font-semibold">{task.postedByProfile?.displayName || task.postedByProfile?.handle || "Unknown"}</div>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
                 <span className="text-white text-sm">{task.rating ?? 4.6}</span>

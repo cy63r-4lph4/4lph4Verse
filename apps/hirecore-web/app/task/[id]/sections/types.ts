@@ -7,8 +7,12 @@ export type Task = {
 id: number;
 title: string;
 description: string;
-postedBy: string; 
-hirer?: `0x${string}`
+postedByProfile?: {
+  avatar?: string;
+  displayName?: string;
+  handle?: string;
+};
+hirer?: `0x${string}`;
 postedTime: string;
 location?: string;
 timeEstimate?: string;
