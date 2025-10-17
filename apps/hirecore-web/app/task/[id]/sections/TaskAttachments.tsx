@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import { FileText, Download, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@verse/hirecore-web/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@verse/hirecore-web/components/ui/dialog";
 import { Button } from "@verse/hirecore-web/components/ui/button";
 
 interface Attachment {
@@ -10,7 +15,11 @@ interface Attachment {
   type?: string;
 }
 
-export default function TaskAttachments({ attachments }: { attachments: Attachment[] }) {
+export default function TaskAttachments({
+  attachments,
+}: {
+  attachments: Attachment[];
+}) {
   const [selected, setSelected] = useState<Attachment | null>(null);
 
   if (!attachments || attachments.length === 0) return null;
@@ -47,7 +56,9 @@ export default function TaskAttachments({ attachments }: { attachments: Attachme
               ) : (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-300">
                   <FileText className="w-8 h-8 mb-2 text-blue-400" />
-                  <p className="text-sm truncate w-full text-center">{a.name}</p>
+                  <p className="text-sm truncate w-full text-center">
+                    {a.name}
+                  </p>
                 </div>
               )}
 
@@ -59,7 +70,14 @@ export default function TaskAttachments({ attachments }: { attachments: Attachme
                   className="mt-2 w-full text-xs"
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(a.url, "_blank");
+                    const link = document.createElement("a");
+                    link.href = a.url;
+                    link.download = a.name || "attachment";
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                   }}
                 >
                   <Download className="w-4 h-4 mr-1" /> Download

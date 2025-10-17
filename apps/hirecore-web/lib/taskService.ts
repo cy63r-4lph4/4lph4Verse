@@ -77,14 +77,25 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
   /* ---------------------------------------------------------------------- */
   /* 📎 Handle attachments (images, PDFs, etc.)                             */
   /* ---------------------------------------------------------------------- */
-  const attachments = (metadata.attachments || []).map((a: any) => {
+ const attachments = await Promise.all(
+  (metadata.attachments || []).map(async (a: any) => {
     const url = typeof a === "string" ? a : a.url;
+    const fullUrl = url?.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+    let type = a.type || "unknown";
+
+    const lower = (url || "").toLowerCase();
+    if (lower.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) type = "image";
+    else if (lower.match(/\.(pdf)$/)) type = "pdf";
+    else if (type === "unknown") type = await detectMimeType(fullUrl);
+
     return {
       name: a.name || url?.slice(7, 15) + "...",
-      url: url?.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/"),
-      type: a.type || "unknown",
+      url: fullUrl,
+      type,
     };
-  });
+  })
+);
+
 
   /* ---------------------------------------------------------------------- */
   /* 🧱 Construct flattened Task object                                     */
@@ -117,4 +128,20 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
   taskCache.set(id, { data: task, timestamp: Date.now() });
 
   return task;
+}
+
+
+async function detectMimeType(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    const type = res.headers.get("content-type");
+    if (!type) return "unknown";
+    if (type.includes("image")) return "image";
+    if (type.includes("pdf")) return "pdf";
+    if (type.includes("video")) return "video";
+    if (type.includes("audio")) return "audio";
+    return type;
+  } catch {
+    return "unknown";
+  }
 }
