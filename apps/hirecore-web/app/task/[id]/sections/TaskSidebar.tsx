@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import type { Task } from "./types";
 import { toast } from "sonner";
+import { motion } from "framer-motion"; // 🆕
+import { useRouter } from "next/navigation"; // 🆕
 
 export default function TaskSidebar({
   task,
@@ -31,6 +33,8 @@ export default function TaskSidebar({
   onOpenManage: () => void;
   onOpenBid: () => void;
 }) {
+  const router = useRouter(); // 🆕
+
   const handleApply = () =>
     toast(
       <>
@@ -44,6 +48,14 @@ export default function TaskSidebar({
   const handleCall = () =>
     toast("🚧 Calling Feature: This feature isn't implemented yet.");
 
+  // 🆕 Handle click to navigate to profile
+  const handleProfileClick = () => {
+    const profile = task.postedByProfile;
+    if (profile?.handle) router.push(`/profile/${profile.handle}`);
+    else if (profile?.id) router.push(`/profile/${profile.id}`);
+    else toast("Profile not found");
+  };
+
   return (
     <>
       {/* Client Info */}
@@ -53,17 +65,32 @@ export default function TaskSidebar({
             <User className="w-5 h-5 text-blue-400" /> Client Information
           </CardTitle>
         </CardHeader>
+
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          {/* 🆕 Clickable + animated profile card */}
+          <motion.div
+            whileHover={{
+              scale: 1.02,
+              backgroundColor: "rgba(255,255,255,0.05)",
+            }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            onClick={handleProfileClick}
+            className="flex items-center gap-3 cursor-pointer rounded-lg p-2 transition-all duration-200"
+          >
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden shadow-md">
               <img
                 src={task.postedByProfile?.avatar || "/default-avatar.png"}
                 alt={task.postedByProfile?.displayName || "Unknown"}
-                className="w-12 h-12 rounded-full"
+                className="w-12 h-12 rounded-full object-cover"
               />
             </div>
             <div>
-              <div className="text-white font-semibold">{task.postedByProfile?.displayName || task.postedByProfile?.handle || "Unknown"}</div>
+              <div className="text-white font-semibold">
+                {task.postedByProfile?.displayName ||
+                  task.postedByProfile?.handle ||
+                  "Unknown"}
+              </div>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
                 <span className="text-white text-sm">{task.rating ?? 4.6}</span>
@@ -72,7 +99,7 @@ export default function TaskSidebar({
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="space-y-2">
             <Button
