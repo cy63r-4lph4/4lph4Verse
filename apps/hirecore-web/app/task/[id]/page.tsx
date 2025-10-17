@@ -8,6 +8,7 @@ import TaskSidebar from "./sections/TaskSidebar";
 import type { Task } from "./sections/types";
 import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
+import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 
 export default function TaskDetailsPage() {
   const params = useParams();
@@ -18,7 +19,6 @@ export default function TaskDetailsPage() {
   const [showManagement, setShowManagement] = useState(false);
   const [taskState, setTaskState] = useState<Task | null>(null);
   const [showBid, setShowBid] = useState(false);
-// hybrid loader — instant state + fallback to API
 const [task, setTask] = useState<Task | null>(null);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState<string | null>(null);
@@ -26,12 +26,9 @@ const [error, setError] = useState<string | null>(null);
 useEffect(() => {
   if (!id) return;
 
-  const stateTask = window.history.state?.task;
-      console.log("Loaded task from history state:", stateTask);
-
-  if (stateTask) {
-    console.log("Loaded task from history state:", stateTask);
-    setTask(stateTask);
+  const cached = useTaskStore.getState().getTask(id);
+  if (cached) {
+    setTask(cached);
     setLoading(false);
   } else {
     (async () => {
@@ -41,6 +38,7 @@ useEffect(() => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Task not found");
         setTask(data);
+        useTaskStore.getState().setTask(id, data); 
       } catch (err: any) {
         setError(err.message || "Failed to load task");
       } finally {
@@ -50,7 +48,6 @@ useEffect(() => {
   }
 }, [id]);
 
-  // keep a local editable copy (for mock updates)
   const t = taskState ?? task;
 
   if (!id) {

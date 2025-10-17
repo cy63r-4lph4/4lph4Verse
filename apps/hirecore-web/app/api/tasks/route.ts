@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { defineChain, createPublicClient, http } from "viem";
-import { getDeployedContract,ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/services/pinata/fetchFromPinata";
 import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
-import { TaskPost } from "@verse/hirecore-web/utils/Interfaces";
-
+import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
+/* -------------------------------------------------------------------------- */
+/*  Basic cache to avoid refetching on every request                          */
+/* -------------------------------------------------------------------------- */
 const cache = new Map<string, CachedPayload>();
 const CACHE_TTL = 60_000; // 1 minute
 const PAGE_SIZE = 6;
 
 interface CachedPayload {
   data: {
-    data: TaskPost[];
+    data: Task[];
     total: number;
     page: number;
     pages: number;
@@ -20,9 +22,9 @@ interface CachedPayload {
   timestamp: number;
 }
 
-
-
-// ✅ Canonical Celo Sepolia configuration
+/* -------------------------------------------------------------------------- */
+/*  CELO SEPOLIA CONFIG                                                       */
+/* -------------------------------------------------------------------------- */
 export const celoSepolia = defineChain({
   id: 11142220,
   name: "Celo Sepolia",
@@ -40,6 +42,9 @@ export const celoSepolia = defineChain({
   },
 });
 
+/* -------------------------------------------------------------------------- */
+/*  MAIN GET HANDLER                                                          */
+/* -------------------------------------------------------------------------- */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
@@ -70,7 +75,7 @@ export async function GET(req: Request) {
       transport: http(celoSepolia.rpcUrls.default.http[0]),
     });
 
-    // 🧮 Fetch total number of posts
+    /* -------------------- Fetch total number of posts -------------------- */
     const postCount = (await client.readContract({
       ...jobBoard,
       functionName: "nextPostId",
@@ -81,7 +86,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ data: [], total: 0, page, pages: 0 });
     }
 
-    // 🧩 Determine which post IDs to load
+    /* --------------------- Determine post IDs to load -------------------- */
     const indices = isFiltered
       ? Array.from(
           { length: limit },
@@ -89,8 +94,8 @@ export async function GET(req: Request) {
         ).filter((id) => id > 0)
       : Array.from({ length: totalPosts }, (_, i) => i + 1);
 
-    // 🧠 Helper to safely fetch + decode one post
-    async function fetchPost(postId: number) {
+    /* ---------------------- Helper: Fetch one post ---------------------- */
+    async function fetchPost(postId: number): Promise<Task | null> {
       try {
         const res = (await client.readContract({
           ...jobBoard,
@@ -107,59 +112,60 @@ export async function GET(req: Request) {
         ];
 
         if (!res || res.length < 7) return null;
-
         const [hirer, paymentToken, budgetMax, expiry, deposit, metadataURI, open] = res;
-
-        // skip invalid or closed posts
         if (hirer === "0x0000000000000000000000000000000000000000" || !open) return null;
 
-        let metadata;
+        let metadata: any;
         try {
           metadata = await fetchFromPinata(metadataURI);
         } catch {
           metadata = { title: `Task #${postId}`, description: "Metadata unavailable" };
         }
 
-   return {
-  id: postId,
-  hirer,
-  postedBy: metadata?.verse?.handle ? `@${metadata.verse.handle}` : "Unknown",
-  postedTime: metadata?.createdAt
-    ? new Date(metadata.createdAt).toLocaleDateString()
-    : "Unknown",
-  paymentToken,
-  budget: Number(TokenUtils.format(budgetMax, 18)),
-  deposit: Number(TokenUtils.format(deposit, 18)),
-  expiry: Number(expiry),
-  metadata,
-  category: metadata.category ?? "general",
-  location: metadata.location ?? "unknown",
-  urgency: metadata.urgency ?? "medium",
-  skills: metadata.skills ?? [],
-};
+        /* ---------------------- Flatten into Task ---------------------- */
+        const task: Task = {
+          id: postId,
+          title: metadata.title ?? `Task #${postId}`,
+          description: metadata.description ?? "No description available.",
+          postedBy: metadata?.verse?.handle ? `@${metadata.verse.handle}` : "Unknown",
+          postedTime: metadata?.createdAt
+            ? new Date(metadata.createdAt).toLocaleDateString()
+            : "Unknown",
+          location: metadata.location ?? "unknown",
+          timeEstimate: metadata.timeEstimate ?? null,
+          budget: Number(TokenUtils.format(budgetMax, 18)),
+          category: metadata.category ?? "general",
+          serviceType: metadata.serviceType ?? "on-site",
+          urgency: metadata.urgency ?? "medium",
+          status: "open",
+          skills: metadata.skills ?? [],
+          rating: metadata.rating ?? 0,
+          reviews: metadata.reviews ?? 0,
+          coordinates: metadata.coordinates ?? {},
+        };
 
+        return task;
       } catch (err) {
         console.warn(`⚠️ Skipping post ${postId}:`, err);
         return null;
       }
     }
 
-    // 🧩 Fetch all posts concurrently
+    /* ---------------------- Fetch all posts concurrently ---------------------- */
     const posts = await Promise.all(indices.map((id) => fetchPost(id)));
 
-    // 🧠 Filter and sort
+    /* ---------------------- Filter + sort + paginate ---------------------- */
     const filtered = posts
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
       .filter(
-        (p) =>
+        (p:Task) =>
           (category === "all" || p.category === category) &&
           (location === "all" || p.location === location) &&
           (urgency === "all" || p.urgency === urgency) &&
           p.budget >= minBudget
       )
-      .sort((a, b) => b.id - a.id);
+      .sort((a:Task, b:Task) => b.id - a.id);
 
-    // 🧮 Pagination
     const totalFiltered = filtered.length;
     const totalPages = Math.ceil(totalFiltered / limit);
     const paginatedData = filtered.slice(
@@ -167,7 +173,6 @@ export async function GET(req: Request) {
       (page - 1) * limit + limit
     );
 
-    // ✅ Payload
     const payload = {
       data: paginatedData,
       total: totalFiltered,
@@ -176,14 +181,11 @@ export async function GET(req: Request) {
       hasMore: !isFiltered && page * limit < totalFiltered,
     };
 
-    // 🧠 Cache result
     cache.set(cacheKey, { data: payload, timestamp: Date.now() });
-
     return NextResponse.json(payload);
   } catch (err) {
-  const errorMessage =
-    err instanceof Error ? err.message : "Unknown error occurred";
-  console.error("❌ API Error:", err);
-  return NextResponse.json({ error: errorMessage }, { status: 500 });
-}
+    const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+    console.error("❌ API Error:", err);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
 }

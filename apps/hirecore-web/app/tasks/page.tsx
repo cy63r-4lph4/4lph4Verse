@@ -18,7 +18,7 @@ import { useTasks } from "@verse/hirecore-web/hooks/useTasks";
 import { CATEGORIES, LOCATIONS } from "@verse/hirecore-web/utils/Constants";
 import { useChainId } from "wagmi";
 import { TaskCard } from "@verse/hirecore-web/components/tasks/TaskCard";
-import { HireCoreTask } from "@verse/hirecore-web/utils/Interfaces";
+import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
 
 /* --------------------------------------------------
  * Main component
@@ -169,7 +169,7 @@ export default function TasksPage() {
           </div>
         ) : tasks.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {tasks.map((task: HireCoreTask, index: number) => (
+            {tasks.map((task: Task, index: number) => (
               <TaskCard key={task.id} task={task} index={index} />
             ))}
           </div>

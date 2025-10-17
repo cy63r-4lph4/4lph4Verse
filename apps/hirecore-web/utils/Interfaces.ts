@@ -1,3 +1,5 @@
+import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
+
 // For your React form state
 export interface TaskFormData {
   title: string;
@@ -89,6 +91,6 @@ export interface HireCoreTask {
 }
 
 export interface TaskCardProps {
-  task: HireCoreTask; 
+  task: Task; 
     index?: number;
   }

@@ -3,15 +3,16 @@ export type ServiceType = "on-site" | "workshop" | string;
 export type Status = "open" | "assigned" | "completed" | "cancelled" | string;
 
 
-export interface Task {
+export type Task = {
 id: number;
 title: string;
 description: string;
-postedBy: string; // "You" | other name
+postedBy: string; 
 postedTime: string;
 location?: string;
 timeEstimate?: string;
 budget: number;
+category?: string;
 serviceType?: ServiceType;
 urgency?: Urgency;
 status?: Status;

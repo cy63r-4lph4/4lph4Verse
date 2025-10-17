@@ -14,6 +14,7 @@ import type { UrgencyType } from "@verse/hirecore-web/types/task";
 import { CATEGORIES } from "@verse/hirecore-web/utils/Constants";
 import { TaskCardProps } from "@verse/hirecore-web/utils/Interfaces";
 import { useRouter } from "next/navigation";
+import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 
 const getUrgencyColor = (urgency: UrgencyType) => {
   switch (urgency) {
@@ -36,8 +37,9 @@ const getCategoryIcon = (category: string) => {
 };
 
 export function TaskCard({ task, index = 0 }: TaskCardProps) {
-  const CategoryIcon = getCategoryIcon(task.category);
+  const CategoryIcon = getCategoryIcon(task.category!);
   const router = useRouter();
+  const setTask = useTaskStore((s) => s.setTask);
 
   return (
     <motion.div
@@ -56,7 +58,7 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
               </div>
               <div>
                 <CardTitle className="text-white text-lg font-semibold leading-tight ">
-                  {task.metadata.title}
+                  {task.title}
                 </CardTitle>
                 <p className="text-gray-400 text-sm m-0">
                   by {task.postedBy ?? "Unknown"} •{" "}
@@ -77,7 +79,7 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
         <CardContent className="flex flex-col flex-grow justify-between space-y-4">
           {/* Description */}
           <p className="text-gray-300 text-sm line-clamp-2 leading-relaxed">
-            {task.metadata.description || "No description provided."}
+            {task.description || "No description provided."}
           </p>
 
           {/* Skills */}
@@ -103,7 +105,7 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
             </div>
             <div className="flex items-center space-x-2 text-gray-300 justify-end">
               <Clock className="w-4 h-4 text-green-400" />
-              <span>{task.timeEstimate ?? "2–4 hrs"}</span>
+              <span>{task.timeEstimate ?? "2-4 hrs"}</span>
             </div>
           </div>
 
@@ -125,7 +127,7 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
 
             <Button
               onClick={() => {
-                window.history.pushState({ task }, "", `/task/${task.id}`);
+                setTask(String(task.id), task);
                 router.push(`/task/${task.id}`);
               }}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all text-sm px-4 py-1.5 rounded-none"
