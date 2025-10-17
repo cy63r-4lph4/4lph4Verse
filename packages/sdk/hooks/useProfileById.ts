@@ -122,7 +122,6 @@ export function useProfileById(id?: string | number) {
           ...metadata,
         };
 
-        // ✅ Cache it globally
         profileCache.set(id!, {
           data: finalProfile,
           timestamp: Date.now(),
@@ -153,7 +152,6 @@ export function useProfileById(id?: string | number) {
     isLoading: isLoading || idLoading || readLoading,
     error,
     refetch: async () => {
-      // manual refresh (bypasses cache)
       profileCache.delete(id!);
       setLoading(true);
       setProfile(null);

@@ -2,7 +2,8 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, http } from "viem";
 import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
-import { celoSepolia, fetchTaskById } from "@verse/hirecore-web/lib/taskService";
+import {  fetchTaskById } from "@verse/hirecore-web/lib/taskService";
+import { celoSepolia } from "viem/chains";
 
 const PAGE_SIZE = 6;
 

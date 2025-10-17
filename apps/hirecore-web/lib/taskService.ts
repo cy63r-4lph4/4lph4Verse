@@ -1,21 +1,12 @@
 // lib/fetchTaskById.ts
-import { createPublicClient, http, defineChain } from "viem";
 import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/services/pinata";
 import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
+import { createPublicClient, http } from "viem";
+import { celoSepolia } from "viem/chains";
+import {fetchVerseProfile} from "@verse/sdk/utils/profile/fetchProfile";
 
-/* -------------------------------------------------------------------------- */
-/* ⚙️ CELO SEPOLIA CONFIG                                                     */
-/* -------------------------------------------------------------------------- */
-export const celoSepolia = defineChain({
-  id: 11142220,
-  name: "Celo Sepolia",
-  network: "celo-sepolia",
-  nativeCurrency: { name: "Celo", symbol: "CELO", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://forno.celo-sepolia.celo-testnet.org"] },
-  },
-});
+
 
 /* -------------------------------------------------------------------------- */
 /* 🧠 Simple in-memory cache                                                  */
@@ -95,6 +86,7 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
     };
   })
 );
+const hirerProfile = await fetchVerseProfile(metadata?.verse?.verseId);
 
 
   /* ---------------------------------------------------------------------- */
@@ -117,7 +109,14 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
     coordinates: metadata.coordinates ?? {},
     metadataURI,
     createdAt: metadata.createdAt ?? null,
-    postedBy: metadata?.verse?.handle ? `@${metadata.verse.handle}` : "Unknown",
+    postedByProfile: hirerProfile,
+postedBy:
+  hirerProfile?.displayName
+    ? hirerProfile.displayName
+    : hirerProfile?.handle
+    ? `@${hirerProfile.handle}`
+    : "Unknown",
+
     postedTime: metadata?.createdAt
       ? new Date(metadata.createdAt).toLocaleDateString()
       : "Unknown",
