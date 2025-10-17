@@ -52,7 +52,6 @@ export default function TaskSidebar({
   const handleProfileClick = () => {
     const profile = task.postedByProfile;
     if (profile?.handle) router.push(`/profile/${profile.handle}`);
-    else if (profile?.id) router.push(`/profile/${profile.id}`);
     else toast("Profile not found");
   };
 

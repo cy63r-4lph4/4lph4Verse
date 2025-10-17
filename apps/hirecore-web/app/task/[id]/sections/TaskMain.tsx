@@ -2,10 +2,26 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
-import { MapPin, Clock, DollarSign, Home, Building } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  DollarSign,
+  Home,
+  Building,
+  Map,
+  Navigation,
+} from "lucide-react";
 import type { Task } from "./types";
-import TaskAttachments from "./TaskAttachments"; 
+import TaskAttachments from "./TaskAttachments";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@verse/hirecore-web/components/ui/dialog";
 
 export default function TaskMain({
   task,
@@ -14,6 +30,28 @@ export default function TaskMain({
   task: Task;
   onPreviewAttachment: (attachment: Attachment) => void;
 }) {
+  const [showMap, setShowMap] = useState(false);
+
+  const handleOpenGoogleMaps = () => {
+    if (!task.coordinates) return;
+    const { lat, lng } = task.coordinates;
+    window.open(
+      `https://www.google.com/maps?q=${lat},${lng}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const handleOpenOSM = () => {
+    if (!task.coordinates) return;
+    const { lat, lng } = task.coordinates;
+    window.open(
+      `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -87,7 +125,7 @@ export default function TaskMain({
             </div>
           </section>
 
-          {/* ✅ Attachments */}
+          {/* Attachments */}
           {task.attachments && task.attachments.length > 0 && (
             <section>
               <TaskAttachments
@@ -97,21 +135,47 @@ export default function TaskMain({
             </section>
           )}
 
-          {/* GPS */}
+          {/* 🧭 GPS Location (Interactive) */}
           {task.coordinates &&
             (task.coordinates.lat || task.coordinates.lng) && (
               <section>
                 <h3 className="text-white font-semibold mb-3">GPS Location</h3>
-                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <div className="flex items-center space-x-2 text-blue-400">
-                    <MapPin className="w-4 h-4" />
-                    <span className="font-mono text-sm">
-                      {task.coordinates.lat}, {task.coordinates.lng}
-                    </span>
+                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center space-x-2 text-blue-400">
+                      <MapPin className="w-4 h-4" />
+                      <span className="font-mono text-sm">
+                        {task.coordinates.lat}, {task.coordinates.lng}
+                      </span>
+                    </div>
+
+                    {/* ✨ Better-looking buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleOpenGoogleMaps}
+                        className="px-3 py-1.5 text-xs font-medium rounded-full
+                bg-gradient-to-r from-blue-600 to-indigo-500
+                text-white hover:from-blue-700 hover:to-indigo-600
+                shadow-[0_0_10px_rgba(59,130,246,0.4)] transition-all duration-200"
+                      >
+                        Google Maps
+                      </button>
+
+                      <button
+                        onClick={handleOpenOSM}
+                        className="px-3 py-1.5 text-xs font-medium rounded-full
+                bg-gradient-to-r from-purple-600 to-pink-500
+                text-white hover:from-purple-700 hover:to-pink-600
+                shadow-[0_0_10px_rgba(168,85,247,0.4)] transition-all duration-200"
+                      >
+                        OpenStreetMap
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-gray-300 text-sm mt-2">
-                    Use these coordinates for precise navigation to the task
-                    location.
+
+                  <p className="text-gray-300 text-sm">
+                    Tap a provider to open navigation, or preview the
+                    coordinates on your map app.
                   </p>
                 </div>
               </section>
