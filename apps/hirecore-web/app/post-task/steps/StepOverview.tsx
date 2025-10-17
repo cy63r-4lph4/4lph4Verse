@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@verse/hirecore-web/components/ui/select";
-import { CATEGORIES, URGENCYlEVEL } from "@verse/hirecore-web/utils/Constants";
+import { CATEGORIES, URGENCYLEVEL } from "@verse/hirecore-web/utils/Constants";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 import { Home, Building, Laptop } from "lucide-react";
 
@@ -101,7 +101,7 @@ export default function StepOverview({
               <SelectValue placeholder="Select urgency" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-white/20 backdrop-blur-xl">
-              {URGENCYlEVEL.map((level) => (
+              {URGENCYLEVEL.map((level) => (
                 <SelectItem
                   key={level.value}
                   value={level.value}
