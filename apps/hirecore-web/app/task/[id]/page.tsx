@@ -27,7 +27,10 @@ useEffect(() => {
   if (!id) return;
 
   const stateTask = window.history.state?.task;
+      console.log("Loaded task from history state:", stateTask);
+
   if (stateTask) {
+    console.log("Loaded task from history state:", stateTask);
     setTask(stateTask);
     setLoading(false);
   } else {
