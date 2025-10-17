@@ -94,3 +94,9 @@ export interface TaskCardProps {
   task: Task; 
     index?: number;
   }
+
+export interface Attachment {
+  name: string;
+  url: string;
+  type?: string;
+}

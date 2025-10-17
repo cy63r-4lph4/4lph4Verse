@@ -4,9 +4,16 @@ import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { MapPin, Clock, DollarSign, Home, Building } from "lucide-react";
 import type { Task } from "./types";
-import TaskAttachments from "./TaskAttachments"; // ✅ import
+import TaskAttachments from "./TaskAttachments"; 
+import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 
-export default function TaskMain({ task }: { task: Task }) {
+export default function TaskMain({
+  task,
+  onPreviewAttachment,
+}: {
+  task: Task;
+  onPreviewAttachment: (attachment: Attachment) => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -83,7 +90,10 @@ export default function TaskMain({ task }: { task: Task }) {
           {/* ✅ Attachments */}
           {task.attachments && task.attachments.length > 0 && (
             <section>
-              <TaskAttachments attachments={task.attachments} />
+              <TaskAttachments
+                attachments={task.attachments}
+                onPreview={onPreviewAttachment}
+              />
             </section>
           )}
 

@@ -9,6 +9,7 @@ import type { Task } from "./sections/types";
 import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
+import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 
 export default function TaskDetailsPage() {
   const params = useParams();
@@ -19,34 +20,36 @@ export default function TaskDetailsPage() {
   const [showManagement, setShowManagement] = useState(false);
   const [taskState, setTaskState] = useState<Task | null>(null);
   const [showBid, setShowBid] = useState(false);
-const [task, setTask] = useState<Task | null>(null);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState<string | null>(null);
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAttachment, setSelectedAttachment] =
+    useState<Attachment | null>(null);
 
-useEffect(() => {
-  if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-  const cached = useTaskStore.getState().getTask(id);
-  if (cached) {
-    setTask(cached);
-    setLoading(false);
-  } else {
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/tasks/${id}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Task not found");
-        setTask(data);
-        useTaskStore.getState().setTask(id, data); 
-      } catch (err: any) {
-        setError(err.message || "Failed to load task");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }
-}, [id]);
+    const cached = useTaskStore.getState().getTask(id);
+    if (cached) {
+      setTask(cached);
+      setLoading(false);
+    } else {
+      (async () => {
+        try {
+          setLoading(true);
+          const res = await fetch(`/api/tasks/${id}`);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Task not found");
+          setTask(data);
+          useTaskStore.getState().setTask(id, data);
+        } catch (err: any) {
+          setError(err.message || "Failed to load task");
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [id]);
 
   const t = taskState ?? task;
   if (!id) {
@@ -89,7 +92,7 @@ useEffect(() => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <TaskHeader task={t} onBack={() => router.push("/tasks")} />
-          <TaskMain task={t} />
+          <TaskMain task={t} onPreviewAttachment={setSelectedAttachment} />
         </div>
 
         <div className="lg:col-span-1 space-y-6">
@@ -98,7 +101,7 @@ useEffect(() => {
             isClient={isClient}
             onOpenChat={() => setShowChat(true)}
             onOpenManage={() => setShowManagement(true)}
-            onOpenBid={() => setShowBid(true)} 
+            onOpenBid={() => setShowBid(true)}
           />
         </div>
       </div>
@@ -112,7 +115,9 @@ useEffect(() => {
         onCloseChat={() => setShowChat(false)}
         onCloseManage={() => setShowManagement(false)}
         onTaskUpdate={(updated) => setTaskState(updated)}
-        onCloseBid={() => setShowBid(false)} 
+        onCloseBid={() => setShowBid(false)}
+        selectedAttachment={selectedAttachment}
+        onCloseAttachment={() => setSelectedAttachment(null)}
       />
     </div>
   );

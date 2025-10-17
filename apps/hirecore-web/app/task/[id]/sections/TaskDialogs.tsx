@@ -7,9 +7,14 @@ import {
   CardTitle,
 } from "@verse/hirecore-web/components/ui/card";
 import { Button } from "@verse/hirecore-web/components/ui/button";
+import { Download } from "lucide-react";
 import type { Task } from "./types";
 import { BidModal } from "@verse/hirecore-web/components/BidModal";
+import type { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 
+/* -------------------------------------------------------------------------- */
+/* 🧩 TaskDialogs                                                             */
+/* -------------------------------------------------------------------------- */
 export default function TaskDialogs({
   task,
   isClient,
@@ -20,12 +25,16 @@ export default function TaskDialogs({
   onCloseManage,
   onCloseBid,
   onTaskUpdate,
+  selectedAttachment,
+  onCloseAttachment,
 }: {
   task: Task;
   isClient: boolean;
   openChat: boolean;
   openManage: boolean;
   openBid: boolean;
+  selectedAttachment: Attachment | null;
+  onCloseAttachment: () => void;
   onCloseChat: () => void;
   onCloseManage: () => void;
   onCloseBid: () => void;
@@ -33,6 +42,7 @@ export default function TaskDialogs({
 }) {
   return (
     <>
+      {/* 💬 Chat */}
       {openChat && (
         <Overlay onClose={onCloseChat}>
           <Card className="w-full max-w-2xl glass-effect border-white/20">
@@ -49,6 +59,7 @@ export default function TaskDialogs({
         </Overlay>
       )}
 
+      {/* ⚙️ Manage Task */}
       {openManage && (
         <ManageTaskModal
           task={task}
@@ -56,13 +67,91 @@ export default function TaskDialogs({
           onTaskUpdate={onTaskUpdate}
         />
       )}
+
+      {/* 💸 Bid Modal */}
       {openBid && <BidModal task={task} onClose={onCloseBid} />}
 
-      
+      {/* 📎 Attachment Preview Modal */}
+      {selectedAttachment && (
+        <Overlay onClose={onCloseAttachment}>
+          <Card className="w-full max-w-4xl glass-effect border-white/20 overflow-hidden">
+            <CardHeader className="flex items-center justify-between border-b border-white/10">
+              <CardTitle className="text-white truncate">
+                {selectedAttachment.name}
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCloseAttachment}
+                className="text-gray-300 hover:text-white"
+              >
+                ✕
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0 bg-black flex justify-center max-h-[80vh] overflow-auto">
+              <AttachmentContent attachment={selectedAttachment} />
+            </CardContent>
+          </Card>
+        </Overlay>
+      )}
     </>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* 📎 Attachment Content Component                                            */
+/* -------------------------------------------------------------------------- */
+function AttachmentContent({ attachment }: { attachment: Attachment }) {
+  const isImage =
+    attachment.type?.startsWith("image") ||
+    /\.(png|jpg|jpeg|gif|webp)$/i.test(attachment.url);
+  const isPDF =
+    attachment.type === "application/pdf" || /\.pdf$/i.test(attachment.url);
+
+  if (isImage) {
+    return (
+      <img
+        src={attachment.url}
+        alt={attachment.name}
+        className="max-h-[75vh] w-auto object-contain rounded-md"
+      />
+    );
+  }
+
+  if (isPDF) {
+    return (
+      <iframe
+        src={`${attachment.url}#toolbar=0`}
+        className="w-full h-[80vh] border-none rounded-b-2xl"
+      />
+    );
+  }
+
+  return (
+    <div className="p-6 text-gray-400 text-center">
+      <p>Preview not available for this file type.</p>
+      <Button
+        className="mt-4"
+        onClick={() => {
+          const link = document.createElement("a");
+          link.href = attachment.url;
+          link.download = attachment.name || "attachment";
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }}
+      >
+        <Download className="w-4 h-4 mr-1" /> Download File
+      </Button>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 🧱 Overlay (shared modal wrapper)                                          */
+/* -------------------------------------------------------------------------- */
 function Overlay({
   children,
   onClose,
@@ -71,13 +160,19 @@ function Overlay({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        onClick={onClose}
+      />
       <div className="relative z-10">{children}</div>
     </div>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* ⚙️ Manage Task Modal (same as before)                                     */
+/* -------------------------------------------------------------------------- */
 function ManageTaskModal({
   task,
   onClose,
