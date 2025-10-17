@@ -92,12 +92,12 @@ export default function WorkersPage() {
         />
 
         {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           <Select
             onValueChange={(v) => setFilters((f) => ({ ...f, category: v }))}
             value={filters.category}
           >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent className="bg-black/90 border-white/10">
@@ -113,7 +113,7 @@ export default function WorkersPage() {
             onValueChange={(v) => setFilters((f) => ({ ...f, location: v }))}
             value={filters.location}
           >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent className="bg-black/90 border-white/10">
@@ -129,7 +129,7 @@ export default function WorkersPage() {
             onValueChange={(v) => setFilters((f) => ({ ...f, rating: v }))}
             value={filters.rating}
           >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
               <SelectValue placeholder="Rating" />
             </SelectTrigger>
             <SelectContent className="bg-black/90 border-white/10">
