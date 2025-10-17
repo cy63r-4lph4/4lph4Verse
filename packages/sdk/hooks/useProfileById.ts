@@ -5,9 +5,19 @@ import { getDeployedContract, ChainId } from "../utils/contract/deployedContract
 import { fetchFromPinata } from "@verse/services/pinata";
 import { useEffect, useState } from "react";
 
+/* --------------------------------------------------
+ 🧠 In-memory cache
+-------------------------------------------------- */
+const profileCache = new Map<
+  string | number,
+  { data: any; timestamp: number }
+>();
+const CACHE_TTL = 60_000; // 1 minute
+
 export function useProfileById(id?: string | number) {
   const chainId = useChainId() as ChainId;
   const contract = getDeployedContract(chainId, "VerseProfile");
+
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
@@ -16,9 +26,25 @@ export function useProfileById(id?: string | number) {
   const enabled = Boolean(contract?.address && id);
 
   /* ------------------------------------------------
+   ⚡ Step 0: Serve from cache instantly if present
+  ------------------------------------------------ */
+  useEffect(() => {
+    if (!id) return;
+    const cached = profileCache.get(id);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setProfile(cached.data);
+      setLoading(false);
+    }
+  }, [id]);
+
+  /* ------------------------------------------------
    🧩 Step 1: Resolve handle → verseId (if handle)
   ------------------------------------------------ */
-  const { data: idData, error: idError, isLoading: idLoading } = useReadContract({
+  const {
+    data: idData,
+    error: idError,
+    isLoading: idLoading,
+  } = useReadContract({
     abi: contract.abi,
     address: contract.address,
     functionName: "verseIdByHandle",
@@ -33,13 +59,11 @@ export function useProfileById(id?: string | number) {
     if (!enabled) return;
 
     if (typeof id === "number" || (!isNaN(Number(id)) && Number(id) > 0)) {
-      // Numeric route param like /profile/5
       setVerseId(Number(id));
       return;
     }
 
     if (idData !== undefined) {
-      // handle lookup returned something
       const numericId = Number(idData);
       if (numericId > 0) {
         setVerseId(numericId);
@@ -51,9 +75,13 @@ export function useProfileById(id?: string | number) {
   }, [id, idData, enabled]);
 
   /* ------------------------------------------------
-   🧩 Step 2: Fetch onchain profile
+   🧩 Step 2: Fetch onchain profile (getProfile)
   ------------------------------------------------ */
-  const { data: profileData, error: readError, isLoading: readLoading } = useReadContract({
+  const {
+    data: profileData,
+    error: readError,
+    isLoading: readLoading,
+  } = useReadContract({
     abi: contract.abi,
     address: contract.address,
     functionName: "getProfile",
@@ -65,7 +93,7 @@ export function useProfileById(id?: string | number) {
   });
 
   /* ------------------------------------------------
-   🧩 Step 3: Fetch metadata from Pinata
+   🧩 Step 3: Fetch metadata from Pinata + cache it
   ------------------------------------------------ */
   useEffect(() => {
     if (!profileData || !Array.isArray(profileData)) return;
@@ -73,14 +101,18 @@ export function useProfileById(id?: string | number) {
     (async () => {
       try {
         const [owner, handle, metadataURI, ens, createdAt] = profileData;
-        let metadata = {};
 
+        let metadata = {};
         if (metadataURI?.startsWith("ipfs://")) {
-          const json = await fetchFromPinata(metadataURI);
-          metadata = json || {};
+          try {
+            const json = await fetchFromPinata(metadataURI);
+            metadata = json || {};
+          } catch (err) {
+            console.warn("⚠️ Failed to load IPFS metadata:", err);
+          }
         }
 
-        setProfile({
+        const finalProfile = {
           verseId,
           owner,
           handle,
@@ -88,18 +120,26 @@ export function useProfileById(id?: string | number) {
           ensNamehash: ens,
           createdAt: Number(createdAt),
           ...metadata,
+        };
+
+        // ✅ Cache it globally
+        profileCache.set(id!, {
+          data: finalProfile,
+          timestamp: Date.now(),
         });
+
+        setProfile(finalProfile);
       } catch (err) {
-        console.error("Failed to fetch profile metadata:", err);
+        console.error("❌ Failed to fetch profile metadata:", err);
         setError(err);
       } finally {
         setLoading(false);
       }
     })();
-  }, [profileData, verseId]);
+  }, [profileData, verseId, id]);
 
   /* ------------------------------------------------
-   🧩 Step 4: Handle errors + global loading state
+   🧩 Step 4: Handle errors gracefully
   ------------------------------------------------ */
   useEffect(() => {
     if (readError || idError) {
@@ -112,5 +152,12 @@ export function useProfileById(id?: string | number) {
     profile,
     isLoading: isLoading || idLoading || readLoading,
     error,
+    refetch: async () => {
+      // manual refresh (bypasses cache)
+      profileCache.delete(id!);
+      setLoading(true);
+      setProfile(null);
+      setVerseId(null);
+    },
   };
 }
