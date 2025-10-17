@@ -15,10 +15,13 @@ export const celoSepolia = defineChain({
   },
 });
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
-  if (!id) return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params; 
+  const numericId = Number(id);
 
+  if (!numericId) {
+    return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
+  }
   try {
     const chainId = 11142220 as ChainId;
     const jobBoard = getDeployedContract(chainId, "HireCoreJobBoard");

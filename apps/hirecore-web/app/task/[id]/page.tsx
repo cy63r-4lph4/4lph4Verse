@@ -5,9 +5,8 @@ import { Loader2 } from "lucide-react";
 import TaskHeader from "./sections/TaskHeader";
 import TaskMain from "./sections/TaskMain";
 import TaskSidebar from "./sections/TaskSidebar";
-import { useState } from "react";
 import type { Task } from "./sections/types";
-import { useMockTask } from "./sections/useMockTask";
+import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
 
 export default function TaskDetailsPage() {
@@ -15,11 +14,38 @@ export default function TaskDetailsPage() {
   const router = useRouter();
   const id = params?.id as string | undefined;
 
-  const { task, loading } = useMockTask(id);
   const [showChat, setShowChat] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const [taskState, setTaskState] = useState<Task | null>(null);
   const [showBid, setShowBid] = useState(false);
+// hybrid loader — instant state + fallback to API
+const [task, setTask] = useState<Task | null>(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  if (!id) return;
+
+  const stateTask = window.history.state?.task;
+  if (stateTask) {
+    setTask(stateTask);
+    setLoading(false);
+  } else {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/tasks/${id}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Task not found");
+        setTask(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load task");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }
+}, [id]);
 
   // keep a local editable copy (for mock updates)
   const t = taskState ?? task;

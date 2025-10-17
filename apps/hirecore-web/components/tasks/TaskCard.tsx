@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { MapPin, Clock, Star, Search } from "lucide-react";
 import {
   Card,
@@ -14,8 +13,7 @@ import { motion } from "motion/react";
 import type { UrgencyType } from "@verse/hirecore-web/types/task";
 import { CATEGORIES } from "@verse/hirecore-web/utils/Constants";
 import { TaskCardProps } from "@verse/hirecore-web/utils/Interfaces";
-
-
+import { useRouter } from "next/navigation";
 
 const getUrgencyColor = (urgency: UrgencyType) => {
   switch (urgency) {
@@ -39,6 +37,7 @@ const getCategoryIcon = (category: string) => {
 
 export function TaskCard({ task, index = 0 }: TaskCardProps) {
   const CategoryIcon = getCategoryIcon(task.category);
+  const router = useRouter();
 
   return (
     <motion.div
@@ -124,11 +123,15 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
               </Badge>
             </div>
 
-            <Link href={`/task/${task.id}`} className="rounded-none">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all text-sm px-4 py-1.5 rounded-none">
-                View Details
-              </Button>
-            </Link>
+            <Button
+              onClick={() => {
+                window.history.pushState({ task }, "", `/task/${task.id}`);
+                router.push(`/task/${task.id}`);
+              }}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all text-sm px-4 py-1.5 rounded-none"
+            >
+              View Details
+            </Button>
           </div>
 
           {/* Service Type + Status */}
