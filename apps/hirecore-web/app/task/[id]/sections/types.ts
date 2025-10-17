@@ -12,6 +12,11 @@ postedTime: string;
 location?: string;
 timeEstimate?: string;
 budget: number;
+attachments?: {
+name: string;
+url: string;
+type: string;
+}[];
 category?: string;
 serviceType?: ServiceType;
 urgency?: Urgency;

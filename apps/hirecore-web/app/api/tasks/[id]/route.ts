@@ -115,6 +115,7 @@ export async function GET(_: Request, context: { params: Promise<{ id: string }>
       urgency: metadata.urgency ?? "medium",
       skills: metadata.skills ?? [],
       attachments,
+      coordinates: metadata.coordinates ?? {},
       metadataURI,
       createdAt: metadata.createdAt ?? null,
       postedBy: metadata?.verse?.handle ? `@${metadata.verse.handle}` : "Unknown",
