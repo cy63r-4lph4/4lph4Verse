@@ -54,7 +54,7 @@ export default function TaskDetailsPage() {
     );
   }
 
-  const isClient = t.postedBy === "You";
+  const isClient = true;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">

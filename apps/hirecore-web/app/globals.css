@@ -288,13 +288,14 @@ body {
 }
 
 .neon-border {
+  position: relative;
   border: 2px solid transparent;
-  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out;
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4) padding-box,
+              linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4) border-box;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
+
+
 
 .glass-effect {
   background: rgba(255, 255, 255, 0.1);

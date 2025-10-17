@@ -36,14 +36,14 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link href="/find-tasks">
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-3 rounded-none">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-5 rounded-none">
                     <Search className="w-5 h-5 mr-2" />
                     Find Tasks
                   </Button>
                 </Link>
 
                 <Link href="/post-task">
-                  <Button variant="outline" className="w-full sm:w-auto neon-border text-lg px-8 py-3 bg-transparent hover:bg-white/10 ">
+                  <Button variant="outline" className="w-full sm:w-auto neon-border text-lg px-8 py-5 bg-transparent hover:bg-white/10  rounded-none">
                     <Plus className="w-5 h-5 mr-2" />
                     Post a Task
                   </Button>

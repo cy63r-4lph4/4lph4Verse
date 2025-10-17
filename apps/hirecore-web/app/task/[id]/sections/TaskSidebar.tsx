@@ -125,7 +125,7 @@ export default function TaskSidebar({
           </CardContent>
         </Card>
       ) : (
-        <Card className="glass-effect border-white/20 neon-border">
+        <Card className="bg-white/5 border-white/50 ">
           <CardHeader>
             <CardTitle className="text-white text-center">
               {task.status === "assigned"
