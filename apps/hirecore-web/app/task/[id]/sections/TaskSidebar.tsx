@@ -23,11 +23,13 @@ export default function TaskSidebar({
   isClient,
   onOpenChat,
   onOpenManage,
+  onOpenBid,
 }: {
   task: Task;
   isClient: boolean;
   onOpenChat: () => void;
   onOpenManage: () => void;
+  onOpenBid: () => void;
 }) {
   const handleApply = () =>
     toast(
@@ -182,6 +184,44 @@ export default function TaskSidebar({
                 </div>
               </>
             )}
+          </CardContent>
+        </Card>
+      )}
+      {!isClient && task.status !== "assigned" && (
+        <Card className="glass-effect border-white/20 neon-border">
+          <CardHeader>
+            <CardTitle className="text-white text-center">
+              Place a Bid
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-gray-300">
+            <p className="text-sm text-center">
+              Offer your best price and estimated completion time.
+            </p>
+
+            <Button
+              onClick={() => {
+                toast("📨 Opening bid form...");
+                onOpenBid();
+              }}
+              className="w-full bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-700 hover:to-emerald-600"
+            >
+              Place Bid
+            </Button>
+
+            <div className="border-t border-white/10 pt-4 space-y-2">
+              <p className="text-sm text-gray-400">Top Bids</p>
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span>💰 52 CØRE</span>
+                  <span className="text-gray-400">2h</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>💰 49 CØRE</span>
+                  <span className="text-gray-400">3h</span>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

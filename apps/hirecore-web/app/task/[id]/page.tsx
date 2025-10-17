@@ -19,6 +19,7 @@ export default function TaskDetailsPage() {
   const [showChat, setShowChat] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const [taskState, setTaskState] = useState<Task | null>(null);
+  const [showBid, setShowBid] = useState(false);
 
   // keep a local editable copy (for mock updates)
   const t = taskState ?? task;
@@ -43,7 +44,9 @@ export default function TaskDetailsPage() {
   if (!t) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
-        <p>No task found for <span className="text-indigo-400">{id}</span></p>
+        <p>
+          No task found for <span className="text-indigo-400">{id}</span>
+        </p>
         <button
           className="mt-6 px-4 py-2 rounded-md bg-white/10 hover:bg-white/20"
           onClick={() => router.push("/tasks")}
@@ -54,7 +57,7 @@ export default function TaskDetailsPage() {
     );
   }
 
-  const isClient = true;
+  const isClient = t.postedBy === "You";
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -70,6 +73,7 @@ export default function TaskDetailsPage() {
             isClient={isClient}
             onOpenChat={() => setShowChat(true)}
             onOpenManage={() => setShowManagement(true)}
+            onOpenBid={() => setShowBid(true)} 
           />
         </div>
       </div>
@@ -79,9 +83,11 @@ export default function TaskDetailsPage() {
         isClient={isClient}
         openChat={showChat}
         openManage={showManagement}
+        openBid={showBid}
         onCloseChat={() => setShowChat(false)}
         onCloseManage={() => setShowManagement(false)}
         onTaskUpdate={(updated) => setTaskState(updated)}
+        onCloseBid={() => setShowBid(false)} 
       />
     </div>
   );
