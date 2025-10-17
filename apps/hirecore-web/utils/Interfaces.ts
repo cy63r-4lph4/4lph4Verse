@@ -100,3 +100,17 @@ export interface Attachment {
   url: string;
   type?: string;
 }
+
+export interface WorkerProfile {
+  id: number;
+  name: string;
+  handle: string;
+  avatar?: string;
+  category: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  skills: string[];
+  hourlyRate?: number;
+  experience?: string;
+}
