@@ -321,7 +321,7 @@ function EmptyState({ tab }: { tab: "applications" | "requests" }) {
   const title = tab === "applications" ? "No Applications Yet" : "No Requests Yet";
   const message =
     tab === "applications"
-      ? "You haven’t applied for any tasks yet. Explore open tasks and send your first application."
+      ? "You haven't applied for any tasks yet. Explore open tasks and send your first application."
       : "No client has sent you a request yet. Keep your profile active and visible.";
 
   const cta =
