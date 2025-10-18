@@ -11,6 +11,7 @@ import { Download } from "lucide-react";
 import type { Task } from "./types";
 import { BidModal } from "@verse/hirecore-web/components/BidModal";
 import type { Attachment } from "@verse/hirecore-web/utils/Interfaces";
+import { ApplyBidDialog } from "@verse/hirecore-web/app/task/[id]/sections/dialogs/ApplyBidDialog";
 
 /* -------------------------------------------------------------------------- */
 /* 🧩 TaskDialogs                                                             */
@@ -69,7 +70,9 @@ export default function TaskDialogs({
       )}
 
       {/* 💸 Bid Modal */}
-      {openBid && <BidModal task={task} onClose={onCloseBid} />}
+      {openBid && (
+        <ApplyBidDialog open={openBid} onClose={onCloseBid} task={task} />
+      )}
 
       {/* 📎 Attachment Preview Modal */}
       {selectedAttachment && (
