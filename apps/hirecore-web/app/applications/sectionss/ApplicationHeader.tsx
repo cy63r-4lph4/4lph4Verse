@@ -4,10 +4,14 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "@verse/hirecore-web/components/ui/input";
 
-export function ApplicationsHeader({ activeTab, query, setQuery }: {
-  activeTab: string;
+export function ApplicationsHeader({
+  activeTab,
+  query,
+  setQuery,
+}: {
+  activeTab: "applications" | "requests";
   query: string;
-  setQuery: (query: string) => void;
+  setQuery: (v: string) => void;
 }) {
   return (
     <motion.div
