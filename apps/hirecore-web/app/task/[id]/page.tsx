@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import TaskHeader from "./sections/TaskHeader";
 import TaskMain from "./sections/TaskMain";
 import TaskSidebar from "./sections/TaskSidebar";
@@ -10,7 +9,8 @@ import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
-
+import { motion } from "framer-motion";
+import TaskSkeleton from "./TaskSkeleton";
 export default function TaskDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -62,13 +62,18 @@ export default function TaskDetailsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-gray-300">
-        <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-400" />
-        <p>Loading task details...</p>
-      </div>
-    );
-  }
+  return (
+    <motion.div
+      key="skeleton"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <TaskSkeleton />
+    </motion.div>
+  );
+}
 
   if (!t) {
     return (

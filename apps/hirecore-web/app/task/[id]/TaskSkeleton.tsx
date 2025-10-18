@@ -6,25 +6,41 @@ export default function TaskSkeleton() {
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 animate-pulse">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Side (Header + Main) */}
+        {/* -------------------- Left Side (Header + Main) -------------------- */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Header Placeholder */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <div className="h-6 w-1/3 bg-white/10 rounded mb-3"></div>
-            <div className="h-4 w-2/3 bg-white/10 rounded"></div>
+          {/* Header Placeholder — back button + title area */}
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-white/10" /> {/* back button */}
+            <div className="h-6 w-1/3 bg-white/10 rounded" />
           </div>
 
-          {/* Main Content Placeholder */}
+          {/* Task Info / Main Section */}
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-            <div className="h-4 w-full bg-white/10 rounded"></div>
-            <div className="h-4 w-5/6 bg-white/10 rounded"></div>
-            <div className="h-4 w-2/3 bg-white/10 rounded"></div>
+            {/* Title + meta */}
+            <div className="h-5 w-1/2 bg-white/10 rounded"></div>
+            <div className="h-4 w-1/3 bg-white/10 rounded mb-4"></div>
+
+            {/* Description */}
+            <div className="space-y-3">
+              <div className="h-4 w-full bg-white/10 rounded"></div>
+              <div className="h-4 w-5/6 bg-white/10 rounded"></div>
+              <div className="h-4 w-2/3 bg-white/10 rounded"></div>
+            </div>
+
+            {/* Attachments / Map Section */}
             <div className="h-64 w-full bg-white/10 rounded mt-6"></div>
+          </div>
+
+          {/* Extra placeholder for future sections (reviews, milestones, etc.) */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+            <div className="h-5 w-1/4 bg-white/10 rounded"></div>
+            <div className="h-4 w-3/4 bg-white/10 rounded"></div>
+            <div className="h-4 w-2/3 bg-white/10 rounded"></div>
           </div>
         </div>
 
-        {/* Sidebar Placeholder */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* -------------------- Sidebar -------------------- */}
+        <div className="lg:col-span-1 space-y-6 mt-12 lg:mt-0">
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <div className="h-6 w-1/2 bg-white/10 rounded mb-4"></div>
             <div className="space-y-3">
@@ -34,6 +50,7 @@ export default function TaskSkeleton() {
             </div>
           </div>
 
+          {/* Sidebar Buttons */}
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
             <div className="h-10 w-full bg-white/10 rounded"></div>
             <div className="h-10 w-full bg-white/10 rounded"></div>
