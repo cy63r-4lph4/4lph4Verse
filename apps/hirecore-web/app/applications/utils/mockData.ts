@@ -1,0 +1,61 @@
+import type { WorkerApplication, ClientRequest } from "./types";
+
+export const mockApplications: WorkerApplication[] = [
+  {
+    id: 101,
+    title: "Design a Landing Page",
+    description: "Create a sleek, responsive landing page for a SaaS launch.",
+    budget: 200,
+    urgency: "medium",
+    location: "Remote",
+    status: "pending",
+    postedByProfile: { displayName: "Kofi Mensah", handle: "kofi_dev" },
+    postedTime: "2 days ago",
+    skills: ["Figma", "Next.js", "Tailwind"],
+    myBidAmount: 180,
+    serviceType: "workshop",
+  },
+  {
+    id: 102,
+    title: "Electrical Maintenance",
+    description: "On-site wiring inspection and quick repairs.",
+    budget: 150,
+    urgency: "high",
+    location: "Tema",
+    status: "accepted",
+    postedByProfile: { displayName: "Ama Serwaa", handle: "ama_homefix" },
+    postedTime: "6 hours ago",
+    skills: ["Electrical", "Safety"],
+    myBidAmount: 145,
+    serviceType: "on-site",
+  },
+];
+
+export const mockRequests: ClientRequest[] = [
+  {
+    id: 201,
+    title: "Fix Office WiFi",
+    description: "Need a network technician to diagnose slow office WiFi.",
+    budget: 100,
+    urgency: "urgent",
+    location: "East Legon",
+    status: "pending",
+    postedByProfile: { displayName: "John Doe", handle: "john_workspace" },
+    postedTime: "1 hour ago",
+    requestNote: "We saw your profile — are you available today?",
+    serviceType: "on-site",
+  },
+  {
+    id: 202,
+    title: "Logo Cleanup",
+    description: "Vectorize and tidy our logo source file.",
+    budget: 60,
+    urgency: "low",
+    location: "Remote",
+    status: "pending",
+    postedByProfile: { displayName: "AV Studios", handle: "av_brand" },
+    postedTime: "yesterday",
+    requestNote: "Quick turnaround (same day) preferred.",
+    serviceType: "workshop",
+  },
+];
