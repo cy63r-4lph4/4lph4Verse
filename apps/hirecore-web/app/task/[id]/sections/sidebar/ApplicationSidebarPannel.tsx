@@ -40,9 +40,8 @@ export function ApplicantSidebarPanel({
 
   const handleApply = () => {
     if (isApplicant) {
-      toast("✅ You’ve already applied for this task.");
+      toast("✅ You've already applied for this task.");
     } else {
-      toast("📨 Opening application form...");
       onOpenBid();
     }
   };

@@ -2,37 +2,42 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Task } from "../types";
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Input } from "@verse/hirecore-web/components/ui/input";
 import { Textarea } from "@verse/hirecore-web/components/ui/textarea";
-import {
-  Send,
-  Coins,
-  ClipboardEdit,
-  X,
-  Loader2,
-  MessageSquare,
-} from "lucide-react";
+import { Send, Coins, X, Loader2, MessageSquare } from "lucide-react";
 
 export function ApplyBidDialog({
   open,
   onClose,
   task,
+  containerSelector,
 }: {
   open: boolean;
   onClose: () => void;
   task: Task;
+  containerSelector?: string; // ✅ make optional
 }) {
   const [tab, setTab] = useState<"apply" | "bid">("apply");
   const [loading, setLoading] = useState(false);
-
-  // form fields
   const [message, setMessage] = useState("");
   const [bidAmount, setBidAmount] = useState(task.budget);
   const [estimatedTime, setEstimatedTime] = useState("");
+
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
+  // ✅ Run after mount to safely resolve document query
+  useEffect(() => {
+    if (containerSelector) {
+      const el = document.querySelector(containerSelector) as HTMLElement | null;
+      setContainer(el ?? document.body);
+    } else {
+      setContainer(document.body);
+    }
+  }, [containerSelector]);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -44,52 +49,64 @@ export function ApplyBidDialog({
           : "💰 Bid placed successfully!"
       );
       onClose();
-    }, 1200);
+    }, 900);
   };
+
+  if (!container) return null; // ✅ avoid SSR crash
 
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
-      <AnimatePresence>
-        {open && (
-          <Dialog.Portal forceMount>
-            {/* 🔲 Overlay */}
-            <Dialog.Overlay asChild>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.8 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
-              />
-            </Dialog.Overlay>
+      <Dialog.Portal forceMount container={container}>
+        {/* Overlay */}
+        <Dialog.Overlay asChild forceMount>
+          <motion.div
+            key="overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.8 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998]"
+          />
+        </Dialog.Overlay>
 
-            {/* 💠 Modal Content */}
-            <Dialog.Content asChild>
+        {/* Centered Content */}
+        <Dialog.Content
+          forceMount
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+        >
+          <AnimatePresence mode="wait">
+            {open && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                key="dialog"
+                initial={{ opacity: 0, scale: 0.9, y: 25 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                className="fixed z-50 top-[50%] left-[50%] w-[95%] max-w-lg -translate-x-1/2 -translate-y-1/2
-                rounded-2xl glass-effect border border-white/20 p-6 shadow-xl"
+                exit={{ opacity: 0, scale: 0.9, y: 25 }}
+                transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                className="relative w-full max-w-lg rounded-2xl glass-effect border border-white/20 p-6 shadow-2xl bg-black/60"
               >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-white">
-                      {tab === "apply" ? "Quick Apply" : "Custom Bid"}
-                    </h2>
-                    <p className="text-gray-400 text-sm">
-                      {tab === "apply"
-                        ? "Submit a quick application with a short message."
-                        : "Place a custom bid with your offer and timeline."}
-                    </p>
-                  </div>
-                  <Dialog.Close asChild>
-                    <button className="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </Dialog.Close>
-                </div>
+                {/* A11y labels */}
+                <Dialog.Title asChild>
+                  <h2 className="text-xl font-semibold text-white mb-1">
+                    {tab === "apply" ? "Quick Apply" : "Custom Bid"}
+                  </h2>
+                </Dialog.Title>
+                <Dialog.Description asChild>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {tab === "apply"
+                      ? "Submit a quick application with a short message."
+                      : "Place a custom bid with your offer and timeline."}
+                  </p>
+                </Dialog.Description>
+
+                {/* Close */}
+                <Dialog.Close asChild>
+                  <button
+                    aria-label="Close"
+                    className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </Dialog.Close>
 
                 {/* Tabs */}
                 <div className="flex items-center mb-6 border-b border-white/10">
@@ -117,7 +134,7 @@ export function ApplyBidDialog({
                   </button>
                 </div>
 
-                {/* Form Body */}
+                {/* Form */}
                 <div className="space-y-4">
                   <div>
                     <label className="text-gray-300 text-sm mb-1 block">
@@ -154,7 +171,9 @@ export function ApplyBidDialog({
                         <Input
                           type="text"
                           value={estimatedTime}
-                          onChange={(e) => setEstimatedTime(e.target.value)}
+                          onChange={(e) =>
+                            setEstimatedTime(e.target.value)
+                          }
                           placeholder="e.g., 3 days"
                           className="bg-white/5 border-white/10 text-gray-200 focus:border-purple-400 focus:ring-0"
                         />
@@ -164,37 +183,37 @@ export function ApplyBidDialog({
                 </div>
 
                 {/* Submit */}
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6">
                   <Button
                     disabled={loading}
                     onClick={handleSubmit}
                     className={`w-full py-3 text-lg font-medium flex items-center justify-center gap-2
-                      ${
-                        tab === "apply"
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                          : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                      }`}
+                    ${
+                      tab === "apply"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    }`}
                   >
                     {loading ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Submitting...</span>
+                        Submitting...
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        <span>
-                          {tab === "apply" ? "Submit Application" : "Place Bid"}
-                        </span>
+                        {tab === "apply"
+                          ? "Submit Application"
+                          : "Place Bid"}
                       </>
                     )}
                   </Button>
                 </div>
               </motion.div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        )}
-      </AnimatePresence>
+            )}
+          </AnimatePresence>
+        </Dialog.Content>
+      </Dialog.Portal>
     </Dialog.Root>
   );
 }
