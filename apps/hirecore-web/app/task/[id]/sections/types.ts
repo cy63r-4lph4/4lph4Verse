@@ -23,6 +23,7 @@ url: string;
 type: string;
 }[];
 applications?: any[];
+milestones?: any[];
 bids?: any[];
 category?: string;
 serviceType?: ServiceType;
