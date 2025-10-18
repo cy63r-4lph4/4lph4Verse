@@ -43,9 +43,20 @@ export function ApplicantSidebarPanel({
       toast("✅ You’ve already applied for this task.");
     } else {
       toast("📨 Opening application form...");
-      onOpenBid(); // unified Apply/Bid modal
+      onOpenBid();
     }
   };
+
+  // 🧠 Fallback stats (replace with real aggregated data later)
+  const totalBids = task.bids?.length ?? 0;
+  const averageBid =
+    totalBids > 0
+      ? (
+          task.bids!.reduce((sum, b) => sum + (b.bidAmount ?? 0), 0) / totalBids
+        ).toFixed(1)
+      : "--";
+  const highestBid =
+    totalBids > 0 ? Math.max(...task.bids!.map((b) => b.bidAmount ?? 0)) : "--";
 
   return (
     <>
@@ -58,7 +69,6 @@ export function ApplicantSidebarPanel({
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Clickable Profile Card */}
           <motion.div
             whileHover={{
               scale: 1.02,
@@ -92,7 +102,6 @@ export function ApplicantSidebarPanel({
             </div>
           </motion.div>
 
-          {/* Chat */}
           <Button
             onClick={onOpenChat}
             className="w-full bg-blue-600 hover:bg-blue-700"
@@ -102,7 +111,7 @@ export function ApplicantSidebarPanel({
         </CardContent>
       </Card>
 
-      {/* 💼 Task Info */}
+      {/* 💼 Task Summary */}
       <Card className="bg-white/5 border-white/50">
         <CardHeader>
           <CardTitle className="text-white text-center">Task Summary</CardTitle>
@@ -115,7 +124,6 @@ export function ApplicantSidebarPanel({
             <p className="text-gray-400 text-sm">Payment upon completion</p>
           </div>
 
-          {/* Safety + Details */}
           <div className="space-y-3">
             <Bullet text="Secure escrow payment" />
             <Bullet text="Client verified" />
@@ -135,7 +143,34 @@ export function ApplicantSidebarPanel({
             {isApplicant ? "Application Sent" : "Apply / Place Bid"}
           </Button>
 
-          {/* Warning */}
+          {/* 📊 Bidding Stats (Partial Transparency Model) */}
+          {task.status === "open" && (
+            <div className="border-t border-white/10 pt-4 space-y-2 animate-fade-in">
+              <p className="text-sm text-gray-400 font-medium">
+                Current Bidding Stats
+              </p>
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span>💰 Highest Bid</span>
+                  <span className="text-gray-300">
+                    {highestBid === "--" ? "--" : `${highestBid} CØRE`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>💰 Average Bid</span>
+                  <span className="text-gray-300">
+                    {averageBid === "--" ? "--" : `${averageBid} CØRE`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>🧑‍💻 Total Applicants</span>
+                  <span className="text-gray-300">{totalBids}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ⚠️ Warning */}
           <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5" />
@@ -156,6 +191,7 @@ export function ApplicantSidebarPanel({
   );
 }
 
+/* 🔹 Utility Subcomponent */
 function Bullet({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-2 text-sm text-gray-300">

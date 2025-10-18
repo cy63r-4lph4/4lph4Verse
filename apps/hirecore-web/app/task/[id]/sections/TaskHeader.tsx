@@ -37,7 +37,7 @@ return (
 <div>
 <CardTitle className="text-white text-2xl mb-2">{task.title}</CardTitle>
 <div className="flex items-center gap-2 text-sm text-gray-400">
-<span>Posted by {task.postedBy}</span>
+<span>Posted by {task.postedByProfile?.displayName || task.postedByProfile?.handle || "Unknown"}</span>
 <span>•</span>
 <span>{task.postedTime}</span>
 </div>
