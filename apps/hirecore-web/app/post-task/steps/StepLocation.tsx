@@ -15,15 +15,9 @@ import { MapPin, Loader2, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocation } from "@verse/sdk/hooks/useGeolocation";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
-import type { Map as LeafletMap, LeafletEvent } from "leaflet";
+import type { Map as LeafletMap } from "leaflet";
 
-type NominatimItem = {
-  display_name: string;
-  lat: string;
-  lon: string;
-  importance?: number;
-  place_rank?: number;
-};
+
 // 🗺️ Lazy-load react-leaflet for SSR safety
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
@@ -112,7 +106,7 @@ export default function StepLocation({
         toast.error("Failed to reverse geocode location");
       }
     })();
-  }, [coordinates]);
+  }, [coordinates, setFormDataAction]);
 
   useEffect(() => {
     if (error) toast.error("❌ Location Error", { description: error });

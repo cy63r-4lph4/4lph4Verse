@@ -11,6 +11,7 @@ import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 import { motion } from "framer-motion";
 import TaskSkeleton from "./TaskSkeleton";
+import { toast } from "sonner";
 export default function TaskDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -43,14 +44,19 @@ export default function TaskDetailsPage() {
           if (!res.ok) throw new Error(data.error || "Task not found");
           setTask(data);
           useTaskStore.getState().setTask(id, data);
-        } catch (err: any) {
-          setError(err.message || "Failed to load task");
+        } catch (err: unknown) {
+          setError((err as Error).message || "Failed to load task");
         } finally {
           setLoading(false);
         }
       })();
     }
   }, [id]);
+  useEffect(() => {
+    if (error) {
+      toast.error("Error loading task", { description: error });
+    }
+  }, [error]);
 
   const t = taskState ?? task;
   if (!id) {
@@ -62,18 +68,18 @@ export default function TaskDetailsPage() {
   }
 
   if (loading) {
-  return (
-    <motion.div
-      key="skeleton"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <TaskSkeleton />
-    </motion.div>
-  );
-}
+    return (
+      <motion.div
+        key="skeleton"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <TaskSkeleton />
+      </motion.div>
+    );
+  }
 
   if (!t) {
     return (
@@ -91,8 +97,7 @@ export default function TaskDetailsPage() {
     );
   }
   // const isClient = userAddress?.toLowerCase() === t.hirer?.toLowerCase();
-  const isClient =false;
-
+  const isClient = false;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -115,7 +120,6 @@ export default function TaskDetailsPage() {
 
       <TaskDialogs
         task={t}
-        isClient={isClient}
         openChat={showChat}
         openManage={showManagement}
         openBid={showBid}

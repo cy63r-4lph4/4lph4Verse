@@ -9,7 +9,6 @@ import {
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import {
   User,
-  Star,
   MessageCircle,
   UploadCloud,
   CheckCircle,
@@ -19,7 +18,6 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Task } from "../types";
-import { useRouter } from "next/navigation";
 
 export function WorkerActivePanel({
   task,
@@ -30,7 +28,6 @@ export function WorkerActivePanel({
   onOpenChat: () => void;
   onOpenBid: () => void; // for reusing modal if needed
 }) {
-  const router = useRouter();
 
   const handleSubmitDeliverables = () => {
     toast("📤 Opening deliverable submission modal...");

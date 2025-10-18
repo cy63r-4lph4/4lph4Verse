@@ -2,7 +2,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
 } from "apps/hirecore-web/components/ui/card";
 
 function SkeletonLine({ className }: { className?: string }) {

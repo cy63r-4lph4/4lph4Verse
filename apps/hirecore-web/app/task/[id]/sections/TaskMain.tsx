@@ -8,20 +8,11 @@ import {
   DollarSign,
   Home,
   Building,
-  Map,
-  Navigation,
 } from "lucide-react";
 import type { Task } from "./types";
 import TaskAttachments from "./TaskAttachments";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@verse/hirecore-web/components/ui/dialog";
 
 export default function TaskMain({
   task,
@@ -30,7 +21,6 @@ export default function TaskMain({
   task: Task;
   onPreviewAttachment: (attachment: Attachment) => void;
 }) {
-  const [showMap, setShowMap] = useState(false);
 
   const handleOpenGoogleMaps = () => {
     if (!task.coordinates) return;

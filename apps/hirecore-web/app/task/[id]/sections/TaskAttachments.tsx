@@ -1,12 +1,7 @@
 "use client";
-import { useState } from "react";
-import { FileText, Download, X } from "lucide-react";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { OverlayPortal } from "@verse/ui/profile/lib/overlayPortal";
-import { motion } from "framer-motion";
+import { FileText } from "lucide-react";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
-
-
+import Image from "next/image";
 
 export default function TaskAttachments({
   attachments,
@@ -40,7 +35,7 @@ export default function TaskAttachments({
               }`}
             >
               {image ? (
-                <img
+                <Image
                   src={a.url}
                   alt={a.name}
                   className="w-full h-32 object-cover rounded-md"
@@ -60,4 +55,3 @@ export default function TaskAttachments({
     </section>
   );
 }
-

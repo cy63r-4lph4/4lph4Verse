@@ -11,13 +11,13 @@ import { Download } from "lucide-react";
 import type { Task } from "./types";
 import type { Attachment } from "@verse/hirecore-web/utils/Interfaces";
 import { ApplyBidDialog } from "@verse/hirecore-web/app/task/[id]/sections/dialogs/ApplyBidDialog";
+import Image from "next/image";
 
 /* -------------------------------------------------------------------------- */
 /* 🧩 TaskDialogs                                                             */
 /* -------------------------------------------------------------------------- */
 export default function TaskDialogs({
   task,
-  isClient,
   openChat,
   openManage,
   openBid,
@@ -29,7 +29,6 @@ export default function TaskDialogs({
   onCloseAttachment,
 }: {
   task: Task;
-  isClient: boolean;
   openChat: boolean;
   openManage: boolean;
   openBid: boolean;
@@ -119,7 +118,7 @@ function AttachmentContent({ attachment }: { attachment: Attachment }) {
 
   if (isImage) {
     return (
-      <img
+      <Image
         src={attachment.url}
         alt={attachment.name}
         className="max-h-[75vh] w-auto object-contain rounded-md"

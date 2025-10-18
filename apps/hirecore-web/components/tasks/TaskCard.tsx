@@ -61,8 +61,11 @@ export function TaskCard({ task, index = 0 }: TaskCardProps) {
                   {task.title}
                 </CardTitle>
                 <p className="text-gray-400 text-sm m-0">
-                  by {task.postedBy ?? "Unknown"} •{" "}
-                  {task.postedTime ?? "a few hours ago"}
+                  by{" "}
+                  {task.postedByProfile?.displayName ||
+                    task.postedByProfile?.handle ||
+                    "Unknown"}{" "}
+                  • {task.postedTime ?? "a few hours ago"}
                 </p>
               </div>
             </div>

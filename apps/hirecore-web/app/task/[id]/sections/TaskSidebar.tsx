@@ -4,8 +4,8 @@ import { ClientSidebarPanel } from "@verse/hirecore-web/app/task/[id]/sections/s
 import { useMemo } from "react";
 import { WorkerActivePanel } from "@verse/hirecore-web/app/task/[id]/sections/sidebar/WorkerActivePannel";
 import { ApplicantSidebarPanel } from "@verse/hirecore-web/app/task/[id]/sections/sidebar/ApplicationSidebarPannel";
-import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
-
+import { Application, Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
+import { useAccount } from "wagmi";
 
 export default function TaskSidebar({
   task,
@@ -20,10 +20,7 @@ export default function TaskSidebar({
   onOpenManage: () => void;
   onOpenBid: () => void;
 }) {
-  const userAddress =
-    typeof window !== "undefined"
-      ? (window as any)?.ethereum?.selectedAddress
-      : null;
+  const { address: userAddress } = useAccount();
 
   const isAssignedWorker = useMemo(
     () =>
@@ -36,7 +33,7 @@ export default function TaskSidebar({
     () =>
       userAddress &&
       task.applications?.some(
-        (a: any) => a.applicant?.toLowerCase() === userAddress?.toLowerCase()
+        (a: Application) => a.applicant?.toLowerCase() === userAddress?.toLowerCase()
       ),
     [task, userAddress]
   );

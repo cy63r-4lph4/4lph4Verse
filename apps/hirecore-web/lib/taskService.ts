@@ -5,13 +5,15 @@ import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
 import { createPublicClient, http } from "viem";
 import { celoSepolia } from "viem/chains";
 import {fetchVerseProfile} from "@verse/sdk/utils/profile/fetchProfile";
+import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
+import { Attachment, TaskMetadata } from "@verse/hirecore-web/utils/Interfaces";
 
 
 
 /* -------------------------------------------------------------------------- */
 /* 🧠 Simple in-memory cache                                                  */
 /* -------------------------------------------------------------------------- */
-const taskCache = new Map<number, { data: any; timestamp: number }>();
+const taskCache = new Map<number, { data: Task; timestamp: number }>();
 const CACHE_TTL = 60_000; // 1 minute
 
 /* -------------------------------------------------------------------------- */
@@ -58,18 +60,18 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
   /* ---------------------------------------------------------------------- */
   /* 📦 Fetch metadata from Pinata / IPFS                                   */
   /* ---------------------------------------------------------------------- */
-  let metadata: any;
+  let metadata: TaskMetadata|null = null;
   try {
     metadata = await fetchFromPinata(metadataURI);
   } catch {
-    metadata = {};
+    metadata = null;
   }
 
   /* ---------------------------------------------------------------------- */
   /* 📎 Handle attachments (images, PDFs, etc.)                             */
   /* ---------------------------------------------------------------------- */
  const attachments = await Promise.all(
-  (metadata.attachments || []).map(async (a: any) => {
+  (metadata?.attachments || []).map(async (a: Attachment) => {
     const url = typeof a === "string" ? a : a.url;
     const fullUrl = url?.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     let type = a.type || "unknown";
@@ -86,8 +88,10 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
     };
   })
 );
-const hirerProfile = await fetchVerseProfile(metadata?.verse?.verseId);
-
+ let hirerProfile = null;
+if (metadata?.verse?.verseId) {
+  hirerProfile = await fetchVerseProfile(metadata.verse.verseId);
+}
 
   /* ---------------------------------------------------------------------- */
   /* 🧱 Construct flattened Task object                                     */
@@ -99,16 +103,16 @@ const hirerProfile = await fetchVerseProfile(metadata?.verse?.verseId);
     budget: Number(TokenUtils.format(budgetMax, 18)),
     deposit: Number(TokenUtils.format(deposit, 18)),
     expiry: Number(expiry),
-    title: metadata.title ?? `Task #${id}`,
-    description: metadata.description ?? "No description available",
-    category: metadata.category ?? "general",
-    location: metadata.location ?? "unknown",
-    urgency: metadata.urgency ?? "medium",
-    skills: metadata.skills ?? [],
+    title: metadata?.title ?? `Task #${id}`,
+    description: metadata?.description ?? "No description available",
+    category: metadata?.category ?? "general",
+    location: metadata?.location ?? "unknown",
+    urgency: metadata?.urgency ?? "medium",
+    skills: metadata?.skills ?? [],
     attachments,
-    coordinates: metadata.coordinates ?? {},
+    coordinates: metadata?.coordinates ?? {},
     metadataURI,
-    createdAt: metadata.createdAt ?? null,
+    createdAt: metadata?.createdAt ?? null,
     postedByProfile: hirerProfile,
 postedBy:
   hirerProfile?.displayName

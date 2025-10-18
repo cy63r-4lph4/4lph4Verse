@@ -111,7 +111,7 @@ export default function PostTaskPage() {
         description: (err as Error).message,
       });
     }
-  }, [formData, router, submitTask]);
+  }, [formData, router, submitTask, profile?.verseID]);
 
   const stepView = useMemo(() => {
     switch (step) {

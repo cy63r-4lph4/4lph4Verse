@@ -9,12 +9,12 @@ export async function GET(_: Request, context: { params: Promise<{ id: string }>
   try {
     const task = await fetchTaskById(numericId);
     return NextResponse.json(task);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ Task fetch error:", err);
-    const message = err.message?.includes("not found")
+    const message = (err as Error).message?.includes("not found")
       ? "Task not found"
       : "Failed to fetch task";
-    const status = err.message?.includes("not found") ? 404 : 500;
+    const status = (err as Error).message?.includes("not found") ? 404 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

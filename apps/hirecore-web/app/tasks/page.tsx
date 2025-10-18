@@ -27,7 +27,7 @@ export default function TasksPage() {
   });
 
   const chainId = useChainId() || 11142220;
-  const { data: tasks = [], isLoading, hasMore, fetchNextPage } = useTasks(chainId, filters);
+  const { data: tasks = [], isLoading, fetchNextPage } = useTasks(chainId, filters);
 
   // Infinite scroll
   useEffect(() => {

@@ -5,6 +5,7 @@ import { Star, MapPin, Briefcase } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@verse/hirecore-web/components/ui/card";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import type { WorkerProfile } from "@verse/hirecore-web/utils/Interfaces";
+import Image from "next/image";
 
 export function WorkerCard({ worker, index }: { worker: WorkerProfile; index: number }) {
   return (
@@ -16,7 +17,7 @@ export function WorkerCard({ worker, index }: { worker: WorkerProfile; index: nu
     >
       <Card className="glass-effect border border-white/10 hover:border-blue-500/40 transition-all h-full flex flex-col justify-between rounded-xl shadow-md hover:shadow-blue-500/10">
         <CardHeader className="flex items-center space-x-4">
-          <img
+          <Image
             src={worker.avatar || "/default-avatar.png"}
             alt={worker.name}
             className="w-12 h-12 rounded-full object-cover border border-white/10"

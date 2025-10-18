@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Search, UserCog } from "lucide-react";
+import {  Search, UserCog } from "lucide-react";
 import { Input } from "@verse/hirecore-web/components/ui/input";
 import {
   Select,

@@ -45,22 +45,22 @@ export interface TaskPost {
   urgency: string;
 }
 
-export interface TaskMetadata {
-  verse: { verseId: number; address: `0x${string}`; handle?: string };
-  title: string;
-  description: string;
-  category?: string;
-  urgency?: string;
-  serviceType?: string;
-  location?: string;
-  coordinates?: [number, number];
-  skills?: string[];
-  attachments?: string[];
-  budget?: number | string;
-  timeEstimate?: string;
-  version: string;
-  createdAt: string;
-}
+// export interface TaskMetadata {
+//   verse: { verseId: number; address: `0x${string}`; handle?: string };
+//   title: string;
+//   description: string;
+//   category?: string;
+//   urgency?: string;
+//   serviceType?: string;
+//   location?: string;
+//   coordinates?: [number, number];
+//   skills?: string[];
+//   attachments?: string[];
+//   budget?: number | string;
+//   timeEstimate?: string;
+//   version: string;
+//   createdAt: string;
+// }
 
 export interface HireCoreTask {
   id: number;
@@ -113,4 +113,31 @@ export interface WorkerProfile {
   skills: string[];
   hourlyRate?: number;
   experience?: string;
+}
+
+export interface TaskMetadata {
+  verse: {
+    verseId: string | number;
+    address: string;
+  };
+  title: string;
+  description: string;
+  category?: string;
+  urgency?: string;
+  serviceType?: string;
+  location?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  skills?: string[];
+  attachments?: {
+    name: string;
+    url: string;
+    type?: string;
+  }[];
+  budget: number;
+  timeEstimate?: string;
+  version: string;
+  createdAt: string;
 }
