@@ -7,7 +7,7 @@
 
 ## 🚀 Update
 
-HireCore frontend deployed on vercel🎉
+updated the Hirecore platform to allow task posting and live task and profile fetching
 url: https://4lph4-verse-hirecore.vercel.app/
 
 ---
@@ -138,24 +138,12 @@ Last updated: 2025-09-23
 
 ## 📜 Ship Log (Proof of Ship)
 
-2025-09-10 — Setup monorepo structure (apps, contracts, sdk, services).
-
-2025-09-12 — Added CoreToken + Faucet contracts.
-
-2025-09-15 — Registered HireCore for Proof of Ship.
-
-2025-09-16 — Integrated Ignition deployments + export script.
-
-2025-09-16 — Successfully deployed to Celo Sepolia testnet 🎉.
-2025-09-23 — Deployed HireCore + Verse contracts on Celo Sepolia, organized under MasterModule for coordinated deployment.
-2025-09-26 — Added a profile page
+2025-10-18 — Updated the frontend to display task details and user profiles
 
 ---
 
 ## 🧭 Next Steps
 
-Expand HireCore frontend (task creation, escrow flows).
-
-Develop a smart wallet for (account abstraction to enable seamless ux for non-crypto native users).
-
+Update Alph4 CØRE token contract to allow permits which will allow a fully gasless expeirience for users.
+Depoy HireCore on base and Verse profile on celo to test multichain compactibility.
 Deploy Alph4 CØRE token to multiple chains (lisk and base).
