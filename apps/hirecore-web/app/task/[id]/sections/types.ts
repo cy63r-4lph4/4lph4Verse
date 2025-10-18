@@ -22,6 +22,8 @@ name: string;
 url: string;
 type: string;
 }[];
+applications?: any[];
+bids?: any[];
 category?: string;
 serviceType?: ServiceType;
 urgency?: Urgency;
