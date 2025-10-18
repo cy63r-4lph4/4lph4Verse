@@ -10,12 +10,10 @@ import { useEffect, useState } from "react";
 import TaskDialogs from "./sections/TaskDialogs";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
-import { useAccount } from "wagmi";
 
 export default function TaskDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { address: userAddress } = useAccount();
 
   const id = params?.id as string | undefined;
 

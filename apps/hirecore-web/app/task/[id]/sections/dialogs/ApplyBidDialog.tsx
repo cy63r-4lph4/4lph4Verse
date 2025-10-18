@@ -150,7 +150,7 @@ export function ApplyBidDialog({
                     <Textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Hi, I’m interested in helping with this task..."
+                      placeholder="Hi, I'm interested in helping with this task..."
                       className="min-h-[100px] text-gray-200 bg-white/5 border-white/10 focus:border-blue-400 focus:ring-0"
                     />
                   </div>
