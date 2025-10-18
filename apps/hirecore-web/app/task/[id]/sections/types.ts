@@ -13,6 +13,7 @@ postedByProfile?: {
   handle?: string;
 };
 hirer?: `0x${string}`;
+assignedTo?: `0x${string}`;
 postedTime: string;
 location?: string;
 timeEstimate?: string;

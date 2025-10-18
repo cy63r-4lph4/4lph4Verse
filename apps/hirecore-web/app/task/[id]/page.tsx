@@ -87,9 +87,9 @@ export default function TaskDetailsPage() {
       </div>
     );
   }
-  const isClient = userAddress?.toLowerCase() === t.hirer?.toLowerCase();
+  // const isClient = userAddress?.toLowerCase() === t.hirer?.toLowerCase();
+  const isClient =false;
 
-  console.log(isClient, t.hirer, userAddress);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
