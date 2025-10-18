@@ -13,6 +13,9 @@ import {
   MessageCircle,
   CheckCircle,
   AlertCircle,
+  Users,
+  Eye,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -183,6 +186,47 @@ export function ApplicantSidebarPanel({
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+      {/* 📈 Task Statistics — Independent Card */}
+      <Card className="glass-effect border-white/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-white text-sm tracking-wide ">
+            <div className="w-1.5 h-4 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full" />
+            Task Stats
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-gray-400">
+              <Eye className="w-4 h-4 text-blue-400" />
+              <span>Views</span>
+            </div>
+            <span className="text-white font-medium tracking-wide">
+              {task.views ?? 127}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-gray-400">
+              <Users className="w-4 h-4 text-indigo-400" />
+              <span>Applications</span>
+            </div>
+            <span className="text-white font-medium tracking-wide">
+              {task.applications?.length ?? 0}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-gray-400">
+              <Clock className="w-4 h-4 text-purple-400" />
+              <span>Posted</span>
+            </div>
+            <span className="text-white font-medium tracking-wide">
+              {task.postedTime}
+            </span>
           </div>
         </CardContent>
       </Card>

@@ -64,6 +64,7 @@ export interface Task {
   // ⭐ Feedback
   rating?: number;
   reviews?: number;
+  views?: number;
 }
 
 /* ----------------------------- SUB INTERFACES ----------------------------- */
