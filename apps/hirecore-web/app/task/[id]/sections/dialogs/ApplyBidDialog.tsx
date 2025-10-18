@@ -9,6 +9,7 @@ import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Input } from "@verse/hirecore-web/components/ui/input";
 import { Textarea } from "@verse/hirecore-web/components/ui/textarea";
 import { Send, Coins, X, Loader2, MessageSquare } from "lucide-react";
+import { useOutsideClick } from "@verse/sdk";
 
 export function ApplyBidDialog({
   open,
@@ -21,18 +22,23 @@ export function ApplyBidDialog({
   task: Task;
   containerSelector?: string; // ✅ make optional
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(dialogRef, () => {
+    if (open) onClose();
+  });
   const [tab, setTab] = useState<"apply" | "bid">("apply");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [bidAmount, setBidAmount] = useState(task.budget);
   const [estimatedTime, setEstimatedTime] = useState("");
-
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
   // ✅ Run after mount to safely resolve document query
   useEffect(() => {
     if (containerSelector) {
-      const el = document.querySelector(containerSelector) as HTMLElement | null;
+      const el = document.querySelector(
+        containerSelector
+      ) as HTMLElement | null;
       setContainer(el ?? document.body);
     } else {
       setContainer(document.body);
@@ -77,6 +83,7 @@ export function ApplyBidDialog({
           <AnimatePresence mode="wait">
             {open && (
               <motion.div
+                ref={dialogRef}
                 key="dialog"
                 initial={{ opacity: 0, scale: 0.9, y: 25 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -171,9 +178,7 @@ export function ApplyBidDialog({
                         <Input
                           type="text"
                           value={estimatedTime}
-                          onChange={(e) =>
-                            setEstimatedTime(e.target.value)
-                          }
+                          onChange={(e) => setEstimatedTime(e.target.value)}
                           placeholder="e.g., 3 days"
                           className="bg-white/5 border-white/10 text-gray-200 focus:border-purple-400 focus:ring-0"
                         />
@@ -202,9 +207,7 @@ export function ApplyBidDialog({
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        {tab === "apply"
-                          ? "Submit Application"
-                          : "Place Bid"}
+                        {tab === "apply" ? "Submit Application" : "Place Bid"}
                       </>
                     )}
                   </Button>
