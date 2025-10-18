@@ -19,7 +19,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Task } from "../types";
-import Image from "next/image";
 
 export function ClientSidebarPanel({
   task,
@@ -70,7 +69,7 @@ export function ClientSidebarPanel({
             className="flex items-center gap-3 cursor-pointer rounded-lg p-2 transition-all duration-200"
           >
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden shadow-md">
-              <Image
+              <img
                 src={task.postedByProfile?.avatar || "/default-avatar.png"}
                 alt={task.postedByProfile?.displayName || "Unknown"}
                 className="w-12 h-12 rounded-full object-cover"
