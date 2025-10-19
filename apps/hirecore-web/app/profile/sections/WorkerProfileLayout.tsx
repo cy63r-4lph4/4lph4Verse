@@ -4,11 +4,8 @@ import { motion } from "framer-motion";
 import {
   MapPin,
   Star,
-  Coins,
-  ClipboardList,
   Flame,
   Hammer,
-  Clock,
   ArrowLeft,
   Edit3,
 } from "lucide-react";
@@ -17,70 +14,21 @@ import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
 import { useState } from "react";
+import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
-interface Application {
-  id: number;
-  title: string;
-  budget: number;
-  status: "pending" | "accepted" | "rejected" | "completed";
-}
 
-interface WorkerProfile {
-  displayName?: string;
-  handle?: string;
-  avatar?: string;
-  banner?: string;
-  location?: string;
-  bio?: string;
-  reputation?: number;
-  completedTasks?: number;
-  pendingApplications?: number;
-  earnings?: number;
-  rating?: number;
-  skills?: string[];
-  applications?: Application[];
-}
 
-const mockWorker: WorkerProfile = {
-  displayName: "Cy63r_4lph4~🐉",
-  handle: "cy63r_4lph4",
-  avatar: "/placeholder-soul.png",
-  banner:
-    "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&q=80&w=1200",
-  location: "Neo-Accra 🔥",
-  bio: "Forging the Verse — one contract, one build, one legend.",
-  reputation: 92,
-  completedTasks: 23,
-  pendingApplications: 4,
-  earnings: 1430,
-  rating: 4.9,
-  skills: ["Solidity", "Next.js", "Smart Contracts", "UI/UX Design", "IPFS"],
-  applications: [
-    { id: 1, title: "NFT Hub Redesign", budget: 180, status: "completed" },
-    { id: 2, title: "Verse Wallet API", budget: 250, status: "accepted" },
-    { id: 3, title: "HireCore Gasless UX", budget: 200, status: "pending" },
-    { id: 4, title: "VaultOfLove Smart Contract", budget: 190, status: "rejected" },
-  ],
-};
 
-export default function WorkerProfileLayout({ profile = mockWorker }: { profile?: WorkerProfile }) {
-  const {
-    displayName,
-    handle,
-    avatar,
-    banner,
-    location,
-    bio,
-    reputation,
-    completedTasks,
-    pendingApplications,
-    earnings,
-    rating,
-    skills,
-    applications,
-  } = profile;
+
+
+
+export default function WorkerProfileLayout({ profile }: { profile?: VerseProfile }) {
 
   const [expanded, setExpanded] = useState(false);
+  const worker = profile ? profile.personas?.hirecore?.roles.worker : {};
+  if (worker === undefined) {
+    return <div>Worker profile not found.</div>;
+  }
 
   return (
     <motion.div
@@ -127,7 +75,7 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center">
           <div className="w-32 h-32 rounded-full overflow-hidden border-[3px] border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.5)]">
             <Image
-              src={avatar!}
+              src={profile?.avatar??"/placeholder-soul.png"}
               alt="Avatar"
               width={128}
               height={128}
@@ -135,11 +83,11 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
             />
           </div>
           <h1 className="mt-4 text-4xl font-bold text-white font-orbitron">
-            {displayName}
+            {profile?.displayName}
           </h1>
-          <p className="text-gray-400">@{handle}</p>
+          <p className="text-gray-400">@{profile?.handle}</p>
           <p className="flex items-center gap-2 text-sm text-gray-400 mt-1">
-            <MapPin className="w-4 h-4 text-emerald-300" /> {location}
+            <MapPin className="w-4 h-4 text-emerald-300" /> {profile?.location}
           </p>
 
           {/* Actions */}
@@ -173,11 +121,11 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
               <h2 className="text-lg font-semibold text-emerald-300 flex items-center gap-2">
                 <Hammer className="w-5 h-5" /> The Forge
               </h2>
-              <p className="text-gray-400 text-sm mt-2 leading-relaxed">{bio}</p>
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">{worker.bio}</p>
               <div className="mt-4 space-y-2 text-gray-300">
-                <p>🏆 Completed Tasks: <b>{completedTasks}</b></p>
-                <p>💰 Earnings: <b>{earnings} CØRE</b></p>
-                <p>⭐ Rating: <b>{rating}</b></p>
+                <p>🏆 Completed Tasks: <b>{worker.completedTasks}</b></p>
+                <p>💰 Earnings: <b>{worker.earnings} CØRE</b></p>
+                <p>⭐ Rating: <b>{worker.rating}</b></p>
               </div>
             </CardContent>
           </Card>
@@ -189,7 +137,7 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
                 <Flame className="w-5 h-5" /> Skills Forge
               </h2>
               <div className="flex flex-wrap gap-2 mt-3">
-                {skills?.map((s) => (
+                {worker.skills?.map((s) => (
                   <Badge
                     key={s}
                     className="bg-emerald-500/10 border-emerald-400/20 text-emerald-200 text-xs"
@@ -211,12 +159,12 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
                 <motion.div
                   className="h-2 bg-emerald-400"
                   initial={{ width: 0 }}
-                  animate={{ width: `${reputation}%` }}
+                  animate={{ width: `${profile?.reputation}%` }}
                   transition={{ duration: 1 }}
                 />
               </div>
               <p className="text-right text-sm text-gray-400 mt-1">
-                {reputation}%
+                {profile?.reputation}%
               </p>
             </CardContent>
           </Card>
@@ -230,7 +178,7 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
         >
           <h2 className="text-xl text-white font-orbitron mb-5">Active Applications</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {applications?.slice(0, expanded ? applications.length : 3).map((job) => (
+            {worker.applications?.slice(0, expanded ? worker.applications.length : 3).map((job) => (
               <Card
                 key={job.id}
                 className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all"
@@ -258,7 +206,7 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
             ))}
           </div>
 
-          {applications && applications.length > 3 && (
+          {worker.applications && worker.applications.length > 3 && (
             <div className="flex justify-center mt-6">
               <Button
                 variant="ghost"

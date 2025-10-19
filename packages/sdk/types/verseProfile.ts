@@ -58,6 +58,7 @@ export interface WorkerProfile {
   hub?: string;                             // e.g. "Accra Digital Hub"
   skills?: string[];
   services?: string[];
+  applications?: any[];                  // Job applications made
   availability?: "available" | "busy" | "away";
   hourlyRate?: number;
   completedTasks?: number;
@@ -83,6 +84,9 @@ export interface HirerProfile {
   clientTier?: "Bronze" | "Silver" | "Gold" | "Platinum";
   paymentVerified?: boolean;
   hireHistory?: HireHistoryItem[];
+  teams?: string[];
+  recentTasks?: any[];                   // Recent tasks posted
+  portfolio?: PortfolioItem[];
   preferences?: HirerPreferences;
 }
 

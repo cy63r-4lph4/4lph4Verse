@@ -5,16 +5,14 @@ import { useState } from "react";
 import {
   Briefcase,
   UserCog,
-  MapPin,
-  Star,
-  Coins,
-  ClipboardList,
-  ArrowLeft,
+  MapPin
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
+import { VerseProfile } from "@verse/sdk/types/verseProfile";
+import { WorkerApplication } from "@verse/hirecore-web/app/applications/utils/types";
 
 // ────────────────────────────────────────────────────────────────
 // Mock Data (replace with profile prop from SDK later)
@@ -27,6 +25,7 @@ const mockProfile = {
   banner:
     "https://omegasystemscorp.com/wp-content/uploads/2022/09/inner-banner.jpg",
   location: "Neo-Accra 🌆",
+  wallet: "0xA1B2C3D4E5F60718293A4B5C6D7E8F9012345678" as `0x${string}`,
   reputation: 88,
   personas: {
     hirecore: {
@@ -66,9 +65,8 @@ const mockProfile = {
 // ────────────────────────────────────────────────────────────────
 // Main Component
 // ────────────────────────────────────────────────────────────────
-export default function DualProfileLayout({ profile = mockProfile }) {
+export default function DualProfileLayout({ profile }: { profile: VerseProfile }) {
   const [active, setActive] = useState<"worker" | "hirer">("worker");
-  if (profile) profile = mockProfile;
   const worker = profile.personas?.hirecore?.roles.worker;
   const hirer = profile.personas?.hirecore?.roles.hirer;
   const persona = active === "worker" ? worker : hirer;
@@ -145,13 +143,15 @@ export default function DualProfileLayout({ profile = mockProfile }) {
                 : "border-indigo-400/60 shadow-[0_0_25px_rgba(99,102,241,0.5)]"
             }`}
           >
-            <Image
-              src={profile.avatar}
-              width={128}
-              height={128}
-              alt="Avatar"
-              className="object-cover"
-            />
+            {profile.avatar ? (
+              <Image
+                src={profile.avatar}
+                width={128}
+                height={128}
+                alt="Avatar"
+                className="object-cover"
+              />
+            ) : null}
           </div>
           <h1 className="mt-4 text-4xl font-bold text-white font-orbitron">
             {profile.displayName}
@@ -176,9 +176,9 @@ export default function DualProfileLayout({ profile = mockProfile }) {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => setActive("client")}
+              onClick={() => setActive("hirer")}
               className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                active === "client"
+                active === "hirer"
                   ? "bg-indigo-500/20 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.4)]"
                   : "text-gray-400"
               }`}
@@ -210,35 +210,25 @@ export default function DualProfileLayout({ profile = mockProfile }) {
                 {active === "worker" ? "Verse Reputation" : "Trust Profile"}
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed">
-                {persona.bio}
+                {persona?.bio}
               </p>
 
               <div className="flex flex-col gap-2 mt-4 text-gray-300">
-                {active === "worker" ? (
-                  <>
-                    <p>
-                      🏆 Completed Tasks: <b>{persona.completedTasks}</b>
-                    </p>
-                    <p>
-                      💰 Earnings: <b>{persona.earnings} CØRE</b>
-                    </p>
-                    <p>
-                      ⭐ Rating: <b>{persona.rating}</b>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p>
-                      📋 Posted Tasks: <b>{persona.postedTasks}</b>
-                    </p>
-                    <p>
-                      💳 Total Spent: <b>{persona.totalSpent} CØRE</b>
-                    </p>
-                    <p>
-                      🧩 Active Hires: <b>{persona.activeHires}</b>
-                    </p>
-                  </>
-                )}
+               {active === "worker" && worker && (
+  <>
+    <p>🏆 Completed Tasks: <b>{worker.completedTasks}</b></p>
+    <p>💰 Earnings: <b>{worker.earnings} CØRE</b></p>
+    <p>⭐ Rating: <b>{worker.rating}</b></p>
+  </>
+)}
+
+{active === "hirer" && hirer && (
+  <>
+    <p>📋 Posted Tasks: <b>{hirer.postedTasks}</b></p>
+    <p>💳 Total Spent: <b>{hirer.totalSpent} CØRE</b></p>
+    <p>🧩 Active Hires: <b>{hirer.activeHires}</b></p>
+  </>
+)}
               </div>
             </CardContent>
           </Card>
@@ -252,17 +242,16 @@ export default function DualProfileLayout({ profile = mockProfile }) {
                 {active === "worker" ? "Core Skills" : "Focus Areas"}
               </h2>
               <div className="flex flex-wrap gap-2">
-                {(persona.skills || ["Leadership", "Project Vision"]).map(
-                  (skill) => (
-                    <Badge
-                      key={skill}
-                      className={`${
-                        active === "worker"
-                          ? "bg-emerald-500/10 border-emerald-400/20 text-emerald-200"
-                          : "bg-indigo-500/10 border-indigo-400/20 text-indigo-200"
-                      } text-xs`}
-                    >
-                      {skill}
+                {(active === "worker" ? worker?.skills ?? [] : ["Leadership", "Project Vision"]).map((skill: string) => (
+                  <Badge
+                    key={skill}
+                    className={`${
+                      active === "worker"
+                        ? "bg-emerald-500/10 border-emerald-400/20 text-emerald-200"
+                        : "bg-indigo-500/10 border-indigo-400/20 text-indigo-200"
+                    } text-xs`}
+                  >
+                    {skill}
                     </Badge>
                   )
                 )}
@@ -304,9 +293,9 @@ export default function DualProfileLayout({ profile = mockProfile }) {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {(active === "worker"
-              ? worker.applications
+              ? worker?.applications ?? []
               : Array.from({ length: 3 })
-            ).map((item: any, i: number) => (
+            ).map((item: WorkerApplication, i: number) => (
               <Card
                 key={i}
                 className="bg-white/5 border border-white/10 hover:border-white/20 backdrop-blur-md transition-all"

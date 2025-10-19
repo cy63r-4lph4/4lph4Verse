@@ -14,9 +14,9 @@ export default function ProfileRenderer({
   fallbackContext,
 }: {
   id: string;
-  fallbackContext?: "worker" | "client";
+  fallbackContext?: "worker" | "hirer";
 }) {
-    const [navContext] = useState<"worker" | "client" | undefined>(() => consumeContext());
+    const [navContext] = useState<"worker" | "hirer" | undefined>(() => consumeContext());
   const passedContext = navContext || fallbackContext;
 
   const { profile, isLoading, error } = useProfileById(id);
@@ -44,7 +44,7 @@ export default function ProfileRenderer({
 
   if (isOwner && hasBothRoles) return <DualProfileLayout profile={profile} />;
 
-  return context === "client" ? (
+  return context === "hirer" ? (
     <ClientProfileLayout profile={targetProfile} />
   ) : (
     <WorkerProfileLayout profile={targetProfile} />

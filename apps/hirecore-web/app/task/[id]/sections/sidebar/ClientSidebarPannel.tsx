@@ -40,7 +40,7 @@ export function ClientSidebarPanel({
     toast("Profile not found");
     return;
   }
-  setContext("client");
+  setContext("hirer");
   router.push(`/profile/${profile.handle}`);
 };
 

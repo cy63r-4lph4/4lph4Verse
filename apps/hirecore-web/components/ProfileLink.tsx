@@ -10,7 +10,7 @@ export default function ProfileLink({
   children,
 }: {
   user: { handle: string };
-  context?: "worker" | "client";
+  context?: "worker" | "hirer";
   children: React.ReactNode;
 }) {
   const router = useRouter();

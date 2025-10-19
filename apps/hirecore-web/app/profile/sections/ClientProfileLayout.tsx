@@ -5,61 +5,28 @@ import {
   ArrowLeft,
   Edit3,
   MapPin,
-  Star,
   ClipboardList,
   Briefcase,
-  Coins,
   ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@verse/hirecore-web/components/ui/button";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
-import { Progress } from "@verse/hirecore-web/components/ui/progress";
 import { useState } from "react";
+import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
-interface ClientProfile {
-  displayName?: string;
-  handle?: string;
-  avatar?: string;
-  location?: string;
-  reputation?: number;
-  totalSpent?: number;
-  postedTasks?: number;
-  activeHires?: number;
-  rating?: number;
-  bio?: string;
-  teams?: string[];
-  recentTasks?: {
-    id: string | number;
-    title: string;
-    budget: number;
-    status: "open" | "active" | "completed";
-  }[];
-}
-
-export default function ClientProfileLayout({ profile }: { profile: ClientProfile }) {
+export default function ClientProfileLayout({
+  profile,
+}: {
+  profile: VerseProfile;
+}) {
   const [showAll, setShowAll] = useState(false);
 
-  // Destructure with defaults
-  const {
-    displayName = "Unknown Client",
-    handle = "anonymous",
-    avatar = "/default-avatar.png",
-    location = "Undisclosed Sector 🌍",
-    reputation = 82,
-    totalSpent = 0,
-    postedTasks = 0,
-    activeHires = 0,
-    rating = 4.6,
-    bio = "A visionary builder in the Verse. Focused on innovation, collaboration, and results.",
-    teams = ["HireCore Labs", "Vault Collective"],
-    recentTasks = [
-      { id: 1, title: "UI Revamp for VerseProfile", budget: 220, status: "active" },
-      { id: 2, title: "CØRE Token Payment Integration", budget: 180, status: "completed" },
-      { id: 3, title: "LeaseVault Onboarding Flow", budget: 300, status: "open" },
-    ],
-  } = profile || {};
+  const hirer = profile ? profile.personas?.hirecore?.roles.hirer : {};
+  if (hirer === undefined) {
+    return <div>Client profile not found.</div>;
+  }
 
   return (
     <motion.div
@@ -97,16 +64,28 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
         {/* Identity */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 text-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           <div className="w-32 h-32 rounded-full overflow-hidden border-[3px] border-indigo-400/70 shadow-[0_0_25px_rgba(99,102,241,0.5)]">
-            <Image src={avatar} width={128} height={128} alt="Client avatar" className="object-cover" />
+            <Image
+              src={profile.avatar! || "/placeholder-soul.png"}
+              width={128}
+              height={128}
+              alt="Client avatar"
+              className="object-cover"
+            />
           </div>
-          <h1 className="mt-4 text-4xl font-bold text-white font-orbitron">{displayName}</h1>
-          <p className="text-gray-400">@{handle}</p>
+          <h1 className="mt-4 text-4xl font-bold text-white font-orbitron">
+            {profile.displayName}
+          </h1>
+          <p className="text-gray-400">@{profile.handle}</p>
           <p className="flex items-center gap-2 text-sm text-gray-400 mt-1">
-            <MapPin className="w-4 h-4 text-indigo-300" /> {location}
+            <MapPin className="w-4 h-4 text-indigo-300" /> {profile.location}
           </p>
 
           <div className="mt-4 flex gap-3">
-            <Button variant="ghost" onClick={() => history.back()} className="text-gray-300 hover:bg-white/10">
+            <Button
+              variant="ghost"
+              onClick={() => history.back()}
+              className="text-gray-300 hover:bg-white/10"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
             <Button className="bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 hover:bg-indigo-500/30">
@@ -126,18 +105,22 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
               <h2 className="text-lg font-semibold text-indigo-300 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5" /> Trust Index
               </h2>
-              <p className="text-gray-400 text-sm leading-relaxed">{bio}</p>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {hirer.bio}
+              </p>
 
               <div className="mt-4">
                 <div className="h-2 rounded-full bg-white/10 overflow-hidden">
                   <motion.div
                     className="h-2 bg-indigo-400"
                     initial={{ width: 0 }}
-                    animate={{ width: `${reputation}%` }}
+                    animate={{ width: `${profile.reputation}%` }}
                     transition={{ duration: 1 }}
                   />
                 </div>
-                <p className="text-sm text-gray-400 mt-1 text-right">{reputation}%</p>
+                <p className="text-sm text-gray-400 mt-1 text-right">
+                  {profile.reputation}%
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -149,10 +132,18 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
                 <ClipboardList className="w-5 h-5" /> Hiring Summary
               </h2>
               <div className="space-y-2 text-gray-300 mt-3">
-                <p>📋 Posted Tasks: <b>{postedTasks}</b></p>
-                <p>⚙️ Active Hires: <b>{activeHires}</b></p>
-                <p>💰 Total Spent: <b>{totalSpent} CØRE</b></p>
-                <p>⭐ Rating: <b>{rating} / 5</b></p>
+                <p>
+                  📋 Posted Tasks: <b>{hirer.postedTasks}</b>
+                </p>
+                <p>
+                  ⚙️ Active Hires: <b>{hirer.activeHires}</b>
+                </p>
+                <p>
+                  💰 Total Spent: <b>{hirer.totalSpent} CØRE</b>
+                </p>
+                <p>
+                  ⭐ Rating: <b>{hirer.rating} / 5</b>
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -164,8 +155,11 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
                 <Briefcase className="w-5 h-5" /> Alliances
               </h2>
               <div className="flex flex-wrap gap-2">
-                {teams.map((team) => (
-                  <Badge key={team} className="bg-indigo-500/10 border-indigo-400/20 text-indigo-200 text-xs">
+                {hirer.teams?.map((team) => (
+                  <Badge
+                    key={team}
+                    className="bg-indigo-500/10 border-indigo-400/20 text-indigo-200 text-xs"
+                  >
                     {team}
                   </Badge>
                 ))}
@@ -181,32 +175,44 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-          <h2 className="text-xl font-orbitron text-white">Active & Recent Tasks</h2>
+          <h2 className="text-xl font-orbitron text-white">
+            Active & Recent Tasks
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {recentTasks.slice(0, showAll ? recentTasks.length : 3).map((task) => (
-              <Card
-                key={task.id}
-                className="bg-white/5 border border-white/10 hover:border-indigo-400/20 backdrop-blur-md transition-all"
-              >
-                <CardContent className="p-4 space-y-2">
-                  <h3 className="text-white font-semibold">{task.title}</h3>
-                  <p className="text-sm text-gray-400">Budget: {task.budget} CØRE</p>
-                  <Badge
-                    className={`${
-                      task.status === "completed"
-                        ? "bg-green-500/20 text-green-400 border-green-400/20"
-                        : task.status === "active"
-                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-400/20"
-                        : "bg-indigo-500/20 text-indigo-400 border-indigo-400/20"
-                    } border text-xs`}
+            {hirer.recentTasks?.length ? (
+              hirer.recentTasks
+                .slice(0, showAll ? hirer.recentTasks.length : 3)
+                .map((task) => (
+                  <Card
+                    key={task.id}
+                    className="bg-white/5 border border-white/10 hover:border-indigo-400/20 backdrop-blur-md transition-all"
                   >
-                    {task.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardContent className="p-4 space-y-2">
+                      <h3 className="text-white font-semibold">{task.title}</h3>
+                      <p className="text-sm text-gray-400">
+                        Budget: {task.budget} CØRE
+                      </p>
+                      <Badge
+                        className={`${
+                          task.status === "completed"
+                            ? "bg-green-500/20 text-green-400 border-green-400/20"
+                            : task.status === "active"
+                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-400/20"
+                              : "bg-indigo-500/20 text-indigo-400 border-indigo-400/20"
+                        } border text-xs`}
+                      >
+                        {task.status}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+              <p className="text-gray-400 col-span-full">
+                No recent tasks to display.
+              </p>
+            )}
           </div>
-          {recentTasks.length > 3 && (
+          {hirer.recentTasks && hirer.recentTasks.length > 3 && (
             <div className="flex justify-center">
               <Button
                 variant="ghost"
@@ -221,7 +227,9 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
 
         {/* ───────────────── Reputation Timeline ───────────────── */}
         <motion.div className="mt-20 space-y-3">
-          <h2 className="text-xl text-white font-orbitron mb-4">Verse Activity Log</h2>
+          <h2 className="text-xl text-white font-orbitron mb-4">
+            Verse Activity Log
+          </h2>
           {[
             "Funded ‘DragonVolt Power Hub’ (200 CØRE)",
             "Closed task ‘CØRE Integration’ with 5⭐ review",

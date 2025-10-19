@@ -139,8 +139,8 @@ function EmptyState({ onPost }: { onPost: () => void }) {
 
       <h3 className="text-white text-lg font-semibold">No Tasks Yet</h3>
       <p className="text-gray-400 max-w-sm">
-        You haven't posted any tasks yet. Get started by posting your first task
-        or finding a worker.
+        You haven&apos;t posted any tasks yet. Get started by posting your first
+        task or finding a worker.
       </p>
 
       <div className="flex gap-3">
