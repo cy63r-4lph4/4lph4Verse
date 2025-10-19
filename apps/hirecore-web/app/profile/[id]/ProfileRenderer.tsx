@@ -6,7 +6,8 @@ import DualProfileLayout from "./sections/DualProfileLayout";
 import ClientProfileLayout from "./sections/ClientProfileLayout";
 import WorkerProfileLayout from "./sections/WorkerProfileLayout";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { consumeContext } from "@verse/hirecore-web/utils/ContextBridge";
+import { useState } from "react";
 
 export default function ProfileRenderer({
   id,
@@ -15,9 +16,8 @@ export default function ProfileRenderer({
   id: string;
   fallbackContext?: "worker" | "client";
 }) {
-  const router = useRouter();
-  const state = (router as any)?.state || {}; // works with Next 15's navigation state
-  const passedContext = state?.context || fallbackContext;
+    const [navContext] = useState<"worker" | "client" | undefined>(() => consumeContext());
+  const passedContext = navContext || fallbackContext;
 
   const { profile, isLoading, error } = useProfileById(id);
   const {

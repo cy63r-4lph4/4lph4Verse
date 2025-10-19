@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Task } from "../types";
 import { useRouter } from "next/navigation";
+import { setContext } from "@verse/hirecore-web/utils/ContextBridge";
 
 export function ApplicantSidebarPanel({
   task,
@@ -36,10 +37,15 @@ export function ApplicantSidebarPanel({
   const router = useRouter();
 
   const handleProfileClick = () => {
-    const profile = task.postedByProfile;
-    if (profile?.handle) router.push(`/profile/${profile.handle}`);
-    else toast("Profile not found");
-  };
+   const profile = task.postedByProfile;
+ 
+   if (!profile?.handle) {
+     toast("Profile not found");
+     return;
+   }
+   setContext("client");
+   router.push(`/profile/${profile.handle}`);
+ };
 
   const handleApply = () => {
     if (isApplicant) {
