@@ -1,49 +1,52 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useProfileById } from "@verse/sdk/hooks/useProfileById";
+import { useProfileContext } from "@verse/hirecore-web/hooks/useProfileContext";
+import DualProfileLayout from "@verse/hirecore-web/app/profile/sections/DualProfileLayout";
 import ClientProfileLayout from "@verse/hirecore-web/app/profile/sections/ClientProfileLayout";
 import WorkerProfileLayout from "@verse/hirecore-web/app/profile/sections/WorkerProfileLayout";
-import { useProfileById } from "@verse/sdk/hooks/useProfileById";
 import { Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
-  const params = useParams();
-  const id = params?.id as string | undefined;
+  const { id } = useParams();
+  const profileId = Array.isArray(id) ? id[0] : id;
+  const { profile, isLoading, error } = useProfileById(profileId ?? "");
+  const { context, isOwner, hasBothRoles, targetProfile } = useProfileContext(profile);
 
-  // only call hook if we have a valid id
-  const { profile, isLoading, error } = useProfileById(id ?? "");
+  if (!id)
+    return <CenteredMessage text="Invalid profile route — no ID provided." />;
 
-  if (!id) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
-        <p>Invalid profile route — no ID provided.</p>
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  if (isLoading)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-300">
         <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-400" />
         <p>Loading Verse Profile...</p>
       </div>
     );
-  }
 
-  if (error || !profile) {
+  if (error || !profile)
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
-        <p>No profile found for <span className="text-indigo-400">{id}</span></p>
-      </div>
+      <CenteredMessage text={`No profile found for ${id}`} />
     );
+
+  // 👤 Owner view → dual layout
+  if (isOwner && hasBothRoles) {
+    return <DualProfileLayout profile={profile} />;
   }
 
-  const role =
-    profile.role || profile.metadata?.role || "worker";
+  // 👥 Public view → context layout
+  if (context === "client") {
+    return <ClientProfileLayout profile={targetProfile} />;
+  }
+  return <WorkerProfileLayout profile={targetProfile} />;
+}
 
-  return role === "client" ? (
-    <ClientProfileLayout profile={profile} />
-  ) : (
-    <WorkerProfileLayout profile={profile} />
+/* Small helper */
+function CenteredMessage({ text }: { text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
+      <p>{text}</p>
+    </div>
   );
 }
