@@ -15,14 +15,7 @@ import {
 
 import { Button } from "@verse/ui/button";
 import { Toaster } from "@verse/ui/toaster";
-import useStoryVault from "@/hooks/useStoryVault";
 
-import HomeView from "@/components/HomeView";
-import StoryReader from "@/components/StoryReader";
-import UserProfile from "@/components/UserProfile";
-import WriteStoryModal from "@/components/WriteStoryModal";
-import HeartBid from "@/components/HeartBid";
-import HeatBidArena from "@/components/HeatBidArena";
 
 export default function VaultOfLoveApp() {
   const [currentView, setCurrentView] = useState<"home" | "reader" | "profile" | "heartbid" | "heatbid" | "write">("home");
