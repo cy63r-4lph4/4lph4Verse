@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { useMemo } from "react";
 
 interface UseProfileContextOptions {
-  context?: "worker" | "client"; 
+  context?: "worker" | "client";
 }
 
 interface ProfileContextResult {
@@ -17,7 +17,7 @@ interface ProfileContextResult {
 
 /**
  * useProfileContext
- * 
+ *
  * Smart hook to derive the correct role context for a profile.
  * Works both with explicit props (context) or defaultRole fallback.
  */
@@ -38,8 +38,9 @@ export function useProfileContext(
         targetProfile: undefined,
       };
     }
-
-    const isOwner = profile.wallet?.toLowerCase() === address?.toLowerCase();
+console.log("Profile in useProfileContext:", profile);
+    const isOwner =
+      !!address && profile.owner?.toLowerCase() === address?.toLowerCase();
     const hasBothRoles = !!(profile.workerData && profile.clientData);
     const defaultRole = profile.defaultRole || "worker";
 
