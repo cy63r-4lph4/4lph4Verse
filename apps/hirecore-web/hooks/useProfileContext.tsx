@@ -1,8 +1,11 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useMemo } from "react";
+
+interface UseProfileContextOptions {
+  context?: "worker" | "client"; // optional override
+}
 
 interface ProfileContextResult {
   context: "worker" | "client";
@@ -13,18 +16,17 @@ interface ProfileContextResult {
 }
 
 /**
- * 🧩 useProfileContext
+ * useProfileContext
  * 
- * Dynamically resolves:
- * - Whether the current viewer is the profile owner
- * - What role context (worker/client) should be displayed
- * - If the profile has both roles (dual layout)
- * - Which profile subset to render
+ * Smart hook to derive the correct role context for a profile.
+ * Works both with explicit props (context) or defaultRole fallback.
  */
-export function useProfileContext(profile?: any): ProfileContextResult {
-  const searchParams = useSearchParams();
+export function useProfileContext(
+  profile?: any,
+  options: UseProfileContextOptions = {}
+): ProfileContextResult {
   const { address } = useAccount();
-  const contextParam = searchParams.get("context");
+  const { context: passedContext } = options;
 
   return useMemo(() => {
     if (!profile) {
@@ -37,16 +39,13 @@ export function useProfileContext(profile?: any): ProfileContextResult {
       };
     }
 
-    const isOwner =
-      profile.wallet?.toLowerCase() === address?.toLowerCase();
+    const isOwner = profile.wallet?.toLowerCase() === address?.toLowerCase();
     const hasBothRoles = !!(profile.workerData && profile.clientData);
     const defaultRole = profile.defaultRole || "worker";
-    const context =
-      (contextParam as "worker" | "client") ||
-      defaultRole ||
-      "worker";
 
-    // Determine which subset to show
+    // ✅ Determine active context
+    const context = (passedContext || defaultRole) as "worker" | "client";
+
     const targetProfile =
       context === "client"
         ? profile.clientData || profile
@@ -59,5 +58,5 @@ export function useProfileContext(profile?: any): ProfileContextResult {
       defaultRole,
       targetProfile,
     };
-  }, [profile, address, contextParam]);
+  }, [profile, address, passedContext]);
 }
