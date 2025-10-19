@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { useMemo } from "react";
 
 interface UseProfileContextOptions {
-  context?: "worker" | "client"; // optional override
+  context?: "worker" | "client"; 
 }
 
 interface ProfileContextResult {
