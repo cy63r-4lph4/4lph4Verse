@@ -5,9 +5,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@verse/hirecore-web/components/ui/card";
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+} from "@verse/ui/card";
+import { Badge } from "@verse/ui/badge";
+import { Button } from "@verse/ui/button";
 import { Star, MapPin, Award, User, MessageCircle, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 

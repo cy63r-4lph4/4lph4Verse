@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
+import { Badge } from "@verse/ui/badge";
 import type { Status } from "@verse/hirecore-web/app/task/[id]/sections/types";
 
 export function StatusFilterBar({

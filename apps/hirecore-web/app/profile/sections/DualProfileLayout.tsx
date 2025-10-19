@@ -8,9 +8,9 @@ import {
   MapPin
 } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
-import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
+import { Button } from "@verse/ui/button";
+import { Badge } from "@verse/ui/badge";
+import { Card, CardContent } from "@verse/ui/card";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 import { WorkerApplication } from "@verse/hirecore-web/app/applications/utils/types";
 

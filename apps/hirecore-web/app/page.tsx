@@ -2,12 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button } from "../components/ui/button";
+import { Button } from "../../../packages/ui/button";
 import { Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { FEATURES, SERVICES } from "apps/hirecore-web/utils/Constants";
-import { Card, CardContent } from "apps/hirecore-web/components/ui/card";
-import { InfiniteScroller } from "apps/hirecore-web/components/ui/infinite-scroller";
+import { Card, CardContent } from "@verse/ui/card";
+import { InfiniteScroller } from "@verse/ui/infinite-scroller";
 
 export default function Home() {
   return (
@@ -29,38 +29,35 @@ export default function Home() {
 
             <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Connect with skilled workers using{" "}
-              <span className="core-token">CØRE</span>.  
-              Find electricians, plumbers, cooks, and more with GPS precision.
+              <span className="core-token">CØRE</span>. Find electricians,
+              plumbers, cooks, and more with GPS precision.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link href="/find-tasks">
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-5 rounded-none">
-                    <Search className="w-5 h-5 mr-2" />
-                    Find Tasks
-                  </Button>
-                </Link>
+              <Link href="/find-tasks">
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-5 rounded-none">
+                  <Search className="w-5 h-5 mr-2" />
+                  Find Tasks
+                </Button>
+              </Link>
 
-                <Link href="/post-task">
-                  <Button variant="outline" className="w-full sm:w-auto neon-border text-lg px-8 py-5 bg-transparent hover:bg-white/10  rounded-none">
-                    <Plus className="w-5 h-5 mr-2" />
-                    Post a Task
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/post-task">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto neon-border text-lg px-8 py-5 bg-transparent hover:bg-white/10  rounded-none"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Post a Task
+                </Button>
+              </Link>
+            </div>
           </motion.div>
 
           {/* Floating background bubbles */}
           <div className="absolute inset-0 -z-10">
-            <motion.div
-              className="absolute top-10 left-1/4 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full floating-animation"
-            />
-            <motion.div
-              className="absolute top-20 right-1/4 w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full floating-animation"
-            />
-            <motion.div
-              className="absolute top-40 left-1/2 w-12 h-12 bg-gradient-to-br from-green-500/20 to-cyan-500/20 rounded-full floating-animation"
-            />
+            <motion.div className="absolute top-10 left-1/4 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full floating-animation" />
+            <motion.div className="absolute top-20 right-1/4 w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full floating-animation" />
+            <motion.div className="absolute top-40 left-1/2 w-12 h-12 bg-gradient-to-br from-green-500/20 to-cyan-500/20 rounded-full floating-animation" />
           </div>
         </div>
       </section>

@@ -5,8 +5,8 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@verse/hirecore-web/components/ui/card";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+} from "@verse/ui/card";
+import { Button } from "@verse/ui/button";
 import {
   User,
   Star,

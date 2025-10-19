@@ -3,13 +3,12 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Search, ClipboardList } from "lucide-react";
-import { Input } from "@verse/hirecore-web/components/ui/input";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
+import { Input } from "@verse/ui/input";
+import { Button } from "@verse/ui/button";
+import { Badge } from "@verse/ui/badge";
 import { TaskCard } from "@verse/hirecore-web/components/tasks/TaskCard";
 import { useRouter } from "next/navigation";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
-import type { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
 
 export default function MyTasksPage() {
   const router = useRouter();
