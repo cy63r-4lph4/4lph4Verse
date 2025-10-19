@@ -86,7 +86,7 @@ export default function WorkerProfileLayout({ profile = mockWorker }: { profile?
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-[#090f0d] text-gray-200 overflow-hidden"
+      className="min-h-screen  text-gray-200 overflow-hidden mt-26"
     >
       {/* ───────────────────── Hero Section ───────────────────── */}
       <div className="relative h-[22rem] overflow-hidden rounded-b-[3rem]">

@@ -2,16 +2,16 @@
 
 import { useAccount } from "wagmi";
 import { useMemo } from "react";
-
+import { VerseProfile } from "@verse/sdk/types/verseProfile";
 interface UseProfileContextOptions {
-  context?: "worker" | "client";
+  context?: "worker" | "hirer";
 }
 
 interface ProfileContextResult {
-  context: "worker" | "client";
+  context: "worker" | "hirer";
   isOwner: boolean;
   hasBothRoles: boolean;
-  defaultRole: "worker" | "client";
+  defaultRole: "worker" | "hirer";
   targetProfile: any;
 }
 
@@ -22,7 +22,7 @@ interface ProfileContextResult {
  * Works both with explicit props (context) or defaultRole fallback.
  */
 export function useProfileContext(
-  profile?: any,
+  profile?: VerseProfile,
   options: UseProfileContextOptions = {}
 ): ProfileContextResult {
   const { address } = useAccount();
@@ -38,18 +38,26 @@ export function useProfileContext(
         targetProfile: undefined,
       };
     }
-    const isOwner =
-      !!address && profile.owner?.toLowerCase() === address?.toLowerCase();
-    const hasBothRoles = !!(profile.workerData && profile.clientData);
-    const defaultRole = profile.defaultRole || "worker";
 
-    // ✅ Determine active context
-    const context = (passedContext || defaultRole) as "worker" | "client";
+    const isOwner =
+      !!address && profile.wallet?.toLowerCase() === address?.toLowerCase();
+    const hasBothRoles = !!(
+      profile.personas.hirecore?.roles.worker &&
+      profile.personas.hirecore?.roles.hirer
+    );
+    const defaultRole: "worker" | "hirer" = profile.personas?.hirecore?.roles
+      ?.worker
+      ? "worker"
+      : profile.personas?.hirecore?.roles?.hirer
+        ? "hirer"
+        : "worker";
+
+    const context = (passedContext || defaultRole) as "worker" | "hirer";
 
     const targetProfile =
-      context === "worker"
-        ? profile.clientData || profile
-        : profile.workerData || profile;
+      context === "hirer"
+        ? profile.personas.hirecore?.roles.hirer || profile
+        : profile.personas.hirecore?.roles.worker || profile;
 
     return {
       context,

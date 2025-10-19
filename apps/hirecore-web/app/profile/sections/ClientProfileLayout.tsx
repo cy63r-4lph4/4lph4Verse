@@ -65,7 +65,7 @@ export default function ClientProfileLayout({ profile }: { profile: ClientProfil
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-b from-[#0B0D19] via-[#0E1023] to-[#090B15] text-gray-200 overflow-hidden"
+      className="min-h-screen  text-gray-200 overflow-hidden mt-26"
     >
       {/* ───────────────── Banner ───────────────── */}
       <div className="relative w-full h-[20rem] overflow-hidden rounded-b-[3rem]">
