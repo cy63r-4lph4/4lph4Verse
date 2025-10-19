@@ -2,279 +2,295 @@
 
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
-  Edit,
   MapPin,
-  Briefcase,
-  Banknote,
-  ClipboardList,
   Star,
+  Coins,
+  ClipboardList,
+  Flame,
+  Hammer,
   Clock,
+  ArrowLeft,
+  Edit3,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Progress } from "@verse/hirecore-web/components/ui/progress";
-import { TabsContent } from "@verse/hirecore-web/components/ui/tabs";
 import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
-import VerseTabs, { TabItem } from "@verse/hirecore-web/components/VerseTab";
-import Image from "next/image";
-import { ComponentType, useState } from "react";
+import { useState } from "react";
 
 interface Application {
-  id: string | number;
+  id: number;
   title: string;
-  category: string;
-  clientName: string;
   budget: number;
-  status: "pending" | "accepted" | "rejected" | "withdrawn";
-  appliedAt: string;
+  status: "pending" | "accepted" | "rejected" | "completed";
 }
 
 interface WorkerProfile {
   displayName?: string;
   handle?: string;
   avatar?: string;
+  banner?: string;
   location?: string;
+  bio?: string;
   reputation?: number;
-  earnings?: number;
   completedTasks?: number;
   pendingApplications?: number;
+  earnings?: number;
   rating?: number;
+  skills?: string[];
   applications?: Application[];
-  bio?: string;
 }
 
-export interface WorkerProfileLayoutProps {
-  profile: WorkerProfile;
-}
+const mockWorker: WorkerProfile = {
+  displayName: "Cy63r_4lph4~🐉",
+  handle: "cy63r_4lph4",
+  avatar: "/placeholder-soul.png",
+  banner:
+    "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&q=80&w=1200",
+  location: "Neo-Accra 🔥",
+  bio: "Forging the Verse — one contract, one build, one legend.",
+  reputation: 92,
+  completedTasks: 23,
+  pendingApplications: 4,
+  earnings: 1430,
+  rating: 4.9,
+  skills: ["Solidity", "Next.js", "Smart Contracts", "UI/UX Design", "IPFS"],
+  applications: [
+    { id: 1, title: "NFT Hub Redesign", budget: 180, status: "completed" },
+    { id: 2, title: "Verse Wallet API", budget: 250, status: "accepted" },
+    { id: 3, title: "HireCore Gasless UX", budget: 200, status: "pending" },
+    { id: 4, title: "VaultOfLove Smart Contract", budget: 190, status: "rejected" },
+  ],
+};
 
-export default function WorkerProfileLayout({ profile }: WorkerProfileLayoutProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+export default function WorkerProfileLayout({ profile = mockWorker }: { profile?: WorkerProfile }) {
+  const {
+    displayName,
+    handle,
+    avatar,
+    banner,
+    location,
+    bio,
+    reputation,
+    completedTasks,
+    pendingApplications,
+    earnings,
+    rating,
+    skills,
+    applications,
+  } = profile;
 
-  // destructure with fallbacks
-  const name = profile?.displayName || "Unnamed Worker";
-  const handle = profile?.handle || "unknown";
-  const avatar = profile?.avatar || "/default-avatar.png";
-  const location = profile?.location || "Unknown Realm 🌍";
-  const reputation = profile?.reputation ?? 70;
-  const earnings = profile?.earnings ?? 0;
-  const completedTasks = profile?.completedTasks ?? 0;
-  const pendingApplications = profile?.pendingApplications ?? 0;
-  const rating = profile?.rating ?? 0;
-  const applications = profile?.applications || [];
-
-  const tabs: TabItem[] = [
-    { value: "overview", label: "Overview" },
-    { value: "applications", label: "Applications" },
-    { value: "earnings", label: "Earnings" },
-    { value: "activity", label: "Activity" },
-  ];
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[#090f0d] text-gray-200 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto space-y-10">
-        {/* Top Actions */}
-        <div className="flex justify-between items-center">
-          <Button
-            variant="ghost"
-            className="text-gray-300 hover:bg-white/10"
-            onClick={() => history.back()}
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" /> Back
-          </Button>
-          <Button className="bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700">
-            <Edit className="w-5 h-5 mr-2" /> Edit Profile
-          </Button>
-        </div>
+      {/* ───────────────────── Hero Section ───────────────────── */}
+      <div className="relative h-[22rem] overflow-hidden rounded-b-[3rem]">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 30%, rgba(16,185,129,0.2), transparent 60%), radial-gradient(circle at 80% 70%, rgba(5,150,105,0.25), transparent 70%)",
+          }}
+          animate={{
+            backgroundPosition: ["0% 0%", "100% 100%"],
+          }}
+          transition={{ duration: 20, repeat: Infinity, repeatType: "mirror" }}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* LEFT COLUMN */}
+        {/* Glowing Grid Lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+        {/* Floating Sparks */}
+        {[...Array(30)].map((_, i) => (
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-8"
-          >
-            {/* Profile Card */}
-            <div className="text-center p-8 glass-effect rounded-2xl border border-white/20">
-              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-emerald-500/40 shadow-lg">
-                <Image
-                  src={
-                    avatar.startsWith("ipfs://")
-                      ? `https://${avatar.replace("ipfs://", "")}.ipfs.dweb.link`
-                      : avatar
-                  }
-                  alt="Worker avatar"
-                  width={128}
-                  height={128}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <h1 className="text-3xl font-bold text-white font-orbitron mt-4">
-                {name}
-              </h1>
-              <p className="text-gray-400">@{handle}</p>
-              <div className="mt-3 flex items-center justify-center gap-1 text-gray-300 text-sm">
-                <MapPin className="w-4 h-4" />
-                {location}
-              </div>
-            </div>
+            key={i}
+            className="absolute w-[2px] h-[2px] bg-emerald-400/30 rounded-full"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }}
+            animate={{ y: [0, -10, 0], opacity: [0.2, 1, 0.2] }}
+            transition={{
+              duration: 6 + Math.random() * 6,
+              repeat: Infinity,
+              delay: Math.random() * 3,
+            }}
+          />
+        ))}
 
-            {/* Reputation */}
-            <div className="glass-effect p-6 rounded-2xl border border-white/20">
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-400" />
-                Verse Reputation
-              </h3>
-              <div className="flex items-center gap-4">
-                <Progress value={reputation} className="w-full" />
-                <span className="text-emerald-400 font-bold">{reputation}%</span>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Performance score based on completed tasks & reviews.
-              </p>
-            </div>
+        {/* Info Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center">
+          <div className="w-32 h-32 rounded-full overflow-hidden border-[3px] border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.5)]">
+            <Image
+              src={avatar!}
+              alt="Avatar"
+              width={128}
+              height={128}
+              className="object-cover"
+            />
+          </div>
+          <h1 className="mt-4 text-4xl font-bold text-white font-orbitron">
+            {displayName}
+          </h1>
+          <p className="text-gray-400">@{handle}</p>
+          <p className="flex items-center gap-2 text-sm text-gray-400 mt-1">
+            <MapPin className="w-4 h-4 text-emerald-300" /> {location}
+          </p>
 
-            {/* Stats */}
-            <div className="glass-effect p-6 rounded-2xl border border-white/20 space-y-4">
-              <Stat
-                label="Completed Tasks"
-                value={completedTasks}
-                icon={ClipboardList}
-                color="text-emerald-400"
-              />
-              <Stat
-                label="Pending Applications"
-                value={pendingApplications}
-                icon={Briefcase}
-                color="text-indigo-400"
-              />
-              <Stat
-                label="Total Earnings"
-                value={`${earnings} CØRE`}
-                icon={Banknote}
-                color="text-yellow-400"
-              />
-              <Stat
-                label="Rating"
-                value={`${rating} / 5`}
-                icon={Star}
-                color="text-indigo-400"
-              />
-            </div>
-          </motion.div>
-
-          {/* RIGHT COLUMN */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <VerseTabs
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
+          {/* Actions */}
+          <div className="mt-4 flex gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => history.back()}
+              className="text-gray-300 hover:bg-white/10"
             >
-              {/* Overview */}
-              <TabsContent
-                value="overview"
-                className="mt-6 glass-effect p-6 rounded-2xl border border-white/20 text-gray-300"
-              >
-                {profile?.bio ? (
-                  <p>{profile.bio}</p>
-                ) : (
-                  <p className="text-gray-400 italic">
-                    No biography available yet.
-                  </p>
-                )}
-              </TabsContent>
-
-              {/* Applications */}
-              <TabsContent value="applications" className="mt-6 space-y-4">
-                {applications.length > 0 ? (
-                  applications.map((app: Application) => (
-                    <Card
-                      key={app.id}
-                      className="glass-effect border-white/20 hover:border-indigo-500/50 transition"
-                    >
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div>
-                          <h3 className="text-white font-semibold">
-                            {app.title}
-                          </h3>
-                          <p className="text-gray-400 text-sm flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> Applied{" "}
-                            {app.appliedAt || "recently"}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-white">
-                            {app.budget} CØRE
-                          </div>
-                          <Badge
-                            className={`${
-                              app.status === "accepted"
-                                ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                : app.status === "rejected"
-                                ? "bg-red-500/20 text-red-400 border-red-500/30"
-                                : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                            } border mt-2`}
-                          >
-                            {app.status}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="glass-effect p-6 text-center text-gray-400 border border-white/20 rounded-2xl">
-                    No applications found.
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* Earnings */}
-              <TabsContent
-                value="earnings"
-                className="mt-6 glass-effect p-6 rounded-2xl border border-white/20 text-gray-300"
-              >
-                Earnings breakdown coming soon 💰
-              </TabsContent>
-
-              {/* Activity */}
-              <TabsContent
-                value="activity"
-                className="mt-6 glass-effect p-6 rounded-2xl border border-white/20 text-gray-300"
-              >
-                Recent activity log coming soon 📝
-              </TabsContent>
-            </VerseTabs>
-          </motion.div>
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+            <Button className="bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/30">
+              <Edit3 className="w-4 h-4 mr-2" /> Edit Profile
+            </Button>
+          </div>
         </div>
       </div>
-    </motion.div>
-  );
-}
 
-interface StatProps {
-  label: string;
-  value: string | number;
-  color: string;
-  icon: ComponentType<{ className?: string }>;
-}
-function Stat({ label, value, icon: Icon, color }: StatProps) {
-  return (
-    <div className="flex justify-between text-gray-300">
-      <span className="flex items-center gap-2">
-        <Icon className={`w-4 h-4 ${color}`} /> {label}
-      </span>
-      <span className="font-bold text-white">{value}</span>
-    </div>
+      {/* ───────────────────── Profile Body ───────────────────── */}
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-16">
+        {/* Stats Row */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="grid lg:grid-cols-3 gap-8"
+        >
+          {/* Overview */}
+          <Card className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-emerald-300 flex items-center gap-2">
+                <Hammer className="w-5 h-5" /> The Forge
+              </h2>
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">{bio}</p>
+              <div className="mt-4 space-y-2 text-gray-300">
+                <p>🏆 Completed Tasks: <b>{completedTasks}</b></p>
+                <p>💰 Earnings: <b>{earnings} CØRE</b></p>
+                <p>⭐ Rating: <b>{rating}</b></p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Skills */}
+          <Card className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-emerald-300 flex items-center gap-2">
+                <Flame className="w-5 h-5" /> Skills Forge
+              </h2>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {skills?.map((s) => (
+                  <Badge
+                    key={s}
+                    className="bg-emerald-500/10 border-emerald-400/20 text-emerald-200 text-xs"
+                  >
+                    {s}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reputation */}
+          <Card className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-emerald-300 flex items-center gap-2">
+                <Star className="w-5 h-5" /> Reputation
+              </h2>
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden mt-3">
+                <motion.div
+                  className="h-2 bg-emerald-400"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${reputation}%` }}
+                  transition={{ duration: 1 }}
+                />
+              </div>
+              <p className="text-right text-sm text-gray-400 mt-1">
+                {reputation}%
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Job Applications */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-xl text-white font-orbitron mb-5">Active Applications</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {applications?.slice(0, expanded ? applications.length : 3).map((job) => (
+              <Card
+                key={job.id}
+                className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all"
+              >
+                <CardContent className="p-4">
+                  <h3 className="text-white font-semibold">{job.title}</h3>
+                  <p className="text-sm text-gray-400 mb-2">
+                    Budget: {job.budget} CØRE
+                  </p>
+                  <Badge
+                    className={`${
+                      job.status === "completed"
+                        ? "bg-green-500/20 text-green-400 border-green-500/30"
+                        : job.status === "accepted"
+                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        : job.status === "pending"
+                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                        : "bg-red-500/20 text-red-400 border-red-500/30"
+                    } border`}
+                  >
+                    {job.status}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {applications && applications.length > 3 && (
+            <div className="flex justify-center mt-6">
+              <Button
+                variant="ghost"
+                onClick={() => setExpanded(!expanded)}
+                className="text-emerald-300 hover:text-white hover:bg-emerald-500/10"
+              >
+                {expanded ? "Show Less" : "View More"}
+              </Button>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Activity Log */}
+        <motion.div className="mt-20 space-y-3">
+          <h2 className="text-xl text-white font-orbitron mb-4">Forge Activity</h2>
+          {[
+            "Completed ‘CØRE Integration UI’ with 5⭐ review",
+            "Claimed 180 CØRE from ‘Vault Marketplace’ contract",
+            "Applied to ‘LeaseVault Portal Design’",
+          ].map((event, i) => (
+            <motion.div
+              key={i}
+              className="glass-effect p-4 border-l-4 border-emerald-400/20 text-gray-300"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.2 }}
+            >
+              {event}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }

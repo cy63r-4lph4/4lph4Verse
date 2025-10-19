@@ -40,8 +40,7 @@ export function useProfileContext(
     }
     const isOwner =
       !!address && profile.owner?.toLowerCase() === address?.toLowerCase();
-    // const hasBothRoles = !!(profile.workerData && profile.clientData);
-    const hasBothRoles = true
+    const hasBothRoles = !!(profile.workerData && profile.clientData);
     const defaultRole = profile.defaultRole || "worker";
 
     // ✅ Determine active context
