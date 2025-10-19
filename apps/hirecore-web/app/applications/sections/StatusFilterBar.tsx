@@ -26,7 +26,7 @@ export function StatusFilterBar({
       {statuses.map((status) => (
         <Badge
           key={status}
-          onClick={() => setStatusFilter(status as any)}
+          onClick={() => setStatusFilter(status as "all" | Status)}
           className={`cursor-pointer px-3 py-1 text-sm transition-all ${
             statusFilter === status
               ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"

@@ -2,9 +2,9 @@
 
 import { useProfileById } from "@verse/sdk/hooks/useProfileById";
 import { useProfileContext } from "@verse/hirecore-web/hooks/useProfileContext";
-import DualProfileLayout from "./sections/DualProfileLayout";
-import ClientProfileLayout from "./sections/ClientProfileLayout";
-import WorkerProfileLayout from "./sections/WorkerProfileLayout";
+import DualProfileLayout from "../sections/DualProfileLayout";
+import ClientProfileLayout from "../sections/ClientProfileLayout";
+import WorkerProfileLayout from "../sections/WorkerProfileLayout";
 import { Loader2 } from "lucide-react";
 import { consumeContext } from "@verse/hirecore-web/utils/ContextBridge";
 import { useState } from "react";

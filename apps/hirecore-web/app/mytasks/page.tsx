@@ -22,7 +22,9 @@ export default function MyTasksPage() {
   const filteredTasks = useMemo(() => {
     const tasksArray = Object.values(cache);
     return tasksArray
-      .filter((t) => (statusFilter === "all" ? true : t.status === statusFilter))
+      .filter((t) =>
+        statusFilter === "all" ? true : t.status === statusFilter
+      )
       .filter((t) => t.title?.toLowerCase().includes(query.toLowerCase()));
   }, [cache, query, statusFilter]);
 
@@ -73,19 +75,30 @@ export default function MyTasksPage() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {["all", "open", "assigned", "completed", "cancelled"].map((status) => (
-              <Badge
-                key={status}
-                onClick={() => setStatusFilter(status as any)}
-                className={`cursor-pointer px-3 py-1 text-sm transition-all ${
-                  statusFilter === status
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
-                }`}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Badge>
-            ))}
+            {["all", "open", "assigned", "completed", "cancelled"].map(
+              (status) => (
+                <Badge
+                  key={status}
+                  onClick={() =>
+                    setStatusFilter(
+                      status as
+                        | "all"
+                        | "open"
+                        | "assigned"
+                        | "completed"
+                        | "cancelled"
+                    )
+                  }
+                  className={`cursor-pointer px-3 py-1 text-sm transition-all ${
+                    statusFilter === status
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Badge>
+              )
+            )}
           </div>
         </div>
 
@@ -126,7 +139,8 @@ function EmptyState({ onPost }: { onPost: () => void }) {
 
       <h3 className="text-white text-lg font-semibold">No Tasks Yet</h3>
       <p className="text-gray-400 max-w-sm">
-        You haven’t posted any tasks yet. Get started by posting your first task or finding a worker.
+        You haven't posted any tasks yet. Get started by posting your first task
+        or finding a worker.
       </p>
 
       <div className="flex gap-3">

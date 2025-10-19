@@ -38,17 +38,17 @@ export function useProfileContext(
         targetProfile: undefined,
       };
     }
-console.log("Profile in useProfileContext:", profile);
     const isOwner =
       !!address && profile.owner?.toLowerCase() === address?.toLowerCase();
-    const hasBothRoles = !!(profile.workerData && profile.clientData);
+    // const hasBothRoles = !!(profile.workerData && profile.clientData);
+    const hasBothRoles = true
     const defaultRole = profile.defaultRole || "worker";
 
     // ✅ Determine active context
     const context = (passedContext || defaultRole) as "worker" | "client";
 
     const targetProfile =
-      context === "client"
+      context === "worker"
         ? profile.clientData || profile
         : profile.workerData || profile;
 
