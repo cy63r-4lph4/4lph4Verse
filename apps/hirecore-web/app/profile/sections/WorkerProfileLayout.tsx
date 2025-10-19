@@ -27,7 +27,9 @@ export default function WorkerProfileLayout({ profile }: { profile?: VerseProfil
   const [expanded, setExpanded] = useState(false);
   const worker = profile ? profile.personas?.hirecore?.roles.worker : {};
   if (worker === undefined) {
-    return <div>Worker profile not found.</div>;
+    return <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
+        <p>This profile is private.</p>
+      </div>;
   }
 
   return (

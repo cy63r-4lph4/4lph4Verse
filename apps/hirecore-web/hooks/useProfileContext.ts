@@ -29,13 +29,13 @@ export function useProfileContext(
   const { context: passedContext } = options;
 
   return useMemo(() => {
-    if (!profile) {
+    if (!profile || !profile.personas?.hirecore) {
       return {
         context: "worker",
         isOwner: false,
         hasBothRoles: false,
         defaultRole: "worker",
-        targetProfile: undefined,
+        targetProfile: profile,
       };
     }
 
