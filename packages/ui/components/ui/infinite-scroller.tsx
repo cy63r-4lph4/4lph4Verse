@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { cn } from "apps/hirecore-web/lib/utils";
+import { cn } from "lib/utils";
 
 type InfiniteScrollerProps = {
   children: React.ReactNode;

@@ -12,10 +12,7 @@ type Props = { open: boolean; onClose: () => void };
 /* ----------------------------------------
    Chain visuals mapping (editable per chain)
 ----------------------------------------- */
-const CHAIN_META: Record<
-  number,
-  { icon: string; gradient: string }
-> = {
+const CHAIN_META: Record<number, { icon: string; gradient: string }> = {
   84532: {
     icon: "/chains/base.svg",
     gradient: "from-blue-500/30 to-cyan-400/30",
@@ -70,7 +67,12 @@ export function VerseChainModal({ open, onClose }: Props) {
 
         {/* Header */}
         <div className="flex flex-col items-center gap-3 mb-6">
-          <Image src="/Verse-logo.png" alt="Verse Logo" width={60} height={60} />
+          <Image
+            src="/Verse-logo.png"
+            alt="Verse Logo"
+            width={60}
+            height={60}
+          />
           <h2 className="font-orbitron text-xl text-white">
             Select your{" "}
             <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
@@ -108,7 +110,9 @@ export function VerseChainModal({ open, onClose }: Props) {
                   height={26}
                   className="rounded-sm"
                 />
-                <span className="flex-1 text-left font-medium">{chain.name}</span>
+                <span className="flex-1 text-left font-medium">
+                  {chain.name}
+                </span>
 
                 {isActive && (
                   <span className="text-xs px-2 py-1 rounded-md bg-green-500/20 text-green-400">

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Helmet } from "react-helmet";
 import {
   Heart,
   PenTool,
@@ -13,8 +12,12 @@ import {
   Flame,
 } from "lucide-react";
 
-import { Button } from "@verse/ui/button";
-import { Toaster } from "@verse/ui/toaster";
+import { StoryReader } from "@verse/vaultoflove-web/components/StoryReader";
+import { UserProfile } from "@verse/vaultoflove-web/components/UserProfile";
+import HeartBidPage from "@verse/vaultoflove-web/components/HeartBid";
+import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
+import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
+import useStoryVault from "@verse/vaultoflove-web/hooks/useStoryVault";
 
 
 export default function VaultOfLoveApp() {
@@ -81,19 +84,19 @@ export default function VaultOfLoveApp() {
         );
       case "heartbid":
         return (
-          <HeartBid
+          <HeartBidPage
             stories={stories}
             onBack={onBack}
             onNavigateToHeatBid={() => setCurrentView("heatbid")}
           />
         );
       case "heatbid":
-        return <HeatBidArena stories={stories} onBack={() => setCurrentView("home")} />;
+        return <HeatBidArenaPage stories={stories} onBack={() => setCurrentView("home")} />;
       case "write":
         return <WriteStoryModal onBack={onBack} onSubmit={onAddStory} />;
       default:
         return (
-          <HomeView
+          <HomeViewPage
             stories={stories}
             onLike={handleLikeStory}
             onTip={handleTipAuthor}
@@ -105,13 +108,6 @@ export default function VaultOfLoveApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white overflow-x-hidden">
-      <Helmet>
-        <title>VaultofLove - Decentralized Story Vault</title>
-        <meta
-          name="description"
-          content="A futuristic Web3 platform where love stories become legacies. Write, read, and mint NFTs from stories that touch hearts."
-        />
-      </Helmet>
 
       {/* Background Animations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -192,7 +188,6 @@ export default function VaultOfLoveApp() {
         <AnimatePresence mode="wait">{renderView()}</AnimatePresence>
       </main>
 
-      <Toaster />
     </div>
   );
 }

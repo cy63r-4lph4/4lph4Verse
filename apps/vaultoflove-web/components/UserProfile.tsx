@@ -19,7 +19,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { Button } from "@verse/ui/button";
-import { useToast } from "@verse/ui/use-toast";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verse/ui/tabs";
 import { Progress } from "@verse/ui/progress";
 
@@ -64,7 +64,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   authors,
   followedAuthors,
 }) => {
-  const { toast } = useToast();
 
   const totalLikes = stories.reduce((sum, story) => sum + story.likes, 0);
   const totalTips = stories.reduce((sum, story) => sum + story.tips, 0);
@@ -82,20 +81,28 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   ];
 
   const handleEditProfile = () =>
-    toast({
-      title: "🚧 Profile Editing Coming Soon!",
-      description:
-        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀",
-      duration: 4000,
-    });
+    toast(
+      <>
+        <span className="font-semibold text-lg">
+          "🚧 Profile Editing Coming Soon!"
+        </span>
+        <span>
+          "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀"
+        </span>
+      </>
+    );
 
   const handleBookmarkClick = () =>
-    toast({
-      title: "🚧 Saved Stories Coming Soon!",
-      description:
-        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀",
-      duration: 4000,
-    });
+    toast(
+      <>
+        <span className="font-semibold text-lg">
+          "🚧 Saved Stories Coming Soon!"
+        </span>
+        <span>
+          "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀"
+        </span>
+      </>
+    );
 
   return (
     <motion.div

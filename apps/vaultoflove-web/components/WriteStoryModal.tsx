@@ -13,9 +13,7 @@ import {
   GitFork,
 } from "lucide-react";
 import { Button } from "@verse/ui/button";
-import { useToast } from "@verse/ui/use-toast";
 import { Switch } from "@verse/ui/switch";
-import { Label } from "@verse/ui/label";
 import {
   Select,
   SelectContent,
@@ -24,6 +22,7 @@ import {
   SelectValue,
 } from "@verse/ui/select";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 /* ------------------------------------------------------------
  * Types
@@ -147,7 +146,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                   type="button"
                   size="icon"
                   variant="ghost"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     handleRemoveNode(node.id);
                   }}
@@ -222,7 +221,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                     />
                     <Select
                       value={choice.nextNodeId}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         handleUpdateChoice(index, "nextNodeId", value)
                       }
                     >
@@ -279,7 +278,6 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
   const [selectedNodeId, setSelectedNodeId] = useState("start");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { toast } = useToast();
 
   const handleChange = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -289,31 +287,34 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
       ? nodes.map((n) => n.text).join(" ")
       : formData.content;
     if (!text.trim() && !formData.excerpt.trim()) {
-      toast({
-        title: "Empty Content",
-        description: "Write something first before asking the AI to analyze.",
-        variant: "destructive",
-      });
+      toast(
+        <>
+          <span className="font-semibold text-lg">"Empty Content"</span>
+          <span>"Write something first before asking the AI to analyze."</span>
+        </>
+      );
       return;
     }
     setIsAnalyzing(true);
     await new Promise((r) => setTimeout(r, 2500));
     setIsAnalyzing(false);
-    toast({
-      title: "✨ AI Analysis Complete",
-      description:
-        "Your story has a beautiful flow and solid grammar. It's ready to touch hearts!",
-    });
+    toast(
+      <>
+        <span className="font-semibold text-lg">"✨ AI Analysis Complete"</span>
+        <span>"Your story has a beautiful flow and solid grammar. It's ready to touch hearts!"</span>
+      </>
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.excerpt.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in title and excerpt.",
-        variant: "destructive",
-      });
+      toast(
+        <>
+          <span className="font-semibold text-lg">"Missing Information"</span>
+          <span>"Please fill in title and excerpt."</span>
+        </>
+      );
       return;
     }
 
@@ -336,9 +337,8 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
       storyData.content = nodes.map((n) => n.text).join("\n\n");
     } else if (!formData.content.trim()) {
       toast({
-        title: "Missing Content",
-        description: "Please write your story content.",
-        variant: "destructive",
+        "Missing Content"
+       "Please write your story content."
       });
       return;
     }

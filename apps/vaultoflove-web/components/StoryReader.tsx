@@ -19,7 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Button } from "@verse/ui/button";
-import { useToast } from "@verse/ui/use-toast";
+import { toast } from "sonner";
 
 /* ------------------------------------------------------------
  * Types
@@ -318,7 +318,6 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
   const [mode, setMode] = useState<"classic" | "interactive" | null>(null);
-  const { toast } = useToast();
 
   // Mode initialization
   useEffect(() => {
@@ -348,20 +347,28 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
   };
 
   const handleShare = () =>
-    toast({
-      title: "🚧 Sharing Coming Soon!",
-      description:
-        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀",
-      duration: 4000,
-    });
+    toast(
+      <>
+      <span className="font-semibold text-lg">
+        "🚧 Sharing Coming Soon!"
+      </span>
+      <span>
+        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀"
+      </span>
+      </>
+    );
 
   const handleBookmark = () =>
-    toast({
-      title: "🚧 Bookmarks Coming Soon!",
-      description:
-        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀",
-      duration: 4000,
-    });
+    toast(
+      <>
+      <span className="font-semibold text-lg">
+        "🚧 Bookmarks Coming Soon!"
+      </span>
+      <span>
+        "This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀"
+      </span>
+      </>
+    );
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {

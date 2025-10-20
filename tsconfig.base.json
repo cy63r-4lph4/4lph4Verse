@@ -38,6 +38,9 @@
       "@verse/leasevault-web": ["apps/leasevault-web"],
       "@verse/leasevault-web/*": ["apps/leasevault-web/*"],
 
+      "@verse/vaultoflove-web": ["apps/vaultoflove-web"],
+      "@verse/vaultoflove-web/*": ["apps/vaultoflove-web/*"],
+
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"]
     }

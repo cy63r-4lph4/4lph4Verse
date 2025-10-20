@@ -27,8 +27,19 @@
     "utils",
     "../../packages/sdk/utils/storacha/client.ts",
     "../../packages/sdk/utils/storacha/upload.ts",
-, "../../packages/ui/card.tsx"    "../../packages/ui/button.tsx",
-    "../../packages/ui/badge.tsx"
-, "../../packages/ui/dialog.tsx", "../../packages/ui/infinite-scroller.tsx", "../../packages/ui/input.tsx", "../../packages/ui/progress.tsx", "../../packages/ui/select.tsx", "../../packages/ui/slider.tsx", "../../packages/ui/tabs.tsx", "../../packages/ui/textarea.tsx"  ],
+    "../../packages/ui/card.tsx",
+    "../../packages/ui/button.tsx",
+    "../../packages/ui/badge.tsx",
+    "../../packages/ui/dialog.tsx",
+    "../../packages/ui/components/ui/infinite-scroller.tsx",
+    "../../packages/ui/input.tsx",
+    "../../packages/ui/progress.tsx",
+    "../../packages/ui/select.tsx",
+    "../../packages/ui/slider.tsx",
+    "../../packages/ui/tabs.tsx",
+    "../../packages/ui/textarea.tsx",
+    "../../packages/ui/switch.tsx",
+    "../../packages/ui/label.tsx"
+  ],
   "exclude": ["node_modules"]
 }

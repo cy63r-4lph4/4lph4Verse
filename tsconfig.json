@@ -3,6 +3,7 @@
   "files": [],
   "references": [
     { "path": "./apps/hirecore-web" },
+    { "path": "./apps/vaultoflove-web" },
     { "path": "./apps/verse-core" },
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },

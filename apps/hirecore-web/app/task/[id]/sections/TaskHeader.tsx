@@ -1,8 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
 import { ArrowLeft, BadgeInfo } from "lucide-react";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@verse/hirecore-web/components/ui/card";
+import { Button } from "@verse/ui/button";
+import { Card, CardHeader, CardTitle } from "@verse/ui/card";
 import type { Task } from "./types";
 
 
