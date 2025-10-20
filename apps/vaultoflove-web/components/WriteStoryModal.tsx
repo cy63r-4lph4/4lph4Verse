@@ -77,9 +77,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
 
   const handleUpdateNode = (field: keyof Node, value: any) => {
     setNodes(
-      nodes.map((n) =>
-        n.id === selectedNodeId ? { ...n, [field]: value } : n
-      )
+      nodes.map((n) => (n.id === selectedNodeId ? { ...n, [field]: value } : n))
     );
   };
 
@@ -88,7 +86,11 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
     handleUpdateNode("choices", [...(selectedNode?.choices || []), newChoice]);
   };
 
-  const handleUpdateChoice = (i: number, field: keyof Choice, value: string) => {
+  const handleUpdateChoice = (
+    i: number,
+    field: keyof Choice,
+    value: string
+  ) => {
     if (!selectedNode) return;
     const updated = selectedNode.choices.map((c, idx) =>
       idx === i ? { ...c, [field]: value } : c
@@ -135,7 +137,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
             <div
               key={node.id}
               onClick={() => setSelectedNodeId(node.id)}
-              className={`flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors ${
+              className={`flex justify-between items-center p-3 rounded-none cursor-pointer transition-colors ${
                 selectedNodeId === node.id
                   ? "bg-pink-500/30"
                   : "bg-black/30 hover:bg-pink-500/20"
@@ -162,7 +164,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
       </div>
 
       {/* Editor */}
-      <div className="md:col-span-2 bg-black/20 p-6 rounded-lg">
+      <div className="md:col-span-2 bg-black/20 p-6 rounded-none">
         {selectedNode && (
           <div className="space-y-6">
             {/* Node name */}
@@ -174,7 +176,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                 type="text"
                 value={selectedNode.name}
                 onChange={(e) => handleUpdateNode("name", e.target.value)}
-                className="w-full px-4 py-2 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+                className="w-full px-4 py-2 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
               />
             </div>
 
@@ -187,7 +189,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                 value={selectedNode.text}
                 onChange={(e) => handleUpdateNode("text", e.target.value)}
                 rows={6}
-                className="w-full px-4 py-2 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-y"
+                className="w-full px-4 py-2 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-y"
               />
             </div>
 
@@ -209,7 +211,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                 {selectedNode.choices.map((choice, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-black/30 rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-black/30 rounded-none"
                   >
                     <input
                       type="text"
@@ -218,7 +220,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                         handleUpdateChoice(index, "text", e.target.value)
                       }
                       placeholder="Choice text"
-                      className="flex-grow px-3 py-2 bg-black/30 border border-pink-500/30 rounded-lg text-white focus:outline-none focus:border-pink-400"
+                      className="flex-grow px-3 py-2 bg-black/30 border border-pink-500/30 rounded-none text-white focus:outline-none focus:border-pink-400"
                     />
                     <Select
                       value={choice.nextNodeId}
@@ -329,10 +331,13 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
     };
 
     if (isInteractive) {
-      storyData.interactiveContent = nodes.reduce((acc, node) => {
-        acc[node.id] = { text: node.text, choices: node.choices };
-        return acc;
-      }, {} as Record<string, any>);
+      storyData.interactiveContent = nodes.reduce(
+        (acc, node) => {
+          acc[node.id] = { text: node.text, choices: node.choices };
+          return acc;
+        },
+        {} as Record<string, any>
+      );
       storyData.content = nodes.map((n) => n.text).join("\n\n");
     } else if (!formData.content.trim()) {
       toast({
@@ -393,7 +398,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
               value={formData.title}
               onChange={(e) => handleChange("title", e.target.value)}
               placeholder="Enter a captivating title..."
-              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
               required
             />
           </div>
@@ -406,7 +411,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
               value={formData.author}
               onChange={(e) => handleChange("author", e.target.value)}
               placeholder="Your pen name..."
-              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
             />
           </div>
         </div>
@@ -421,7 +426,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
             onChange={(e) => handleChange("excerpt", e.target.value)}
             placeholder="Write a compelling excerpt..."
             rows={3}
-            className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+            className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
             required
           />
         </div>
@@ -472,7 +477,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
                     onChange={(e) => handleChange("content", e.target.value)}
                     placeholder="Tell your story..."
                     rows={15}
-                    className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-y"
+                    className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-y"
                     required={!isInteractive}
                   />
                 </div>
@@ -493,7 +498,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
               value={formData.tags}
               onChange={(e) => handleChange("tags", e.target.value)}
               placeholder="heartbreak, healing, hope..."
-              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white placeholder-pink-300/60 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
             />
           </div>
           <div>
@@ -503,7 +508,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
             <select
               value={formData.category}
               onChange={(e) => handleChange("category", e.target.value)}
-              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-lg text-white focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 cursor-pointer"
+              className="w-full px-4 py-3 bg-black/30 border border-pink-500/30 rounded-none text-white focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 cursor-pointer"
             >
               <option value="romance">Romance</option>
               <option value="drama">Drama</option>
@@ -521,16 +526,16 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
             onClick={handleAiAnalysis}
             disabled={isAnalyzing || isSubmitting}
             variant="outline"
-            className="border-purple-400/50 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
+            className="border-purple-400/50 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 rounded-none py-5 "
           >
             {isAnalyzing ? (
               <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Analyzing...</span>
               </>
             ) : (
               <>
-                <Wand2 className="w-5 h-5 mr-2" />
+                <Wand2 className="w-5 h-5" />
                 <span>AI Flow & Grammar Check</span>
               </>
             )}
@@ -539,7 +544,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting || isAnalyzing}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-pink-500/25 transition-all duration-300 flex items-center gap-2"
+            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-8 py-5 rounded-none shadow-lg hover:shadow-pink-500/25 transition-all duration-300 flex items-center gap-2"
           >
             {isSubmitting ? (
               <>

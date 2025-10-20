@@ -46,6 +46,7 @@ export default function RootLayout({
             <main className="pt-4">
               {children}
               <Toaster richColors position="top-right" />
+              <div id="modal-root"></div>
             </main>
           </Web3Provider>
         </UserRoleProvider>

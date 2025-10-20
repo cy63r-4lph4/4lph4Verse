@@ -1,7 +1,5 @@
 "use client";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
 import {
   MapPin,
   Clock,
@@ -12,8 +10,8 @@ import {
 import type { Task } from "./types";
 import TaskAttachments from "./TaskAttachments";
 import { Attachment } from "@verse/hirecore-web/utils/Interfaces";
-import { useState } from "react";
-
+import {Badge} from "@verse/ui/components/ui/badge"
+import { Card, CardContent } from "@verse/ui/components/ui/card";
 export default function TaskMain({
   task,
   onPreviewAttachment,

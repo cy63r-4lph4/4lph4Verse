@@ -5,8 +5,8 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@verse/ui/card";
-import { Button } from "@verse/ui/button";
+} from "@verse/ui/components/ui/card";
+import { Button } from "@verse/ui/components/ui/button";
 import {
   User,
   Star,

@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Task } from "../types";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Input } from "@verse/hirecore-web/components/ui/input";
-import { Textarea } from "@verse/hirecore-web/components/ui/textarea";
+import { Button } from "@verse/ui/components/ui/button";
+import { Input } from "@verse/ui/components/ui/input";
+import { Textarea } from "@verse/ui/components/ui/textarea";
 import { Send, Coins, X, Loader2, MessageSquare } from "lucide-react";
 import { useOutsideClick } from "@verse/sdk";
 

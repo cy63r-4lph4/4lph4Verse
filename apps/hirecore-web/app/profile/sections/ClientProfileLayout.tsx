@@ -10,9 +10,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@verse/ui/button";
-import { Card, CardContent } from "@verse/ui/card";
-import { Badge } from "@verse/ui/badge";
+import { Button } from "@verse/ui/components/ui/button";
+import { Card, CardContent } from "@verse/ui/components/ui/card";
+import { Badge } from "@verse/ui/components/ui/badge";
 import { useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 

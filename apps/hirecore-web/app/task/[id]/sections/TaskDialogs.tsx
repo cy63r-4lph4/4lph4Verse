@@ -5,8 +5,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@verse/ui/card";
-import { Button } from "@verse/ui/button";
+} from "@verse/ui/components/ui/card";
+import { Button } from "@verse/ui/components/ui/button";
 import { Download } from "lucide-react";
 import type { Task } from "./types";
 import type { Attachment } from "@verse/hirecore-web/utils/Interfaces";

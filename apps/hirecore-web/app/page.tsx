@@ -2,12 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button } from "../../../packages/ui/button";
 import { Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { FEATURES, SERVICES } from "apps/hirecore-web/utils/Constants";
-import { Card, CardContent } from "@verse/ui/card";
-import { InfiniteScroller } from "@verse/ui/infinite-scroller";
+import { Card, CardContent } from "@verse/ui/components/ui/card";
+import { InfiniteScroller } from "@verse/ui/components/ui/infinite-scroller";
+import {Button} from "@verse/ui/components/ui/button";
 
 export default function Home() {
   return (

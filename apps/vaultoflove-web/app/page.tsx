@@ -19,6 +19,7 @@ import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
 import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
 import useStoryVault from "@verse/vaultoflove-web/hooks/useStoryVault";
 import { Button } from "@verse/ui/components/ui/button";
+import { WriteStoryView } from "@verse/vaultoflove-web/components/WriteStoryModal";
 
 
 export default function VaultOfLoveApp() {
@@ -94,7 +95,7 @@ export default function VaultOfLoveApp() {
       case "heatbid":
         return <HeatBidArenaPage stories={stories} onBack={() => setCurrentView("home")} />;
       case "write":
-        return <WriteStoryModal onBack={onBack} onSubmit={onAddStory} />;
+        return <WriteStoryView onBack={onBack} onSubmit={onAddStory} />;
       default:
         return (
           <HomeViewPage

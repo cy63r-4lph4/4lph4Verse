@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Briefcase } from "lucide-react";
-import { Input } from "@verse/hirecore-web/components/ui/input";
+import { Input } from "@verse/ui/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@verse/hirecore-web/components/ui/select";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+} from "@verse/ui/components/ui/select";
+import { Button } from "@verse/ui/components/ui/button";
 import { TaskSkeleton } from "@verse/hirecore-web/components/tasks/Skeleton";
 import { TaskCard } from "@verse/hirecore-web/components/tasks/TaskCard";
 import { useTasks } from "@verse/hirecore-web/hooks/useTasks";

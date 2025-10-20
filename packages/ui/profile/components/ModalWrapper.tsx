@@ -49,7 +49,7 @@ export function ModalWrapper({
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 40, opacity: 0, scale: 0.98 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 250 }}
+            transition={{ type: "spring", damping: 20, stiffness: 250 }}
           >
             {children}
           </motion.div>
@@ -69,6 +69,6 @@ export function ModalWrapper({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.getElementById("modal-root") || document.body
   );
 }
