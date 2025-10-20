@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Gavel, Heart, Clock, Coins, Flame } from "lucide-react";
 import { Button } from "@verse/ui/components/ui/button";
-import { useToast } from "@verse/ui/use-toast";
+import { useToast } from "@verse/vaultoflove-web/components/toast";
 
 type Story = {
   id: string | number;

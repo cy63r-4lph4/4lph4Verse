@@ -18,6 +18,7 @@ import HeartBidPage from "@verse/vaultoflove-web/components/HeartBid";
 import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
 import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
 import useStoryVault from "@verse/vaultoflove-web/hooks/useStoryVault";
+import { Button } from "@verse/ui/components/ui/button";
 
 
 export default function VaultOfLoveApp() {
@@ -145,7 +146,7 @@ export default function VaultOfLoveApp() {
               variant="ghost"
               className="text-red-400 hover:text-red-300 hover:bg-red-500/20 animate-pulse"
             >
-              <Flame className="w-5 h-5 mr-2" />
+              <Flame className="w-5 h-5" />
               Heat Bid
             </Button>
             <Button
@@ -153,7 +154,7 @@ export default function VaultOfLoveApp() {
               variant="ghost"
               className="text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/20"
             >
-              <Gavel className="w-5 h-5 mr-2" />
+              <Gavel className="w-5 h-5" />
               Heart Bid
             </Button>
             <Button
@@ -161,7 +162,7 @@ export default function VaultOfLoveApp() {
               variant="ghost"
               className="text-pink-300 hover:text-pink-200 hover:bg-pink-500/20"
             >
-              <Users className="w-5 h-5 mr-2" />
+              <Users className="w-5 h-5 " />
               Profile
             </Button>
           </div>
@@ -174,9 +175,9 @@ export default function VaultOfLoveApp() {
             </div>
             <Button
               onClick={() => setCurrentView("write")}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-full shadow-lg hover:shadow-pink-500/25 transition-all duration-300"
+              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-6 py-5 rounded-full shadow-lg hover:shadow-pink-500/25 transition-all duration-300"
             >
-              <PenTool className="w-5 h-5 mr-2" />
+              <PenTool className="size-5" />
               Write
             </Button>
           </div>

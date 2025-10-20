@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, BookOpen, Trophy, Search, Filter } from "lucide-react";
-import { Input } from "@verse/ui/input";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@verse/ui/select";
-import { StoryCard } from "@verse/ui/story-card"; // adjust if your shared UI path differs
+import { StoryCard } from "@verse/vaultoflove-web/components/StoryCard";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@verse/ui/components/ui/select";
+import {Input} from "@verse/ui/components/ui/input"
+
 
 /* ------------------------------------------------------------
  * Types

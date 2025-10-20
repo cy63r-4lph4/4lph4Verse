@@ -3,8 +3,9 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Flame, Crown, Shield } from "lucide-react";
-import { Button } from "@verse/ui/button";
-import { useToast } from "@verse/ui/use-toast";
+import { useToast } from "@verse/vaultoflove-web/components/toast";
+import { Button } from "@verse/ui/components/ui/button";
+
 
 /* ------------------------------------------------------------
  * Types

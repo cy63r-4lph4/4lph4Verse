@@ -11,7 +11,7 @@ import {
   Gift,
   GitFork,
 } from "lucide-react";
-import { Button } from "@verse/ui/button";
+import { Button } from "@verse/ui/components/ui/button";
 
 /* ------------------------------------------------------------
  * Types

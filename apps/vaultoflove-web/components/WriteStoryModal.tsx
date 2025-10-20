@@ -12,17 +12,18 @@ import {
   Trash2,
   GitFork,
 } from "lucide-react";
-import { Button } from "@verse/ui/button";
-import { Switch } from "@verse/ui/switch";
+import { Button } from "@verse/ui/components/ui/button";
+import { Switch } from "@verse/ui/components/ui/switch";
+import { Label } from "@verse/ui/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@verse/ui/select";
+} from "@verse/ui/components/ui/select";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
+import { useToast } from "@verse/vaultoflove-web/components/toast";
 
 /* ------------------------------------------------------------
  * Types
@@ -146,7 +147,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                   type="button"
                   size="icon"
                   variant="ghost"
-                  onClick={(e: React.MouseEvent) => {
+                  onClick={(e) => {
                     e.stopPropagation();
                     handleRemoveNode(node.id);
                   }}
@@ -221,7 +222,7 @@ const InteractiveEditor: React.FC<InteractiveEditorProps> = ({
                     />
                     <Select
                       value={choice.nextNodeId}
-                      onValueChange={(value: string) =>
+                      onValueChange={(value) =>
                         handleUpdateChoice(index, "nextNodeId", value)
                       }
                     >
@@ -278,6 +279,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
   const [selectedNodeId, setSelectedNodeId] = useState("start");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
 
   const handleChange = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -287,34 +289,31 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
       ? nodes.map((n) => n.text).join(" ")
       : formData.content;
     if (!text.trim() && !formData.excerpt.trim()) {
-      toast(
-        <>
-          <span className="font-semibold text-lg">"Empty Content"</span>
-          <span>"Write something first before asking the AI to analyze."</span>
-        </>
-      );
+      toast({
+        title: "Empty Content",
+        description: "Write something first before asking the AI to analyze.",
+        variant: "error",
+      });
       return;
     }
     setIsAnalyzing(true);
     await new Promise((r) => setTimeout(r, 2500));
     setIsAnalyzing(false);
-    toast(
-      <>
-        <span className="font-semibold text-lg">"✨ AI Analysis Complete"</span>
-        <span>"Your story has a beautiful flow and solid grammar. It's ready to touch hearts!"</span>
-      </>
-    );
+    toast({
+      title: "✨ AI Analysis Complete",
+      description:
+        "Your story has a beautiful flow and solid grammar. It's ready to touch hearts!",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.excerpt.trim()) {
-      toast(
-        <>
-          <span className="font-semibold text-lg">"Missing Information"</span>
-          <span>"Please fill in title and excerpt."</span>
-        </>
-      );
+      toast({
+        title: "Missing Information",
+        description: "Please fill in title and excerpt.",
+        variant: "error",
+      });
       return;
     }
 
@@ -337,8 +336,9 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
       storyData.content = nodes.map((n) => n.text).join("\n\n");
     } else if (!formData.content.trim()) {
       toast({
-        "Missing Content"
-       "Please write your story content."
+        title: "Missing Content",
+        description: "Please write your story content.",
+        variant: "error",
       });
       return;
     }

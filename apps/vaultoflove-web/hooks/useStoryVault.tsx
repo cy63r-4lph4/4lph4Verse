@@ -1,3 +1,4 @@
+import { useToast } from '@verse/vaultoflove-web/components/toast';
 import { useState, useEffect } from 'react';
 
 type Story = {

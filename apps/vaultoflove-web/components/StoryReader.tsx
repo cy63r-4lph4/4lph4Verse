@@ -18,8 +18,8 @@ import {
   UserPlus,
   UserCheck,
 } from "lucide-react";
-import { Button } from "@verse/ui/button";
 import { toast } from "sonner";
+import { Button } from "@verse/ui/components/ui/button";
 
 /* ------------------------------------------------------------
  * Types
