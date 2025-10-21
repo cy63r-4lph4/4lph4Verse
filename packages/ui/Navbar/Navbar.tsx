@@ -6,22 +6,35 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOutsideClick } from "@verse/sdk";
 import type { NavbarItem, NavbarTheme } from "./Navbar.types";
+import ConnectWalletButton from "wallet/ConnectWalletButton";
+import { PersonaField } from "profile/components/core/PersonalQuickStep";
 
+
+/* -------------------------------------------------------------------------- */
+/* Props                                                                      */
+/* -------------------------------------------------------------------------- */
 type NavbarProps = {
   logo: React.ReactNode;
   logoSm?: React.ReactNode;
   menuItems: NavbarItem[];
   rightControls?: React.ReactNode;
   theme?: NavbarTheme;
-  mobileExtras?: React.ReactNode; // 👈 NEW
+  dapp?: string; // ✅ dApp name (e.g. hirecore, leasevault)
+  personaFields?: PersonaField[]; // ✅ persona setup fields
+  mobileExtras?: React.ReactNode;
 };
 
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
 export const Navbar: React.FC<NavbarProps> = ({
   logo,
   logoSm,
   menuItems,
   rightControls,
   theme = {},
+  dapp,
+  personaFields,
   mobileExtras,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -42,13 +55,18 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between h-14 sm:h-16">
-        {/* Logo */}
-        <div className={`${theme.logoStyle || "text-xl font-bold"} cursor-pointer`} onClick={() => window.location.href = '/'}>
+        {/* ───────────────────────────── Logo ───────────────────────────── */}
+        <div
+          className={`${
+            theme.logoStyle || "text-xl font-bold"
+          } cursor-pointer`}
+          onClick={() => (window.location.href = "/")}
+        >
           <span className="hidden sm:inline">{logo}</span>
           <span className="sm:hidden text-lg font-bold">{logoSm}</span>
         </div>
 
-        {/* Tablet Menu (icon-only) */}
+        {/* ───────────────────────────── Tablet (icon-only) ───────────────────────────── */}
         <div className="hidden sm:flex md:hidden items-center gap-3">
           {menuItems.map(({ href, icon: Icon, label }) =>
             href ? (
@@ -63,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Desktop Menu */}
+        {/* ───────────────────────────── Desktop Menu ───────────────────────────── */}
         <div className="hidden md:flex items-center gap-3 space-x-4">
           {menuItems.map(({ href, label, icon: Icon, onClick }) => {
             const ItemContent = (
@@ -93,12 +111,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </div>
 
-        {/* Right Controls (hidden on mobile) */}
+        {/* ───────────────────────────── Right Controls ───────────────────────────── */}
         <div className="flex items-center gap-3">
-          {rightControls}
+          {/* Keep custom right controls, but fallback to wallet if none */}
+          {rightControls ? (
+            rightControls
+          ) : (
+            <ConnectWalletButton
+              dapp={dapp}
+              personaFields={personaFields}
+              showNetwork
+              rounded="lg"
+              variant="primary"
+            />
+          )}
         </div>
 
-        {/* Mobile Toggle */}
+        {/* ───────────────────────────── Mobile Toggle ───────────────────────────── */}
         <button
           className="sm:hidden p-2 rounded-lg hover:bg-white/10 transition"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
@@ -111,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* ───────────────────────────── Mobile Drawer ───────────────────────────── */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -149,11 +178,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )
               )}
 
-              {mobileExtras && (
-                <div className="mt-4 border-t border-white/10 pt-4">
-                  {mobileExtras}
-                </div>
-              )}
+              {/* 👇 mobileExtras now includes wallet connect if provided */}
+              <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
+                {mobileExtras}
+                <ConnectWalletButton
+                  dapp={dapp}
+                  personaFields={personaFields}
+                  rounded="lg"
+                  variant="secondary"
+                  className="w-full justify-center"
+                />
+              </div>
             </div>
           </motion.div>
         )}
