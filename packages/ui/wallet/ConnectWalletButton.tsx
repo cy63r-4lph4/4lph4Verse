@@ -4,14 +4,15 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import clsx from "clsx";
 import { useAccount, useDisconnect } from "wagmi";
 import { Coins, User2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useBalance } from "@verse/sdk/hooks/useBalance";
-import { use, useEffect, useState } from "react";
-import WalletDropdown from "./WalletDropdown";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
-import { useVerseProfile, VerseProfileWizard } from "../profile";
+import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
-import { ExtensionStep } from "../profile/VerseProfileWizard";
 import { VerseChainModal } from "../wallet/ChainModal";
+import WalletDropdown from "./WalletDropdown";
+import { PersonaField } from "profile/components/core/PersonalQuickStep";
 
 export type ConnectWalletButtonProps = {
   className?: string;
@@ -19,7 +20,8 @@ export type ConnectWalletButtonProps = {
   rounded?: "none" | "sm" | "md" | "lg" | "full";
   showNetwork?: boolean;
   faucet?: boolean;
-  extensions?: ExtensionStep[];
+  dapp?: string;
+  personaFields?: PersonaField[];
 };
 
 export default function ConnectWalletButton({
@@ -28,17 +30,71 @@ export default function ConnectWalletButton({
   rounded = "md",
   showNetwork = false,
   faucet = false,
-  extensions,
+  dapp,
+  personaFields = [],
 }: ConnectWalletButtonProps) {
+  /* ──────────────────────────────────────────────────────────────── */
+  /*  Wallet & Verse Hooks                                           */
+  /* ──────────────────────────────────────────────────────────────── */
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { balance } = useBalance();
+
+  const { hasProfile, isLoading: checkingProfile, refetch } = useCheckProfile();
+  const {
+    profile,
+    isLoading: loadingProfile,
+    refetch: refetchProfile,
+  } = useVerseProfile(hasProfile);
+
+  /* ──────────────────────────────────────────────────────────────── */
+  /*  Local UI State                                                 */
+  /* ──────────────────────────────────────────────────────────────── */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showChainModal, setShowChainModal] = useState(false);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardDone, setWizardDone] = useState(false);
+
+  /* ──────────────────────────────────────────────────────────────── */
+  /*  Wizard Auto-Trigger Logic                                      */
+  /* ──────────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    const shouldOpenWizard =
+      address &&
+      !checkingProfile &&
+      !hasProfile &&
+      !wizardDone &&
+      !faucet;
+
+    if (shouldOpenWizard) {
+      setShowWizard(true);
+    }
+  }, [address, checkingProfile, hasProfile, wizardDone, faucet]);
+
+  async function handleWizardComplete() {
+    setWizardDone(true);
+    setShowWizard(false);
+    await refetch();
+    await refetchProfile();
+  }
+
+  function handleWizardClose() {
+    if (!wizardDone || !hasProfile) disconnect();
+    setShowWizard(false);
+  }
+
+  /* ──────────────────────────────────────────────────────────────── */
+  /*  Styling                                                        */
+  /* ──────────────────────────────────────────────────────────────── */
   const baseStyles =
     "px-4 py-2 font-semibold transition-colors flex items-center gap-3";
-
   const variants: Record<string, string> = {
     primary: "bg-indigo-600 text-white hover:bg-indigo-700",
-    secondary: "bg-gray-100 text-indigo-600 hover:text-white hover:bg-white/10",
+    secondary:
+      "bg-gray-100 text-indigo-600 hover:text-white hover:bg-white/10",
     ghost: "bg-transparent text-indigo-600 hover:bg-indigo-50",
   };
-
   const roundedMap: Record<string, string> = {
     none: "rounded-none",
     sm: "rounded-sm",
@@ -47,51 +103,15 @@ export default function ConnectWalletButton({
     full: "rounded-full",
   };
 
-  const { address } = useAccount();
-  const { balance } = useBalance();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [showChainModal, setShowChainModal] = useState(false);
-
-  const { hasProfile, isLoading, refetch } = useCheckProfile();
-  const {
-    profile,
-    verseID,
-    isLoading: profileLoading,
-    refetch: refreshProfile,
-  } = useVerseProfile(!hasProfile);
-
-  const [showModal, setShowModal] = useState(false);
-  const [showConnectModal, setShowConnectModal] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const { disconnect } = useDisconnect();
-
-  const handleCloseModal = () => {
-    if (!success || !hasProfile) {
-      disconnect();
-    }
-    setShowModal(false);
-  };
-
-  const handleProfileCreated = async () => {
-    setSuccess(true);
-    setShowModal(false);
-    await refetch();
-    await refreshProfile();
-  };
-
+  /* ──────────────────────────────────────────────────────────────── */
+  /*  Render                                                         */
+  /* ──────────────────────────────────────────────────────────────── */
   return (
     <div className="flex justify-center relative">
       <ConnectButton.Custom>
         {({ account, chain, openChainModal, openAccountModal, mounted }) => {
           const ready = mounted;
           const connected = ready && account && chain;
-
-          useEffect(() => {
-            if (connected && !isLoading && !hasProfile && !success) {
-              setShowModal(true);
-            }
-          }, [connected, isLoading, hasProfile, success]);
 
           return (
             <div className="flex items-center gap-4">
@@ -105,6 +125,7 @@ export default function ConnectWalletButton({
                 </div>
               )}
 
+              {/* 🔘 Main Connect Button Logic */}
               <div
                 className={clsx(
                   !connected && !chain?.unsupported && baseStyles,
@@ -115,9 +136,7 @@ export default function ConnectWalletButton({
               >
                 {!connected ? (
                   <button
-                    onClick={() => {
-                      setShowConnectModal(true); // ✅ custom modal
-                    }}
+                    onClick={() => setShowConnectModal(true)}
                     type="button"
                   >
                     Connect Wallet
@@ -133,7 +152,7 @@ export default function ConnectWalletButton({
                     Wrong network
                   </button>
                 ) : faucet ? (
-                  // ✅ Faucet page: show direct RainbowKit buttons, no wrapper button
+                  // ✅ Faucet mode: use RainbowKit modals
                   <div className="flex items-center gap-3">
                     <button onClick={openAccountModal} type="button">
                       {account.displayName}
@@ -147,18 +166,16 @@ export default function ConnectWalletButton({
                     </button>
                   </div>
                 ) : (
-                  // ✅ Normal pages: dropdown toggle
+                  // ✅ Normal mode: profile avatar / dropdown
                   <div className="flex items-center gap-3 relative">
                     <button
                       onClick={() => setMenuOpen((o) => !o)}
                       type="button"
                       className="relative flex items-center"
                     >
-                      {profileLoading ? (
-                        // 🌀 Loading spinner
+                      {loadingProfile ? (
                         <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       ) : profile?.avatar ? (
-                        // 🧩 User avatar
                         <div className="bg-white rounded-full overflow-hidden w-8 h-8">
                           <img
                             src={
@@ -206,14 +223,16 @@ export default function ConnectWalletButton({
         }}
       </ConnectButton.Custom>
 
-      {showModal && !faucet && (
-        <VerseProfileWizard
-          asModal
-          onClose={handleCloseModal}
-          onComplete={handleProfileCreated}
-          extensions={extensions}
+      {/* ⚙️ Modals */}
+      {showWizard && !faucet && (
+        <VerseProfileWizardV2
+          open={showWizard}
+          onClose={handleWizardClose}
+          dapp={dapp}
+          personaFields={personaFields}
         />
       )}
+
       <VerseChainModal
         open={showChainModal}
         onClose={() => setShowChainModal(false)}
