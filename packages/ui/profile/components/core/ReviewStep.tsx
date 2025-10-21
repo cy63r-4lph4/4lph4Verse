@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Loader2, Wand2 } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
-import { WizardNav } from "../ui/WizardNav";
 import { AvatarPreview } from "../ui/AvatarPreview";
 import type { VerseProfile } from "@verse/sdk/types";
 

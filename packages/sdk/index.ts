@@ -6,3 +6,4 @@ export * from "./utils/time/timeUtils";
 export * from "./hooks/useOutsideClick";
 export * from "./hooks/useProfileById";
 export * from "./utils/profile/fetchProfile";
+export * from "./hooks/useVerseProfileWizard"
