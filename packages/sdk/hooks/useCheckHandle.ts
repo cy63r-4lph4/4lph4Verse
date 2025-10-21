@@ -33,7 +33,7 @@ function validateHandleFormat(handle: string) {
 /* -------------------------------------------------------------------------- */
 export function useCheckHandle(
   handle: string,
-  { testMode = false, debounceMs = 600, minLoadTime = 400 }: UseCheckHandleOptions = {}
+  {  debounceMs = 600, minLoadTime = 400 }: UseCheckHandleOptions = {}
 ) {
   const chainId = useChainId() as ChainId;
   const [status, setStatus] = useState<HandleStatus>("idle");
@@ -51,7 +51,7 @@ export function useCheckHandle(
     functionName: "getProfileIdByHandle",
     args: handle && validateHandleFormat(handle) ? [handle.toLowerCase()] : undefined,
     query: {
-      enabled: !testMode && Boolean(handle && validateHandleFormat(handle)),
+      enabled:  Boolean(handle && validateHandleFormat(handle)),
     },
   });
 
@@ -80,17 +80,7 @@ export function useCheckHandle(
       const start = Date.now();
 
       try {
-        /* -------------------------------------------------------------- */
-        /* 🧪 Mock Mode                                                   */
-        /* -------------------------------------------------------------- */
-        if (testMode) {
-          console.log("🔍 [Mock] Checking handle:", h);
-          await new Promise((r) => setTimeout(r, 800));
-          const available = Math.random() > 0.5;
-          setStatus(available ? "available" : "taken");
-          setIsLoading(false);
-          return;
-        }
+       
 
         /* -------------------------------------------------------------- */
         /* 🌐 Live On-chain Check (via refetch)                           */
@@ -116,7 +106,7 @@ export function useCheckHandle(
     }, debounceMs);
 
     return () => clearTimeout(delay);
-  }, [handle, lastChecked, testMode, debounceMs, minLoadTime, refetch]);
+  }, [handle, lastChecked, debounceMs, minLoadTime, refetch]);
 
   return {
     status,

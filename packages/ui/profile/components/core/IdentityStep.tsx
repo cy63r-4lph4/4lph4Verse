@@ -1,31 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { WizardNav } from "../ui/WizardNav";
 import { AvatarPicker } from "../ui/AvatarPicker";
-import { createPublicClient, http } from "viem";
-import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
-import { celoSepolia } from "viem/chains";
 import type { VerseProfile } from "@verse/sdk/types";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
+import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
 
 type IdentityStepProps = {
   profile: VerseProfile;
   updateProfile: (data: Partial<VerseProfile>) => void;
   onNext: () => void;
-  chainId?: ChainId;
 };
-
-/* -------------------------------------------------------------------------- */
-/* Helper: Validate Handle Format                                             */
-/* -------------------------------------------------------------------------- */
-function validateHandleFormat(handle: string) {
-  return /^[a-z0-9_]{3,20}$/.test(handle);
-}
 
 /* -------------------------------------------------------------------------- */
 /* Component                                                                  */
@@ -34,54 +24,14 @@ export function IdentityStep({
   profile,
   updateProfile,
   onNext,
-  chainId = 11142220, // default: Celo Sepolia
 }: IdentityStepProps) {
-  const [handleStatus, setHandleStatus] = useState<
-    "idle" | "checking" | "available" | "taken" | "invalid"
-  >("idle");
-
-  const [lastChecked, setLastChecked] = useState("");
-
-  /* ---------------------------------------------------------------------- */
-  /* Debounced Handle Availability Check                                    */
-  /* ---------------------------------------------------------------------- */
- useEffect(() => {
-  const handle = profile.handle.trim().toLowerCase();
-  if (!handle) return setHandleStatus("idle");
-  if (!validateHandleFormat(handle)) return setHandleStatus("invalid");
-
-  const delay = setTimeout(async () => {
-    if (lastChecked === handle) return;
-    setLastChecked(handle);
-
-    // 🌀 Step 1: simulate network check start
-    setHandleStatus("checking");
-    console.log("🔍 Mock checking handle:", handle);
-
-    // 🕐 Step 2: simulate network delay (800ms)
-    await new Promise((r) => setTimeout(r, 800));
-
-    // 🎲 Step 3: randomly assign available or taken
-    const isAvailable = Math.random() > 0.5;
-
-    if (isAvailable) {
-      console.log("✅ Mock result: handle available");
-      setHandleStatus("available");
-    } else {
-      console.log("❌ Mock result: handle taken");
-      setHandleStatus("taken");
-    }
-  }, 600);
-
-  return () => clearTimeout(delay);
-}, [profile.handle, lastChecked]);
-
+  const { status, isAvailable } = useCheckHandle(profile.handle);
 
   /* ---------------------------------------------------------------------- */
   /* Proceed to Next Step                                                   */
   /* ---------------------------------------------------------------------- */
   const handleContinue = () => {
-    if (handleStatus !== "available") return;
+    if (!isAvailable) return;
     if (!profile.displayName) return;
     onNext();
   };
@@ -103,7 +53,8 @@ export function IdentityStep({
             Forge Your Verse Identity
           </h2>
           <p className="text-gray-400 text-sm mt-1">
-            Choose your unique Verse handle and display name to represent your identity across the Verse.
+            Choose a unique Verse handle and display name to represent your
+            identity across the Verse.
           </p>
         </div>
 
@@ -116,19 +67,22 @@ export function IdentityStep({
                 Handle <span className="text-red-400">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  @
+                </span>
                 <Input
                   value={profile.handle}
-                  onChange={(e:React.ChangeEvent<HTMLInputElement>) =>
-                    updateProfile({ handle: e.target.value.replace(/^@/, "").toLowerCase() })
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    updateProfile({
+                      handle: e.target.value.replace(/^@/, "").toLowerCase(),
+                    })
                   }
                   placeholder="cy63r_4lph4"
                   className="pl-7 bg-background/60 border-white/10 text-white"
                 />
-                <HandleStatusIcon status={handleStatus} />
+                <HandleStatusIcon status={status} />
               </div>
-
-              <HandleStatusText status={handleStatus} />
+              <HandleStatusText status={status} />
             </div>
 
             {/* Display Name */}
@@ -138,7 +92,9 @@ export function IdentityStep({
               </label>
               <Input
                 value={profile.displayName}
-                onChange={(e:React.ChangeEvent<HTMLInputElement>) => updateProfile({ displayName: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateProfile({ displayName: e.target.value })
+                }
                 placeholder="Cy63r_4lph4~🐉"
                 className="bg-background/60 border-white/10 text-white"
               />
@@ -149,7 +105,9 @@ export function IdentityStep({
               <label className="text-sm text-gray-300 mb-1 block">Bio</label>
               <Textarea
                 value={profile.bio || ""}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateProfile({ bio: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  updateProfile({ bio: e.target.value })
+                }
                 placeholder="Web3 builder. Hiring dragons. Paying in CØRE."
                 maxLength={180}
                 className="bg-background/60 border-white/10 text-white min-h-[100px]"
@@ -172,7 +130,7 @@ export function IdentityStep({
         {/* Navigation */}
         <WizardNav
           next={handleContinue}
-          disableNext={handleStatus !== "available" || !profile.displayName}
+          disableNext={!isAvailable || !profile.displayName}
           nextLabel="Continue"
         />
       </motion.div>
@@ -186,9 +144,13 @@ export function IdentityStep({
 
 function HandleStatusIcon({ status }: { status: string }) {
   return (
-    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-      {status === "checking" && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
-      {status === "available" && <CheckCircle className="h-4 w-4 text-green-500" />}
+    <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20">
+      {status === "checking" && (
+        <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+      )}
+      {status === "available" && (
+        <CheckCircle className="h-4 w-4 text-green-500" />
+      )}
       {status === "taken" && <XCircle className="h-4 w-4 text-red-500" />}
       {status === "invalid" && <XCircle className="h-4 w-4 text-yellow-500" />}
     </div>
@@ -201,7 +163,9 @@ function HandleStatusText({ status }: { status: string }) {
     checking: "Checking availability...",
     available: "This handle is available!",
     taken: "Handle already taken.",
-    invalid: "Invalid format — use 3-20 lowercase letters, numbers, or underscores.",
+    invalid:
+      "Invalid format — use 3-20 lowercase letters, numbers, or underscores.",
+    error: "Error checking handle.",
   };
 
   const colorMap: Record<string, string> = {
@@ -209,10 +173,19 @@ function HandleStatusText({ status }: { status: string }) {
     taken: "text-red-400",
     invalid: "text-yellow-400",
     checking: "text-gray-400",
+    error: "text-red-400",
     idle: "text-transparent",
   };
 
   return (
-    <p className={`text-xs mt-1 ${colorMap[status]}`}>{textMap[status]}</p>
+    <motion.p
+      key={status}
+      initial={{ opacity: 0, y: 3 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`text-xs mt-1 min-h-[1.2rem] ${colorMap[status]}`}
+    >
+      {textMap[status]}
+    </motion.p>
   );
 }
