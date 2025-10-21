@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Wand2 } from "lucide-react";
-import { PrimaryButton} from "./PrimaryButton";
-import { SecondaryButton } from "profile/components/ui/SecondaryButton";
+import { PrimaryButton,SecondaryButton} from "./PrimaryButton";
 
 type WizardNavProps = {
   back?: () => void;

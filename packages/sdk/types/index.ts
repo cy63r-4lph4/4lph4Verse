@@ -1,14 +1,15 @@
-interface Choice {
+export * from "./verseProfile";
+export interface Choice {
   text: string;
   nextNodeId: string;
 }
 
-interface Node {
+export interface Node {
   text: string;
   choices: Choice[];
 }
 
-interface Story {
+export interface Story {
   id: number;
   title: string;
   author: string;

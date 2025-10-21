@@ -1,30 +1,99 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Image as ImageIcon } from "lucide-react";
-import { useRef } from "react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { WizardNav } from "../ui/WizardNav";
-import { TextField } from "../ui/TextField";
-import { TextArea } from "../ui/TextArea";
 import { AvatarPicker } from "../ui/AvatarPicker";
+import { createPublicClient, http } from "viem";
+import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import { celoSepolia } from "viem/chains";
 import type { VerseProfile } from "@verse/sdk/types";
+import { Input } from "components/ui/input";
+import { Textarea } from "components/ui/textarea";
 
 type IdentityStepProps = {
   profile: VerseProfile;
   updateProfile: (data: Partial<VerseProfile>) => void;
   onNext: () => void;
-  onBack?: () => void;
+  chainId?: ChainId;
 };
 
-export function IdentityStep({ profile, updateProfile, onNext, onBack }: IdentityStepProps) {
-  const inputBanner = useRef<HTMLInputElement>(null);
+/* -------------------------------------------------------------------------- */
+/* Helper: Validate Handle Format                                             */
+/* -------------------------------------------------------------------------- */
+function validateHandleFormat(handle: string) {
+  return /^[a-z0-9_]{3,20}$/.test(handle);
+}
 
-  const handleNext = () => {
-    if (!profile.handle || !profile.displayName) return;
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
+export function IdentityStep({
+  profile,
+  updateProfile,
+  onNext,
+  chainId = 11142220, // default: Celo Sepolia
+}: IdentityStepProps) {
+  const [handleStatus, setHandleStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid"
+  >("idle");
+
+  const [lastChecked, setLastChecked] = useState("");
+
+  /* ---------------------------------------------------------------------- */
+  /* Debounced Handle Availability Check                                    */
+  /* ---------------------------------------------------------------------- */
+  useEffect(() => {
+    const handle = profile.handle.trim().toLowerCase();
+    if (!handle) return setHandleStatus("idle");
+
+    if (!validateHandleFormat(handle)) return setHandleStatus("invalid");
+
+    const delay = setTimeout(async () => {
+      if (lastChecked === handle) return;
+      setLastChecked(handle);
+      setHandleStatus("checking");
+
+      try {
+        const client = createPublicClient({
+          chain: celoSepolia,
+          transport: http(celoSepolia.rpcUrls.default.http[0]),
+        });
+
+        const registry = getDeployedContract(chainId, "VerseProfile");
+
+        const result = await client.readContract({
+          address: registry.address,
+          abi: registry.abi,
+          functionName: "getProfileIdByHandle",
+          args: [handle],
+        });
+
+        if (result === 0n) setHandleStatus("available");
+        else setHandleStatus("taken");
+      } catch (err) {
+        console.error("Handle check failed:", err);
+        setHandleStatus("idle");
+      }
+    }, 600);
+
+    return () => clearTimeout(delay);
+  }, [profile.handle, chainId, lastChecked]);
+
+  /* ---------------------------------------------------------------------- */
+  /* Proceed to Next Step                                                   */
+  /* ---------------------------------------------------------------------- */
+  const handleContinue = () => {
+    if (handleStatus !== "available") return;
+    if (!profile.displayName) return;
     onNext();
   };
 
+  /* ---------------------------------------------------------------------- */
+  /* UI                                                                     */
+  /* ---------------------------------------------------------------------- */
   return (
     <GlassCard>
       <motion.div
@@ -33,93 +102,122 @@ export function IdentityStep({ profile, updateProfile, onNext, onBack }: Identit
         transition={{ duration: 0.25 }}
         className="space-y-6"
       >
+        {/* Title */}
         <div>
-          <h2 className="font-orbitron text-2xl font-bold text-white">Your Universal Identity</h2>
+          <h2 className="font-orbitron text-2xl font-bold text-white">
+            Forge Your Verse Identity
+          </h2>
           <p className="text-gray-400 text-sm mt-1">
-            Define how you’ll appear across the 4lph4Verse — your handle, name, and essence.
+            Choose your unique Verse handle and display name to represent your identity across the Verse.
           </p>
         </div>
 
-        {/* Avatar + Banner */}
+        {/* Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="md:col-span-2 space-y-4">
-            <TextField
-              label="Handle"
-              prefix="@"
-              value={profile.handle}
-              onChange={(v) => updateProfile({ handle: v.replace(/^@/, "") })}
-              placeholder="cy63r_4lph4"
-              required
-            />
+            {/* Handle Field */}
+            <div>
+              <label className="text-sm text-gray-300 mb-1 block">
+                Handle <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+                <Input
+                  value={profile.handle}
+                  onChange={(e:React.ChangeEvent<HTMLInputElement>) =>
+                    updateProfile({ handle: e.target.value.replace(/^@/, "").toLowerCase() })
+                  }
+                  placeholder="cy63r_4lph4"
+                  className="pl-7 bg-background/60 border-white/10 text-white"
+                />
+                <HandleStatusIcon status={handleStatus} />
+              </div>
 
-            <TextField
-              label="Display Name"
-              value={profile.displayName}
-              onChange={(v) => updateProfile({ displayName: v })}
-              placeholder="Cy63r_4lph4~🐉"
-              required
-            />
+              <HandleStatusText status={handleStatus} />
+            </div>
 
-            <TextArea
-              label="Bio"
-              value={profile.bio || ""}
-              onChange={(v) => updateProfile({ bio: v })}
-              placeholder="Web3 builder. Hiring dragons. Paying in CØRE."
-              maxLength={180}
-            />
+            {/* Display Name */}
+            <div>
+              <label className="text-sm text-gray-300 mb-1 block">
+                Display Name <span className="text-red-400">*</span>
+              </label>
+              <Input
+                value={profile.displayName}
+                onChange={(e:React.ChangeEvent<HTMLInputElement>) => updateProfile({ displayName: e.target.value })}
+                placeholder="Cy63r_4lph4~🐉"
+                className="bg-background/60 border-white/10 text-white"
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="text-sm text-gray-300 mb-1 block">Bio</label>
+              <Textarea
+                value={profile.bio || ""}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateProfile({ bio: e.target.value })}
+                placeholder="Web3 builder. Hiring dragons. Paying in CØRE."
+                maxLength={180}
+                className="bg-background/60 border-white/10 text-white min-h-[100px]"
+              />
+              <div className="text-xs text-right text-gray-500 mt-1">
+                {profile.bio?.length || 0}/180
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3">
+          {/* Avatar */}
+          <div>
             <AvatarPicker
               value={profile.avatar || ""}
               onChange={(url) => updateProfile({ avatar: url })}
             />
-
-            {/* Banner uploader */}
-            <div className="rounded-lg border border-white/10 bg-zinc-800/40 p-2 text-center">
-              <input
-                ref={inputBanner}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => updateProfile({ banner: String(reader.result) });
-                  reader.readAsDataURL(file);
-                }}
-              />
-              {profile.banner ? (
-                <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={profile.banner}
-                    alt="Banner"
-                    className="w-full h-20 object-cover rounded-md"
-                  />
-                  <button
-                    className="text-xs mt-2 text-gray-400 underline"
-                    onClick={() => updateProfile({ banner: "" })}
-                  >
-                    Remove Banner
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => inputBanner.current?.click()}
-                  className="inline-flex items-center gap-2 text-xs text-gray-300 hover:text-white"
-                >
-                  <ImageIcon className="h-4 w-4" /> Upload Banner
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <WizardNav back={onBack} next={handleNext} nextLabel="Continue" />
+        <WizardNav
+          next={handleContinue}
+          disableNext={handleStatus !== "available" || !profile.displayName}
+          nextLabel="Continue"
+        />
       </motion.div>
     </GlassCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sub-Components: Handle Status                                              */
+/* -------------------------------------------------------------------------- */
+
+function HandleStatusIcon({ status }: { status: string }) {
+  return (
+    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+      {status === "checking" && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
+      {status === "available" && <CheckCircle className="h-4 w-4 text-green-500" />}
+      {status === "taken" && <XCircle className="h-4 w-4 text-red-500" />}
+      {status === "invalid" && <XCircle className="h-4 w-4 text-yellow-500" />}
+    </div>
+  );
+}
+
+function HandleStatusText({ status }: { status: string }) {
+  const textMap: Record<string, string> = {
+    idle: "",
+    checking: "Checking availability...",
+    available: "This handle is available!",
+    taken: "Handle already taken.",
+    invalid: "Invalid format — use 3–20 lowercase letters, numbers, or underscores.",
+  };
+
+  const colorMap: Record<string, string> = {
+    available: "text-green-400",
+    taken: "text-red-400",
+    invalid: "text-yellow-400",
+    checking: "text-gray-400",
+    idle: "text-transparent",
+  };
+
+  return (
+    <p className={`text-xs mt-1 ${colorMap[status]}`}>{textMap[status]}</p>
   );
 }

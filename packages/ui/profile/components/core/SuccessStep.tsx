@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { PrimaryButton } from "../ui/PrimaryButton";
-import type { VerseProfile } from "@verse/sdk/types";
+import  { VerseProfile } from "@verse/sdk/types";
 
 type SuccessStepProps = {
   profile: VerseProfile;
