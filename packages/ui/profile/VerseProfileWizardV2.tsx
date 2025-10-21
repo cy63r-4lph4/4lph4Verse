@@ -9,8 +9,8 @@ import { Stepper } from "./components/Stepper";
 import { ModalWrapper } from "./components/ModalWrapper";
 import { ReviewStep } from "./components/core/ReviewStep";
 import { SuccessStep } from "./components/core/SuccessStep";
-import {useVerseProfileWizard} from "@verse/sdk"
-
+import { WelcomeStep } from "./components/core/WelcomeStep";
+import { useVerseProfileWizard } from "@verse/sdk";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -43,51 +43,59 @@ export function VerseProfileWizardV2({
   } = useVerseProfileWizard(dapp);
 
   const [step, setStep] = useState(0);
-  const totalSteps = 3 + (personaFields.length ? 1 : 0);
+  const hasPersona = personaFields.length > 0;
 
+  /* -------------------------------- Navigation ------------------------------- */
   function goNext() {
-    if (step < totalSteps) setStep((s) => s + 1);
+    setStep((s) => s + 1);
   }
+
   function goBack() {
-    if (step > 0) setStep((s) => s - 1);
+    setStep((s) => Math.max(0, s - 1));
   }
 
   async function handleSubmit() {
     const success = await submitProfile();
-    if (success) goNext();
+    if (success) setStep((s) => s + 1);
   }
 
+  function handleClose() {
+    resetWizard();
+    setStep(0);
+    onClose();
+  }
+
+  /* -------------------------------- Step Logic ------------------------------- */
   const stepsForIndicator = [
     { id: 0, label: "Identity" },
-    ...(personaFields.length ? [{ id: 1, label: "Persona" }] : []),
-    { id: personaFields.length ? 2 : 1, label: "Review" },
-    { id: totalSteps - 1, label: "Success" },
+    ...(hasPersona ? [{ id: 1, label: "Persona" }] : []),
+    { id: hasPersona ? 2 : 1, label: "Review" },
   ];
 
+  /* -------------------------------- Component -------------------------------- */
   return (
-    <ModalWrapper open={open} onClose={onClose}>
+    <ModalWrapper open={open} onClose={handleClose}>
       <div className="relative w-full max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="text-white font-orbitron text-lg">Verse Profile</div>
           <button
-            onClick={() => {
-              resetWizard();
-              onClose();
-            }}
+            onClick={handleClose}
             className="rounded-lg p-2 text-gray-300 hover:bg-white/10"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Step Indicator */}
-        <Stepper
-          steps={stepsForIndicator}
-          current={Math.min(step, stepsForIndicator.length - 1)}
-        />
+        {/* Only show stepper after Welcome */}
+        {step > 0 && step < (hasPersona ? 4 : 3) && (
+          <Stepper
+            steps={stepsForIndicator}
+            current={Math.min(step - 1, stepsForIndicator.length - 1)}
+          />
+        )}
 
-        {/* Animated Step Transition */}
+        {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`step-${step}`}
@@ -96,7 +104,11 @@ export function VerseProfileWizardV2({
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            {step === 0 && (
+            {/* 0️⃣ Welcome */}
+            {step === 0 && <WelcomeStep onNext={goNext} />}
+
+            {/* 1️⃣ Identity */}
+            {step === 1 && (
               <IdentityStep
                 profile={profile}
                 updateProfile={updateProfile}
@@ -104,7 +116,8 @@ export function VerseProfileWizardV2({
               />
             )}
 
-            {step === 1 && personaFields.length > 0 && (
+            {/* 2️⃣ Persona (optional) */}
+            {step === 2 && hasPersona && (
               <PersonaQuickStep
                 dapp={dapp!}
                 title={`${capitalize(dapp)} Setup`}
@@ -117,7 +130,8 @@ export function VerseProfileWizardV2({
               />
             )}
 
-            {step === (personaFields.length ? 2 : 1) && (
+            {/* 3️⃣ Review */}
+            {step === (hasPersona ? 3 : 2) && (
               <ReviewStep
                 profile={profile}
                 dapp={dapp}
@@ -129,13 +143,11 @@ export function VerseProfileWizardV2({
               />
             )}
 
-            {step === totalSteps - 1 && (
+            {/* ✅ Success */}
+            {step === (hasPersona ? 4 : 3) && (
               <SuccessStep
                 profile={profile}
-                onContinue={() => {
-                  resetWizard();
-                  onClose();
-                }}
+                onContinue={handleClose}
               />
             )}
           </motion.div>
