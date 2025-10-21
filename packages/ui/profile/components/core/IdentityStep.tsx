@@ -45,42 +45,37 @@ export function IdentityStep({
   /* ---------------------------------------------------------------------- */
   /* Debounced Handle Availability Check                                    */
   /* ---------------------------------------------------------------------- */
-  useEffect(() => {
-    const handle = profile.handle.trim().toLowerCase();
-    if (!handle) return setHandleStatus("idle");
+ useEffect(() => {
+  const handle = profile.handle.trim().toLowerCase();
+  if (!handle) return setHandleStatus("idle");
+  if (!validateHandleFormat(handle)) return setHandleStatus("invalid");
 
-    if (!validateHandleFormat(handle)) return setHandleStatus("invalid");
+  const delay = setTimeout(async () => {
+    if (lastChecked === handle) return;
+    setLastChecked(handle);
 
-    const delay = setTimeout(async () => {
-      if (lastChecked === handle) return;
-      setLastChecked(handle);
-      setHandleStatus("checking");
+    // 🌀 Step 1: simulate network check start
+    setHandleStatus("checking");
+    console.log("🔍 Mock checking handle:", handle);
 
-      try {
-        const client = createPublicClient({
-          chain: celoSepolia,
-          transport: http(celoSepolia.rpcUrls.default.http[0]),
-        });
+    // 🕐 Step 2: simulate network delay (800ms)
+    await new Promise((r) => setTimeout(r, 800));
 
-        const registry = getDeployedContract(chainId, "VerseProfile");
+    // 🎲 Step 3: randomly assign available or taken
+    const isAvailable = Math.random() > 0.5;
 
-        const result = await client.readContract({
-          address: registry.address,
-          abi: registry.abi,
-          functionName: "getProfileIdByHandle",
-          args: [handle],
-        });
+    if (isAvailable) {
+      console.log("✅ Mock result: handle available");
+      setHandleStatus("available");
+    } else {
+      console.log("❌ Mock result: handle taken");
+      setHandleStatus("taken");
+    }
+  }, 600);
 
-        if (result === 0n) setHandleStatus("available");
-        else setHandleStatus("taken");
-      } catch (err) {
-        console.error("Handle check failed:", err);
-        setHandleStatus("idle");
-      }
-    }, 600);
+  return () => clearTimeout(delay);
+}, [profile.handle, lastChecked]);
 
-    return () => clearTimeout(delay);
-  }, [profile.handle, chainId, lastChecked]);
 
   /* ---------------------------------------------------------------------- */
   /* Proceed to Next Step                                                   */
@@ -206,7 +201,7 @@ function HandleStatusText({ status }: { status: string }) {
     checking: "Checking availability...",
     available: "This handle is available!",
     taken: "Handle already taken.",
-    invalid: "Invalid format — use 3–20 lowercase letters, numbers, or underscores.",
+    invalid: "Invalid format — use 3-20 lowercase letters, numbers, or underscores.",
   };
 
   const colorMap: Record<string, string> = {
