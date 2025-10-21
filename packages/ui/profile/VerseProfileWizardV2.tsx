@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { PersonaField, PersonaQuickStep } from "profile/components/core/PersonalQuickStep";
-import { IdentityStep } from "profile/components/core/IdentityStep";
-import { Stepper } from "profile/components/Stepper";
-import { ModalWrapper } from "profile/components/ModalWrapper";
-import { ReviewStep } from "profile/components/core/ReviewStep";
-import { SuccessStep } from "profile/components/core/SuccessStep";
+import { PersonaField, PersonaQuickStep } from "./components/core/PersonalQuickStep";
+import { IdentityStep } from "./components/core/IdentityStep";
+import { Stepper } from "./components/Stepper";
+import { ModalWrapper } from "./components/ModalWrapper";
+import { ReviewStep } from "./components/core/ReviewStep";
+import { SuccessStep } from "./components/core/SuccessStep";
 import {useVerseProfileWizard} from "@verse/sdk"
 
 

@@ -7,7 +7,7 @@ import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
-import {ConnectWalletButton} from "@verse/ui/wallet/ConnectWalletButton"
+import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton"
 import type { PersonaField } from "@verse/ui/profile/components/core/PersonalQuickStep";
 
 export default function HireCoreNavbar() {

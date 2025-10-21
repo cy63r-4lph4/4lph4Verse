@@ -7,7 +7,7 @@ import { waitForTransactionReceipt } from "wagmi/actions";
 import { createPublicClient, http } from "viem";
 import { celoSepolia } from "viem/chains";
 import { useAccount, useChainId, useWriteContract, useConfig } from "wagmi";
-import { ChainId, getDeployedContract } from "utils/contract/deployedContracts";
+import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
 
 /* -------------------------------------------------------------------------- */
 /* Hook: useVerseProfileWizard                                                */

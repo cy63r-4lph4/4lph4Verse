@@ -10,8 +10,8 @@ import { createPublicClient, http } from "viem";
 import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { celoSepolia } from "viem/chains";
 import type { VerseProfile } from "@verse/sdk/types";
-import { Input } from "components/ui/input";
-import { Textarea } from "components/ui/textarea";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
 
 type IdentityStepProps = {
   profile: VerseProfile;

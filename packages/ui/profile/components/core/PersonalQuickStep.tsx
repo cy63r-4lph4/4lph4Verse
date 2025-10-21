@@ -6,8 +6,8 @@ import { WizardNav } from "../ui/WizardNav";
 import { BadgePlus, Tags, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type { VerseProfile } from "@verse/sdk/types";
-import { Input } from "components/ui/input";
-import { Textarea } from "textarea";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
 
 type FieldType = "text" | "textarea" | "select" | "tags";
 
