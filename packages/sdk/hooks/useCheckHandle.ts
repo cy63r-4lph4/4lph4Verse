@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
 import { useChainId, useReadContract } from "wagmi";
+import { useEffect, useState } from "react";
+import type { Abi } from "viem";
+import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -15,103 +16,62 @@ export type HandleStatus =
   | "invalid"
   | "error";
 
-export interface UseCheckHandleOptions {
-  testMode?: boolean;
-  debounceMs?: number;
-  minLoadTime?: number;
-}
-
 /* -------------------------------------------------------------------------- */
-/* Helper: validate handle format                                             */
+/* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 function validateHandleFormat(handle: string) {
   return /^[a-z0-9_]{3,20}$/.test(handle);
 }
 
+function useDebounce<T>(value: T, delay = 600): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+}
+
 /* -------------------------------------------------------------------------- */
-/* Hook: useCheckHandle                                                       */
+/* Main Hook                                                                  */
 /* -------------------------------------------------------------------------- */
-export function useCheckHandle(
-  handle: string,
-  {  debounceMs = 600, minLoadTime = 400 }: UseCheckHandleOptions = {}
-) {
+export function useCheckHandle(handle: string) {
   const chainId = useChainId() as ChainId;
   const [status, setStatus] = useState<HandleStatus>("idle");
-  const [lastChecked, setLastChecked] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  // 🕓 Debounce user input so it only queries after typing stops
+  const debouncedHandle = useDebounce(handle.trim().toLowerCase(), 600);
+  const isValid = validateHandleFormat(debouncedHandle);
 
   const registry = getDeployedContract(chainId, "VerseProfile");
 
-  /* ---------------------------------------------------------------------- */
-  /* 🧠 Wagmi live read hook (used only when NOT in test mode)              */
-  /* ---------------------------------------------------------------------- */
-  const { data, refetch } = useReadContract({
-    abi: registry.abi,
-    address: registry.address,
+  const { data, isLoading, error } = useReadContract({
+    abi: registry.abi as Abi,
+    address: registry.address as `0x${string}`,
     functionName: "getProfileIdByHandle",
-    args: handle && validateHandleFormat(handle) ? [handle.toLowerCase()] : undefined,
-    query: {
-      enabled:  Boolean(handle && validateHandleFormat(handle)),
-    },
+    args: isValid && debouncedHandle ? [debouncedHandle] : undefined,
+    query: { enabled: Boolean(isValid && debouncedHandle) },
   });
 
   /* ---------------------------------------------------------------------- */
-  /* Debounced Handle Checking Logic                                        */
+  /* Reactively compute status based on wagmi state                         */
   /* ---------------------------------------------------------------------- */
   useEffect(() => {
-    const h = handle.trim().toLowerCase();
+    if (!debouncedHandle) return setStatus("idle");
+    if (!isValid) return setStatus("invalid");
+    if (isLoading) return setStatus("checking");
+    if (error) return setStatus("error");
 
-    if (!h) {
-      setStatus("idle");
-      return;
-    }
-
-    if (!validateHandleFormat(h)) {
-      setStatus("invalid");
-      return;
-    }
-
-    const delay = setTimeout(async () => {
-      if (lastChecked === h) return;
-      setLastChecked(h);
-      setStatus("checking");
-      setIsLoading(true);
-
-      const start = Date.now();
-
-      try {
-       
-
-        /* -------------------------------------------------------------- */
-        /* 🌐 Live On-chain Check (via refetch)                           */
-        /* -------------------------------------------------------------- */
-        const { data: latest } = await refetch();
-
-        // Ensure minimum visible loading time
-        const elapsed = Date.now() - start;
-        if (elapsed < minLoadTime)
-          await new Promise((r) => setTimeout(r, minLoadTime - elapsed));
-
-        if (latest === 0n) {
-          setStatus("available");
-        } else {
-          setStatus("taken");
-        }
-      } catch (err) {
-        console.error("⚠️ Handle check failed:", err);
-        setStatus("error");
-      } finally {
-        setIsLoading(false);
-      }
-    }, debounceMs);
-
-    return () => clearTimeout(delay);
-  }, [handle, lastChecked, debounceMs, minLoadTime, refetch]);
+    if (data === undefined) return setStatus("idle");
+    if (data === 0n) setStatus("available");
+    else setStatus("taken");
+  }, [debouncedHandle, isValid, data, isLoading, error]);
 
   return {
     status,
-    isLoading,
+    isChecking: isLoading,
     isAvailable: status === "available",
-    isChecking: status === "checking",
   };
 }

@@ -25,7 +25,9 @@ export function IdentityStep({
   updateProfile,
   onNext,
 }: IdentityStepProps) {
-  const { status, isAvailable } = useCheckHandle(profile.handle);
+  const { status, isAvailable } = useCheckHandle(profile.handle, {
+    debounceMs: 500,
+  });
 
   /* ---------------------------------------------------------------------- */
   /* Proceed to Next Step                                                   */
@@ -72,6 +74,7 @@ export function IdentityStep({
                 </span>
                 <Input
                   value={profile.handle}
+                  style={{ textTransform: "lowercase" }}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateProfile({
                       handle: e.target.value.replace(/^@/, "").toLowerCase(),
@@ -146,8 +149,12 @@ function HandleStatusIcon({ status }: { status: string }) {
   return (
     <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20">
       {status === "checking" && (
-        <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 blur-sm animate-spin-slow opacity-60" />
+          <Loader2 className="relative h-4 w-4 text-indigo-300 animate-spin-slow" />
+        </div>
       )}
+
       {status === "available" && (
         <CheckCircle className="h-4 w-4 text-green-500" />
       )}
