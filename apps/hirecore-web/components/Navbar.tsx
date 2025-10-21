@@ -4,11 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { Navbar } from "@verse/ui/Navbar/Navbar";
 import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
-import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
-import { ExtensionStep } from "@verse/ui/profile/VerseProfileWizard";
+import {ConnectWalletButton} from "@verse/ui/wallet/ConnectWalletButton"
+import type { PersonaField } from "@verse/ui/profile/components/core/PersonalQuickStep";
 
 export default function HireCoreNavbar() {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
@@ -17,52 +17,53 @@ export default function HireCoreNavbar() {
   const menuItems: NavbarItem[] =
     role === "worker" ? workerNavItems : clientNavItems;
 
-  const hirecoreExtension: ExtensionStep = {
-    id: "hirecore",
-    title: "HireCore Setup",
-    description: "Tell us how you want to use HireCore",
-    fields: [
-      {
-        type: "select",
-        name: "role",
-        label: "How do you want to use HireCore?",
-        options: ["Worker", "Client", "Both"],
-        required: true,
-      },
-      {
-        type: "select",
-        name: "accountType",
-        label: "Account Type",
-        options: ["Individual", "Business"],
-        required: true,
-      },
-      {
-        type: "tags",
-        name: "skills",
-        label: "Skills / Services Offered",
-        placeholder: "e.g. Electrician, Plumber, Mobile Developer",
-      },
-      {
-        type: "tags",
-        name: "hiringCategories",
-        label: "What kind of work do you hire for?",
-        placeholder: "e.g. Plumbing, Graphic Design, Construction",
-      },
-      {
-        type: "select",
-        name: "availability",
-        label: "Availability",
-        options: ["Full-time", "Part-time", "Weekends", "On Call", "Remote"],
-      },
-      {
-        type: "select",
-        name: "preferredPayment",
-        label: "Preferred Payment Method",
-        options: ["CØRE Token", "USDT", "Celo cUSD", "Other"],
-      },
-    ],
-  };
+  /* -------------------------------------------------------------------------- */
+  /* HireCore Persona Quick Setup Fields                                        */
+  /* -------------------------------------------------------------------------- */
+  const hirecorePersonaFields: PersonaField[] = [
+    {
+      type: "select",
+      name: "role",
+      label: "How do you want to use HireCore?",
+      options: ["Worker", "Client", "Both"],
+      required: true,
+    },
+    {
+      type: "select",
+      name: "accountType",
+      label: "Account Type",
+      options: ["Individual", "Business"],
+      required: true,
+    },
+    {
+      type: "tags",
+      name: "skills",
+      label: "Skills / Services Offered",
+      placeholder: "e.g. Electrician, Plumber, Mobile Developer",
+    },
+    {
+      type: "tags",
+      name: "hiringCategories",
+      label: "What kind of work do you hire for?",
+      placeholder: "e.g. Plumbing, Graphic Design, Construction",
+    },
+    {
+      type: "select",
+      name: "availability",
+      label: "Availability",
+      options: ["Full-time", "Part-time", "Weekends", "On Call", "Remote"],
+    },
+    {
+      type: "select",
+      name: "preferredPayment",
+      label: "Preferred Payment Method",
+      options: ["CØRE Token", "USDT", "Celo cUSD", "Other"],
+    },
+  ];
 
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
   return (
     <Navbar
       logo={
@@ -91,17 +92,20 @@ export default function HireCoreNavbar() {
         </div>
       }
       menuItems={menuItems}
+      dapp="hirecore"
+      personaFields={hirecorePersonaFields}
       rightControls={
         <>
-          {/* Wallet Connect (hidden on mobile handled in Navbar) */}
+          {/* ✅ Wallet Connect (handled by new VerseProfileWizardV2 system) */}
           <ConnectWalletButton
+            dapp="hirecore"
+            personaFields={hirecorePersonaFields}
             variant="secondary"
             rounded="lg"
             className="text-sm font-medium"
-            extensions={[hirecoreExtension]}
           />
 
-          {/* Role Switcher (desktop only) */}
+          {/* ⚙️ Role Switcher (desktop only) */}
           <div className="hidden md:block relative">
             <button
               onClick={() => setShowRoleMenu((prev) => !prev)}
@@ -138,8 +142,10 @@ export default function HireCoreNavbar() {
           </div>
         </>
       }
+      /* ───────────────────────────── Mobile Drawer Additions ───────────────────────────── */
       mobileExtras={
         <div className="flex flex-col gap-2">
+          {/* 👷 Role switcher for mobile */}
           <button
             onClick={() => setRole("worker")}
             className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition ${
@@ -163,6 +169,7 @@ export default function HireCoreNavbar() {
           </button>
         </div>
       }
+      /* ───────────────────────────── Theme ───────────────────────────── */
       theme={{
         backdrop:
           "backdrop-blur-xl glass-effect border-b border-white/20 shadow-lg",
