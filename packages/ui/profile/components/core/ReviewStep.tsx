@@ -9,6 +9,7 @@ import type { VerseProfile } from "@verse/sdk/types";
 
 type ReviewStepProps = {
   profile: VerseProfile;
+  dapp?: string;
   onBack: () => void;
   onSubmit: () => Promise<void>;
   submitting: boolean;
@@ -16,17 +17,19 @@ type ReviewStepProps = {
   error?: string | null;
 };
 
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
 export function ReviewStep({
   profile,
+  dapp,
   onBack,
   onSubmit,
   submitting,
   progress = "idle",
   error,
 }: ReviewStepProps) {
-  const personaEntries = Object.entries(profile.personas || {}).filter(
-    ([, v]) => v !== undefined && v !== null
-  );
+  const persona = dapp ? profile.personas?.[dapp] : null;
 
   return (
     <GlassCard>
@@ -36,36 +39,42 @@ export function ReviewStep({
         transition={{ duration: 0.25 }}
         className="space-y-6"
       >
+        {/* Header */}
         <div>
           <h2 className="font-orbitron text-2xl font-bold text-white">
-            Review & Deploy
+            Review Your Verse Profile
           </h2>
           <p className="text-sm text-gray-400 mt-1">
-            Confirm your Verse Identity and attached personas before forging it on-chain.
+            Confirm your details before deploying your identity on-chain.
           </p>
         </div>
 
+        {/* Summary Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Info section */}
           <div className="md:col-span-2 space-y-3">
             <SummaryRow label="Handle" value={`@${profile.handle}`} />
             <SummaryRow label="Display Name" value={profile.displayName} />
             <SummaryRow label="Bio" value={profile.bio || "—"} />
-            <SummaryRow label="Location" value={profile.location || "—"} />
 
-            {personaEntries.length > 0 && (
-              <div className="pt-2">
-                <h4 className="text-sm font-semibold text-white mb-2">
-                  Attached Personas
+            {persona && (
+              <div className="pt-2 space-y-2">
+                <h4 className="text-sm font-semibold text-white mb-1">
+                  {capitalize(dapp)} Persona
                 </h4>
-                <div className="space-y-2">
-                  {personaEntries.map(([key, value]) => (
-                    <SummaryRow
-                      key={key}
-                      label={key}
-                      value={JSON.stringify(value, null, 2)}
-                    />
-                  ))}
-                </div>
+                {Object.entries(persona).map(([k, v]) => (
+                  <SummaryRow
+                    key={k}
+                    label={formatLabel(k)}
+                    value={
+                      Array.isArray(v)
+                        ? v.join(", ")
+                        : typeof v === "object"
+                        ? JSON.stringify(v, null, 2)
+                        : String(v)
+                    }
+                  />
+                ))}
               </div>
             )}
 
@@ -76,22 +85,13 @@ export function ReviewStep({
             )}
           </div>
 
+          {/* Avatar Preview */}
           <div>
             <AvatarPreview value={profile.avatar || ""} />
-            {profile.banner && (
-              <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={profile.banner}
-                  alt="Banner"
-                  className="w-full h-16 object-cover"
-                />
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="mt-6 flex items-center gap-3">
           <button
             onClick={onBack}
@@ -126,18 +126,29 @@ export function ReviewStep({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Subcomponent                                                               */
+/* Subcomponents                                                              */
 /* -------------------------------------------------------------------------- */
-
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-zinc-800/40 px-3 py-2">
       <div className="min-w-[110px] text-xs uppercase tracking-wide text-gray-400">
         {label}
       </div>
-      <div className="text-sm text-gray-100 whitespace-pre-wrap break-all">
+      <div className="text-sm text-gray-100 whitespace-pre-wrap break-words">
         {value}
       </div>
     </div>
   );
+}
+
+function capitalize(str?: string) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatLabel(key: string) {
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (s) => s.toUpperCase())
+    .trim();
 }
