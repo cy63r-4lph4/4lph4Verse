@@ -10,6 +10,7 @@ import { Input } from "@verse/ui/components/ui/input";
 import { Textarea } from "@verse/ui/components/ui/textarea";
 import { Send, Coins, X, Loader2, MessageSquare } from "lucide-react";
 import { useOutsideClick } from "@verse/sdk";
+import { useApplyBid } from "@verse/hirecore-web/hooks/useApplyBid";
 
 export function ApplyBidDialog({
   open,
@@ -20,14 +21,15 @@ export function ApplyBidDialog({
   open: boolean;
   onClose: () => void;
   task: Task;
-  containerSelector?: string; 
+  containerSelector?: string;
 }) {
+  const { applyToTask, placeBid, loading, txHash } = useApplyBid(task.id);
+
   const dialogRef = useRef<HTMLDivElement>(null);
   useOutsideClick(dialogRef, () => {
     if (open) onClose();
   });
   const [tab, setTab] = useState<"apply" | "bid">("apply");
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [bidAmount, setBidAmount] = useState(task.budget);
   const [estimatedTime, setEstimatedTime] = useState("");
@@ -45,16 +47,28 @@ export function ApplyBidDialog({
   }, [containerSelector]);
 
   const handleSubmit = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    if (!message.trim()) {
+      toast.error("Please add a short message before submitting");
+      return;
+    }
+
+    let success = false;
+    if (tab === "apply") {
+      success = await applyToTask(message);
+    } else {
+      success = await placeBid(Number(bidAmount), message, estimatedTime);
+    }
+
+    if (success) {
       toast.success(
         tab === "apply"
-          ? "✅ Application submitted successfully!"
+          ? "✅ Application submitted on-chain!"
           : "💰 Bid placed successfully!"
       );
       onClose();
-    }, 900);
+    } else {
+      toast.error("❌ Transaction failed — check your wallet or network.");
+    }
   };
 
   if (!container) return null; // ✅ avoid SSR crash
