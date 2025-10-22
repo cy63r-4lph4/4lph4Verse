@@ -25,9 +25,7 @@ export function IdentityStep({
   updateProfile,
   onNext,
 }: IdentityStepProps) {
-  const { status, isAvailable } = useCheckHandle(profile.handle, {
-    debounceMs: 500,
-  });
+  const { status, isAvailable } = useCheckHandle(profile.handle);
 
   /* ---------------------------------------------------------------------- */
   /* Proceed to Next Step                                                   */

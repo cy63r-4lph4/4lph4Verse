@@ -50,11 +50,10 @@ export function useCheckHandle(handle: string) {
   const { data, isLoading, error } = useReadContract({
     abi: registry.abi as Abi,
     address: registry.address as `0x${string}`,
-    functionName: "getProfileIdByHandle",
+    functionName: "verseIdByHandle",
     args: isValid && debouncedHandle ? [debouncedHandle] : undefined,
     query: { enabled: Boolean(isValid && debouncedHandle) },
   });
-
   /* ---------------------------------------------------------------------- */
   /* Reactively compute status based on wagmi state                         */
   /* ---------------------------------------------------------------------- */
@@ -62,7 +61,8 @@ export function useCheckHandle(handle: string) {
     if (!debouncedHandle) return setStatus("idle");
     if (!isValid) return setStatus("invalid");
     if (isLoading) return setStatus("checking");
-    if (error) return setStatus("error");
+    if (error) 
+        return setStatus("error");
 
     if (data === undefined) return setStatus("idle");
     if (data === 0n) setStatus("available");
