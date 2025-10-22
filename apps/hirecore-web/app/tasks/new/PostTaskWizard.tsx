@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@verse/ui/components/ui/button";
 import { Card } from "@verse/ui/components/ui/card";
+
 import StepOverview from "./steps/StepOverview";
 import StepDetails from "./steps/StepDetails";
 import StepBudget from "./steps/StepBudget";
@@ -20,9 +21,6 @@ import {
 import { useSubmitTask } from "@verse/hirecore-web/hooks/useSubmitTask";
 import { useVerseProfile } from "@verse/ui/profile";
 
-/* --------------------------------------------------
- * Progress bar component
- * -------------------------------------------------- */
 function ProgressBar({ pct }: { pct: number }) {
   return (
     <div className="w-full h-2 rounded bg-white/10 overflow-hidden">
@@ -34,14 +32,18 @@ function ProgressBar({ pct }: { pct: number }) {
   );
 }
 
-/* --------------------------------------------------
- * Main component
- * -------------------------------------------------- */
-export default function PostTaskPage() {
+export default function PostTaskWizard({
+  compact = false,
+  onClose,
+}: {
+  compact?: boolean;
+  onClose?: () => void;
+}) {
   const router = useRouter();
   const TOTAL_STEPS = 5;
   const [step, setStep] = useState(1);
   const { profile } = useVerseProfile(true);
+
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
@@ -59,7 +61,6 @@ export default function PostTaskPage() {
   });
 
   const { submitTask, loading, status } = useSubmitTask();
-
   const canGoBack = step > 1;
   const canGoNext = step < TOTAL_STEPS;
 
@@ -72,17 +73,13 @@ export default function PostTaskPage() {
     if (step < TOTAL_STEPS) setStep((s) => s + 1);
   };
 
-  const handleBack = () => {
-    if (step > 1) setStep((s) => s - 1);
-  };
+  const handleBack = () => step > 1 && setStep((s) => s - 1);
 
   const handleSubmit = useCallback(async () => {
     try {
       const finalErrors = validateAll(formData);
       if (finalErrors.length) {
-        toast("Missing required info", {
-          description: finalErrors.join(" • "),
-        });
+        toast("Missing required info", { description: finalErrors.join(" • ") });
         return;
       }
 
@@ -104,33 +101,27 @@ export default function PostTaskPage() {
         id: "posting",
         description: "Your task is now live on-chain.",
       });
-      router.push("/tasks");
+
+      if (onClose) onClose();
+      else router.push("/tasks");
     } catch (err) {
       toast.error("❌ Failed to post task", {
         id: "posting",
         description: (err as Error).message,
       });
     }
-  }, [formData, router, submitTask, profile?.verseID]);
+  }, [formData, router, submitTask, profile?.verseID, onClose]);
 
   const stepView = useMemo(() => {
     switch (step) {
       case 1:
-        return (
-          <StepOverview formData={formData} setFormDataAction={setFormData} />
-        );
+        return <StepOverview formData={formData} setFormDataAction={setFormData} />;
       case 2:
-        return (
-          <StepDetails formData={formData} setFormDataAction={setFormData} />
-        );
+        return <StepDetails formData={formData} setFormDataAction={setFormData} />;
       case 3:
-        return (
-          <StepLocation formData={formData} setFormDataAction={setFormData} />
-        );
+        return <StepLocation formData={formData} setFormDataAction={setFormData} />;
       case 4:
-        return (
-          <StepBudget formData={formData} setFormDataAction={setFormData} />
-        );
+        return <StepBudget formData={formData} setFormDataAction={setFormData} />;
       case 5:
         return <StepReview formData={formData} />;
       default:
@@ -138,28 +129,31 @@ export default function PostTaskPage() {
     }
   }, [step, formData]);
 
-  /* derive progress bar width */
   const pct = (step / TOTAL_STEPS) * 100;
 
-  /* derive UX feedback text for current status */
-
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div
+      className={compact
+        ? "w-full p-2 sm:p-4"
+        : "min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8"}
+    >
+      <div className={compact ? "w-full mx-auto" : "max-w-4xl mx-auto"}>
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mb-8 text-center"
-        >
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold gradient-text mb-3">
-            Post a Task
-          </h1>
-          <p className="text-gray-300">
-            Describe your job, set a budget, and let the right talent step in.
-          </p>
-        </motion.div>
+        {!compact && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="mb-8 text-center"
+          >
+            <h1 className="text-4xl md:text-5xl font-orbitron font-bold gradient-text mb-3">
+              Post a Task
+            </h1>
+            <p className="text-gray-300">
+              Describe your job, set a budget, and let the right talent step in.
+            </p>
+          </motion.div>
+        )}
 
         {/* Progress */}
         <div className="mb-6">
@@ -191,11 +185,7 @@ export default function PostTaskPage() {
 
         {/* Nav buttons */}
         <div className="mt-6 flex items-center justify-between">
-          <Button
-            variant="outline"
-            disabled={!canGoBack || loading}
-            onClick={handleBack}
-          >
+          <Button variant="outline" disabled={!canGoBack || loading} onClick={handleBack}>
             Back
           </Button>
 
@@ -231,19 +221,14 @@ function validateStep(step: number, d: TaskFormData): string[] {
     if (!d.urgency?.trim()) errs.push("Urgency is required");
     if (!d.serviceType?.trim()) errs.push("Service type is required");
   }
-  if (step === 2) {
-    if (!d.description?.trim()) errs.push("Description is required");
-  }
-  if (step === 3) {
-    if (!d.location?.trim()) errs.push("Location is required (type or detect)");
-  }
+  if (step === 2 && !d.description?.trim()) errs.push("Description is required");
+  if (step === 3 && !d.location?.trim()) errs.push("Location is required");
   if (step === 4) {
     if (!d.budget?.trim()) errs.push("Budget is required");
     if (!d.duration?.trim()) errs.push("Duration is required");
   }
   return errs;
 }
-
 function validateAll(d: TaskFormData): string[] {
   return [
     ...validateStep(1, d),
