@@ -20,7 +20,7 @@ export function ApplyBidDialog({
   open: boolean;
   onClose: () => void;
   task: Task;
-  containerSelector?: string; // ✅ make optional
+  containerSelector?: string; 
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useOutsideClick(dialogRef, () => {
@@ -33,7 +33,6 @@ export function ApplyBidDialog({
   const [estimatedTime, setEstimatedTime] = useState("");
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  // ✅ Run after mount to safely resolve document query
   useEffect(() => {
     if (containerSelector) {
       const el = document.querySelector(
