@@ -12,70 +12,82 @@ import {
   SelectValue,
 } from "@verse/ui/components/ui/select";
 import { Input } from "@verse/ui/components/ui/input";
-import { Story } from "@verse/sdk/types"; 
+import { Story } from "@verse/sdk/types";
 
 /* ------------------------------------------------------------
  * Component
  * ------------------------------------------------------------ */
-export default function HomeViewPage() {
+interface HomeViewPageProps {
+  stories: Story[];
+  onLike: (storyId: string | number) => void;
+  onTip: (storyId: string | number, amount: number) => void;
+  onView: (id: string | number) => void;
+}
+export default function HomeViewPage({
+  stories,
+  onLike,
+  onTip,
+  onView,
+}: HomeViewPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
 
   // ✅ Fully typed demo data (matching the complete Story interface)
-  const stories: Story[] = [
-    {
-      id: 1,
-      title: "Eternal Ember",
-      author: "Lyra",
-      excerpt: "In the ashes of heartbreak, she found the spark of rebirth...",
-      content: "Full story content goes here...",
-      category: "romance",
-      likes: 42,
-      views: 180,
-      tips: 3,
-      tags: ["hope", "rebirth"],
-      isNftEligible: true,
-      isMinted: false,
-      onAuction: false,
-      isInteractive: false,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      title: "Crimson Echoes",
-      author: "Aiden",
-      excerpt: "Each note of the song reminded him of her laughter fading away.",
-      content: "Full story content goes here...",
-      category: "drama",
-      likes: 29,
-      views: 95,
-      tips: 2,
-      tags: ["music", "memory"],
-      isNftEligible: false,
-      isMinted: false,
-      onAuction: false,
-      isInteractive: false,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 3,
-      title: "Cosmic Threads",
-      author: "Nova",
-      excerpt: "Two souls collided across galaxies, rewriting destiny itself.",
-      content: "Full story content goes here...",
-      category: "sci-fi",
-      likes: 51,
-      views: 320,
-      tips: 5,
-      tags: ["galaxy", "destiny"],
-      isNftEligible: true,
-      isMinted: true,
-      onAuction: true,
-      isInteractive: true,
-      interactiveContent: { scene1: document.createElement("div") },
-      createdAt: new Date().toISOString(),
-    },
-  ];
+  // const stories: Story[] = [
+  //   {
+  //     id: 1,
+  //     title: "Eternal Ember",
+  //     author: "Lyra",
+  //     excerpt: "In the ashes of heartbreak, she found the spark of rebirth...",
+  //     content: "Full story content goes here...",
+  //     category: "romance",
+  //     likes: 42,
+  //     views: 180,
+  //     tips: 3,
+  //     tags: ["hope", "rebirth"],
+  //     isNftEligible: true,
+  //     isMinted: false,
+  //     onAuction: false,
+  //     isInteractive: false,
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Crimson Echoes",
+  //     author: "Aiden",
+  //     excerpt:
+  //       "Each note of the song reminded him of her laughter fading away.",
+  //     content: "Full story content goes here...",
+  //     category: "drama",
+  //     likes: 29,
+  //     views: 95,
+  //     tips: 2,
+  //     tags: ["music", "memory"],
+  //     isNftEligible: false,
+  //     isMinted: false,
+  //     onAuction: false,
+  //     isInteractive: false,
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Cosmic Threads",
+  //     author: "Nova",
+  //     excerpt: "Two souls collided across galaxies, rewriting destiny itself.",
+  //     content: "Full story content goes here...",
+  //     category: "sci-fi",
+  //     likes: 51,
+  //     views: 320,
+  //     tips: 5,
+  //     tags: ["galaxy", "destiny"],
+  //     isNftEligible: true,
+  //     isMinted: true,
+  //     onAuction: true,
+  //     isInteractive: true,
+  //     interactiveContent: { scene1: document.createElement("div") },
+  //     createdAt: new Date().toISOString(),
+  //   },
+  // ];
 
   /* ------------------------------------------------------------
    * Logic
@@ -89,21 +101,6 @@ export default function HomeViewPage() {
       filterCategory === "all" || story.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
-
-  /* ------------------------------------------------------------
-   * Handlers
-   * ------------------------------------------------------------ */
-  const handleLike = (id: number) => {
-    console.log("Liked story:", id);
-  };
-
-  const handleTip = (id: number, amount: number) => {
-    console.log(`Tipped ${amount} CØRE to story:`, id);
-  };
-
-  const handleView = (id: number) => {
-    console.log("View story details:", id);
-  };
 
   /* ------------------------------------------------------------
    * UI
@@ -134,9 +131,9 @@ export default function HomeViewPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          Where every heartbreak becomes wisdom, every loss becomes strength, and
-          every story becomes a legacy. In the Vault of Love, pain transforms into
-          the most beautiful kind of love.
+          Where every heartbreak becomes wisdom, every loss becomes strength,
+          and every story becomes a legacy. In the Vault of Love, pain
+          transforms into the most beautiful kind of love.
         </motion.p>
 
         <motion.div
@@ -147,7 +144,9 @@ export default function HomeViewPage() {
         >
           <div className="flex items-center space-x-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-full border border-pink-500/30">
             <BookOpen className="w-6 h-6 text-pink-400" />
-            <span className="text-pink-200 font-semibold">{stories.length} Stories</span>
+            <span className="text-pink-200 font-semibold">
+              {stories.length} Stories
+            </span>
           </div>
           <div className="flex items-center space-x-3 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 px-6 py-3 rounded-full border border-purple-500/30">
             <Trophy className="w-6 h-6 text-purple-400" />
@@ -216,9 +215,9 @@ export default function HomeViewPage() {
           >
             <StoryCard
               story={story}
-              onLike={() => handleLike(story.id)}
-              onTip={(amount) => handleTip(story.id, amount)}
-              onView={() => handleView(story.id)}
+              onLike={() => onLike(story.id)}
+              onTip={(amount) => onTip(story.id, amount)}
+              onView={() => onView(story.id)}
             />
           </motion.div>
         ))}

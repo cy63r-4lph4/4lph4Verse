@@ -20,27 +20,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@verse/ui/components/ui/button";
+import { Story } from "@verse/sdk/types";
 
-/* ------------------------------------------------------------
- * Types
- * ------------------------------------------------------------ */
-export interface Story {
-  id: string | number;
-  title: string;
-  author: string;
-  category: string;
-  tags?: string[];
-  createdAt: string;
-  content?: string;
-  interactiveContent?: Record<
-    string,
-    { text: string; choices: { text: string; nextNodeId: string }[] }
-  >;
-  views: number;
-  likes: number;
-  tips: number;
-  isInteractive?: boolean;
-}
+
 
 interface StoryReaderProps {
   story: Story;

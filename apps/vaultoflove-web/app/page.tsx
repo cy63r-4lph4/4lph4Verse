@@ -12,10 +12,13 @@ import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
 import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
 import { WriteStoryView } from "@verse/vaultoflove-web/components/WriteStoryModal";
 import { ViewWrapper } from "@verse/vaultoflove-web/components/layout/ViewWrapper";
+import { Story } from "@verse/sdk/types";
 
 export default function VaultOfLoveApp() {
-  const [currentView, setCurrentView] = useState("home");
-  const [selectedStory, setSelectedStory] = useState<any>(null);
+  type View = "home" | "reader" | "profile" | "heartbid" | "heatbid" | "write";
+  const [currentView, setCurrentView] = useState<View>("home");
+
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const vault = useStoryVault();
 
   const handleBack = () => {
@@ -91,7 +94,7 @@ export default function VaultOfLoveApp() {
             stories={stories}
             onLike={handleLikeStory}
             onTip={handleTipAuthor}
-            onView={(id: string) => {
+            onView={(id: string | number) => {
               const story = handleViewStory(id);
               setSelectedStory(story);
               setCurrentView("reader");
