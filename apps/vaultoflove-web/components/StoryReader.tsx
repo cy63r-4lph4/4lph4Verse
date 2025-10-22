@@ -33,7 +33,14 @@ interface StoryReaderProps {
   handleFollowAuthor: (author: string) => void;
   followedAuthors: string[];
 }
-
+interface StoryNode {
+  id: string | number;
+  text: string;
+  choices: {
+    text: string;
+    nextNodeId: string | number;
+  }[];
+}
 /* ------------------------------------------------------------
  * Sub-components
  * ------------------------------------------------------------ */

@@ -4,7 +4,8 @@ export interface Choice {
   nextNodeId: string;
 }
 
-export interface Node {
+export interface StoryNode {
+  id: string | number;
   text: string;
   choices: Choice[];
 }
@@ -24,6 +25,6 @@ export interface Story {
   isMinted: boolean;
   onAuction: boolean;
   isInteractive?: boolean;
-  interactiveContent?: Record<string, HTMLElement>;
+  interactiveContent?: Record<string|number, StoryNode>;
   createdAt: string;
 }
