@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+import { Button } from "@verse/ui/components/ui/button";
 import { ClipboardList, Inbox } from "lucide-react";
 
 export function EmptyState({ tab }: { tab: "applications" | "requests" }) {

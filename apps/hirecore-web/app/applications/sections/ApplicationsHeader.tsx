@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { Input } from "@verse/hirecore-web/components/ui/input";
+import { Input } from "@verse/ui/components/ui/input";
 
 export function ApplicationsHeader({
   activeTab,

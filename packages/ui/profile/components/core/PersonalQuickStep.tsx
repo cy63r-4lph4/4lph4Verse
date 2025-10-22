@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { GlassCard } from "../ui/GlassCard";
 import { WizardNav } from "../ui/WizardNav";
-import { BadgePlus, Tags, ChevronDown } from "lucide-react";
+import { BadgePlus,  ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type { VerseProfile } from "@verse/sdk/types";
 import { Input } from "../../../components/ui/input";

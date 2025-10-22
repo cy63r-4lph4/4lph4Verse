@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader } from "@verse/hirecore-web/components/ui/card";
+import { Card, CardContent, CardHeader } from "@verse/ui/components/ui/card";
 
 export function WorkerSkeleton({ count = 6 }: { count?: number }) {
   return (

@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Star, MapPin, Briefcase } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@verse/hirecore-web/components/ui/card";
-import { Badge } from "@verse/hirecore-web/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@verse/ui/components/ui/card";
+import { Badge } from "@verse/ui/components/ui/badge";
 import type { WorkerProfile } from "@verse/hirecore-web/utils/Interfaces";
 import Image from "next/image";
 

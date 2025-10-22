@@ -3,14 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+import { Button } from "@verse/ui/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@verse/hirecore-web/components/ui/card";
-import { Input } from "@verse/hirecore-web/components/ui/input";
+} from "@verse/ui/components/ui/card";
+import { Input } from "@verse/ui/components/ui/input";
 import { MapPin, Loader2, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocation } from "@verse/sdk/hooks/useGeolocation";

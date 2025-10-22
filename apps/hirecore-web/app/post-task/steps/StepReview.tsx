@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@verse/hirecore-web/components/ui/card";
+} from "@verse/ui/components/ui/card";
 import {
   Folder,
   Zap,

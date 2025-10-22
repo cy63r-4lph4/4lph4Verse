@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {  Search, UserCog } from "lucide-react";
-import { Input } from "@verse/hirecore-web/components/ui/input";
+import { Input } from "@verse/ui/components/ui/input";
 import {
   Select,
   SelectItem,
   SelectTrigger,
   SelectValue,
   SelectContent,
-} from "@verse/hirecore-web/components/ui/select";
+} from "@verse/ui/components/ui/select";
 import { WorkerCard } from "@verse/hirecore-web/components/workers/WorkerCard";
 import { WorkerSkeleton } from "@verse/hirecore-web/components/workers/Skeleton";
 import {

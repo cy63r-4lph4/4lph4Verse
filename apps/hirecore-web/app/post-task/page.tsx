@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Card } from "@verse/hirecore-web/components/ui/card";
+import { Button } from "@verse/ui/components/ui/button";
+import { Card } from "@verse/ui/components/ui/card";
 import StepOverview from "./steps/StepOverview";
 import StepDetails from "./steps/StepDetails";
 import StepBudget from "./steps/StepBudget";

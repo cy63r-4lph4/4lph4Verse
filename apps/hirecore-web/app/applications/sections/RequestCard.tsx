@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@verse/hirecore-web/components/ui/button";
-import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
+import { Button } from "@verse/ui/components/ui/button";
+import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { TaskCard } from "@verse/hirecore-web/components/tasks/TaskCard";
 import { CheckCircle, XCircle } from "lucide-react";
 import type { ClientRequest } from "../utils/types";

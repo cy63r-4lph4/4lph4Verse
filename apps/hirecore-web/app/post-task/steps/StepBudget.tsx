@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Input } from "@verse/hirecore-web/components/ui/input";
+import { Input } from "@verse/ui/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@verse/hirecore-web/components/ui/select";
+} from "@verse/ui/components/ui/select";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-} from "@verse/hirecore-web/components/ui/card";
+} from "@verse/ui/components/ui/card";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 import { TIMEESTIMATE } from "@verse/hirecore-web/utils/Constants";
 

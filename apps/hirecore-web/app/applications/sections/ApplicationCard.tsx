@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@verse/hirecore-web/components/ui/card";
+import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { TaskCard } from "@verse/hirecore-web/components/tasks/TaskCard";
 import type { WorkerApplication } from "../utils/types";
 

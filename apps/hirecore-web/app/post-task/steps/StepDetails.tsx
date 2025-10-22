@@ -5,9 +5,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@verse/hirecore-web/components/ui/card";
-import { Input } from "@verse/hirecore-web/components/ui/input";
-import { Textarea } from "@verse/hirecore-web/components/ui/textarea";
+} from "@verse/ui/components/ui/card";
+import { Input } from "@verse/ui/components/ui/input";
+import { Textarea } from "@verse/ui/components/ui/textarea";
 import { TaskFormData } from "@verse/hirecore-web/utils/Interfaces";
 import { Paperclip, X } from "lucide-react";
 import { useState } from "react";

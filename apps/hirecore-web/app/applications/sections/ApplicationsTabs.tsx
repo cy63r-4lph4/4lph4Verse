@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardList, Inbox } from "lucide-react";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+import {Button} from "@verse/ui/components/ui/button"
 
 export function ApplicationsTabs({
   activeTab,
