@@ -11,6 +11,7 @@ import HeartBidPage from "@verse/vaultoflove-web/components/HeartBid";
 import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
 import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
 import { WriteStoryView } from "@verse/vaultoflove-web/components/WriteStoryModal";
+import { ViewWrapper } from "@verse/vaultoflove-web/components/layout/ViewWrapper";
 
 export default function VaultOfLoveApp() {
   const [currentView, setCurrentView] = useState("home");
@@ -105,7 +106,9 @@ export default function VaultOfLoveApp() {
       <BackgroundAnimation />
       <Navbar userTokens={vault.userTokens} onNavigate={setCurrentView} />
       <main className="relative z-10">
-        <AnimatePresence mode="wait">{renderView()}</AnimatePresence>
+        <AnimatePresence mode="wait">
+          <ViewWrapper>{renderView()}</ViewWrapper>
+        </AnimatePresence>
       </main>
     </div>
   );
