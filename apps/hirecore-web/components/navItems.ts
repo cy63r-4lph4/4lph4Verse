@@ -18,6 +18,6 @@ export const workerNavItems: NavbarItem[] = [
 export const clientNavItems: NavbarItem[] = [
   { label: "Home", href: "/", icon: HomeIcon },
   { label: "Find Workers", href: "/workers", icon: UsersIcon },
-  { label: "Post Task", href: "/post-task", icon: PlusCircleIcon },
+  { label: "Post Task", href: "/tasks/new", icon: PlusCircleIcon },
   { label: "My Tasks", href: "/mytasks", icon: ClipboardIcon },
 ];

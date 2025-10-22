@@ -12,7 +12,7 @@ import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
 import WalletDropdown from "./WalletDropdown";
-import { PersonaField } from "profile/components/core/PersonalQuickStep";
+import { PersonaField } from "../profile/components/core/PersonalQuickStep";
 
 export type ConnectWalletButtonProps = {
   className?: string;

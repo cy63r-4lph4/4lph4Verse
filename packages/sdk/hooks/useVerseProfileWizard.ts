@@ -4,8 +4,6 @@ import { useState } from "react";
 import type { VerseProfile } from "types/verseProfile";
 import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { createPublicClient, http } from "viem";
-import { celoSepolia } from "viem/chains";
 import { useAccount, useChainId, useWriteContract, useConfig } from "wagmi";
 import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
 

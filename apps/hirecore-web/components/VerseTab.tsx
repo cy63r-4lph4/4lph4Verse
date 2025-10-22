@@ -5,8 +5,8 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-} from "@verse/hirecore-web/components/ui/tabs";
-import { Button } from "@verse/hirecore-web/components/ui/button";
+} from "@verse/ui/components/ui/tabs";
+import { Button } from "@verse/ui/components/ui/button";
 import { LayoutGrid, List as ListIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { cn } from "@verse/hirecore-web/lib/utils";
