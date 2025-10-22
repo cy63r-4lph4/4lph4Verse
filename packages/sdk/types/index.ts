@@ -24,6 +24,6 @@ export interface Story {
   isMinted: boolean;
   onAuction: boolean;
   isInteractive?: boolean;
-  interactiveContent?: Record<string, Node>;
+  interactiveContent?: Record<string, HTMLElement>;
   createdAt: string;
 }

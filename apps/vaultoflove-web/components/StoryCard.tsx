@@ -12,24 +12,9 @@ import {
   GitFork,
 } from "lucide-react";
 import { Button } from "@verse/ui/components/ui/button";
+import { Story } from "@verse/sdk/types";
 
-/* ------------------------------------------------------------
- * Types
- * ------------------------------------------------------------ */
-export interface Story {
-  id: string | number;
-  title: string;
-  author: string;
-  excerpt: string;
-  category: string;
-  likes: number;
-  views: number;
-  tips: number;
-  tags?: string[];
-  createdAt?: string;
-  isInteractive?: boolean;
-  isNftEligible?: boolean;
-}
+
 
 interface StoryCardProps {
   story: Story;

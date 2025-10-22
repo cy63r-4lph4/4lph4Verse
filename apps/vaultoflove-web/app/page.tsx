@@ -102,8 +102,10 @@ export default function VaultOfLoveApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white overflow-x-hidden">
+    <div className="relative min-h-screen overflow-x-hidden text-white">
       <BackgroundAnimation />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900" />
+
       <Navbar userTokens={vault.userTokens} onNavigate={setCurrentView} />
       <main className="relative z-10">
         <AnimatePresence mode="wait">

@@ -73,13 +73,8 @@ export function Navbar({ userTokens, onNavigate }: NavbarProps) {
               {userTokens} CØRE
             </span>
           </div>
-          <Button
-            onClick={() => onNavigate("write")}
-            size="lg"
-            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-pink-500/25 transition-all duration-300"
-          >
-            <PenTool size={22} />
-            Write
+          <Button variant="love" size="lg" className="rounded-full">
+            <PenTool className="w-5 h-5" /> Write
           </Button>
         </div>
       </div>

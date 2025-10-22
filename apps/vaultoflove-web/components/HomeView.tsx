@@ -4,23 +4,15 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, BookOpen, Trophy, Search, Filter } from "lucide-react";
 import { StoryCard } from "@verse/vaultoflove-web/components/StoryCard";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@verse/ui/components/ui/select";
-import {Input} from "@verse/ui/components/ui/input"
-
-
-/* ------------------------------------------------------------
- * Types
- * ------------------------------------------------------------ */
-type Story = {
-  id: string | number;
-  title: string;
-  author: string;
-  excerpt: string;
-  category: string;
-  likes: number;
-  tips: number;
-  isNftEligible?: boolean;
-};
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@verse/ui/components/ui/select";
+import { Input } from "@verse/ui/components/ui/input";
+import { Story } from "@verse/sdk/types"; 
 
 /* ------------------------------------------------------------
  * Component
@@ -29,37 +21,59 @@ export default function HomeViewPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
 
-  // Demo data for now — you’ll replace this with your SDK fetch later
+  // ✅ Fully typed demo data (matching the complete Story interface)
   const stories: Story[] = [
     {
       id: 1,
       title: "Eternal Ember",
       author: "Lyra",
       excerpt: "In the ashes of heartbreak, she found the spark of rebirth...",
+      content: "Full story content goes here...",
       category: "romance",
       likes: 42,
+      views: 180,
       tips: 3,
+      tags: ["hope", "rebirth"],
       isNftEligible: true,
+      isMinted: false,
+      onAuction: false,
+      isInteractive: false,
+      createdAt: new Date().toISOString(),
     },
     {
       id: 2,
       title: "Crimson Echoes",
       author: "Aiden",
       excerpt: "Each note of the song reminded him of her laughter fading away.",
+      content: "Full story content goes here...",
       category: "drama",
       likes: 29,
+      views: 95,
       tips: 2,
+      tags: ["music", "memory"],
       isNftEligible: false,
+      isMinted: false,
+      onAuction: false,
+      isInteractive: false,
+      createdAt: new Date().toISOString(),
     },
     {
       id: 3,
       title: "Cosmic Threads",
       author: "Nova",
       excerpt: "Two souls collided across galaxies, rewriting destiny itself.",
+      content: "Full story content goes here...",
       category: "sci-fi",
       likes: 51,
+      views: 320,
       tips: 5,
+      tags: ["galaxy", "destiny"],
       isNftEligible: true,
+      isMinted: true,
+      onAuction: true,
+      isInteractive: true,
+      interactiveContent: { scene1: document.createElement("div") },
+      createdAt: new Date().toISOString(),
     },
   ];
 
@@ -79,15 +93,15 @@ export default function HomeViewPage() {
   /* ------------------------------------------------------------
    * Handlers
    * ------------------------------------------------------------ */
-  const handleLike = (id: number | string) => {
+  const handleLike = (id: number) => {
     console.log("Liked story:", id);
   };
 
-  const handleTip = (id: number | string, amount: number) => {
+  const handleTip = (id: number, amount: number) => {
     console.log(`Tipped ${amount} CØRE to story:`, id);
   };
 
-  const handleView = (id: number | string) => {
+  const handleView = (id: number) => {
     console.log("View story details:", id);
   };
 
