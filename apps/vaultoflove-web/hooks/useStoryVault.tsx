@@ -1,29 +1,8 @@
+import { Story } from '@verse/sdk/types';
 import { useToast } from '@verse/vaultoflove-web/components/toast';
 import { useState, useEffect } from 'react';
 
-type Story = {
-  id: number;
-  title: string;
-  author: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  likes: number;
-  views: number;
-  tips: number;
-  isNftEligible: boolean;
-  isMinted: boolean;
-  onAuction: boolean;
-  createdAt: string;
-  tags: string[];
-  isInteractive: boolean;
-  interactiveContent?: {
-    [key: string]: {
-      text: string;
-      choices: { text: string; nextNodeId: string }[];
-    };
-  };
-};
+
 
 type Author = {
   name: string;

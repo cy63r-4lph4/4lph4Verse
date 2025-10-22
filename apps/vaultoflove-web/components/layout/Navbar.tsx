@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@verse/ui/components/ui/button";
 
+type View = "home" | "profile" | "write" | "reader" | "heartbid" | "heatbid";
+
 type NavbarProps = {
   userTokens: number;
-  onNavigate: (view: string) => void;
+  onNavigate: (view: View) => void;
 };
 
 export function Navbar({ userTokens, onNavigate }: NavbarProps) {

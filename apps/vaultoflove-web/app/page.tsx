@@ -96,7 +96,7 @@ export default function VaultOfLoveApp() {
             onTip={handleTipAuthor}
             onView={(id: string | number) => {
               const story = handleViewStory(id);
-              setSelectedStory(story);
+              setSelectedStory(story ?? null);
               setCurrentView("reader");
             }}
           />
