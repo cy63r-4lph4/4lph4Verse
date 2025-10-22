@@ -1,0 +1,17 @@
+:root {
+  --love-gradient: linear-gradient(135deg, #ec4899, #9333ea, #6366f1);
+  --love-accent: #ec4899;
+  --love-shadow: 0 0 20px rgba(236,72,153,0.25);
+}
+
+.bg-love {
+  background: var(--love-gradient);
+}
+.text-love {
+  background: var(--love-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shadow-love {
+  box-shadow: var(--love-shadow);
+}
