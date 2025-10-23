@@ -3,11 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 
-export const DragonIgnition = ({
-  onComplete,
-}: {
-  onComplete: () => void;
-}) => {
+export const DragonIgnition = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onComplete, 6000);
     return () => clearTimeout(timer);
@@ -25,7 +21,7 @@ export const DragonIgnition = ({
 
       {/* Dragon sigil core */}
       <motion.img
-        src="/sigil-dragon.webp"
+        src="/dragon_sigil.png"
         alt="4lph4Verse Dragon Sigil"
         className="w-[220px] sm:w-[320px] z-20 drop-shadow-[0_0_50px_rgba(56,189,248,0.6)]"
         initial={{ opacity: 0, scale: 0.4, rotate: 0 }}

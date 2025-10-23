@@ -2,6 +2,7 @@
 
 import { AnimatedBackground } from "@rootverse/components/AnimatedBackground";
 import { BackgroundMusic } from "@rootverse/components/BackgroundMusic";
+import { DragonIgnition } from "@rootverse/components/DragonIgnition";
 import { EpicOpeningAnimation } from "@rootverse/components/EpicOpeningAnimation";
 import { GameLoader } from "@rootverse/components/GameLoader";
 import { Navigation } from "@rootverse/components/Navigaton";
@@ -106,7 +107,8 @@ export default function GenesisGateway() {
 
       {showLoader && <GameLoader onComplete={handleLoaderComplete} />}
       {showAnimation && (
-        <EpicOpeningAnimation onComplete={handleAnimationComplete} />
+        // <EpicOpeningAnimation onComplete={handleAnimationComplete} />
+        <DragonIgnition onComplete={handleAnimationComplete}/>
       )}
       <BackgroundMusic enabled={!showLoader && !showAnimation} />
     </div>
