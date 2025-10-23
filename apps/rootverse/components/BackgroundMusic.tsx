@@ -9,5 +9,7 @@ export const BackgroundMusic = ({ enabled }: { enabled: boolean }) => {
     else if (audioRef.current) audioRef.current.pause();
   }, [enabled]);
 
-  return <audio ref={audioRef} src="/music/verse_theme.mp3" loop preload="auto" />;
+  return (
+    <audio ref={audioRef} src="/music/verse_theme.mp3" loop preload="auto" />
+  );
 };

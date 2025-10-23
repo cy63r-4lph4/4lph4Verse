@@ -6,7 +6,7 @@ export const Navigation = () => (
     <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 grid place-items-center bg-gradient-to-br from-cyan-400 to-purple-500 rounded-lg font-bold text-black">
-          α
+          Alpha
         </div>
         <h1 className="text-xl font-bold text-cyan-400">Genesis Gateway</h1>
       </div>

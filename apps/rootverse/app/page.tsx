@@ -1,11 +1,12 @@
 "use client";
 
+import { AnimatedBackground } from "@rootverse/components/AnimatedBackground";
+import { BackgroundMusic } from "@rootverse/components/BackgroundMusic";
+import { EpicOpeningAnimation } from "@rootverse/components/EpicOpeningAnimation";
+import { GameLoader } from "@rootverse/components/GameLoader";
+import { Navigation } from "@rootverse/components/Navigaton";
+import { RealmCard } from "@rootverse/components/RealmCard";
 import { useState } from "react";
-import { Navigation } from "../components/Navigation";
-import { GameLoader } from "../components/GameLoader";
-import { EpicOpeningAnimation } from "../components/EpicOpeningAnimation";
-import { BackgroundMusic } from "../components/BackgroundMusic";
-import { RealmCard } from "../components/RealmCard";
 
 export default function GenesisGateway() {
   const [showLoader, setShowLoader] = useState(true);
@@ -25,6 +26,7 @@ export default function GenesisGateway() {
 
       {!showLoader && !showAnimation && (
         <main className="relative z-10 pt-24 text-center">
+          <AnimatedBackground />
           <section className="max-w-6xl mx-auto px-4 py-24">
             <div className="relative">
               <h1 className="text-6xl sm:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
@@ -37,7 +39,8 @@ export default function GenesisGateway() {
             </div>
 
             <p className="max-w-3xl mx-auto mt-10 text-lg text-white/70">
-              The 4lph4Verse stirs to life. Five Realms await those who dare to enter — each a fragment of innovation, purpose, and creation.
+              The 4lph4Verse stirs to life. Five Realms await those who dare to
+              enter — each a fragment of innovation, purpose, and creation.
             </p>
 
             <div className="mt-16">
@@ -56,12 +59,42 @@ export default function GenesisGateway() {
               The Realms of Creation
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
-              <RealmCard name="HireCore" emoji="👷‍♀️" color="cyan" desc="Trustless gigs and tasks powered by the Verse." />
-              <RealmCard name="LeaseVault" emoji="🗝️" color="amber" desc="Programmable property, on-chain." />
-              <RealmCard name="VaultOfLove" emoji="💖" color="pink" desc="NFT storytelling and tipping." />
-              <RealmCard name="Foundation" emoji="🫀" color="purple" desc="Education, community, genesis of believers." />
-              <RealmCard name="VerseCore" emoji="💧" color="blue" desc="Faucet, dev playground, and Verse SDKs." />
-              <RealmCard name="VerseQuest" emoji="🔮" color="violet" desc="Reflection and reward through learning." />
+              <RealmCard
+                name="HireCore"
+                emoji="👷‍♀️"
+                color="cyan"
+                desc="Trustless gigs and tasks powered by the Verse."
+              />
+              <RealmCard
+                name="LeaseVault"
+                emoji="🗝️"
+                color="amber"
+                desc="Programmable property, on-chain."
+              />
+              <RealmCard
+                name="VaultOfLove"
+                emoji="💖"
+                color="pink"
+                desc="NFT storytelling and tipping."
+              />
+              <RealmCard
+                name="Foundation"
+                emoji="🫀"
+                color="purple"
+                desc="Education, community, genesis of believers."
+              />
+              <RealmCard
+                name="VerseCore"
+                emoji="💧"
+                color="blue"
+                desc="Faucet, dev playground, and Verse SDKs."
+              />
+              <RealmCard
+                name="VerseQuest"
+                emoji="🔮"
+                color="violet"
+                desc="Reflection and reward through learning."
+              />
             </div>
           </section>
         </main>
@@ -72,7 +105,9 @@ export default function GenesisGateway() {
       </footer>
 
       {showLoader && <GameLoader onComplete={handleLoaderComplete} />}
-      {showAnimation && <EpicOpeningAnimation onComplete={handleAnimationComplete} />}
+      {showAnimation && (
+        <EpicOpeningAnimation onComplete={handleAnimationComplete} />
+      )}
       <BackgroundMusic enabled={!showLoader && !showAnimation} />
     </div>
   );
