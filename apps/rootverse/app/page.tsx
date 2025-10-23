@@ -19,7 +19,7 @@ export default function GenesisGateway() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
       <div className="absolute inset-0 bg-gradient-to-br from-[#030015] via-[#0b0030] to-[#12002f]" />
-      <div className="absolute inset-0 bg-[url('/nebula-bg.webp')] bg-cover bg-center opacity-20" />
+      <div className="absolute inset-0 bg-[url('/nebula_bg.jpeg')] bg-cover bg-center opacity-20" />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-cyan-500/10 via-purple-500/10 to-pink-500/10" />
 
       {!showLoader && !showAnimation && <Navigation />}
