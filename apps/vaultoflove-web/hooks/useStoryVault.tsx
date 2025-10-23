@@ -1,8 +1,6 @@
-import { Story } from '@verse/sdk/types';
-import { useToast } from '@verse/vaultoflove-web/components/toast';
-import { useState, useEffect } from 'react';
-
-
+import { Story } from "@verse/sdk/types";
+import { useToast } from "@verse/vaultoflove-web/components/toast";
+import { useState, useEffect } from "react";
 
 type Author = {
   name: string;
@@ -17,7 +15,7 @@ const useStoryVault = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const savedStories = localStorage.getItem('vaultofLove_stories');
+    const savedStories = localStorage.getItem("vaultofLove_stories");
     if (savedStories) {
       setStories(JSON.parse(savedStories));
     } else {
@@ -26,8 +24,10 @@ const useStoryVault = () => {
           id: 1,
           title: "The Digital Heart",
           author: "Luna_Writer",
-          excerpt: "In a world where emotions are digitized, she found love in the most unexpected algorithm...",
-          content: "The rain fell in binary patterns against her window as Maya stared at the holographic display floating before her. In 2087, love had become a commodity—measured, analyzed, and optimized by the Global Emotion Network. But tonight, something felt different... She felt a pull towards a strange, unverified connection. A choice appeared on her screen: investigate the anomaly or ignore it and continue her scheduled life.",
+          excerpt:
+            "In a world where emotions are digitized, she found love in the most unexpected algorithm...",
+          content:
+            "The rain fell in binary patterns against her window as Maya stared at the holographic display floating before her. In 2087, love had become a commodity—measured, analyzed, and optimized by the Global Emotion Network. But tonight, something felt different... She felt a pull towards a strange, unverified connection. A choice appeared on her screen: investigate the anomaly or ignore it and continue her scheduled life.",
           category: "sci-fi",
           likes: 1247,
           views: 3421,
@@ -35,23 +35,51 @@ const useStoryVault = () => {
           isNftEligible: true,
           isMinted: true,
           onAuction: true,
-          createdAt: new Date('2024-01-15').toISOString(),
+          createdAt: new Date("2024-01-15").toISOString(),
           tags: ["heartbreak", "technology", "hope"],
           isInteractive: true,
           interactiveContent: {
-            "start": { "text": "The rain fell in binary patterns against her window...", "choices": [{ "text": "Investigate", "nextNodeId": "investigate" }, { "text": "Ignore", "nextNodeId": "ignore" }] },
-            "investigate": { "text": "She tapped 'Investigate'...", "choices": [{ "text": "Help him.", "nextNodeId": "help" }, { "text": "Leave him.", "nextNodeId": "leave" }] },
-            "ignore": { "text": "Maya chose to ignore...", "choices": [] },
-            "help": { "text": "Together, they shattered the network's control...", "choices": [] },
-            "leave": { "text": "Fear gripped her...", "choices": [] }
-          }
+            start: {
+              id: "start",
+              text: "The rain fell in binary patterns against her window...",
+              choices: [
+                { text: "Investigate", nextNodeId: "investigate" },
+                { text: "Ignore", nextNodeId: "ignore" },
+              ],
+            },
+            investigate: {
+              id: "investigate",
+              text: "She tapped 'Investigate'...",
+              choices: [
+                { text: "Help him.", nextNodeId: "help" },
+                { text: "Leave him.", nextNodeId: "leave" },
+              ],
+            },
+            ignore: {
+              id: "ignore",
+              text: "Maya chose to ignore...",
+              choices: [],
+            },
+            help: {
+              id: "help",
+              text: "Together, they shattered the network's control...",
+              choices: [],
+            },
+            leave: {
+              id: "leave",
+              text: "Fear gripped her...",
+              choices: [],
+            },
+          },
         },
         {
           id: 2,
           title: "Letters to Tomorrow",
           author: "HeartSeeker",
-          excerpt: "Every heartbreak taught her something new about love, until she learned to love herself...",
-          content: "Dear Tomorrow, Today I learned that love isn't about finding someone to complete you. It's about becoming whole enough to share your completeness with another soul...",
+          excerpt:
+            "Every heartbreak taught her something new about love, until she learned to love herself...",
+          content:
+            "Dear Tomorrow, Today I learned that love isn't about finding someone to complete you. It's about becoming whole enough to share your completeness with another soul...",
           category: "romance",
           likes: 1892,
           views: 2156,
@@ -59,7 +87,7 @@ const useStoryVault = () => {
           isNftEligible: true,
           isMinted: true,
           onAuction: true,
-          createdAt: new Date('2024-01-20').toISOString(),
+          createdAt: new Date("2024-01-20").toISOString(),
           tags: ["self-love", "growth", "healing"],
           isInteractive: false,
         },
@@ -67,8 +95,10 @@ const useStoryVault = () => {
           id: 3,
           title: "The Last Dance",
           author: "You",
-          excerpt: "After 60 years of marriage, he still danced with her ghost every evening...",
-          content: "The music box played their wedding song as Harold moved slowly across the empty living room. Margaret had been gone for three months, but every evening at 7 PM, he still felt her hand in his...",
+          excerpt:
+            "After 60 years of marriage, he still danced with her ghost every evening...",
+          content:
+            "The music box played their wedding song as Harold moved slowly across the empty living room. Margaret had been gone for three months, but every evening at 7 PM, he still felt her hand in his...",
           category: "drama",
           likes: 1456,
           views: 4892,
@@ -76,88 +106,106 @@ const useStoryVault = () => {
           isNftEligible: true,
           isMinted: false,
           onAuction: false,
-          createdAt: new Date('2024-01-10').toISOString(),
+          createdAt: new Date("2024-01-10").toISOString(),
           tags: ["eternal love", "loss", "memory"],
           isInteractive: false,
-        }
+        },
       ];
       setStories(sampleStories);
-      localStorage.setItem('vaultofLove_stories', JSON.stringify(sampleStories));
+      localStorage.setItem(
+        "vaultofLove_stories",
+        JSON.stringify(sampleStories)
+      );
     }
 
-    const savedAuthors = localStorage.getItem('vaultofLove_authors');
+    const savedAuthors = localStorage.getItem("vaultofLove_authors");
     if (savedAuthors) {
       setAuthors(JSON.parse(savedAuthors));
     } else {
       const sampleAuthors = [
-        { name: 'Luna_Writer', followers: 256 },
-        { name: 'HeartSeeker', followers: 189 },
-        { name: 'You', followers: 0 },
+        { name: "Luna_Writer", followers: 256 },
+        { name: "HeartSeeker", followers: 189 },
+        { name: "You", followers: 0 },
       ];
       setAuthors(sampleAuthors);
-      localStorage.setItem('vaultofLove_authors', JSON.stringify(sampleAuthors));
+      localStorage.setItem(
+        "vaultofLove_authors",
+        JSON.stringify(sampleAuthors)
+      );
     }
 
-    const savedFollowed = localStorage.getItem('vaultofLove_followedAuthors');
+    const savedFollowed = localStorage.getItem("vaultofLove_followedAuthors");
     if (savedFollowed) {
       setFollowedAuthors(JSON.parse(savedFollowed));
     }
 
-    const savedTokens = localStorage.getItem('vaultofLove_tokens');
+    const savedTokens = localStorage.getItem("vaultofLove_tokens");
     if (savedTokens) {
       setUserTokens(parseInt(savedTokens));
     }
   }, []);
 
-  const saveStories = (newStories) => {
+  const saveStories = (newStories:Story[]) => {
     setStories(newStories);
-    localStorage.setItem('vaultofLove_stories', JSON.stringify(newStories));
+    localStorage.setItem("vaultofLove_stories", JSON.stringify(newStories));
   };
 
-  const saveAuthors = (newAuthors) => {
+  const saveAuthors = (newAuthors:Author[]) => {
     setAuthors(newAuthors);
-    localStorage.setItem('vaultofLove_authors', JSON.stringify(newAuthors));
+    localStorage.setItem("vaultofLove_authors", JSON.stringify(newAuthors));
   };
 
-  const saveFollowedAuthors = (newFollowed) => {
+  const saveFollowedAuthors = (newFollowed:string[]) => {
     setFollowedAuthors(newFollowed);
-    localStorage.setItem('vaultofLove_followedAuthors', JSON.stringify(newFollowed));
+    localStorage.setItem(
+      "vaultofLove_followedAuthors",
+      JSON.stringify(newFollowed)
+    );
   };
 
-  const saveTokens = (tokens) => {
+  const saveTokens = (tokens:number) => {
     setUserTokens(tokens);
-    localStorage.setItem('vaultofLove_tokens', tokens.toString());
+    localStorage.setItem("vaultofLove_tokens", tokens.toString());
   };
 
-  const handleFollowAuthor = (authorName) => {
+  const handleFollowAuthor = (authorName:string) => {
     const isFollowing = followedAuthors.includes(authorName);
     let updatedFollowed;
 
     if (isFollowing) {
-      updatedFollowed = followedAuthors.filter(name => name !== authorName);
-      toast({ title: "Unfollowed", description: `You are no longer following ${authorName}.` });
+      updatedFollowed = followedAuthors.filter((name) => name !== authorName);
+      toast({
+        title: "Unfollowed",
+        description: `You are no longer following ${authorName}.`,
+      });
     } else {
       updatedFollowed = [...followedAuthors, authorName];
-      toast({ title: "💖 Following!", description: `You'll be notified about new stories from ${authorName}.` });
+      toast({
+        title: "💖 Following!",
+        description: `You'll be notified about new stories from ${authorName}.`,
+      });
     }
     saveFollowedAuthors(updatedFollowed);
 
-    const updatedAuthors = authors.map(author => {
+    const updatedAuthors = authors.map((author) => {
       if (author.name === authorName) {
-        return { ...author, followers: isFollowing ? author.followers - 1 : author.followers + 1 };
+        return {
+          ...author,
+          followers: isFollowing ? author.followers - 1 : author.followers + 1,
+        };
       }
       return author;
     });
     saveAuthors(updatedAuthors);
   };
 
-  const handleLikeStory = (storyId) => {
-    const updatedStories = stories.map(story => {
+  const handleLikeStory = (storyId:string|number) => {
+    const updatedStories = stories.map((story) => {
       if (story.id === storyId) {
         const newLikes = story.likes + 1;
         const wasEligible = story.isNftEligible;
         const isNowEligible = newLikes >= 1000;
-        
+
         if (!wasEligible && isNowEligible) {
           toast({
             title: "🎉 NFT Eligible!",
@@ -165,11 +213,11 @@ const useStoryVault = () => {
             duration: 5000,
           });
         }
-        
+
         return {
           ...story,
           likes: newLikes,
-          isNftEligible: isNowEligible
+          isNftEligible: isNowEligible,
         };
       }
       return story;
@@ -177,16 +225,18 @@ const useStoryVault = () => {
     saveStories(updatedStories);
   };
 
-  const handleTipAuthor = (storyId, amount) => {
+  const handleTipAuthor = (
+    storyId:string|number,
+    amount:number,
+  
+  ) => {
     if (userTokens >= amount) {
-      const updatedStories = stories.map(story => 
-        story.id === storyId 
-          ? { ...story, tips: story.tips + amount }
-          : story
+      const updatedStories = stories.map((story) =>
+        story.id === storyId ? { ...story, tips: story.tips + amount } : story
       );
       saveStories(updatedStories);
       saveTokens(userTokens - amount);
-      
+
       toast({
         title: "💝 Tip Sent!",
         description: `You tipped ${amount} CØRE tokens to support this story!`,
@@ -196,13 +246,13 @@ const useStoryVault = () => {
       toast({
         title: "Insufficient Tokens",
         description: "You don't have enough CØRE tokens for this tip.",
-        variant: "destructive",
+        variant: "error",
         duration: 3000,
       });
     }
   };
 
-  const handleAddStory = (newStory) => {
+  const handleAddStory = (newStory: Story) => {
     const story = {
       ...newStory,
       id: Date.now(),
@@ -212,11 +262,11 @@ const useStoryVault = () => {
       isNftEligible: false,
       isMinted: false,
       onAuction: false,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
     const updatedStories = [story, ...stories];
     saveStories(updatedStories);
-    
+
     toast({
       title: "✨ Story Published!",
       description: "Your story has been added to the Vault of Love!",
@@ -224,18 +274,16 @@ const useStoryVault = () => {
     });
   };
 
-  const handleViewStory = (storyId) => {
-    const updatedStories = stories.map(s => 
-      s.id === storyId 
-        ? { ...s, views: s.views + 1 }
-        : s
+  const handleViewStory = (storyId: string | number) => {
+    const updatedStories = stories.map((s) =>
+      s.id === storyId ? { ...s, views: s.views + 1 } : s
     );
     saveStories(updatedStories);
-    return stories.find(s => s.id === storyId);
+    return stories.find((s) => s.id === storyId);
   };
 
-  const handleMintNFT = (storyId) => {
-    const updatedStories = stories.map(s => 
+  const handleMintNFT = (storyId: string | number) => {
+    const updatedStories = stories.map((s) =>
       s.id === storyId ? { ...s, isMinted: true } : s
     );
     saveStories(updatedStories);
@@ -246,14 +294,15 @@ const useStoryVault = () => {
     });
   };
 
-  const handleListForBid = (storyId) => {
-    const updatedStories = stories.map(s => 
+  const handleListForBid = (storyId: string | number) => {
+    const updatedStories = stories.map((s) =>
       s.id === storyId ? { ...s, onAuction: true } : s
     );
     saveStories(updatedStories);
     toast({
       title: "💖 Listed for Heart Bid!",
-      description: "Your story NFT is now up for bidding in the Heart Bid event.",
+      description:
+        "Your story NFT is now up for bidding in the Heart Bid event.",
       duration: 4000,
     });
   };
