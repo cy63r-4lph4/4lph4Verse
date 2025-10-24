@@ -5,8 +5,9 @@ import type { VerseProfile } from "types/verseProfile";
 import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
+import { encodeFunctionData } from "viem";
 import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
-import { useRelayer } from "../hooks/useRelayer"; // 🔥 new optional hook
+import { useRelayer } from "../hooks/useRelayer"; // optional relayer hook
 
 /* -------------------------------------------------------------------------- */
 /* Hook: useVerseProfileWizard                                                */
@@ -16,7 +17,7 @@ export function useVerseProfileWizard(dapp?: string) {
   const { data: walletClient } = useWalletClient();
   const chainId = useChainId() as ChainId;
   const config = useConfig();
-  const relayer = useRelayer(); // optional, e.g., from your gasless infra
+  const relayer = useRelayer();
 
   /* ----------------------- Local State ----------------------- */
   const [profile, setProfile] = useState<VerseProfile>({
@@ -34,7 +35,9 @@ export function useVerseProfileWizard(dapp?: string) {
   });
 
   const [submitting, setSubmitting] = useState(false);
-  const [progress, setProgress] = useState<"idle" | "uploading" | "signing" | "relaying" | "writing" | "done">("idle");
+  const [progress, setProgress] = useState<
+    "idle" | "uploading" | "signing" | "relaying" | "writing" | "done"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
 
   /* ----------------------- Mutators ----------------------- */
@@ -96,8 +99,7 @@ export function useVerseProfileWizard(dapp?: string) {
       });
 
       // 2️⃣ Build transaction payload
-      const txData = {
-        address: contract.address,
+      const encodedData = encodeFunctionData({
         abi: contract.abi,
         functionName: "createProfile",
         args: [
@@ -105,25 +107,23 @@ export function useVerseProfileWizard(dapp?: string) {
           `ipfs://${metadataCID}`,
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         ],
-      };
+      });
 
       /* ---------------------------------------------------------------------- */
       /* 🪄 Gasless Flow via Relayer (if available)                             */
       /* ---------------------------------------------------------------------- */
-      if (relayer && relayer.isEnabled) {
+      if (relayer?.isEnabled) {
         setProgress("signing");
 
-        // Sign meta-tx off-chain
         const metaTx = await relayer.buildMetaTx({
           from: address,
           to: contract.address,
-          data: await walletClient?.encodeFunctionData?.(txData),
+          data: encodedData,
           chainId,
         });
 
         setProgress("relaying");
 
-        // Send to relayer backend
         const relayResult = await relayer.sendMetaTx(metaTx);
         if (!relayResult.success) throw new Error("Relayer failed to broadcast tx");
 
@@ -138,7 +138,17 @@ export function useVerseProfileWizard(dapp?: string) {
       /* ---------------------------------------------------------------------- */
       setProgress("writing");
 
-      const tx = await writeContract(config, txData);
+      const tx = await writeContract(config, {
+        address: contract.address,
+        abi: contract.abi,
+        functionName: "createProfile",
+        args: [
+          profile.handle,
+          `ipfs://${metadataCID}`,
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      });
+
       await waitForTransactionReceipt(config, { hash: tx, confirmations: 1 });
 
       setProgress("done");
