@@ -1,4 +1,5 @@
-import { createPublicClient, createWalletClient, http, verifyTypedData, writeContract } from "viem";
+import { createPublicClient, createWalletClient, http, verifyTypedData } from "viem";
+import { writeContract } from "viem/actions";
 import { defineChain, Hex } from "viem";
 import type { Abi } from "viem";
 
@@ -81,14 +82,14 @@ export async function relayTx({
     },
   };
 
-  const verified = await verifyTypedData(publicClient, {
-    address: user,
-    domain: typedData.domain,
-    types: typedData.types,
-    primaryType: "RelayCall",
-    message: typedData.message,
-    signature,
-  });
+    const verified = await verifyTypedData(publicClient, {
+      address: user,
+      domain: typedData.domain,
+      types: typedData.types,
+      primaryType: "RelayCall",
+      message: typedData.message,
+      signature,
+    });
 
   if (!verified) throw new Error("❌ Invalid signature");
 
