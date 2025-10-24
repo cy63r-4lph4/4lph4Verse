@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, verifyTypedData } from "viem";
+import { createPublicClient, createWalletClient, encodeFunctionData, http, verifyTypedData } from "viem";
 import { writeContract } from "viem/actions";
 import { defineChain, Hex } from "viem";
 import type { Abi } from "viem";
@@ -59,28 +59,30 @@ export async function relayTx({
     chain,
     transport: http(chain.rpcUrls.default.http[0]),
   });
+const functionSigHash = encodeFunctionData({
+  abi: contract.abi,
+  functionName: contract.functionName,
+  args: contract.args,
+});
 
   /* 🔐 Step 1: Verify user signature */
-  const typedData = {
-    domain: { name: "4lph4Verse", version: "1", chainId },
-    types: {
-      RelayCall: [
-        { name: "user", type: "address" },
-        { name: "target", type: "address" },
-        { name: "functionSigHash", type: "bytes32" },
-      ],
-    },
-    primaryType: "RelayCall",
-    message: {
-      user,
-      target: contract.address,
-      functionSigHash: publicClient.encodeFunctionData({
-        abi: contract.abi,
-        functionName: contract.functionName,
-        args: contract.args,
-      }),
-    },
-  };
+ const typedData = {
+  domain: { name: "4lphaVerse", version: "1", chainId },
+  types: {
+    RelayCall: [
+      { name: "user", type: "address" },
+      { name: "target", type: "address" },
+      { name: "functionSigHash", type: "bytes" },
+    ],
+  },
+  primaryType: "RelayCall",
+  message: {
+    user,
+    target: contract.address,
+    functionSigHash,
+  },
+};
+
 
    const verified = await publicClient.verifyTypedData({
   address: user,
