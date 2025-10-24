@@ -1,119 +1,105 @@
-import { verifyTypedData, writeContract } from "viem/actions";
-import { createPublicClient, http } from "viem";
-import { getWalletClient } from "./client";
-import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
-import { defineChain } from "viem";
+import { createPublicClient, createWalletClient, http, verifyTypedData, writeContract } from "viem";
+import { defineChain, Hex } from "viem";
+import type { Abi } from "viem";
 
-// ✅ (Optional) define chain helper for dynamic RPC
-function getChainConfig(chainId: ChainId) {
-  switch (chainId) {
-    case 11142220:
-      return defineChain({
-        id: 11142220,
-        name: "Celo Sepolia",
-        nativeCurrency: { name: "Celo", symbol: "CELO", decimals: 18 },
-        rpcUrls: {
-          default: { http: ["https://forno.celo-sepolia.celo-testnet.org"] },
-        },
-      });
-    // case 4202:
-    //   return defineChain({
-    //     id: 4202,
-    //     name: "Lisk Sepolia",
-    //     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-    //     rpcUrls: {
-    //       default: { http: ["https://rpc.sepolia.lisk.com"] },
-    //     },
-    //   });
-    default:
-      throw new Error(`Unsupported chain ID: ${chainId}`);
-  }
+export interface RelayRequest {
+  chainId: number;
+  user: `0x${string}`;
+  contract: {
+    address: `0x${string}`;
+    abi: Abi;
+    functionName: string;
+    args: any[];
+  };
+  signature: Hex;
 }
 
-/**
- * Relay a signed task intent to the blockchain
- *
- * @param chainId        Network chain ID
- * @param relayerKey     Private key of the relayer wallet
- * @param data           User-signed message data
- * @param signature      User's EIP-712 signature
- * @param contractName   Name of contract in deployed registry (default: "HireCoreJobBoard")
- */
-export async function relayTaskIntent({
-  chainId,
-  relayerKey,
-  data,
-  signature,
-  contractName = "HireCoreJobBoard",
-}: {
-  chainId: ChainId;
-  relayerKey: `0x${string}`;
-  data: {
-    user: `0x${string}`;
-    metadataURI: string;
-    budget: string | bigint;
+/* -------------------------------------------------------------
+ * 1️⃣ Universal RPC Resolver (multi-chain aware)
+ * ------------------------------------------------------------- */
+function getChainConfig(chainId: number) {
+  const registry: Record<number, any> = {
+    11142220: defineChain({
+      id: 11142220,
+      name: "Celo Sepolia",
+      nativeCurrency: { name: "Celo", symbol: "CELO", decimals: 18 },
+      rpcUrls: { default: { http: ["https://forno.celo-sepolia.celo-testnet.org"] } },
+    }),
+    4202: defineChain({
+      id: 4202,
+      name: "Lisk Sepolia",
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      rpcUrls: { default: { http: ["https://rpc.sepolia.lisk.com"] } },
+    }),
   };
-  signature: `0x${string}`;
-  contractName?: "HireCoreJobBoard" | "HireCoreJobManager";
+
+  const chain = registry[chainId];
+  if (!chain) throw new Error(`Unsupported chain ID: ${chainId}`);
+  return chain;
+}
+
+/* -------------------------------------------------------------
+ * 2️⃣ Universal Relay Function
+ * ------------------------------------------------------------- */
+export async function relayTx({
+  relayerKey,
+  request,
+}: {
+  relayerKey: `0x${string}`;
+  request: RelayRequest;
 }) {
-  /* --------------------------------------------------
-   * 1️⃣ Create public client for signature verification
-   * -------------------------------------------------- */
+  const { chainId, user, contract, signature } = request;
   const chain = getChainConfig(chainId);
-  const publicClient = createPublicClient({
+
+  /* 🧩 Setup clients */
+  const publicClient = createPublicClient({ chain, transport: http(chain.rpcUrls.default.http[0]) });
+  const walletClient = createWalletClient({
+    account: relayerKey,
     chain,
     transport: http(chain.rpcUrls.default.http[0]),
   });
 
-  /* --------------------------------------------------
-   * 2️⃣ Verify user's EIP-712 signature
-   * -------------------------------------------------- */
-  const typedMessage = {
-  ...data,
-  budget: BigInt(data.budget),
-};
-  const verified = await verifyTypedData(publicClient, {
-    address: data.user,
-    domain: {
-      name: "HireCore",
-      version: "1",
-      chainId,
-    },
+  /* 🔐 Step 1: Verify user signature */
+  const typedData = {
+    domain: { name: "4lph4Verse", version: "1", chainId },
     types: {
-      TaskIntent: [
+      RelayCall: [
         { name: "user", type: "address" },
-        { name: "metadataURI", type: "string" },
-        { name: "budget", type: "uint256" },
+        { name: "target", type: "address" },
+        { name: "functionSigHash", type: "bytes32" },
       ],
     },
-    primaryType: "TaskIntent",
-    message: typedMessage,
+    primaryType: "RelayCall",
+    message: {
+      user,
+      target: contract.address,
+      functionSigHash: publicClient.encodeFunctionData({
+        abi: contract.abi,
+        functionName: contract.functionName,
+        args: contract.args,
+      }),
+    },
+  };
+
+  const verified = await verifyTypedData(publicClient, {
+    address: user,
+    domain: typedData.domain,
+    types: typedData.types,
+    primaryType: "RelayCall",
+    message: typedData.message,
     signature,
   });
 
-  if (!verified) throw new Error("Invalid signature: EIP-712 verification failed");
+  if (!verified) throw new Error("❌ Invalid signature");
 
-  /* --------------------------------------------------
-   * 3️⃣ Create relayer wallet client
-   * -------------------------------------------------- */
-  const walletClient = getWalletClient(chainId, relayerKey);
-
-  /* --------------------------------------------------
-   * 4️⃣ Load deployed contract (from registry)
-   * -------------------------------------------------- */
-  const contract = getDeployedContract(chainId, contractName);
-
-  /* --------------------------------------------------
-   * 5️⃣ Relay transaction via relayer wallet
-   * -------------------------------------------------- */
+  /* 🚀 Step 2: Execute on-chain as relayer */
   const txHash = await writeContract(walletClient, {
     address: contract.address,
     abi: contract.abi,
-    chain: walletClient.chain,
-    account: walletClient.account!,
-    functionName: "createTaskFromRelayer",
-    args: [data.metadataURI, BigInt(data.budget)],
+    functionName: contract.functionName,
+    args: contract.args,
   });
 
+  console.log(`✅ Relayed tx on chain ${chainId}: ${txHash}`);
   return txHash;
 }
