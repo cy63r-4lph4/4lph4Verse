@@ -82,14 +82,15 @@ export async function relayTx({
     },
   };
 
-    const verified = await verifyTypedData(publicClient, {
-      address: user,
-      domain: typedData.domain,
-      types: typedData.types,
-      primaryType: "RelayCall",
-      message: typedData.message,
-      signature,
-    });
+   const verified = await publicClient.verifyTypedData({
+  address: user,
+  domain: typedData.domain,
+  types: typedData.types,
+  primaryType: "RelayCall",
+  message: typedData.message,
+  signature,
+});
+
 
   if (!verified) throw new Error("❌ Invalid signature");
 
