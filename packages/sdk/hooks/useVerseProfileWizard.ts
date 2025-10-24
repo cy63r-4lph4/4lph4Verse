@@ -7,7 +7,7 @@ import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { encodeFunctionData } from "viem";
 import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
-import { useRelayer } from "../hooks/useRelayer"; // optional relayer hook
+import { useRelayer } from "./useRelayer"; // optional relayer hook
 
 /* -------------------------------------------------------------------------- */
 /* Hook: useVerseProfileWizard                                                */

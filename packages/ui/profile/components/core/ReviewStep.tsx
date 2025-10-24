@@ -12,7 +12,7 @@ type ReviewStepProps = {
   onBack: () => void;
   onSubmit: () => Promise<void>;
   submitting: boolean;
-  progress?: "idle" | "uploading" | "writing" | "done";
+  progress?: "idle" | "uploading" | "signing" | "relaying" | "writing" | "done";
   error?: string | null;
 };
 
@@ -69,8 +69,8 @@ export function ReviewStep({
                       Array.isArray(v)
                         ? v.join(", ")
                         : typeof v === "object"
-                        ? JSON.stringify(v, null, 2)
-                        : String(v)
+                          ? JSON.stringify(v, null, 2)
+                          : String(v)
                     }
                   />
                 ))}
