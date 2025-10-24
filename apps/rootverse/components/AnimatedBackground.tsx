@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 
 export const AnimatedBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const controls = useAnimation();
 
   // simple particle shimmer
   useEffect(() => {
@@ -50,7 +49,6 @@ export const AnimatedBackground = () => {
     <div className="absolute inset-0 overflow-hidden">
       {/* moving gradient aurora */}
       <motion.div
-        animate={controls}
         initial={{ backgroundPosition: "0% 50%" }}
         animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
         transition={{ repeat: Infinity, duration: 40, ease: "linear" }}

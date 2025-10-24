@@ -3,20 +3,22 @@
 import { useState } from "react";
 import type { VerseProfile } from "types/verseProfile";
 import { uploadProfileToPinata } from "@verse/services/pinata";
-import { waitForTransactionReceipt } from "wagmi/actions";
-import { useAccount, useChainId, useWriteContract, useConfig } from "wagmi";
+import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
+import { useRelayer } from "../hooks/useRelayer"; // 🔥 new optional hook
 
 /* -------------------------------------------------------------------------- */
 /* Hook: useVerseProfileWizard                                                */
 /* -------------------------------------------------------------------------- */
 export function useVerseProfileWizard(dapp?: string) {
   const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
   const chainId = useChainId() as ChainId;
   const config = useConfig();
-  const { writeContractAsync } = useWriteContract();
+  const relayer = useRelayer(); // optional, e.g., from your gasless infra
 
-  /* ─────────────── State ─────────────── */
+  /* ----------------------- Local State ----------------------- */
   const [profile, setProfile] = useState<VerseProfile>({
     verseId: 0,
     handle: "",
@@ -32,12 +34,10 @@ export function useVerseProfileWizard(dapp?: string) {
   });
 
   const [submitting, setSubmitting] = useState(false);
-  const [progress, setProgress] = useState<
-    "idle" | "uploading" | "writing" | "done"
-  >("idle");
+  const [progress, setProgress] = useState<"idle" | "uploading" | "signing" | "relaying" | "writing" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  /* ─────────────── Mutators ─────────────── */
+  /* ----------------------- Mutators ----------------------- */
   function updateProfile(partial: Partial<VerseProfile>) {
     setProfile((prev) => ({ ...prev, ...partial }));
   }
@@ -48,10 +48,7 @@ export function useVerseProfileWizard(dapp?: string) {
   ) {
     setProfile((prev) => ({
       ...prev,
-      personas: {
-        ...prev.personas,
-        [key]: { ...(prev.personas[key] || {}), ...data },
-      },
+      personas: { ...prev.personas, [key]: { ...(prev.personas[key] || {}), ...data } },
     }));
   }
 
@@ -75,13 +72,15 @@ export function useVerseProfileWizard(dapp?: string) {
   }
 
   /* -------------------------------------------------------------------------- */
-  /* On-chain Submission Logic                                                 */
+  /* On-chain or Relayed Submission                                             */
   /* -------------------------------------------------------------------------- */
   async function submitProfile(): Promise<boolean> {
     if (!address) {
       setError("Please connect your wallet first.");
       return false;
     }
+
+    const contract = getDeployedContract(chainId, "VerseProfile");
 
     try {
       setSubmitting(true);
@@ -96,11 +95,8 @@ export function useVerseProfileWizard(dapp?: string) {
         extras: profile.personas,
       });
 
-      setProgress("writing");
-
-      // 2️⃣ Write to VerseProfile smart contract
-      const contract = getDeployedContract(chainId, "VerseProfile");
-      const tx = await writeContractAsync({
+      // 2️⃣ Build transaction payload
+      const txData = {
         address: contract.address,
         abi: contract.abi,
         functionName: "createProfile",
@@ -109,8 +105,40 @@ export function useVerseProfileWizard(dapp?: string) {
           `ipfs://${metadataCID}`,
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         ],
-      });
+      };
 
+      /* ---------------------------------------------------------------------- */
+      /* 🪄 Gasless Flow via Relayer (if available)                             */
+      /* ---------------------------------------------------------------------- */
+      if (relayer && relayer.isEnabled) {
+        setProgress("signing");
+
+        // Sign meta-tx off-chain
+        const metaTx = await relayer.buildMetaTx({
+          from: address,
+          to: contract.address,
+          data: await walletClient?.encodeFunctionData?.(txData),
+          chainId,
+        });
+
+        setProgress("relaying");
+
+        // Send to relayer backend
+        const relayResult = await relayer.sendMetaTx(metaTx);
+        if (!relayResult.success) throw new Error("Relayer failed to broadcast tx");
+
+        console.log("✅ Relayer broadcasted meta-tx:", relayResult.txHash);
+
+        setProgress("done");
+        return true;
+      }
+
+      /* ---------------------------------------------------------------------- */
+      /* ⛽ Standard Direct Transaction (Fallback)                              */
+      /* ---------------------------------------------------------------------- */
+      setProgress("writing");
+
+      const tx = await writeContract(config, txData);
       await waitForTransactionReceipt(config, { hash: tx, confirmations: 1 });
 
       setProgress("done");
@@ -120,8 +148,12 @@ export function useVerseProfileWizard(dapp?: string) {
       setError(
         progress === "uploading"
           ? "Failed to upload profile to IPFS"
+          : progress === "signing"
+          ? "Signature failed"
+          : progress === "relaying"
+          ? "Relayer submission failed"
           : progress === "writing"
-          ? "Failed to write profile on-chain"
+          ? "On-chain write failed"
           : "Something went wrong"
       );
       return false;
