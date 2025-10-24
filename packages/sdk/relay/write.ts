@@ -96,11 +96,14 @@ export async function relayTx({
 
   /* 🚀 Step 2: Execute on-chain as relayer */
   const txHash = await writeContract(walletClient, {
-    address: contract.address,
-    abi: contract.abi,
-    functionName: contract.functionName,
-    args: contract.args,
-  });
+  address: contract.address,
+  abi: contract.abi,
+  functionName: contract.functionName,
+  args: contract.args,
+  chain: walletClient.chain,     
+  account: walletClient.account, 
+});
+
 
   console.log(`✅ Relayed tx on chain ${chainId}: ${txHash}`);
   return txHash;
