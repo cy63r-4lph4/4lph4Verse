@@ -8,14 +8,18 @@
     "build": "tsup src/index.ts --format esm,cjs --dts"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "viem": "^2.13.8",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "cors": "^2.8.5"
+    "express": "^4.19.2",
+    "relayer": "link:",
+    "viem": "^2.13.8"
   },
   "devDependencies": {
-    "tsx": "^4.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.4",
+    "@types/node": "^24.9.1",
     "tsup": "^8.0.1",
+    "tsx": "^4.0.0",
     "typescript": "^5.3.3"
   }
 }
