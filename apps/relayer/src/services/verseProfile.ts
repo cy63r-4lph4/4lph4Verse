@@ -1,33 +1,31 @@
 // apps/relayer/src/services/verseProfile.ts
-import { ChainId, getDeployedContract } from "@verse/sdk";
-import { createWalletClient, http } from "viem";
+import { createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { celoSepolia } from "viem/chains";
+import { getChainConfig, getContract } from "../config/chains";
+import { ChainId } from "@verse/sdk";
 
+const account = privateKeyToAccount(
+  process.env.RELAYER_PRIVATE_KEY as `0x${string}`
+);
 
-
-const account = privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY as `0x${string}`);
-const chainId = Number(process.env.CHAIN_ID) as ChainId;
-
-// pull address + abi from your shared SDK
-const vp = getDeployedContract(chainId, "VerseProfile");
-const verseProfileAddress = vp.address;
-const verseProfileAbi = vp.abi;
-
-const client = createWalletClient({
-  account,
-  chain: celoSepolia,
-  transport: http(process.env.RPC_URL),
-});
-
-// thin wrapper for contract writes
+// ✅ Now takes chainId argument
 export async function verseProfileWrite(
+  chainId: ChainId,
   functionName: "createProfile",
-  args: readonly unknown[],
+  args: readonly unknown[]
 ) {
+  const { chain, transport } = getChainConfig(chainId);
+  const contract = getContract(chainId, "VerseProfile");
+
+  const client = createWalletClient({
+    account,
+    chain,
+    transport,
+  });
+
   return client.writeContract({
-    abi: verseProfileAbi,
-    address: verseProfileAddress,
+    address: contract.address,
+    abi: contract.abi,
     functionName,
     args,
     account,
