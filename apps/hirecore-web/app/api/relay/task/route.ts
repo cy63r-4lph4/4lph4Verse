@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { type ChainId } from "@verse/sdk/utils/contract/deployedContracts";
-import { relayTaskIntent } from "@verse/sdk/relay";
+import { relayTxn } from "@verse/sdk/relay";
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       throw new Error("Relayer private key not configured");
     }
 
-    const txHash = await relayTaskIntent({
+    const txHash = await relayTxn({
       chainId: chainId as ChainId,
       relayerKey,
       data,

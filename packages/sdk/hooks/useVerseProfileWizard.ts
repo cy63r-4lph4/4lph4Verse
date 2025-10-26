@@ -93,7 +93,6 @@ export function useVerseProfileWizard() {
   try {
     setSubmitting(true);
 
-    // 1️⃣ Upload avatar first if needed
     setProgress("uploading");
 
     let avatarURL: string | null = null;
