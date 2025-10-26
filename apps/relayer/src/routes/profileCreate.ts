@@ -4,6 +4,7 @@ import { verifyTypedData, recoverTypedDataAddress, keccak256 } from "viem";
 import { verseProfileWrite } from "../services/verseProfile";
 import { profileTypedData } from "../utils/profileTypedData";
 import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
+import { getChainConfig } from "../config/chains";
 
 const router = Router();
 
@@ -17,14 +18,15 @@ function isValidHandle(h: string) {
 
 router.post("/", async (req, res) => {
   try {
-    const { wallet, handle, metadataURI, signature } = req.body;
+    const { wallet, handle, metadataURI, signature,chainId } = req.body;
 
-    if (!wallet || !handle || !metadataURI || !signature) {
+     if (!wallet || !handle || !metadataURI || !signature || chainId === undefined) {
       return res.status(400).send({ error: "Missing fields" });
     }
     if (!isValidHandle(handle)) {
       return res.status(400).send({ error: "Invalid handle format" });
     }
+    const { chain } = getChainConfig(chainId); 
 
     // 1) verify typed data validity against expected signer
     const isValid = await verifyTypedData({
