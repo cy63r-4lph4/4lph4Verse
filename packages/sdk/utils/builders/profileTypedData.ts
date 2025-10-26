@@ -1,4 +1,3 @@
-// apps/relayer/src/utils/profileTypedData.ts
 import { ChainId, getDeployedContract } from "../contract/deployedContracts";
 
 export function buildProfileTypedData(chainId: ChainId) {

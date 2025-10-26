@@ -6,7 +6,8 @@ import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { ChainId, getDeployedContract } from "../index";
-import { buildCreateProfileTypedData } from "@verse/sdk";
+import { buildProfileTypedData } from "../index";
+
 
 
 const ZERO_BYTES_32 =
@@ -111,26 +112,16 @@ export function useVerseProfileWizard() {
         setProgress("signing");
 
         const typedData = {
-          domain: {
-            name: "VerseProfile",
-            version: "1",
-            chainId,
-            verifyingContract: contract.address,
-          },
-          types: {
-            CreateProfile: [
-              { name: "wallet", type: "address" },
-              { name: "handle", type: "string" },
-              { name: "metadataURI", type: "string" },
-            ],
-          },
-          primaryType: "CreateProfile",
-          message: {
-            wallet: address,
-            handle: profile.handle,
-            metadataURI,
-          },
-        };
+    ...buildProfileTypedData(chainId),
+    message: {
+      wallet: address,
+      handle: profile.handle,
+      metadataURI,
+    },
+    primaryType: "CreateProfile",
+  };
+
+
 
         const signature = await walletClient.signTypedData({
           domain: typedData.domain,
