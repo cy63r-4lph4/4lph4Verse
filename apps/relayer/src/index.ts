@@ -12,7 +12,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Relayer wallet signer
 const account = privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY as `0x${string}`);
 
 const client = createWalletClient({
@@ -39,7 +38,6 @@ app.post("/relay/ping", async (req, res) => {
   }
 });
 
-// ✅ register the permit route
 app.use("/relay/permit", permitRoute);
 app.use("/relay/profile/create", profileCreateRoute);
 
