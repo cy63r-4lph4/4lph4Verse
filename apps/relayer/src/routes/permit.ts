@@ -3,6 +3,7 @@ import { getCoreTokenClient } from "../services/coreToken";
 import { verifyTypedData, recoverTypedDataAddress, parseGwei } from "viem";
 import { permitTypedData } from "../utils/permitTypedData";
 
+
 const router = Router();
 
 router.post("/", async (req, res) => {
@@ -13,12 +14,14 @@ router.post("/", async (req, res) => {
     }
 
     // Verify signature structure
-    const isValid = await verifyTypedData({
-      ...permitTypedData,
-      primaryType: "Permit",
-      message: { owner, spender, value, nonce, deadline },
-      signature
-    });
+   const isValid = await verifyTypedData({
+  ...permitTypedData,
+  primaryType: "Permit",
+  message: { owner, spender, value, nonce, deadline },
+  address: owner,
+  signature
+});
+
 
     if (!isValid) {
       return res.status(401).send({ error: "Invalid signature format" });
