@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { PersonaField, PersonaQuickStep } from "./components/core/PersonalQuickStep";
+import {
+  PersonaField,
+  PersonaQuickStep,
+} from "./components/core/PersonalQuickStep";
 import { IdentityStep } from "./components/core/IdentityStep";
 import { Stepper } from "./components/Stepper";
 import { ModalWrapper } from "./components/ModalWrapper";
@@ -40,7 +43,7 @@ export function VerseProfileWizardV2({
     progress,
     error,
     resetWizard,
-  } = useVerseProfileWizard(dapp);
+  } = useVerseProfileWizard();
 
   const [step, setStep] = useState(0);
   const hasPersona = personaFields.length > 0;
@@ -145,10 +148,7 @@ export function VerseProfileWizardV2({
 
             {/* ✅ Success */}
             {step === (hasPersona ? 4 : 3) && (
-              <SuccessStep
-                profile={profile}
-                onContinue={handleClose}
-              />
+              <SuccessStep profile={profile} onContinue={handleClose} />
             )}
           </motion.div>
         </AnimatePresence>

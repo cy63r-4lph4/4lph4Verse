@@ -5,21 +5,17 @@ import type { VerseProfile } from "types/verseProfile";
 import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
-import { encodeFunctionData } from "viem";
-import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
-import { useRelayer } from "./useRelayer"; // optional relayer hook
+import { ChainId, getDeployedContract } from "../index";
 
-/* -------------------------------------------------------------------------- */
-/* Hook: useVerseProfileWizard                                                */
-/* -------------------------------------------------------------------------- */
-export function useVerseProfileWizard(dapp?: string) {
+const ZERO_BYTES_32 =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+export function useVerseProfileWizard() {
   const { address } = useAccount();
-  const { data: walletClient } = useWalletClient();
   const chainId = useChainId() as ChainId;
   const config = useConfig();
-  const relayer = useRelayer();
+  const { data: walletClient } = useWalletClient();
 
-  /* ----------------------- Local State ----------------------- */
   const [profile, setProfile] = useState<VerseProfile>({
     verseId: 0,
     handle: "",
@@ -40,7 +36,6 @@ export function useVerseProfileWizard(dapp?: string) {
   >("idle");
   const [error, setError] = useState<string | null>(null);
 
-  /* ----------------------- Mutators ----------------------- */
   function updateProfile(partial: Partial<VerseProfile>) {
     setProfile((prev) => ({ ...prev, ...partial }));
   }
@@ -51,7 +46,13 @@ export function useVerseProfileWizard(dapp?: string) {
   ) {
     setProfile((prev) => ({
       ...prev,
-      personas: { ...prev.personas, [key]: { ...(prev.personas[key] || {}), ...data } },
+      personas: {
+        ...prev.personas,
+        [key]: {
+          ...(prev.personas[key] || {}),
+          ...data,
+        },
+      },
     }));
   }
 
@@ -74,22 +75,22 @@ export function useVerseProfileWizard(dapp?: string) {
     setError(null);
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* On-chain or Relayed Submission                                             */
-  /* -------------------------------------------------------------------------- */
   async function submitProfile(): Promise<boolean> {
     if (!address) {
-      setError("Please connect your wallet first.");
+      setError("Connect wallet first");
       return false;
     }
 
     const contract = getDeployedContract(chainId, "VerseProfile");
+    if (!contract) {
+      setError("VerseProfile contract missing for this chain");
+      return false;
+    }
 
     try {
       setSubmitting(true);
       setProgress("uploading");
 
-      // 1️⃣ Upload metadata to IPFS
       const { metadataCID } = await uploadProfileToPinata({
         handle: profile.handle,
         displayName: profile.displayName,
@@ -98,74 +99,84 @@ export function useVerseProfileWizard(dapp?: string) {
         extras: profile.personas,
       });
 
-      // 2️⃣ Build transaction payload
-      const encodedData = encodeFunctionData({
-        abi: contract.abi,
-        functionName: "createProfile",
-        args: [
-          profile.handle,
-          `ipfs://${metadataCID}`,
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
-      });
+      const metadataURI = `ipfs://${metadataCID}`;
 
-      /* ---------------------------------------------------------------------- */
-      /* 🪄 Gasless Flow via Relayer (if available)                             */
-      /* ---------------------------------------------------------------------- */
-      if (relayer?.isEnabled) {
+      const relayerEnabled =
+        process.env.NEXT_PUBLIC_RELAYER_ENABLED === "true";
+
+      if (relayerEnabled && walletClient) {
         setProgress("signing");
 
-        const metaTx = await relayer.buildMetaTx({
-          from: address,
-          to: contract.address,
-          data: encodedData,
-          chainId,
+        const typedData = {
+          domain: {
+            name: "VerseProfile",
+            version: "1",
+            chainId,
+            verifyingContract: contract.address,
+          },
+          types: {
+            CreateProfile: [
+              { name: "wallet", type: "address" },
+              { name: "handle", type: "string" },
+              { name: "metadataURI", type: "string" },
+            ],
+          },
+          primaryType: "CreateProfile",
+          message: {
+            wallet: address,
+            handle: profile.handle,
+            metadataURI,
+          },
+        };
+
+        const signature = await walletClient.signTypedData({
+          domain: typedData.domain,
+          types: typedData.types,
+          primaryType: "CreateProfile",
+          message: typedData.message,
         });
 
         setProgress("relaying");
 
-        const relayResult = await relayer.sendMetaTx(metaTx);
-        if (!relayResult.success) throw new Error("Relayer failed to broadcast tx");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_RELAYER_URL}/relay/profile/create`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              wallet: address,
+              handle: profile.handle,
+              metadataURI,
+              signature,
+            }),
+          }
+        );
 
-        console.log("✅ Relayer broadcasted meta-tx:", relayResult.txHash);
+        const data = await res.json();
+
+        if (!data.txHash) {
+          throw new Error(data.error || "Relayer failed");
+        }
 
         setProgress("done");
         return true;
       }
 
-      /* ---------------------------------------------------------------------- */
-      /* ⛽ Standard Direct Transaction (Fallback)                              */
-      /* ---------------------------------------------------------------------- */
       setProgress("writing");
 
       const tx = await writeContract(config, {
         address: contract.address,
         abi: contract.abi,
         functionName: "createProfile",
-        args: [
-          profile.handle,
-          `ipfs://${metadataCID}`,
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
+        args: [profile.handle, metadataURI, ZERO_BYTES_32],
       });
 
-      await waitForTransactionReceipt(config, { hash: tx, confirmations: 1 });
-
+      await waitForTransactionReceipt(config, { hash: tx });
       setProgress("done");
       return true;
     } catch (err: any) {
-      console.error("❌ Profile submission failed:", err);
-      setError(
-        progress === "uploading"
-          ? "Failed to upload profile to IPFS"
-          : progress === "signing"
-          ? "Signature failed"
-          : progress === "relaying"
-          ? "Relayer submission failed"
-          : progress === "writing"
-          ? "On-chain write failed"
-          : "Something went wrong"
-      );
+      console.error("Profile submission failed:", err);
+      setError(err.message || "Unknown error");
       return false;
     } finally {
       setSubmitting(false);
