@@ -1,70 +1,67 @@
 import { Router } from "express";
 import { coreTokenWrite } from "../services/coreToken";
-import { verifyTypedData, recoverTypedDataAddress, parseGwei } from "viem";
-import { permitTypedData } from "../utils/permitTypedData";
-
+import { verifyTypedData, recoverTypedDataAddress } from "viem";
+import { buildPermitTypedData } from "../utils/permitTypedData";
+import { keccak256 } from "viem";
+import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
   try {
-    const { owner, spender, value, nonce, deadline, signature } = req.body;
-    if (!owner || !spender || !value || !signature) {
-      return res.status(400).send({ error: "Invalid parameters" });
+    const { owner, spender, value, nonce, deadline, signature, chainId } = req.body;
+
+    if (!owner || !spender || !value || !signature || chainId === undefined) {
+      return res.status(400).send({ error: "Missing fields" });
     }
 
-    // Verify signature structure
-   const isValid = await verifyTypedData({
-  ...permitTypedData,
-  primaryType: "Permit",
-  message: { owner, spender, value, nonce, deadline },
-  address: owner,
-  signature
-});
+    const typedData = buildPermitTypedData(chainId);
 
+    const message = { owner, spender, value, nonce, deadline };
 
-    if (!isValid) {
-      return res.status(401).send({ error: "Invalid signature format" });
-    }
-
-    // Recover signer and make sure they match owner
-    const recoveredAddress = await recoverTypedDataAddress({
-      ...permitTypedData,
+    const valid = await verifyTypedData({
+      ...typedData,
       primaryType: "Permit",
-      message: { owner, spender, value, nonce, deadline },
-      signature
+      message,
+      address: owner,
+      signature,
     });
+    if (!valid) return res.status(401).send({ error: "Invalid signature" });
 
-    if (recoveredAddress.toLowerCase() !== owner.toLowerCase()) {
+    const recovered = await recoverTypedDataAddress({
+      ...typedData,
+      primaryType: "Permit",
+      message,
+      signature,
+    });
+    if (recovered.toLowerCase() !== owner.toLowerCase()) {
       return res.status(401).send({ error: "Signature mismatch" });
     }
 
-    // Split signature into v,r,s for EIP-2612
-    const splitSig = (sig: `0x${string}`) => {
-      const r = sig.slice(0, 66);
-      const s = `0x${sig.slice(66, 130)}`;
-      const v = Number(`0x${sig.slice(130, 132)}`);
-      return { v, r, s };
-    };
+    const hash = keccak256(signature as `0x${string}`);
+    if (isSignatureUsed(hash))
+      return res.status(409).send({ error: "Signature reused" });
+    markSignatureUsed(hash);
 
-    const { v, r, s } = splitSig(signature);
+    // extract signature parts
+    const r = signature.slice(0, 66);
+    const s = `0x${signature.slice(66, 130)}`;
+    const v = Number(`0x${signature.slice(130, 132)}`);
 
-    // Send permit transaction from relayer wallet
-const txHash = await coreTokenWrite("permit", [
-  owner,
-  spender,
-  value,
-  deadline,
-  v,
-  r,
-  s,
-]);
+    const txHash = await coreTokenWrite(chainId, "permit", [
+      owner,
+      spender,
+      value,
+      deadline,
+      v,
+      r,
+      s,
+    ]);
 
-return res.send({ txHash });
-
+    res.send({ txHash });
   } catch (err: any) {
-    console.error(err);
-    return res.status(500).send({ error: err.message });
+    console.error("permit relay failed:", err);
+    res.status(500).send({ error: err.message });
   }
 });
 
