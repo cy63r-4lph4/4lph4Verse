@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { verifyTypedData, recoverTypedDataAddress, keccak256 } from "viem";
 import { verseProfileWrite } from "../services/verseProfile";
-import { buildProfileTypedData } from "../utils/profileTypedData";
+import { buildProfileTypedData } from "@verse/sdk/utils/builders/profileTypedData";
 import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
 import { getChainConfig } from "../config/chains";
 

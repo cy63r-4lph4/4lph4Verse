@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { coreTokenWrite } from "../services/coreToken";
 import { verifyTypedData, recoverTypedDataAddress } from "viem";
-import { buildPermitTypedData } from "../utils/permitTypedData";
+import { buildPermitTypedData } from "@verse/sdk/utils/builders/permitTypedData";
 import { keccak256 } from "viem";
 import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
 

@@ -9,5 +9,9 @@
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../packages/sdk/utils/builders/permitTypedData.ts",
+    "../../packages/sdk/utils/builders/profileTypedData.ts"
+  ]
 }

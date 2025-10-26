@@ -1,4 +1,4 @@
-import { ChainId, getDeployedContract } from "@verse/sdk";
+import { ChainId, getDeployedContract } from "../contract/deployedContracts";
 
 export function buildPermitTypedData(chainId: ChainId) {
   const CoreToken = getDeployedContract(chainId, "CoreToken");

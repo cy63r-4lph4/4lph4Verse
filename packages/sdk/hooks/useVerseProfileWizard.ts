@@ -6,6 +6,8 @@ import { uploadProfileToPinata } from "@verse/services/pinata";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { ChainId, getDeployedContract } from "../index";
+import { buildCreateProfileTypedData } from "@verse/sdk";
+
 
 const ZERO_BYTES_32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -149,6 +151,7 @@ export function useVerseProfileWizard() {
               handle: profile.handle,
               metadataURI,
               signature,
+              chainId
             }),
           }
         );
