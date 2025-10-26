@@ -1,30 +1,31 @@
-import { ChainId, getDeployedContract } from "@verse/sdk";
-import { createWalletClient, http } from "viem";
+import { createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { celo } from "viem/chains";
+import { getChainConfig } from "../config/chains";
+import { ChainId, getDeployedContract } from "@verse/sdk";
 
-const account = privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY as `0x${string}`);
-const chainId = Number(process.env.CHAIN_ID) as ChainId;
+const account = privateKeyToAccount(
+  process.env.RELAYER_PRIVATE_KEY as `0x${string}`
+);
 
-const coreToken = getDeployedContract(chainId, "CoreToken");
-const coreTokenAddress = coreToken.address;
-const coreTokenAbi = coreToken.abi;
+export async function coreTokenWrite(
+  chainId: ChainId,
+  functionName: "permit",
+  args: readonly unknown[]
+) {
+  const { chain, transport } = getChainConfig(chainId);
+  const token = getDeployedContract(chainId, "CoreToken");
 
-const client = createWalletClient({
-  account,
-  chain: celo,
-  transport: http(process.env.RPC_URL),
-});
+  const client = createWalletClient({
+    account,
+    chain,
+    transport,
+  });
 
-export const coreTokenWrite = async (
-  functionName: string,
-  args: unknown[]
-) => {
-  return await client.writeContract({
-    abi: coreTokenAbi,
-    address: coreTokenAddress,
+  return client.writeContract({
+    abi: token.abi,
+    address: token.address,
     functionName,
     args,
     account,
   });
-};
+}
