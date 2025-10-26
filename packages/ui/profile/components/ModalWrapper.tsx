@@ -29,7 +29,7 @@ export function ModalWrapper({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex justify-center sm:items-center" // no vertical centering on mobile
+          className="fixed inset-0 z-50 flex justify-center sm:items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -45,7 +45,7 @@ export function ModalWrapper({
 
           {/* 🌐 Desktop Modal */}
           <motion.div
-            className="hidden sm:block relative z-10 w-full max-w-3xl my-auto rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-800/80 p-5 sm:p-6 shadow-2xl overflow-hidden"
+            className="hidden sm:block relative z-10 w-full max-w-3xl my-auto rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-800/80 p-5 sm:p-6 shadow-2xl overflow-y-auto"
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 40, opacity: 0, scale: 0.98 }}

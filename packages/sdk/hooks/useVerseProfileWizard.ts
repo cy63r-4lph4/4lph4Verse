@@ -103,6 +103,7 @@ export function useVerseProfileWizard() {
 
       const relayerEnabled =
         process.env.NEXT_PUBLIC_RELAYER_ENABLED === "true";
+        console.log(relayerEnabled)
 
       if (relayerEnabled && walletClient) {
         setProgress("signing");

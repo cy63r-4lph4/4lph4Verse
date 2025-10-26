@@ -2,7 +2,9 @@
 import { ChainId, getDeployedContract } from "@verse/sdk";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { celo } from "viem/chains";
+import { celoSepolia } from "viem/chains";
+
+
 
 const account = privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY as `0x${string}`);
 const chainId = Number(process.env.CHAIN_ID) as ChainId;
@@ -14,7 +16,7 @@ const verseProfileAbi = vp.abi;
 
 const client = createWalletClient({
   account,
-  chain: celo,
+  chain: celoSepolia,
   transport: http(process.env.RPC_URL),
 });
 
