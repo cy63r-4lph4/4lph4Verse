@@ -1,8 +1,7 @@
-// apps/relayer/src/services/verseProfile.ts
 import { createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { getChainConfig, getContract } from "../config/chains";
-import { ChainId } from "@verse/sdk";
+import { getChainConfig } from "../config/chains";
+import { ChainId, getDeployedContract } from "@verse/sdk";
 
 const account = privateKeyToAccount(
   process.env.RELAYER_PRIVATE_KEY as `0x${string}`
@@ -13,8 +12,11 @@ export async function verseProfileWrite(
   functionName: "createProfile",
   args: readonly unknown[]
 ) {
+  // ✅ configure chain & rpc
   const { chain, transport } = getChainConfig(chainId);
-  const contract = getContract(chainId, "VerseProfile");
+
+  // ✅ always fetch correct contract for this chain
+  const contract = getDeployedContract(chainId, "VerseProfile");
 
   const client = createWalletClient({
     account,
