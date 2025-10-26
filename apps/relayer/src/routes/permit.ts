@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCoreTokenClient } from "../services/coreToken";
+import { coreTokenWrite } from "../services/coreToken";
 import { verifyTypedData, recoverTypedDataAddress, parseGwei } from "viem";
 import { permitTypedData } from "../utils/permitTypedData";
 
@@ -50,15 +50,18 @@ router.post("/", async (req, res) => {
     const { v, r, s } = splitSig(signature);
 
     // Send permit transaction from relayer wallet
-    const contract = getCoreTokenClient();
-    const tx = await contract.write.permit(
-      [owner, spender, value, deadline, v, r, s],
-      {
-        gas: parseGwei("20")
-      }
-    );
+const txHash = await coreTokenWrite("permit", [
+  owner,
+  spender,
+  value,
+  deadline,
+  v,
+  r,
+  s,
+]);
 
-    return res.send({ txHash: tx });
+return res.send({ txHash });
+
   } catch (err: any) {
     console.error(err);
     return res.status(500).send({ error: err.message });
