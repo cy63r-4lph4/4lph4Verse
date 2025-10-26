@@ -8,7 +8,6 @@ const account = privateKeyToAccount(
   process.env.RELAYER_PRIVATE_KEY as `0x${string}`
 );
 
-// ✅ Now takes chainId argument
 export async function verseProfileWrite(
   chainId: ChainId,
   functionName: "createProfile",

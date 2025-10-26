@@ -1,4 +1,4 @@
-import { ChainId, deployedContracts } from "@verse/sdk";
+import { ChainId } from "@verse/sdk";
 import {
   celo,
   baseSepolia,
@@ -6,11 +6,11 @@ import {
 } from "viem/chains";
 import { http } from "viem";
 
-// ✅ Map supported chain configs
+// ✅ Map supported chains
 export const supportedChains: Record<ChainId, any> = {
-  11142220: celo,       
-  84532: baseSepolia,   
-  4202: liskSepolia,    
+  11142220: celo,
+  84532: baseSepolia,
+  4202: liskSepolia,
 };
 
 // ✅ RPC URLs per chain (loaded from env)
@@ -24,18 +24,6 @@ export const rpcUrls: Record<ChainId, string> = {
 export function getChainConfig(chainId: ChainId) {
   const chain = supportedChains[chainId];
   const rpcUrl = rpcUrls[chainId];
-
   if (!chain || !rpcUrl) throw new Error("Unsupported chain");
-
-  return {
-    chain,
-    transport: http(rpcUrl),
-  };
-}
-
-// ✅ Helper: get contract info for a given chain
-export function getContract(chainId: ChainId, name: keyof typeof deployedContracts[11142220]) {
-  const chainContracts = deployedContracts[chainId];
-  if (!chainContracts || !chainContracts[name]) throw new Error("Contract not deployed on chain");
-  return chainContracts[name];
+  return { chain, transport: http(rpcUrl) };
 }
