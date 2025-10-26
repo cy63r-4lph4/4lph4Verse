@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { verifyTypedData, recoverTypedDataAddress, keccak256 } from "viem";
 import { verseProfileWrite } from "../services/verseProfile";
-import { profileTypedData } from "../utils/profileTypedData";
+import { buildProfileTypedData } from "../utils/profileTypedData";
 import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
 import { getChainConfig } from "../config/chains";
 
@@ -27,10 +27,12 @@ router.post("/", async (req, res) => {
       return res.status(400).send({ error: "Invalid handle format" });
     }
     const { chain } = getChainConfig(chainId); 
+    const typedData = buildProfileTypedData(chainId);
+
 
     // 1) verify typed data validity against expected signer
     const isValid = await verifyTypedData({
-      ...profileTypedData,
+      ...typedData,
       primaryType: "CreateProfile",
       message: { wallet, handle, metadataURI },
       address: wallet,
@@ -42,7 +44,7 @@ router.post("/", async (req, res) => {
 
     // 2) recover signer and confirm it matches wallet
     const recovered = await recoverTypedDataAddress({
-      ...profileTypedData,
+      ...typedData,
       primaryType: "CreateProfile",
       message: { wallet, handle, metadataURI },
       signature,
@@ -59,7 +61,7 @@ router.post("/", async (req, res) => {
     // mark signature used BEFORE sending tx to avoid double-send race
     markSignatureUsed(signatureHash);
     // 3) write on-chain using relayer
-    const txHash = await verseProfileWrite("createProfile", [
+    const txHash = await verseProfileWrite(chainId,"createProfile", [
       handle,
       metadataURI,
       ZERO_BYTES_32,
