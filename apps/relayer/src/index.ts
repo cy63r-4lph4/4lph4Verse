@@ -4,7 +4,9 @@ import cors from "cors";
 import { createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { celo } from "viem/chains";
-import permitRoute from "./routes/permit"; // ✅ add this
+import permitRoute from "./routes/permit";
+import profileCreateRoute from "./routes/profileCreate"; 
+
 
 const app = express();
 app.use(cors());
@@ -39,6 +41,8 @@ app.post("/relay/ping", async (req, res) => {
 
 // ✅ register the permit route
 app.use("/relay/permit", permitRoute);
+app.use("/relay/profile/create", profileCreateRoute);
+
 
 app.listen(process.env.PORT, () =>
   console.log(`Relayer running on port ${process.env.PORT}`)
