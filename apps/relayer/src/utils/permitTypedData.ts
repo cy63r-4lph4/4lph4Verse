@@ -1,10 +1,13 @@
+import { ChainId, deployedContracts } from "@verse/sdk";
+
+const chainId = (process.env.CHAIN_ID || 11142220) as ChainId;
 
 export const permitTypedData = {
   domain: {
-    name: "CoreToken",
+    name: "Alph4 Core",
     version: "1",
-    chainId: 44787, 
-    verifyingContract: process.env.CORE_TOKEN
+    chainId,
+    verifyingContract: deployedContracts[chainId].CoreToken.address
   },
   types: {
     Permit: [
