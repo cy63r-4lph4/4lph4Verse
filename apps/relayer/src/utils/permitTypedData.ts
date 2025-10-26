@@ -1,6 +1,6 @@
 import { ChainId, deployedContracts } from "@verse/sdk";
 
-const chainId = (process.env.CHAIN_ID || 11142220) as ChainId;
+const chainId = Number(process.env.CHAIN_ID || 11142220) as ChainId;
 
 export const permitTypedData = {
   domain: {

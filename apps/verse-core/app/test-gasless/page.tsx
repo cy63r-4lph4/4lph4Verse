@@ -3,6 +3,7 @@
 import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { useState } from "react";
 import { ChainId, getDeployedContract } from "@verse/sdk";
+import { PrimaryButton } from "@verse/ui/profile/components/ui/PrimaryButton";
 
 export default function TestGaslessPermit() {
   const { address } = useAccount();
@@ -100,13 +101,13 @@ export default function TestGaslessPermit() {
         placeholder="Amount of CØRE"
       />
 
-      <button
+      <PrimaryButton
         onClick={signPermit}
         className="px-4 py-2 bg-purple-600 text-white rounded"
         disabled={loading}
       >
         {loading ? "Sending..." : "Sign and Relay Permit"}
-      </button>
+      </PrimaryButton>
 
       {result && <p className="text-sm break-all">{result}</p>}
     </div>
