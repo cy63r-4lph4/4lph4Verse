@@ -5,6 +5,7 @@ import { Loader2, Wand2 } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { AvatarPreview } from "../ui/AvatarPreview";
 import type { VerseProfile } from "@verse/sdk/types";
+import TxErrorCard from "../../../components/ErrorCard";
 
 type ReviewStepProps = {
   profile: VerseProfile;
@@ -78,9 +79,11 @@ export function ReviewStep({
             )}
 
             {error && (
-              <div className="text-sm text-red-400 border border-red-500/30 bg-red-500/10 rounded-md px-3 py-2">
-                {error}
-              </div>
+              <TxErrorCard
+                error={error}
+                expectedChain="Celo"
+                onRetry={onSubmit}
+              />
             )}
           </div>
 
