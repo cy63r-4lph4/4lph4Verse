@@ -1,8 +1,9 @@
 // apps/relayer/src/routes/profileCreate.ts
 import { Router } from "express";
-import { verifyTypedData, recoverTypedDataAddress } from "viem";
+import { verifyTypedData, recoverTypedDataAddress, keccak256 } from "viem";
 import { verseProfileWrite } from "../services/verseProfile";
 import { profileTypedData } from "../utils/profileTypedData";
+import { isSignatureUsed, markSignatureUsed } from "../utils/replayStore";
 
 const router = Router();
 
@@ -48,6 +49,13 @@ router.post("/", async (req, res) => {
       return res.status(401).send({ error: "Signature mismatch" });
     }
 
+    const signatureHash = keccak256(signature as `0x${string}`);
+    if (isSignatureUsed(signatureHash)) {
+      return res.status(409).send({ error: "Signature already used" });
+    }
+
+    // mark signature used BEFORE sending tx to avoid double-send race
+    markSignatureUsed(signatureHash);
     // 3) write on-chain using relayer
     const txHash = await verseProfileWrite("createProfile", [
       handle,
