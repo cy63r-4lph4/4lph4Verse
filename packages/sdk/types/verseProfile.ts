@@ -7,7 +7,7 @@ export interface VerseProfile {
   verseId: number;                 
   handle: string;                     // @cy63r_4lph4
   displayName: string;                // Cy63r_4lph4~🐉
-  avatar?: string;                    // IPFS / CDN link
+  avatar?: string|File;                    // IPFS / CDN link
   banner?: string;                    // Profile banner image
   bio?: string;                       // Universal bio / creed
   wallet: string;                     // Primary wallet
