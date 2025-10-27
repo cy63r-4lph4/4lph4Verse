@@ -45,7 +45,7 @@ export function ModalWrapper({
 
           {/* 🌐 Desktop Modal */}
           <motion.div
-            className="hidden sm:block relative z-10 w-full max-w-3xl my-auto rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-800/80 p-5 sm:p-6 shadow-2xl overflow-y-auto"
+            className="hidden sm:block relative z-10 w-full max-w-3xl max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-800/80 p-5 sm:p-6 shadow-2xl"
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 40, opacity: 0, scale: 0.98 }}

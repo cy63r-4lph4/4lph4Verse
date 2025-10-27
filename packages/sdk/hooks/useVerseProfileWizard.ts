@@ -324,7 +324,6 @@ export function useVerseProfileWizard() {
     progress,
     error,
     canRetry,
-    // expose CIDs if needed for debug
     avatarCID,
     metadataCID,
   };
