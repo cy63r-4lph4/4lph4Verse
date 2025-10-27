@@ -23,6 +23,10 @@ export interface VerseProfile {
     echain?: EChainPersona;
     [key: string]: any; // for future realms
   };
+
+    // UI-only fields (not sent on-chain)
+  avatarPreview?: string;             // blob preview for chosen File
+  previousAvatarURL?: string; 
 }
 
 /* -------------------------------------------------------------------------- */
