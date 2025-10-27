@@ -15,7 +15,9 @@ type IdentityStepProps = {
   profile: VerseProfile;
   updateProfile: (data: Partial<VerseProfile>) => void;
   onNext: () => void;
+  setAvatarFromFile: (file: File | null) => void; 
 };
+
 
 /* -------------------------------------------------------------------------- */
 /* Component                                                                  */
@@ -24,6 +26,7 @@ export function IdentityStep({
   profile,
   updateProfile,
   onNext,
+  setAvatarFromFile,
 }: IdentityStepProps) {
   const { status, isAvailable } = useCheckHandle(profile.handle);
 
@@ -122,9 +125,10 @@ export function IdentityStep({
           {/* Avatar */}
           <div>
             <AvatarPicker
-              value={profile.avatar || ""}
-              onChange={(url) => updateProfile({ avatar: url })}
-            />
+  preview={profile.avatarPreview}
+  onSelectFile={(file) => setAvatarFromFile(file)}
+/>
+
           </div>
         </div>
 

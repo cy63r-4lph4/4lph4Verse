@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  MapPin,
-  Star,
-  Flame,
-  Hammer,
-  ArrowLeft,
-  Edit3,
-} from "lucide-react";
+import { MapPin, Star, Flame, Hammer, ArrowLeft, Edit3 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Badge } from "@verse/ui/components/ui/badge";
@@ -16,21 +9,26 @@ import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
-
-
-
-
-
-
-export default function WorkerProfileLayout({ profile }: { profile?: VerseProfile }) {
-
+export default function WorkerProfileLayout({
+  profile,
+}: {
+  profile: VerseProfile;
+}) {
   const [expanded, setExpanded] = useState(false);
   const worker = profile ? profile.personas?.hirecore?.roles.worker : {};
   if (worker === undefined) {
-    return <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
         <p>This profile is private.</p>
-      </div>;
+      </div>
+    );
   }
+  const avatarSrc =
+    typeof profile.avatar === "string"
+      ? profile.avatar
+      : profile.avatar
+        ? URL.createObjectURL(profile.avatar)
+        : "/placeholder-soul.png";
 
   return (
     <motion.div
@@ -77,7 +75,7 @@ export default function WorkerProfileLayout({ profile }: { profile?: VerseProfil
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center">
           <div className="w-32 h-32 rounded-full overflow-hidden border-[3px] border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.5)]">
             <Image
-              src={profile?.avatar??"/placeholder-soul.png"}
+              src={avatarSrc}
               alt="Avatar"
               width={128}
               height={128}
@@ -123,11 +121,19 @@ export default function WorkerProfileLayout({ profile }: { profile?: VerseProfil
               <h2 className="text-lg font-semibold text-emerald-300 flex items-center gap-2">
                 <Hammer className="w-5 h-5" /> The Forge
               </h2>
-              <p className="text-gray-400 text-sm mt-2 leading-relaxed">{worker.bio}</p>
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+                {worker.bio}
+              </p>
               <div className="mt-4 space-y-2 text-gray-300">
-                <p>🏆 Completed Tasks: <b>{worker.completedTasks}</b></p>
-                <p>💰 Earnings: <b>{worker.earnings} CØRE</b></p>
-                <p>⭐ Rating: <b>{worker.rating}</b></p>
+                <p>
+                  🏆 Completed Tasks: <b>{worker.completedTasks}</b>
+                </p>
+                <p>
+                  💰 Earnings: <b>{worker.earnings} CØRE</b>
+                </p>
+                <p>
+                  ⭐ Rating: <b>{worker.rating}</b>
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -178,34 +184,38 @@ export default function WorkerProfileLayout({ profile }: { profile?: VerseProfil
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-xl text-white font-orbitron mb-5">Active Applications</h2>
+          <h2 className="text-xl text-white font-orbitron mb-5">
+            Active Applications
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {worker.applications?.slice(0, expanded ? worker.applications.length : 3).map((job) => (
-              <Card
-                key={job.id}
-                className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all"
-              >
-                <CardContent className="p-4">
-                  <h3 className="text-white font-semibold">{job.title}</h3>
-                  <p className="text-sm text-gray-400 mb-2">
-                    Budget: {job.budget} CØRE
-                  </p>
-                  <Badge
-                    className={`${
-                      job.status === "completed"
-                        ? "bg-green-500/20 text-green-400 border-green-500/30"
-                        : job.status === "accepted"
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                        : job.status === "pending"
-                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                        : "bg-red-500/20 text-red-400 border-red-500/30"
-                    } border`}
-                  >
-                    {job.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
+            {worker.applications
+              ?.slice(0, expanded ? worker.applications.length : 3)
+              .map((job) => (
+                <Card
+                  key={job.id}
+                  className="bg-white/5 border border-white/10 hover:border-emerald-400/20 backdrop-blur-md transition-all"
+                >
+                  <CardContent className="p-4">
+                    <h3 className="text-white font-semibold">{job.title}</h3>
+                    <p className="text-sm text-gray-400 mb-2">
+                      Budget: {job.budget} CØRE
+                    </p>
+                    <Badge
+                      className={`${
+                        job.status === "completed"
+                          ? "bg-green-500/20 text-green-400 border-green-500/30"
+                          : job.status === "accepted"
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                            : job.status === "pending"
+                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                              : "bg-red-500/20 text-red-400 border-red-500/30"
+                      } border`}
+                    >
+                      {job.status}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
           </div>
 
           {worker.applications && worker.applications.length > 3 && (
@@ -223,7 +233,9 @@ export default function WorkerProfileLayout({ profile }: { profile?: VerseProfil
 
         {/* Activity Log */}
         <motion.div className="mt-20 space-y-3">
-          <h2 className="text-xl text-white font-orbitron mb-4">Forge Activity</h2>
+          <h2 className="text-xl text-white font-orbitron mb-4">
+            Forge Activity
+          </h2>
           {[
             "Completed ‘CØRE Integration UI’ with 5⭐ review",
             "Claimed 180 CØRE from ‘Vault Marketplace’ contract",

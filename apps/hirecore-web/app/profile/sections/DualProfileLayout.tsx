@@ -73,6 +73,13 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
 
   // Dynamic hue based on role
   const hue = active === "worker" ? "emerald" : "indigo";
+  const avatarSrc =
+  typeof profile.avatar === "string"
+    ? profile.avatar
+    : profile.avatar
+    ? URL.createObjectURL(profile.avatar)
+    : "/placeholder-soul.png";
+
 
   return (
     <motion.div
@@ -145,7 +152,7 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
           >
             {profile.avatar ? (
               <Image
-                src={profile.avatar}
+                src={avatarSrc}
                 width={128}
                 height={128}
                 alt="Avatar"

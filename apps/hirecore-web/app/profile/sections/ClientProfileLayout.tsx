@@ -27,6 +27,12 @@ export default function ClientProfileLayout({
   if (hirer === undefined) {
     return <div>Client profile not found.</div>;
   }
+  const avatarSrc =
+    typeof profile.avatar === "string"
+      ? profile.avatar
+      : profile.avatar
+        ? URL.createObjectURL(profile.avatar)
+        : "/placeholder-soul.png";
 
   return (
     <motion.div
@@ -65,7 +71,7 @@ export default function ClientProfileLayout({
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 text-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           <div className="w-32 h-32 rounded-full overflow-hidden border-[3px] border-indigo-400/70 shadow-[0_0_25px_rgba(99,102,241,0.5)]">
             <Image
-              src={profile.avatar! || "/placeholder-soul.png"}
+              src={avatarSrc}
               width={128}
               height={128}
               alt="Client avatar"

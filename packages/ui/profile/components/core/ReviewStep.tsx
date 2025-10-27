@@ -13,7 +13,14 @@ type ReviewStepProps = {
   onBack: () => void;
   onSubmit: () => Promise<void>;
   submitting: boolean;
-  progress?: "idle" | "uploading" | "signing" | "relaying" | "writing" | "done";
+  progress?:
+    | "idle"
+    | "uploading-avatar"
+    | "uploading-metadata"
+    | "signing"
+    | "relaying"
+    | "writing"
+    | "done";
   error?: string | null;
 };
 

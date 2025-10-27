@@ -19,7 +19,7 @@ import {
   saveCids,
   clearCids,
   type ProfileCidCache,
-} from "@/utils/profileDraft";
+} from "../utils/profile/profileDraft";
 
 const ZERO_BYTES_32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -102,7 +102,7 @@ export function useVerseProfileWizard() {
   function updateProfile(partial: Partial<VerseProfile>) {
     // If avatar changes, clear dependent CIDs
     if (Object.prototype.hasOwnProperty.call(partial, "avatar")) {
-      setCidState((prev) => ({ ...prev, avatarCID: null, metadataCID: null }));
+      setCidState((prev:{}) => ({ ...prev, avatarCID: null, metadataCID: null }));
     }
     // If any core metadata field changes after metadataCID exists, clear metadataCID
     const touchesMetadata =
@@ -111,7 +111,7 @@ export function useVerseProfileWizard() {
       "bio" in partial ||
       "personas" in partial;
     if (touchesMetadata && metadataCID) {
-      setCidState((prev) => ({ ...prev, metadataCID: null }));
+      setCidState((prev:{}) => ({ ...prev, metadataCID: null }));
     }
     setProfile((prev) => ({ ...prev, ...partial }));
   }
@@ -120,7 +120,7 @@ export function useVerseProfileWizard() {
     if (!file) {
       // removed
       if (profile.avatarPreview) URL.revokeObjectURL(profile.avatarPreview);
-      updateProfile({ avatar: null, avatarPreview: undefined });
+      updateProfile({ avatar: undefined, avatarPreview: undefined });
       return;
     }
     // new upload
@@ -193,11 +193,11 @@ export function useVerseProfileWizard() {
           setProgress("uploading-avatar");
           const { cid } = await uploadFileToPinata(profile.avatar, "avatar");
           finalAvatarCID = cid;
-          setCidState((prev) => ({ ...prev, avatarCID: cid, metadataCID: null }));
+          setCidState((prev:{}) => ({ ...prev, avatarCID: cid, metadataCID: null }));
         } else if (typeof profile.avatar === "string" && profile.avatar.startsWith("ipfs://")) {
           // already IPFS
           finalAvatarCID = profile.avatar.replace("ipfs://", "");
-          setCidState((prev) => ({ ...prev, avatarCID: finalAvatarCID }));
+          setCidState((prev:{}) => ({ ...prev, avatarCID: finalAvatarCID }));
         }
         // If avatar is empty string or http url fallback, just omit avatar in metadata
       }
@@ -217,7 +217,7 @@ export function useVerseProfileWizard() {
         });
         const { cid } = await uploadProfileMetadata(metadata, profile.handle);
         finalMetadataCID = cid;
-        setCidState((prev) => ({ ...prev, metadataCID: cid }));
+        setCidState((prev:{}) => ({ ...prev, metadataCID: cid }));
       }
       const metadataURI = `ipfs://${finalMetadataCID}`;
 
