@@ -96,7 +96,7 @@ export function ReviewStep({
 
           {/* Avatar Preview */}
           <div>
-            <AvatarPreview value={profile.avatar || ""} />
+            <AvatarPreview value={profile.avatarPreview || ""} />
           </div>
         </div>
 
@@ -117,7 +117,11 @@ export function ReviewStep({
             {submitting ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {progress === "uploading" && "Uploading to IPFS…"}
+                {progress === "uploading-avatar" && "Uploading avatar…"}
+                {progress === "uploading-metadata" &&
+                  "Uploading profile metadata…"}
+                {progress === "signing" && "Awaiting signature…"}
+                {progress === "relaying" && "Relaying transaction…"}
                 {progress === "writing" && "Writing on-chain…"}
                 {progress === "done" && "Finalizing…"}
                 {progress === "idle" && "Submitting…"}
