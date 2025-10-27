@@ -39,6 +39,7 @@ export function VerseProfileWizardV2({
     updateProfile,
     updatePersona,
     submitProfile,
+    setAvatarFromFile,
     submitting,
     progress,
     error,
@@ -116,6 +117,7 @@ export function VerseProfileWizardV2({
                 profile={profile}
                 updateProfile={updateProfile}
                 onNext={goNext}
+                setAvatarFromFile={setAvatarFromFile}
               />
             )}
 
