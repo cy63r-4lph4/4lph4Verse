@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import {  useState } from "react";
 import { Briefcase, UserCog, MapPin } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";

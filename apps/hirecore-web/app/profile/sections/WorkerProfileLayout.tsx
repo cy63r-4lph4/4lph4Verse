@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Badge } from "@verse/ui/components/ui/badge";
 import { Card, CardContent } from "@verse/ui/components/ui/card";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 const PRECOMPUTED_PARTICLES = Array.from({ length: 25 }, () => ({

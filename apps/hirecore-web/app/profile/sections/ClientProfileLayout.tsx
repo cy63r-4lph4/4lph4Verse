@@ -13,7 +13,7 @@ import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { Badge } from "@verse/ui/components/ui/badge";
-import { useMemo, useState } from "react";
+import {  useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 
