@@ -33,18 +33,15 @@ export function ApplyBidDialog({
   const [message, setMessage] = useState("");
   const [bidAmount, setBidAmount] = useState(task.budget);
   const [estimatedTime, setEstimatedTime] = useState("");
-  const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (containerSelector) {
-      const el = document.querySelector(
-        containerSelector
-      ) as HTMLElement | null;
-      setContainer(el ?? document.body);
-    } else {
-      setContainer(document.body);
-    }
-  }, [containerSelector]);
+  const container =
+    typeof window !== "undefined"
+      ? containerSelector
+        ? (document.querySelector(containerSelector) as HTMLElement | null)
+        : document.body
+      : null;
+
+  if (!container) return null;
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -70,8 +67,6 @@ export function ApplyBidDialog({
       toast.error("❌ Transaction failed — check your wallet or network.");
     }
   };
-
-  if (!container) return null; // ✅ avoid SSR crash
 
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
