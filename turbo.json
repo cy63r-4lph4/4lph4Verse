@@ -13,7 +13,8 @@
        "NEXT_PUBLIC_GATEWAY_URL",
         "PINATA_API_KEY",
         "PINATA_API_SECRET",
-        "PINATA_JWT"
+        "PINATA_JWT",
+        "PINATA_SECRET_KEY"
 
       ]
     },

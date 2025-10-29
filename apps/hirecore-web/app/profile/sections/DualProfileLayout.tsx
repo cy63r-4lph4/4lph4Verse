@@ -1,12 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import {
-  Briefcase,
-  UserCog,
-  MapPin
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Briefcase, UserCog, MapPin } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Badge } from "@verse/ui/components/ui/badge";
@@ -65,7 +61,11 @@ const mockProfile = {
 // ────────────────────────────────────────────────────────────────
 // Main Component
 // ────────────────────────────────────────────────────────────────
-export default function DualProfileLayout({ profile }: { profile: VerseProfile }) {
+export default function DualProfileLayout({
+  profile,
+}: {
+  profile: VerseProfile;
+}) {
   const [active, setActive] = useState<"worker" | "hirer">("worker");
   const worker = profile.personas?.hirecore?.roles.worker;
   const hirer = profile.personas?.hirecore?.roles.hirer;
@@ -74,12 +74,20 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
   // Dynamic hue based on role
   const hue = active === "worker" ? "emerald" : "indigo";
   const avatarSrc =
-  typeof profile.avatar === "string"
-    ? profile.avatar
-    : profile.avatar
-    ? URL.createObjectURL(profile.avatar)
-    : "/placeholder-soul.png";
+    typeof profile.avatar === "string"
+      ? profile.avatar
+      : profile.avatar
+        ? URL.createObjectURL(profile.avatar)
+        : "/placeholder-soul.png";
 
+  const particles = useMemo(() => {
+    return Array.from({ length: 25 }, () => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 5 + Math.random() * 5,
+      delay: Math.random() * 3,
+    }));
+  }, []);
 
   return (
     <motion.div
@@ -117,29 +125,27 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
         />
 
         {/* Particles */}
-        <motion.div className="absolute inset-0 opacity-40">
-          {[...Array(25)].map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute w-[2px] h-[2px] rounded-full ${
-                active === "worker" ? "bg-emerald-400/40" : "bg-indigo-400/40"
-              }`}
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                y: [0, -10, 0],
-                opacity: [0.3, 1, 0.3],
-              }}
-              transition={{
-                duration: 5 + Math.random() * 5,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-              }}
-            />
-          ))}
-        </motion.div>
+<motion.div className="absolute inset-0 opacity-40">
+  {particles.map((p, i) => (
+    <motion.div
+      key={i}
+      className={`absolute w-[2px] h-[2px] rounded-full ${
+        active === "worker" ? "bg-emerald-400/40" : "bg-indigo-400/40"
+      }`}
+      style={{
+        top: p.top,
+        left: p.left,
+      }}
+      animate={{ y: [0, -10, 0], opacity: [0.3, 1, 0.3] }}
+      transition={{
+        duration: p.duration,
+        repeat: Infinity,
+        delay: p.delay,
+      }}
+    />
+  ))}
+</motion.div>
+
 
         {/* Identity Info */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center">
@@ -221,21 +227,33 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
               </p>
 
               <div className="flex flex-col gap-2 mt-4 text-gray-300">
-               {active === "worker" && worker && (
-  <>
-    <p>🏆 Completed Tasks: <b>{worker.completedTasks}</b></p>
-    <p>💰 Earnings: <b>{worker.earnings} CØRE</b></p>
-    <p>⭐ Rating: <b>{worker.rating}</b></p>
-  </>
-)}
+                {active === "worker" && worker && (
+                  <>
+                    <p>
+                      🏆 Completed Tasks: <b>{worker.completedTasks}</b>
+                    </p>
+                    <p>
+                      💰 Earnings: <b>{worker.earnings} CØRE</b>
+                    </p>
+                    <p>
+                      ⭐ Rating: <b>{worker.rating}</b>
+                    </p>
+                  </>
+                )}
 
-{active === "hirer" && hirer && (
-  <>
-    <p>📋 Posted Tasks: <b>{hirer.postedTasks}</b></p>
-    <p>💳 Total Spent: <b>{hirer.totalSpent} CØRE</b></p>
-    <p>🧩 Active Hires: <b>{hirer.activeHires}</b></p>
-  </>
-)}
+                {active === "hirer" && hirer && (
+                  <>
+                    <p>
+                      📋 Posted Tasks: <b>{hirer.postedTasks}</b>
+                    </p>
+                    <p>
+                      💳 Total Spent: <b>{hirer.totalSpent} CØRE</b>
+                    </p>
+                    <p>
+                      🧩 Active Hires: <b>{hirer.activeHires}</b>
+                    </p>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -249,7 +267,10 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
                 {active === "worker" ? "Core Skills" : "Focus Areas"}
               </h2>
               <div className="flex flex-wrap gap-2">
-                {(active === "worker" ? worker?.skills ?? [] : ["Leadership", "Project Vision"]).map((skill: string) => (
+                {(active === "worker"
+                  ? (worker?.skills ?? [])
+                  : ["Leadership", "Project Vision"]
+                ).map((skill: string) => (
                   <Badge
                     key={skill}
                     className={`${
@@ -259,9 +280,8 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
                     } text-xs`}
                   >
                     {skill}
-                    </Badge>
-                  )
-                )}
+                  </Badge>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -300,7 +320,7 @@ export default function DualProfileLayout({ profile }: { profile: VerseProfile }
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {(active === "worker"
-              ? worker?.applications ?? []
+              ? (worker?.applications ?? [])
               : Array.from({ length: 3 })
             ).map((item: WorkerApplication, i: number) => (
               <Card
