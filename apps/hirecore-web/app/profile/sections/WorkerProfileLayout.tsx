@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Badge } from "@verse/ui/components/ui/badge";
 import { Card, CardContent } from "@verse/ui/components/ui/card";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 export default function WorkerProfileLayout({
@@ -30,6 +30,16 @@ export default function WorkerProfileLayout({
         ? URL.createObjectURL(profile.avatar)
         : "/placeholder-soul.png";
 
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 30 }, () => ({
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        duration: 6 + Math.random() * 6,
+        delay: Math.random() * 3,
+      })),
+    []
+  );
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -54,19 +64,16 @@ export default function WorkerProfileLayout({
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
         {/* Floating Sparks */}
-        {[...Array(30)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute w-[2px] h-[2px] bg-emerald-400/30 rounded-full"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
+            style={{ top: p.top, left: p.left }}
             animate={{ y: [0, -10, 0], opacity: [0.2, 1, 0.2] }}
             transition={{
-              duration: 6 + Math.random() * 6,
+              duration: p.duration,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: p.delay,
             }}
           />
         ))}
