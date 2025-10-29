@@ -9,22 +9,20 @@ import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { useMemo, useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
+const PRECOMPUTED_PARTICLES = Array.from({ length: 25 }, () => ({
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  duration: 5 + Math.random() * 5,
+  delay: Math.random() * 3,
+}));
+
 export default function WorkerProfileLayout({
   profile,
 }: {
   profile: VerseProfile;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 30 }, () => ({
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        duration: 6 + Math.random() * 6,
-        delay: Math.random() * 3,
-      })),
-    []
-  );
+  const particles = PRECOMPUTED_PARTICLES;
   const worker = profile.personas?.hirecore?.roles.worker;
   if (!worker) {
     return (
