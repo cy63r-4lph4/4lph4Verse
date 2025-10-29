@@ -10,54 +10,12 @@ import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 import { WorkerApplication } from "@verse/hirecore-web/app/applications/utils/types";
 
-// ────────────────────────────────────────────────────────────────
-// Mock Data (replace with profile prop from SDK later)
-// ────────────────────────────────────────────────────────────────
-const mockProfile = {
-  verseId: "verse_42220_5",
-  displayName: "Cy63r_4lph4~🐉",
-  handle: "cy63r_4lph4",
-  avatar: "/placeholder-soul.png",
-  banner:
-    "https://omegasystemscorp.com/wp-content/uploads/2022/09/inner-banner.jpg",
-  location: "Neo-Accra 🌆",
-  wallet: "0xA1B2C3D4E5F60718293A4B5C6D7E8F9012345678" as `0x${string}`,
-  reputation: 88,
-  personas: {
-    hirecore: {
-      roles: {
-        worker: {
-          bio: "Forging the Verse — one contract, one build, one legend.",
-          completedTasks: 19,
-          rating: 4.9,
-          earnings: 1340,
-          skills: ["Smart Contracts", "UI/UX", "Next.js", "Blockchain Design"],
-          applications: [
-            {
-              id: 1,
-              title: "NFT Marketplace UI",
-              status: "accepted",
-              budget: 250,
-            },
-            {
-              id: 2,
-              title: "Gasless CØRE Integration",
-              status: "pending",
-              budget: 180,
-            },
-          ],
-        },
-        hirer: {
-          bio: "Seeking brilliant builders for 4lph4 projects.",
-          postedTasks: 5,
-          totalSpent: 940,
-          activeHires: 2,
-        },
-      },
-    },
-  },
-};
-
+const PRECOMPUTED_PARTICLES = Array.from({ length: 25 }, () => ({
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  duration: 5 + Math.random() * 5,
+  delay: Math.random() * 3,
+}));
 // ────────────────────────────────────────────────────────────────
 // Main Component
 // ────────────────────────────────────────────────────────────────
@@ -67,14 +25,7 @@ export default function DualProfileLayout({
   profile: VerseProfile;
 }) {
   const [active, setActive] = useState<"worker" | "hirer">("worker");
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }, () => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      duration: 5 + Math.random() * 5,
-      delay: Math.random() * 3,
-    }));
-  }, []);
+  const particles = PRECOMPUTED_PARTICLES;
   const worker = profile.personas?.hirecore?.roles.worker;
   const hirer = profile.personas?.hirecore?.roles.hirer;
   const persona = active === "worker" ? worker : hirer;
