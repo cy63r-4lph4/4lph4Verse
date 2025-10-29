@@ -13,7 +13,7 @@ import Image from "next/image";
 import { Button } from "@verse/ui/components/ui/button";
 import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { Badge } from "@verse/ui/components/ui/badge";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 export default function ClientProfileLayout({
@@ -33,7 +33,13 @@ export default function ClientProfileLayout({
       : profile.avatar
         ? URL.createObjectURL(profile.avatar)
         : "/placeholder-soul.png";
-
+  const particles = useMemo(() => {
+    return Array.from({ length: 25 }, () => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 6 + Math.random() * 4,
+    }));
+  }, []);
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -54,16 +60,16 @@ export default function ClientProfileLayout({
         />
 
         {/* Floating Glow Particles */}
-        {[...Array(25)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute w-[2px] h-[2px] bg-indigo-400/30 rounded-full"
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
+              top: p.top,
+              left: p.left,
             }}
             animate={{ y: [0, -10, 0], opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 6 + Math.random() * 4, repeat: Infinity }}
+            transition={{ duration: p.duration, repeat: Infinity }}
           />
         ))}
 
