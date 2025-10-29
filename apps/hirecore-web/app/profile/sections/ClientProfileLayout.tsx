@@ -23,8 +23,16 @@ export default function ClientProfileLayout({
 }) {
   const [showAll, setShowAll] = useState(false);
 
-  const hirer = profile ? profile.personas?.hirecore?.roles.hirer : {};
-  if (hirer === undefined) {
+  const hirer = profile?.personas?.hirecore?.roles.hirer;
+  const particles = useMemo(() => {
+    return Array.from({ length: 25 }, () => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 6 + Math.random() * 4,
+    }));
+  }, []);
+
+  if (!hirer) {
     return <div>Client profile not found.</div>;
   }
   const avatarSrc =
@@ -33,13 +41,7 @@ export default function ClientProfileLayout({
       : profile.avatar
         ? URL.createObjectURL(profile.avatar)
         : "/placeholder-soul.png";
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }, () => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      duration: 6 + Math.random() * 4,
-    }));
-  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
