@@ -15,6 +15,7 @@ import { CATEGORIES } from "@verse/hirecore-web/utils/Constants";
 import { TaskCardProps } from "@verse/hirecore-web/utils/Interfaces";
 import { useRouter } from "next/navigation";
 import { useTaskStore } from "@verse/hirecore-web/store/useTaskStore";
+import { useMemo } from "react";
 
 const getUrgencyColor = (urgency: UrgencyType) => {
   switch (urgency) {
@@ -37,7 +38,10 @@ const getCategoryIcon = (category: string) => {
 };
 
 export function TaskCard({ task, index = 0 }: TaskCardProps) {
-  const CategoryIcon = getCategoryIcon(task.category!);
+  const CategoryIcon = useMemo(
+    () => getCategoryIcon(task.category!),
+    [task.category]
+  );
   const router = useRouter();
   const setTask = useTaskStore((s) => s.setTask);
 
