@@ -15,8 +15,18 @@ export default function WorkerProfileLayout({
   profile: VerseProfile;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const worker = profile ? profile.personas?.hirecore?.roles.worker : {};
-  if (worker === undefined) {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 30 }, () => ({
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        duration: 6 + Math.random() * 6,
+        delay: Math.random() * 3,
+      })),
+    []
+  );
+  const worker = profile.personas?.hirecore?.roles.worker;
+  if (!worker) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
         <p>This profile is private.</p>
@@ -30,16 +40,6 @@ export default function WorkerProfileLayout({
         ? URL.createObjectURL(profile.avatar)
         : "/placeholder-soul.png";
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 30 }, () => ({
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        duration: 6 + Math.random() * 6,
-        delay: Math.random() * 3,
-      })),
-    []
-  );
   return (
     <motion.div
       initial={{ opacity: 0 }}
