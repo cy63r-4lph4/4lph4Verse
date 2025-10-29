@@ -75,11 +75,13 @@ export default function PostTaskWizard({
 
   const handleBack = () => step > 1 && setStep((s) => s - 1);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     try {
       const finalErrors = validateAll(formData);
       if (finalErrors.length) {
-        toast("Missing required info", { description: finalErrors.join(" • ") });
+        toast("Missing required info", {
+          description: finalErrors.join(" • "),
+        });
         return;
       }
 
@@ -110,18 +112,26 @@ export default function PostTaskWizard({
         description: (err as Error).message,
       });
     }
-  }, [formData, router, submitTask, profile?.verseID, onClose]);
+  };
 
   const stepView = useMemo(() => {
     switch (step) {
       case 1:
-        return <StepOverview formData={formData} setFormDataAction={setFormData} />;
+        return (
+          <StepOverview formData={formData} setFormDataAction={setFormData} />
+        );
       case 2:
-        return <StepDetails formData={formData} setFormDataAction={setFormData} />;
+        return (
+          <StepDetails formData={formData} setFormDataAction={setFormData} />
+        );
       case 3:
-        return <StepLocation formData={formData} setFormDataAction={setFormData} />;
+        return (
+          <StepLocation formData={formData} setFormDataAction={setFormData} />
+        );
       case 4:
-        return <StepBudget formData={formData} setFormDataAction={setFormData} />;
+        return (
+          <StepBudget formData={formData} setFormDataAction={setFormData} />
+        );
       case 5:
         return <StepReview formData={formData} />;
       default:
@@ -133,9 +143,11 @@ export default function PostTaskWizard({
 
   return (
     <div
-      className={compact
-        ? "w-full p-2 sm:p-4"
-        : "min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8"}
+      className={
+        compact
+          ? "w-full p-2 sm:p-4"
+          : "min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8"
+      }
     >
       <div className={compact ? "w-full mx-auto" : "max-w-4xl mx-auto"}>
         {/* Header */}
@@ -185,7 +197,11 @@ export default function PostTaskWizard({
 
         {/* Nav buttons */}
         <div className="mt-6 flex items-center justify-between">
-          <Button variant="outline" disabled={!canGoBack || loading} onClick={handleBack}>
+          <Button
+            variant="outline"
+            disabled={!canGoBack || loading}
+            onClick={handleBack}
+          >
             Back
           </Button>
 
@@ -221,7 +237,8 @@ function validateStep(step: number, d: TaskFormData): string[] {
     if (!d.urgency?.trim()) errs.push("Urgency is required");
     if (!d.serviceType?.trim()) errs.push("Service type is required");
   }
-  if (step === 2 && !d.description?.trim()) errs.push("Description is required");
+  if (step === 2 && !d.description?.trim())
+    errs.push("Description is required");
   if (step === 3 && !d.location?.trim()) errs.push("Location is required");
   if (step === 4) {
     if (!d.budget?.trim()) errs.push("Budget is required");
