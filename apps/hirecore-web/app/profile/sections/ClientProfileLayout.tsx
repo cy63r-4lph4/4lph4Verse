@@ -16,6 +16,14 @@ import { Badge } from "@verse/ui/components/ui/badge";
 import { useMemo, useState } from "react";
 import { VerseProfile } from "@verse/sdk/types/verseProfile";
 
+
+const PRECOMPUTED_PARTICLES = Array.from({ length: 25 }, () => ({
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  duration: 5 + Math.random() * 5,
+  delay: Math.random() * 3,
+}));
+
 export default function ClientProfileLayout({
   profile,
 }: {
@@ -24,13 +32,7 @@ export default function ClientProfileLayout({
   const [showAll, setShowAll] = useState(false);
 
   const hirer = profile?.personas?.hirecore?.roles.hirer;
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }, () => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      duration: 6 + Math.random() * 4,
-    }));
-  }, []);
+  const particles = PRECOMPUTED_PARTICLES;
 
   if (!hirer) {
     return <div>Client profile not found.</div>;
