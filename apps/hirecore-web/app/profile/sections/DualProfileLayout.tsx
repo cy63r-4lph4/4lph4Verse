@@ -67,6 +67,14 @@ export default function DualProfileLayout({
   profile: VerseProfile;
 }) {
   const [active, setActive] = useState<"worker" | "hirer">("worker");
+  const particles = useMemo(() => {
+    return Array.from({ length: 25 }, () => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 5 + Math.random() * 5,
+      delay: Math.random() * 3,
+    }));
+  }, []);
   const worker = profile.personas?.hirecore?.roles.worker;
   const hirer = profile.personas?.hirecore?.roles.hirer;
   const persona = active === "worker" ? worker : hirer;
@@ -79,15 +87,6 @@ export default function DualProfileLayout({
       : profile.avatar
         ? URL.createObjectURL(profile.avatar)
         : "/placeholder-soul.png";
-
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }, () => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      duration: 5 + Math.random() * 5,
-      delay: Math.random() * 3,
-    }));
-  }, []);
 
   return (
     <motion.div
@@ -125,27 +124,26 @@ export default function DualProfileLayout({
         />
 
         {/* Particles */}
-<motion.div className="absolute inset-0 opacity-40">
-  {particles.map((p, i) => (
-    <motion.div
-      key={i}
-      className={`absolute w-[2px] h-[2px] rounded-full ${
-        active === "worker" ? "bg-emerald-400/40" : "bg-indigo-400/40"
-      }`}
-      style={{
-        top: p.top,
-        left: p.left,
-      }}
-      animate={{ y: [0, -10, 0], opacity: [0.3, 1, 0.3] }}
-      transition={{
-        duration: p.duration,
-        repeat: Infinity,
-        delay: p.delay,
-      }}
-    />
-  ))}
-</motion.div>
-
+        <motion.div className="absolute inset-0 opacity-40">
+          {particles.map((p, i) => (
+            <motion.div
+              key={i}
+              className={`absolute w-[2px] h-[2px] rounded-full ${
+                active === "worker" ? "bg-emerald-400/40" : "bg-indigo-400/40"
+              }`}
+              style={{
+                top: p.top,
+                left: p.left,
+              }}
+              animate={{ y: [0, -10, 0], opacity: [0.3, 1, 0.3] }}
+              transition={{
+                duration: p.duration,
+                repeat: Infinity,
+                delay: p.delay,
+              }}
+            />
+          ))}
+        </motion.div>
 
         {/* Identity Info */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-center">
