@@ -1,0 +1,503 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VerseQuest 4lph4Verse Design System - The Mind of the Verse */
+@layer base {
+  :root {
+    /* 4lph4Verse Core Palette */
+    --background: 15 14 23; /* #0F0E17 - Abyss black */
+    --foreground: 210 40% 98%;
+
+    /* Primary Violet Energy */
+    --primary: 267 85% 63%; /* #7F5AF0 - Violet energy glow */
+    --primary-foreground: 210 40% 98%;
+    --primary-glow: 267 85% 75%;
+    
+    /* CØRE Cyan Energy */
+    --core: 159 71% 47%; /* #2CB67D - CØRE cyan */
+    --core-foreground: 210 40% 98%;
+    --core-glow: 159 71% 60%;
+    
+    /* Radiant Pulse */
+    --radiant: 342 86% 56%; /* #E53170 - Radiant pulse highlight */
+    --radiant-foreground: 210 40% 98%;
+    --radiant-glow: 342 86% 70%;
+    
+    /* AURA Progression Colors */
+    --aura-dim: 240 20% 25%;
+    --aura-kindled: 245 70% 45%;
+    --aura-radiant: 267 85% 63%;
+    --aura-luminous: 260 90% 70%;
+    --aura-ascendant: 270 95% 80%;
+    --aura-draconic: 280 100% 85%;
+    
+    /* Quest Colors - Wisdom/Discovery/Mastery */
+    --quest-wisdom: 267 85% 63%;
+    --quest-discovery: 159 71% 47%;
+    --quest-mastery: 45 90% 60%;
+    
+    /* Glassmorphic Surface Colors */
+    --glass: 15 14 23; /* Base glass */
+    --glass-border: 267 85% 63%; /* Violet border */
+    --glass-glow: 267 85% 63%;
+    
+    --card: 220 35% 12%;
+    --card-foreground: 210 40% 95%;
+    --popover: 220 35% 10%;
+    --popover-foreground: 210 40% 95%;
+
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 210 30% 85%;
+
+    --muted: 220 25% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 220 30% 20%;
+    --accent-foreground: 210 40% 95%;
+
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 16%;
+    --ring: 267 85% 63%;
+
+    --radius: 1.5rem;
+
+    /* Mystical Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-core: linear-gradient(135deg, hsl(var(--core)), hsl(var(--core-glow)));
+    --gradient-radiant: linear-gradient(135deg, hsl(var(--radiant)), hsl(var(--radiant-glow)));
+    --gradient-aura: radial-gradient(circle at center, 
+      hsl(var(--primary) / 0.3) 0%, 
+      hsl(var(--core) / 0.2) 40%, 
+      hsl(var(--radiant) / 0.1) 70%,
+      transparent 100%);
+    --gradient-glass: linear-gradient(135deg, 
+      hsla(var(--glass) / 0.1) 0%, 
+      hsla(var(--glass) / 0.05) 100%);
+    --gradient-nebula: linear-gradient(135deg, 
+      hsl(15, 14%, 23%) 0%, 
+      hsl(267, 20%, 8%) 25%, 
+      hsl(159, 30%, 6%) 50%, 
+      hsl(342, 25%, 7%) 75%, 
+      hsl(15, 14%, 23%) 100%);
+    
+    /* Mystical Effects */
+    --shadow-aura: 0 0 40px hsl(var(--primary) / 0.4);
+    --shadow-core: 0 0 30px hsl(var(--core) / 0.4);
+    --shadow-radiant: 0 0 35px hsl(var(--radiant) / 0.4);
+    --shadow-glass: 0 8px 32px hsla(var(--primary) / 0.15);
+    --shadow-float: 0 20px 40px hsla(0, 0%, 0%, 0.4);
+    
+    /* Animations */
+    --transition-aura: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-glass: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --pulse-aura: 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --float-gentle: 8s ease-in-out infinite;
+    --drift-cosmic: 20s linear infinite;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background: var(--gradient-nebula);
+    color: hsl(var(--foreground));
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Cosmic Background Animation */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-aura);
+    animation: cosmic-drift var(--drift-cosmic);
+    z-index: -1;
+    opacity: 0.6;
+  }
+
+  /* Mystical Typography */
+  .font-mystic {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+  }
+
+  .font-tech {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Cosmic Animations */
+  @keyframes cosmic-drift {
+    0%, 100% { 
+      transform: rotate(0deg) scale(1);
+      opacity: 0.6;
+    }
+    33% { 
+      transform: rotate(120deg) scale(1.1);
+      opacity: 0.8;
+    }
+    66% { 
+      transform: rotate(240deg) scale(0.9);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes aura-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: var(--shadow-aura);
+      opacity: 0.9;
+    }
+    50% { 
+      transform: scale(1.05);
+      box-shadow: 0 0 60px hsl(var(--primary) / 0.6);
+      opacity: 1;
+    }
+  }
+
+  @keyframes float-gentle {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(1deg); }
+    50% { transform: translateY(-5px) rotate(0deg); }
+    75% { transform: translateY(-15px) rotate(-1deg); }
+  }
+
+  @keyframes glow-expand {
+    0% { 
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
+      transform: scale(1.02);
+    }
+    100% { 
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+      transform: scale(1);
+    }
+  }
+
+  @keyframes particle-float {
+    0%, 100% {
+      transform: translateY(0px) translateX(0px);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translateY(-10px) translateX(-5px);
+      opacity: 0.5;
+    }
+    75% {
+      transform: translateY(-30px) translateX(-10px);
+      opacity: 0.8;
+    }
+  }
+}
+
+@layer components {
+  /* Glass Morphism Components */
+  .glass-card {
+    background: linear-gradient(135deg, 
+      hsla(var(--glass) / 0.1) 0%, 
+      hsla(var(--glass) / 0.05) 100%);
+    border: 1px solid hsla(var(--glass-border) / 0.2);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-radius: var(--radius);
+    transition: var(--transition-glass);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(var(--glass-glow) / 0.6), 
+      transparent);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-4px);
+    border-color: hsla(var(--glass-border) / 0.4);
+    box-shadow: var(--shadow-glass), var(--shadow-float);
+  }
+
+  /* Aura Components */
+  .aura-glow {
+    position: relative;
+    animation: aura-pulse var(--pulse-aura);
+  }
+
+  .aura-ring {
+    position: relative;
+    border-radius: 50%;
+    background: var(--gradient-aura);
+    padding: 4px;
+    animation: aura-pulse var(--pulse-aura);
+  }
+
+  .floating-element {
+    animation: float-gentle var(--float-gentle);
+  }
+
+  .cosmic-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: hsl(var(--primary-glow));
+    border-radius: 50%;
+    animation: particle-float 6s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  /* Quest Cards */
+  .quest-card {
+    background: linear-gradient(135deg, 
+      hsla(var(--glass) / 0.15) 0%, 
+      hsla(var(--glass) / 0.08) 100%);
+    border: 1px solid hsla(var(--primary) / 0.2);
+    backdrop-filter: blur(20px) saturate(160%);
+    border-radius: var(--radius);
+    transition: var(--transition-aura);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quest-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(var(--primary) / 0.1), 
+      transparent);
+    transition: left 0.6s;
+  }
+
+  .quest-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: hsla(var(--primary) / 0.4);
+    box-shadow: var(--shadow-aura), var(--shadow-float);
+  }
+
+  .quest-card:hover::after {
+    left: 100%;
+  }
+
+  /* Gradient Text Effects */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-core {
+    background: var(--gradient-core);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-radiant {
+    background: var(--gradient-radiant);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Mystical Buttons */
+  .btn-aura {
+    background: var(--gradient-primary);
+    border: none;
+    color: hsl(var(--primary-foreground));
+    transition: var(--transition-aura);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+  }
+
+  .btn-aura::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(255, 255%, 255%, 0.2), 
+      transparent);
+    transition: left 0.6s;
+  }
+
+  .btn-aura:hover::before {
+    left: 100%;
+  }
+
+  .btn-aura:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-aura);
+    filter: brightness(1.1);
+  }
+
+  .btn-core {
+    background: var(--gradient-core);
+    border: none;
+    color: hsl(var(--core-foreground));
+    transition: var(--transition-aura);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+  }
+
+  .btn-core:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-core);
+    filter: brightness(1.1);
+  }
+
+  /* Aura Meter */
+  .aura-meter {
+    position: relative;
+    background: linear-gradient(135deg, 
+      hsla(var(--secondary)) 0%, 
+      hsla(var(--accent)) 100%);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .aura-progress {
+    background: var(--gradient-primary);
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+  }
+
+  .aura-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(255, 255%, 255%, 0.4));
+    border-radius: 0 9999px 9999px 0;
+    animation: glow-expand 2s ease-in-out infinite;
+  }
+
+  /* Council Voting Rings */
+  .voting-ring {
+    position: relative;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--core)) 0deg,
+      hsl(var(--radiant)) var(--percentage, 0deg),
+      hsla(var(--muted) / 0.3) var(--percentage, 0deg)
+    );
+    border-radius: 50%;
+    padding: 3px;
+    transition: var(--transition-aura);
+  }
+
+  .voting-ring:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-aura);
+  }
+
+  /* Reflection Modal */
+  .reflection-modal {
+    background: linear-gradient(135deg, 
+      hsla(var(--background) / 0.95) 0%, 
+      hsla(var(--background) / 0.9) 100%);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid hsla(var(--primary) / 0.3);
+    border-radius: calc(var(--radius) * 1.5);
+  }
+
+  /* Dragon Energy Particles */
+  .dragon-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .dragon-particles::before,
+  .dragon-particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: hsl(var(--radiant-glow));
+    border-radius: 50%;
+    animation: particle-float 8s ease-in-out infinite;
+  }
+
+  .dragon-particles::before {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+  }
+
+  .dragon-particles::after {
+    top: 60%;
+    right: 25%;
+    animation-delay: 3s;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .glass-card {
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+  
+  .quest-card {
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+}
+
+/* Preload Animation */
+.preload-spinner {
+  border: 2px solid hsla(var(--primary) / 0.3);
+  border-top: 2px solid hsl(var(--primary));
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
