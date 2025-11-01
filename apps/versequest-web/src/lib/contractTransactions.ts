@@ -67,7 +67,21 @@ export interface TransactionResult {
   hash?: string;
   error?: string;
 }
-
+export interface CreateHallResult extends TransactionResult {
+  hallId?: string; 
+}
+export interface CreatePostResult extends TransactionResult {
+  postId?: string; 
+}
+export interface CreateQuestResult extends TransactionResult {
+  questId?: string; 
+}
+export interface CreateProposalResult extends TransactionResult {
+  proposalId?: string; 
+}
+export interface MintBadgeResult extends TransactionResult {
+  tokenId?: string; 
+}
 export interface HallData {
   id: string;
   topic: string;
@@ -185,7 +199,7 @@ class ContractTransactionService {
   }
 
   // Create a new quest (Admin function)
-  async createQuest(params: CreateQuestParams): Promise<TransactionResult> {
+  async createQuest(params: CreateQuestParams): Promise<CreateQuestResult> {
     try {
       const { contract } = await this.getSignerAndContract();
 
@@ -421,7 +435,7 @@ class ContractTransactionService {
   // ===== REFLECTION HALL METHODS =====
 
   // Create a new reflection hall
-  async createHall(params: CreateHallParams): Promise<TransactionResult> {
+  async createHall(params: CreateHallParams): Promise<CreateHallResult> {
     try {
       const { contract } = await this.getSignerAndContract();
       const hallContract = new ethers.Contract(VerseReflectionHallAddress, VerseReflectionHallABI, contract.signer);
@@ -461,7 +475,7 @@ class ContractTransactionService {
   }
 
   // Create a post in a reflection hall
-  async createPost(params: CreatePostParams): Promise<TransactionResult> {
+  async createPost(params: CreatePostParams): Promise<CreatePostResult> {
     try {
       const { contract } = await this.getSignerAndContract();
       const hallContract = new ethers.Contract(VerseReflectionHallAddress, VerseReflectionHallABI, contract.signer);
@@ -655,7 +669,7 @@ class ContractTransactionService {
     description: string,
     category: string,
     tokenURI: string = ""
-  ): Promise<TransactionResult> {
+  ): Promise<MintBadgeResult> {
     try {
       const { contract } = await this.getSignerAndContract();
       const badgeContract = new ethers.Contract(VerseBadgesAddress, VerseBadgesABI, contract.signer);
@@ -814,7 +828,7 @@ class ContractTransactionService {
   // ===== COUNCIL METHODS =====
 
   // Create a new proposal
-  async createProposal(params: CreateProposalParams): Promise<TransactionResult> {
+  async createProposal(params: CreateProposalParams): Promise<CreateProposalResult> {
     try {
       const { contract } = await this.getSignerAndContract();
       const councilContract = new ethers.Contract(VerseCouncilAddress, VerseCouncilABI, contract.signer);
@@ -859,7 +873,7 @@ class ContractTransactionService {
   }
 
   // Vote on a proposal
-  async voteOnProposal(proposalId: string, support: boolean): Promise<TransactionResult> {
+  async voteOnProposal(proposalId: string, support: boolean): Promise<CreateProposalResult> {
     try {
       const { contract } = await this.getSignerAndContract();
       const councilContract = new ethers.Contract(VerseCouncilAddress, VerseCouncilABI, contract.signer);
