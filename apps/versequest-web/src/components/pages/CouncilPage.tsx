@@ -624,20 +624,22 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
           )}
 
           {/* Execute Button for Expired Proposals */}
-          {!isActive && !proposal.executed && proposal.endTime <= Date.now() && (
-            <div className="space-y-4">
-              <h3 className="font-semibold">Finalize Proposal</h3>
-              <Button
-                onClick={() => onExecute(proposal.id)}
-                className="w-full bg-gradient-council text-council-foreground"
-              >
-                Execute Proposal
-              </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Voting period has ended. Click to finalize the results.
-              </p>
-            </div>
-          )}
+          {!isActive &&
+            !proposal.executed &&
+            proposal.endTime <= Date.now() && (
+              <div className="space-y-4">
+                <h3 className="font-semibold">Finalize Proposal</h3>
+                <Button
+                  onClick={() => onExecute(proposal.id)}
+                  className="w-full bg-gradient-council text-council-foreground"
+                >
+                  Execute Proposal
+                </Button>
+                <p className="text-sm text-muted-foreground text-center">
+                  Voting period has ended. Click to finalize the results.
+                </p>
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>

@@ -461,10 +461,8 @@ export const HomePage: React.FC = () => {
                       className="h-full bg-gradient-radiant transition-all duration-500"
                       style={{
                         width: `${
-                          (parseFloat(proposal.yesVotes.replace(",", "")) /
-                            (parseFloat(proposal.yesVotes.replace(",", "")) +
-                              parseFloat(proposal.noVotes.replace(",", "")))) *
-                          100
+                          proposal.yesVotes / proposal.yesVotes +
+                          proposal.noVotes * 100
                         }%`,
                       }}
                     />
