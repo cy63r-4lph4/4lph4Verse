@@ -10,6 +10,7 @@ import {
 import { Navigation } from "@/components/Navigation";
 import { Toaster } from "@/components/ui/toaster";
 import { useContract } from "@/hooks/useContract";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 function App() {
   const { isAdmin } = useContract();
@@ -17,6 +18,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation isAdmin={isAdmin} />
+      <ScrollToTop /> 
 
       <main className="container mx-auto px-4 py-8">
         <Routes>
