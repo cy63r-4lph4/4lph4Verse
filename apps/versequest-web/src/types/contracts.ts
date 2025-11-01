@@ -72,8 +72,8 @@ export interface Proposal {
   title: string;
   description: string;
   proposer: string;
-  yesVotes: string;
-  noVotes: string;
+  yesVotes: number;
+  noVotes: number;
   endTime: number;
   isActive: boolean;
   executed: boolean;

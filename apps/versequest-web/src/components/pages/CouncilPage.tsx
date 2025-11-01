@@ -1,45 +1,74 @@
-import  { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Vote, Plus, ThumbsUp, ThumbsDown, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { contractService, ProposalData, CreateProposalParams } from '@/lib/contractTransactions';
-import { useToast } from '@/hooks/use-toast';
-import { useWallet } from '@/hooks/useWallet';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Proposal } from '@/types/contracts';
-import { mockProposals } from '@/data/mockData';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Vote,
+  Plus,
+  ThumbsUp,
+  ThumbsDown,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import {
+  contractService,
+  ProposalData,
+  CreateProposalParams,
+} from "@/lib/contractTransactions";
+import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/useWallet";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Proposal } from "@/types/contracts";
+import { mockProposals } from "@/data/mockData";
 
 // Utility function for formatting time
 const formatTimeLeft = (endTime: number) => {
   const diff = endTime - Date.now();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  
+
   if (days > 0) return `${days}d ${hours}h left`;
   if (hours > 0) return `${hours}h left`;
-  return 'Ending soon';
+  return "Ending soon";
 };
 export const CouncilPage: React.FC = () => {
-  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(
+    null
+  );
+  const [showCreateProposal, setShowCreateProposal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const activeProposals = mockProposals.filter(p => p.isActive);
-  const completedProposals = mockProposals.filter(p => !p.isActive);
+  const activeProposals = mockProposals.filter((p) => p.isActive);
+  const completedProposals = mockProposals.filter((p) => !p.isActive);
 
   const handleVote = async (proposalId: string, support: boolean) => {
     // Here you would interact with the VerseCouncil contract
     toast({
       title: "Vote Submitted!",
-      description: `Your ${support ? 'YES' : 'NO'} vote has been recorded.`
+      description: `Your ${support ? "YES" : "NO"} vote has been recorded.`,
     });
   };
 
-
   if (selectedProposal) {
-    return <ProposalDetail proposal={selectedProposal} onBack={() => setSelectedProposal(null)} onVote={handleVote} />;
+    return (
+      <ProposalDetail
+        proposal={selectedProposal}
+        onBack={() => setSelectedProposal(null)}
+        onVote={handleVote}
+        onExecute={() => {}}
+        isVoting={selectedProposal.isActive}
+      />
+    );
   }
 
   return (
@@ -52,7 +81,8 @@ export const CouncilPage: React.FC = () => {
             Council Governance
           </h1>
           <p className="text-muted-foreground text-lg mt-2">
-            Participate in community decisions and shape the future of VerseQuest
+            Participate in community decisions and shape the future of
+            VerseQuest
           </p>
         </div>
         <Button className="bg-gradient-council text-council-foreground">
@@ -60,7 +90,7 @@ export const CouncilPage: React.FC = () => {
           <Plus className="h-4 w-4 mr-2" />
           Create Proposal
         </Button>
-        <Button 
+        <Button
           onClick={() => setShowCreateProposal(true)}
           className="bg-gradient-council text-council-foreground"
         >
@@ -87,12 +117,12 @@ export const CouncilPage: React.FC = () => {
           <h2 className="text-2xl font-semibold">Active Proposals</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {activeProposals.map((proposal) => (
-              <ProposalCard 
-                key={proposal.id} 
-                proposal={proposal} 
+              <ProposalCard
+                key={proposal.id}
+                proposal={proposal}
                 onClick={setSelectedProposal}
                 onVote={handleVote}
-                isVoting={votingStates[proposal.id]}
+                isVoting={proposal.isActive}
               />
             ))}
           </div>
@@ -105,9 +135,9 @@ export const CouncilPage: React.FC = () => {
           <h2 className="text-2xl font-semibold">Completed Proposals</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {completedProposals.map((proposal) => (
-              <ProposalCard 
-                key={proposal.id} 
-                proposal={proposal} 
+              <ProposalCard
+                key={proposal.id}
+                proposal={proposal}
                 onClick={setSelectedProposal}
                 onVote={handleVote}
                 isVoting={false}
@@ -117,15 +147,16 @@ export const CouncilPage: React.FC = () => {
           </div>
         </div>
       )}
-      
-      {!loading && proposals.length === 0 && (
+
+      {!loading && activeProposals.length === 0 && (
         <div className="text-center py-16">
           <Vote className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-2xl font-bold mb-2">No Proposals Yet</h3>
           <p className="text-muted-foreground mb-6">
-            Be the first to create a community proposal and shape the future of VerseQuest!
+            Be the first to create a community proposal and shape the future of
+            VerseQuest!
           </p>
-          <Button 
+          <Button
             onClick={() => setShowCreateProposal(true)}
             className="bg-gradient-council text-council-foreground"
           >
@@ -139,37 +170,45 @@ export const CouncilPage: React.FC = () => {
 };
 
 interface ProposalCardProps {
-  proposal: ProposalData;
-  onClick: (proposal: ProposalData) => void;
+  proposal: Proposal;
+  onClick: (proposal: Proposal) => void;
   onVote: (proposalId: string, support: boolean) => void;
   isVoting?: boolean;
   readonly?: boolean;
 }
 
-const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, isVoting = false, readonly = false }) => {
-  const yesVotes = proposal.forVotes;
-  const noVotes = proposal.againstVotes;
+const ProposalCard: React.FC<ProposalCardProps> = ({
+  proposal,
+  onClick,
+  onVote,
+  isVoting = false,
+  readonly = false,
+}) => {
+  const yesVotes = proposal.yesVotes;
+  const noVotes = proposal.noVotes;
   const totalVotes = yesVotes + noVotes;
   const yesPercentage = totalVotes > 0 ? (yesVotes / totalVotes) * 100 : 0;
   const noPercentage = totalVotes > 0 ? (noVotes / totalVotes) * 100 : 0;
 
   const isPassing = yesPercentage > noPercentage;
-  const isActive = proposal.active && proposal.deadline > Date.now();
-  
+  const isActive = proposal.isActive && proposal.endTime > Date.now();
+
   const formatTimeLeft = (endTime: number) => {
     const diff = endTime - Date.now();
-    if (diff <= 0) return 'Voting ended';
-    
+    if (diff <= 0) return "Voting ended";
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+
     if (days > 0) return `${days}d ${hours}h left`;
     if (hours > 0) return `${hours}h left`;
-    return 'Ending soon';
+    return "Ending soon";
   };
 
   return (
-    <Card className={`community-card cursor-pointer ${!readonly ? 'council-glow hover:shadow-council' : ''}`}>
+    <Card
+      className={`community-card cursor-pointer ${!readonly ? "council-glow hover:shadow-council" : ""}`}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div onClick={() => onClick(proposal)} className="flex-1">
@@ -178,12 +217,25 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, 
               {proposal.description.substring(0, 120)}...
             </CardDescription>
           </div>
-          <Badge 
+          <Badge
             variant={isActive ? "secondary" : "outline"}
-            className={isActive ? (isPassing ? "bg-quest/10 text-quest" : "bg-destructive/10 text-destructive") : ""}
+            className={
+              isActive
+                ? isPassing
+                  ? "bg-quest/10 text-quest"
+                  : "bg-destructive/10 text-destructive"
+                : ""
+            }
           >
-            {isActive ? (isPassing ? 'Passing' : 'Failing') : 
-             (proposal.executed ? (isPassing ? 'Passed' : 'Failed') : 'Ended')}
+            {isActive
+              ? isPassing
+                ? "Passing"
+                : "Failing"
+              : proposal.executed
+                ? isPassing
+                  ? "Passed"
+                  : "Failed"
+                : "Ended"}
           </Badge>
         </div>
       </CardHeader>
@@ -193,19 +245,19 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, 
           <div className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-1 text-quest">
               <ThumbsUp className="h-4 w-4" />
-              Yes: {proposal.forVotes} ({yesPercentage.toFixed(1)}%)
+              Yes: {proposal.yesVotes} ({yesPercentage.toFixed(1)}%)
             </span>
             <span className="flex items-center gap-1 text-destructive">
               <ThumbsDown className="h-4 w-4" />
-              No: {proposal.againstVotes} ({noPercentage.toFixed(1)}%)
+              No: {proposal.noVotes} ({noPercentage.toFixed(1)}%)
             </span>
           </div>
           <div className="flex gap-1 h-2">
-            <div 
+            <div
               className="bg-quest rounded-l-full transition-all"
               style={{ width: `${yesPercentage}%` }}
             />
-            <div 
+            <div
               className="bg-destructive rounded-r-full transition-all"
               style={{ width: `${noPercentage}%` }}
             />
@@ -218,20 +270,24 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, 
             {isActive ? (
               <>
                 <Clock className="h-4 w-4" />
-                {formatTimeLeft(proposal.deadline)}
+                {formatTimeLeft(proposal.endTime)}
               </>
             ) : (
               <>
-                {proposal.executed ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                {proposal.executed ? 'Executed' : 'Not executed'}
+                {proposal.executed ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                {proposal.executed ? "Executed" : "Not executed"}
               </>
             )}
           </span>
 
           {isActive && !readonly && (
             <div className="flex gap-2">
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onVote(proposal.id, true);
@@ -241,8 +297,8 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, 
               >
                 <ThumbsUp className="h-4 w-4" />
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onVote(proposal.id, false);
@@ -261,7 +317,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onClick, onVote, 
 };
 
 interface ProposalDetailProps {
-  proposal: ProposalData;
+  proposal: Proposal;
   onBack: () => void;
   onVote: (proposalId: string, support: boolean) => void;
   onExecute: (proposalId: string) => void;
@@ -274,9 +330,12 @@ interface CreateProposalFormProps {
   onSuccess: (proposal: ProposalData) => void;
 }
 
-const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSuccess }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+const CreateProposalForm: React.FC<CreateProposalFormProps> = ({
+  onBack,
+  onSuccess,
+}) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [duration, setDuration] = useState(7); // days
   const [creating, setCreating] = useState(false);
   const { toast } = useToast();
@@ -284,11 +343,11 @@ const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSucce
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!account) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to create a proposal"
+        description: "Please connect your wallet to create a proposal",
       });
       return;
     }
@@ -296,7 +355,7 @@ const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSucce
     if (!title.trim() || !description.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in both title and description"
+        description: "Please fill in both title and description",
       });
       return;
     }
@@ -306,30 +365,30 @@ const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSucce
       const result = await contractService.createProposal({
         title: title.trim(),
         description: description.trim(),
-        duration: duration * 24 * 60 * 60 // convert days to seconds
+        duration: duration * 24 * 60 * 60, // convert days to seconds
       });
 
       if (result.success) {
         toast({
           title: "Proposal Created!",
-          description: `"${title}" is now open for voting`
+          description: `"${title}" is now open for voting`,
         });
-        
+
         // Fetch the created proposal data
-        const newProposal = await contractService.getProposal(result.proposalId!);
+        const newProposal = await contractService.getProposal(result.hash!);
         if (newProposal) {
           onSuccess(newProposal);
         }
       } else {
         toast({
           title: "Creation Failed",
-          description: result.error || "Failed to create proposal"
+          description: result.error || "Failed to create proposal",
         });
       }
     } catch (error: any) {
       toast({
         title: "Transaction Error",
-        description: error.message || "Failed to create proposal"
+        description: error.message || "Failed to create proposal",
       });
     } finally {
       setCreating(false);
@@ -393,12 +452,12 @@ const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSucce
               <p className="text-sm text-muted-foreground">
                 Your proposal will be recorded on the blockchain
               </p>
-              <Button 
+              <Button
                 type="submit"
                 disabled={creating || !title.trim() || !description.trim()}
                 className="bg-gradient-council text-council-foreground"
               >
-                {creating ? 'Creating...' : 'Create Proposal'}
+                {creating ? "Creating..." : "Create Proposal"}
               </Button>
             </div>
           </form>
@@ -408,24 +467,30 @@ const CreateProposalForm: React.FC<CreateProposalFormProps> = ({ onBack, onSucce
   );
 };
 
-const ProposalDetail: React.FC<ProposalDetailProps> = ({ proposal, onBack, onVote, onExecute, isVoting }) => {
-  const yesVotes = proposal.forVotes;
-  const noVotes = proposal.againstVotes;
+const ProposalDetail: React.FC<ProposalDetailProps> = ({
+  proposal,
+  onBack,
+  onVote,
+  onExecute,
+  isVoting,
+}) => {
+  const yesVotes = proposal.yesVotes;
+  const noVotes = proposal.noVotes;
   const totalVotes = yesVotes + noVotes;
   const yesPercentage = totalVotes > 0 ? (yesVotes / totalVotes) * 100 : 0;
   const noPercentage = totalVotes > 0 ? (noVotes / totalVotes) * 100 : 0;
-  const isActive = proposal.active && proposal.deadline > Date.now();
+  const isActive = proposal.isActive && proposal.endTime > Date.now();
 
   const formatTimeLeft = (endTime: number) => {
     const diff = endTime - Date.now();
-    if (diff <= 0) return 'Voting ended';
-    
+    if (diff <= 0) return "Voting ended";
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+
     if (days > 0) return `${days}d ${hours}h`;
     if (hours > 0) return `${hours}h`;
-    return 'Ending soon';
+    return "Ending soon";
   };
 
   return (
@@ -442,33 +507,44 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({ proposal, onBack, onVot
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <span>Proposed by {proposal.proposer}</span>
                 <span>•</span>
-                <span>{isActive ? formatTimeLeft(proposal.deadline) + ' left' : 'Voting ended'}</span>
+                <span>
+                  {isActive
+                    ? formatTimeLeft(proposal.endTime) + " left"
+                    : "Voting ended"}
+                </span>
               </div>
             </div>
-            <Badge 
+            <Badge
               className={
-                isActive 
-                  ? (yesPercentage > noPercentage ? "bg-quest/10 text-quest" : "bg-destructive/10 text-destructive")
+                isActive
+                  ? yesPercentage > noPercentage
+                    ? "bg-quest/10 text-quest"
+                    : "bg-destructive/10 text-destructive"
                   : "bg-secondary"
               }
             >
-              {isActive 
-                ? (yesPercentage > noPercentage ? 'Passing' : 'Failing')
-                : (proposal.executed ? 'Executed' : 'Ended')
-              }
+              {isActive
+                ? yesPercentage > noPercentage
+                  ? "Passing"
+                  : "Failing"
+                : proposal.executed
+                  ? "Executed"
+                  : "Ended"}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
             <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-muted-foreground leading-relaxed">{proposal.description}</p>
+            <p className="text-muted-foreground leading-relaxed">
+              {proposal.description}
+            </p>
           </div>
 
           {/* Voting Results */}
           <div className="space-y-4">
             <h3 className="font-semibold">Current Results</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="border-quest/20 bg-quest/5">
                 <CardContent className="p-4">
@@ -478,8 +554,12 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({ proposal, onBack, onVot
                       <span className="font-semibold">Yes Votes</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-quest">{proposal.forVotes}</div>
-                      <div className="text-sm text-muted-foreground">{yesPercentage.toFixed(1)}%</div>
+                      <div className="text-2xl font-bold text-quest">
+                        {proposal.yesVotes}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {yesPercentage.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -493,8 +573,12 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({ proposal, onBack, onVot
                       <span className="font-semibold">No Votes</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-destructive">{proposal.againstVotes}</div>
-                      <div className="text-sm text-muted-foreground">{noPercentage.toFixed(1)}%</div>
+                      <div className="text-2xl font-bold text-destructive">
+                        {proposal.noVotes}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {noPercentage.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -515,34 +599,35 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({ proposal, onBack, onVot
             <div className="space-y-4">
               <h3 className="font-semibold">Cast Your Vote</h3>
               <div className="flex gap-4">
-                <Button 
+                <Button
                   onClick={() => onVote(proposal.id, true)}
                   className="flex-1 bg-quest hover:bg-quest/90 text-quest-foreground gap-2"
                   disabled={isVoting}
                 >
                   <ThumbsUp className="h-4 w-4" />
-                  {isVoting ? 'Voting...' : 'Vote Yes'}
+                  {isVoting ? "Voting..." : "Vote Yes"}
                 </Button>
-                <Button 
+                <Button
                   onClick={() => onVote(proposal.id, false)}
                   className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2"
                   disabled={isVoting}
                 >
                   <ThumbsDown className="h-4 w-4" />
-                  {isVoting ? 'Voting...' : 'Vote No'}
+                  {isVoting ? "Voting..." : "Vote No"}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                Your vote will be recorded on the blockchain and cannot be changed.
+                Your vote will be recorded on the blockchain and cannot be
+                changed.
               </p>
             </div>
           )}
-          
+
           {/* Execute Button for Expired Proposals */}
-          {!isActive && !proposal.executed && proposal.deadline <= Date.now() && (
+          {!isActive && !proposal.executed && proposal.endTime <= Date.now() && (
             <div className="space-y-4">
               <h3 className="font-semibold">Finalize Proposal</h3>
-              <Button 
+              <Button
                 onClick={() => onExecute(proposal.id)}
                 className="w-full bg-gradient-council text-council-foreground"
               >
