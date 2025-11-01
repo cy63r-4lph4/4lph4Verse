@@ -1,32 +1,46 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Clock, Users, Play, Award, CheckCircle } from 'lucide-react';
-import { mockQuests, mockQuestResults } from '@/data/mockData';
-import { contractService, parseReflectionContent } from '@/lib/contractTransactions';
-import { useWallet } from '@/hooks/useWallet';
-import { Quest } from '@/types/contracts';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Trophy, Clock, Users, Play, Award, CheckCircle } from "lucide-react";
+import { mockQuests, mockQuestResults } from "@/data/mockData";
+import {
+  contractService,
+  parseReflectionContent,
+} from "@/lib/contractTransactions";
+import { useWallet } from "@/hooks/useWallet";
+import { Quest } from "@/types/contracts";
 
 export const QuestsPage: React.FC = () => {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
-  
-  const activeQuests = mockQuests.filter(q => q.isActive);
-  const completedQuests = mockQuests.filter(q => !q.isActive);
+
+  const activeQuests = mockQuests.filter((q) => q.isActive);
+  const completedQuests = mockQuests.filter((q) => !q.isActive);
 
   const formatTimeLeft = (endTime: number) => {
     const diff = endTime - Date.now();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+
     if (days > 0) return `${days}d ${hours}h left`;
     if (hours > 0) return `${hours}h left`;
-    return 'Ending soon';
+    return "Ending soon";
   };
 
   if (selectedQuest) {
-    return <QuestDetail quest={selectedQuest} onBack={() => setSelectedQuest(null)} />;
+    return (
+      <QuestDetail
+        quest={selectedQuest}
+        onBack={() => setSelectedQuest(null)}
+      />
+    );
   }
 
   return (
@@ -52,7 +66,10 @@ export const QuestsPage: React.FC = () => {
         <TabsContent value="active" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {activeQuests.map((quest) => (
-              <Card key={quest.id} className="community-card quest-glow hover:shadow-quest">
+              <Card
+                key={quest.id}
+                className="community-card quest-glow hover:shadow-quest"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
@@ -80,7 +97,7 @@ export const QuestsPage: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       className="w-full bg-gradient-quest text-quest-foreground hover:opacity-90"
                       onClick={() => setSelectedQuest(quest)}
                     >
@@ -129,7 +146,7 @@ export const QuestsPage: React.FC = () => {
 
         <TabsContent value="results" className="space-y-4">
           {mockQuestResults.map((result) => {
-            const quest = mockQuests.find(q => q.id === result.questId);
+            const quest = mockQuests.find((q) => q.id === result.questId);
             if (!quest) return null;
 
             return (
@@ -151,7 +168,10 @@ export const QuestsPage: React.FC = () => {
                     <h4 className="font-semibold mb-2">Top Winners:</h4>
                     <div className="space-y-2">
                       {result.winners.slice(0, 3).map((winner, index) => (
-                        <div key={winner} className="flex items-center justify-between p-2 bg-secondary rounded-md">
+                        <div
+                          key={winner}
+                          className="flex items-center justify-between p-2 bg-secondary rounded-md"
+                        >
                           <span className="flex items-center gap-2">
                             <Badge variant="outline">{index + 1}</Badge>
                             {winner}
@@ -164,8 +184,8 @@ export const QuestsPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Total Participants: {result.totalParticipants} • 
-                    Correct Answers: {result.correctAnswers.length}
+                    Total Participants: {result.totalParticipants} • Correct
+                    Answers: {result.correctAnswers.length}
                   </div>
                 </CardContent>
               </Card>
@@ -183,7 +203,7 @@ interface QuestDetailProps {
 }
 
 const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
-  const [answer, setAnswer] = useState('');
+  const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmittedBefore, setHasSubmittedBefore] = useState(false);
@@ -191,16 +211,19 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
 
   const handleSubmit = async () => {
     if (!answer.trim()) return;
-    
+
     if (!account) {
-      alert('Please connect your wallet first');
+      alert("Please connect your wallet first");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const result = await contractService.submitReflection(quest.id, answer.trim());
-      
+      const result = await contractService.submitReflection(
+        quest.id,
+        answer.trim()
+      );
+
       if (result.success) {
         // Auto-mint participation badge
         try {
@@ -210,15 +233,18 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
             false // Not a winner badge, just participation
           );
         } catch (badgeError) {
-          console.log('Badge minting failed, but reflection was successful:', badgeError);
+          console.log(
+            "Badge minting failed, but reflection was successful:",
+            badgeError
+          );
         }
 
         setSubmitted(true);
       } else {
-        alert(result.error || 'Failed to submit reflection');
+        alert(result.error || "Failed to submit reflection");
       }
     } catch (error: any) {
-      alert(error.message || 'Failed to submit reflection');
+      alert(error.message || "Failed to submit reflection");
     } finally {
       setIsSubmitting(false);
     }
@@ -228,7 +254,10 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
   React.useEffect(() => {
     const checkSubmission = async () => {
       if (account && quest.id) {
-        const hasSubmitted = await contractService.hasSubmittedReflection(quest.id, account);
+        const hasSubmitted = await contractService.hasSubmittedReflection(
+          quest.id,
+          account
+        );
         setHasSubmittedBefore(hasSubmitted);
       }
     };
@@ -241,17 +270,20 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
         <Button variant="outline" onClick={onBack} className="mb-4">
           ← Back to Quests
         </Button>
-        
+
         <Card className="community-card quest-glow">
           <CardContent className="p-8 text-center">
             <CheckCircle className="h-16 w-16 text-quest mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Quest Completed!</h2>
             <p className="text-muted-foreground mb-6">
-              Your answer has been submitted. Results will be announced when the quest ends.
+              Your answer has been submitted. Results will be announced when the
+              quest ends.
             </p>
             <div className="flex items-center justify-center gap-2 text-lg">
               <Trophy className="h-5 w-5 text-quest" />
-              <span className="font-semibold">Potential Reward: {quest.reward} CØRE</span>
+              <span className="font-semibold">
+                Potential Reward: {quest.reward} CØRE
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -265,13 +297,14 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
         <Button variant="outline" onClick={onBack} className="mb-4">
           ← Back to Quests
         </Button>
-        
+
         <Card className="community-card">
           <CardContent className="p-8 text-center">
             <CheckCircle className="h-16 w-16 text-quest mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Already Submitted!</h2>
             <p className="text-muted-foreground mb-6">
-              You have already submitted a reflection for this quest. Results will be announced when the quest ends.
+              You have already submitted a reflection for this quest. Results
+              will be announced when the quest ends.
             </p>
           </CardContent>
         </Card>
@@ -331,7 +364,7 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg font-medium">{quest.reflectionQuestion}</p>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Your Answer:</label>
             <textarea
@@ -345,16 +378,24 @@ const QuestDetail: React.FC<QuestDetailProps> = ({ quest, onBack }) => {
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
               <Clock className="h-4 w-4 inline mr-1" />
-              Quest ends in {quest.endTime > Date.now() ? 
-                Math.floor((quest.endTime - Date.now()) / (1000 * 60 * 60 * 24)) : 0} days
+              Quest ends in{" "}
+              {quest.endTime > Date.now()
+                ? Math.floor(
+                    (quest.endTime - Date.now()) / (1000 * 60 * 60 * 24)
+                  )
+                : 0}{" "}
+              days
             </div>
-            <Button 
+            <Button
               onClick={handleSubmit}
-              disabled={!answer.trim()}
               disabled={!answer.trim() || isSubmitting || !account}
               className="bg-gradient-quest text-quest-foreground hover:opacity-90"
             >
-              {isSubmitting ? 'Submitting...' : !account ? 'Connect Wallet' : 'Submit Reflection'}
+              {isSubmitting
+                ? "Submitting..."
+                : !account
+                  ? "Connect Wallet"
+                  : "Submit Reflection"}
             </Button>
           </div>
         </CardContent>
