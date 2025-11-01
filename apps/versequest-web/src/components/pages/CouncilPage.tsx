@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Proposal } from "@/types/contracts";
 import { mockProposals } from "@/data/mockData";
 import { CreateProposalForm } from "@/components/CreateProposalForm";
+import { ProposalDetail } from "@/components/ProposalDetail";
 
 /* -------------------------------------------------------------------------- */
 /* Utility                                                                    */
