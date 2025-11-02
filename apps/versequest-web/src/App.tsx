@@ -26,11 +26,10 @@ function App() {
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/council" element={<CouncilPage />} />
-          {/* <Route path="/profile" element={<ProfilePage />} /> */}
+          <Route path="/profile" element={<ProfilePage />} />
           {isAdmin && <Route path="/admin" element={<AdminPage />} />}
         </Routes>
       </main>
-
       <Toaster />
     </div>
   );

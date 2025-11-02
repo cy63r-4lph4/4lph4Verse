@@ -1,14 +1,26 @@
 # 🐉 4lph4Verse Monorepo
 
-> **The 4lph4Verse** is a multi-chain ecosystem powered by the **Alph4 CØRE Token (CØRE)**.  
-> This monorepo contains all apps, contracts, SDKs, and services that make up the 4lph4Verse.
+<p align="center">
+  <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status: Active" />
+  <img src="https://img.shields.io/github/license/cy63r-4lph4/4lph4Verse" alt="License" />
+  <img src="https://img.shields.io/badge/powered%20by-4lph4%20CØRE-blueviolet" alt="Powered by 4lph4 CØRE" />
+</p>
+
+> **The 4lph4Verse** is the abstraction layer for the onchain world — a multi-chain ecosystem powered by the **Alph4 CØRE Token (CØRE)**.
+> Its mission is to onboard the next million users onchain by making blockchain invisible — gasless, keyless, seamless — while empowering them with full ownership and control.
 
 ---
 
-## 🚀 Update
+## 🚀 Vision & Focus
 
-updated the Hirecore platform to allow task posting and live task and profile fetching
-url: https://4lph4-verse-hirecore.vercel.app/
+### **Core Focus (2025–2026):**
+
+1. 🧠 **Full Abstraction Infrastructure** — Develop the **Verse Abstraction Layer (VAL)** to power gasless, identity-aware transactions across all Verse dApps.
+2. 🪪 **Unified Identity** — Expand **VerseProfile** into a universal onchain identity system with reputation, aura, and persona contexts.
+3. 💳 **VerseWallet** — A human-first smart wallet providing Web2-like onboarding, Web3 power, and gasless experiences.
+4. 🌐 **Ecosystem Expansion** — Integrate all Verse dApps — HireCore, LeaseVault, VaultOfLove, VerseQuest — into one connected onchain layer.
+
+> The 4lph4Verse is no longer just a collection of apps — it’s the **operating system for the decentralized future.**
 
 ---
 
@@ -18,100 +30,114 @@ url: https://4lph4-verse-hirecore.vercel.app/
 4lph4verse/
 │
 ├── apps/             # Frontend dApps
-│   └── hirecore/     # HireCore platform (Proof of Ship registered project)
+│   ├── hirecore-web/     # HireCore platform (decentralized task protocol)
+│   ├── leasevault-web/   # LeaseVault - onchain lease & rent manager
+│   ├── vaultoflove-web/  # VaultOfLove - community NFT stories
+│   └── versequest-web/   # VerseQuest - reflection-based learning dApp
 │
 ├── contracts/        # Smart contracts
-│   └── core/         # CoreToken + Faucet (foundation layer)
+│   ├── core/         # Alph4 CØRE Token, Faucet, Registry
+│   ├── profile/      # VerseProfile identity & reputation
+│   └── utils/        # Forwarder, Paymaster, libraries
 │
 ├── packages/         # Shared code
-│   └── sdk/          # SDK (contracts bindings + utils for dApps)
+│   └── sdk/          # SDK (contract bindings + utils + relayer API)
 │
-├── services/         # Backend/microservices (future expansion)
+├── services/         # Backend/microservices (VAL Gateway, Relayer)
 │
-└── scripts/          # Utility scripts
+└── scripts/          # Deployment/export utilities
 ```
 
 ---
 
-💡 Active Project: HireCore
+## 🧱 Core Components
 
-HireCore is the Proof of Ship registered project.
-It’s a decentralized task & reputation protocol for skilled & unskilled labor.
+### 🪙 **Alph4 CØRE Token (CØRE)**
 
-Features (MVP phase):
-On-chain profiles & reputation (no CV needed).
+- ERC-20 with `permit()` (EIP-2612)
+- Powers payments, staking, and gas sponsorship
+- Multi-chain deployment: Celo, Base, Lisk
 
-Task creation + escrow using CØRE token.
+### 🧩 **VerseProfile**
 
-Community-backed proof of skill.
+- Onchain identity + reputation system
+- Gasless creation and updates via VAL
+- Persona mapping, aura sync, cross-dApp profile linkage
 
-Faucet to onboard new users with test tokens.
+### ⚙️ **Verse Abstraction Layer (VAL)**
 
-Location in repo:
-Frontend dApp → apps/hirecore
+- Gateway API for meta-transactions and gasless actions
+- Policy engine for gas sponsorship
+- Multi-chain relayer powering VerseWallet
 
-Contracts → contracts/core (CØRE + Faucet) & contracts/hirecore (JobBoard + JobManager + ScoreModel)
+### 💼 **VerseWallet**
 
-## SDK → packages/sdk/utils/contract/deployedContracts.ts
+- Smart wallet for frictionless onboarding
+- Passkey-ready login & session-based signatures
+- VAL integration for gasless UX
 
-⚙️ Setup
-Clone repo
+---
+
+## 💡 Active Project: HireCore
+
+**HireCore** is the first Proof-of-Ship registered dApp under the 4lph4Verse.
+A decentralized task & reputation protocol connecting skilled & unskilled labor.
+
+**MVP Features:**
+
+- Onchain profiles + skill reputation
+- Task creation + escrow using CØRE token
+- Community-verified proof of skill
+- Faucet for onboarding test users
+
+**Frontend:** `apps/hirecore`
+**Contracts:** `contracts/core`, `contracts/hirecore`
+**SDK:** `packages/sdk/utils/contract/deployedContracts.ts`
+
+🌐 **Live Demo:** [hirecore.vercel.app](https://4lph4-verse-hirecore.vercel.app/)
+
+---
+
+## ⚙️ Setup
+
+### Clone Repo
 
 ```bash
 git clone https://github.com/cy63r-4lph4/4lph4Verse.git
 cd 4lph4Verse
 ```
 
-Install dependencies
+### Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-Setup env vars
-
-Create .env in contracts/core/:
+### Setup Environment Variables
 
 ```text
-DEPLOYER_PRIVATE_KEY={0xyour_deployer_private_key}
-TREASURY_PRIVATE_KEY={0xyour_treasury_private_key}
+DEPLOYER_PRIVATE_KEY={0xYourKey}
+TREASURY_PRIVATE_KEY={0xYourKey}
 CELO_RPC=https://forno.celo.org
-CELO_SEPOLIA_RPC=https://forno.celo-sepolia.celo-testnet.org/
-ETHERSCAN_API_KEY={Your_etherscan_api_key}
-NEXT_PUBLIC_PROJECT_ID={your_project_id_from_reown_cloud}
-STORACHA_SPACE_DID=did:key:{Your_storacha_delegation_did}
+CELO_SEPOLIA_RPC=https://forno-sepolia.celo-testnet.org/
+NEXT_PUBLIC_PROJECT_ID={YourProjectID}
 ```
 
-Localhost
+### Deploy
 
-```
-pnpm run deploy --filter contracts/core --network localhost
-```
-
-Testnet (Celo Sepolia)
-
-```
+```bash
 pnpm run deploy --filter contracts/core --network celosepolia
 ```
 
-Export deployment info
+### Export Deployments
 
-```
+```bash
 pnpm export
 ```
 
-This generates synced contract bindings in:
-
-packages/sdk/utils/contract/deployedContracts.json
-packages/sdk/utils/contract/deployedContracts.ts
-
 ---
 
-## 🌍 Current Deployments
-
-Celo Sepolia (11142220)
-
-Last updated: 2025-09-23
+## 🌍 Current Deployments (Celo Sepolia)
 
 | Contract               | Address                                      | Explorer                                                                                       |
 | ---------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -119,31 +145,33 @@ Last updated: 2025-09-23
 | **CoreFaucet**         | `0xb5d8887AB09AdB5983AACEed4e1AbB9267407823` | [View](https://celo-sepolia.blockscout.com/address/0xb5d8887AB09AdB5983AACEed4e1AbB9267407823) |
 | **HireCoreJobBoard**   | `0x56a5BA686856F0787ce1B0278ED55D359A1D050e` | [View](https://celo-sepolia.blockscout.com/address/0x56a5BA686856F0787ce1B0278ED55D359A1D050e) |
 | **HireCoreJobManager** | `0x775808914a3f338eebaEd255fD4Ba6403546b57a` | [View](https://celo-sepolia.blockscout.com/address/0x775808914a3f338eebaEd255fD4Ba6403546b57a) |
-| **HireCoreScoreModel** | `0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA` | [View](https://celo-sepolia.blockscout.com/address/0xb4741A7d2d26a59fbeF9fb17BEbb65e1acb6c5DA) |
 | **VerseProfile**       | `0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E` | [View](https://celo-sepolia.blockscout.com/address/0x9B347f8b7118d673730d8BA774975AcBe1DD4d5E) |
 | **AppRegistry**        | `0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735` | [View](https://celo-sepolia.blockscout.com/address/0xb8be06EB50fe5a4089Bc8CcA3C5240e613c29735) |
 | **BadgeRegistry**      | `0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE` | [View](https://celo-sepolia.blockscout.com/address/0x2D3D0525A0FdFE8032d6eA6D5e3d5223d60526aE) |
-| **ReputationHub**      | `0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F` | [View](https://celo-sepolia.blockscout.com/address/0xB617E64D4b1C927d7cE3e35f7bbA852bC2c5c50F) |
-| **ScoreAggregator**    | `0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66` | [View](https://celo-sepolia.blockscout.com/address/0xFC6F44E9307B2CACbA608CDc6A3D9A57876cfD66) |
-
-## 🌐 Frontend Deployments
-
-| App           | URL                                                                              |
-| ------------- | -------------------------------------------------------------------------------- |
-| **HireCore**  | [hirecore.vercel.app](https://4lph4-verse-hirecore.vercel.app/)                  |
-| **VerseCore** | [verse-core.vercel.app](https://4lph4-verse-verse-core.vercel.app/)              |
-| **Faucet**    | [verse-core.vercel.app/faucet](https://4lph4-verse-verse-core.vercel.app/faucet) |
 
 ---
 
-## 📜 Ship Log (Proof of Ship)
+## 🧭 Next Steps (Q4 2025 → Q1 2026)
 
-2025-10-18 — Updated the frontend to display task details and user profiles
+- [ ] Expand VAL Gateway for gasless onboarding
+- [ ] Deploy VerseWallet MVP
+- [ ] Enable multi-chain sync for Profile + CØRE (Base + Lisk)
+- [ ] Add paymaster for sponsored gas
+- [ ] Release Developer SDK v1.0
+- [ ] Launch 4lph4Verse metrics dashboard
 
 ---
 
-## 🧭 Next Steps
+## 👥 Contributors
 
-Update Alph4 CØRE token contract to allow permits which will allow a fully gasless expeirience for users.
-Depoy HireCore on base and Verse profile on celo to test multichain compactibility.
-Deploy Alph4 CØRE token to multiple chains (lisk and base).
+| Role      | Name  | Handle                                         |
+| --------- | ----- | ---------------------------------------------- |
+| Architect | Barry | [@cy63r-4lph4](https://github.com/cy63r-4lph4) |
+| Core Dev  | —     | —                                              |
+| UI/UX     | —     | —                                              |
+
+---
+
+## 🧱 Motto
+
+> _“A dragon doesn’t need a matchbox — it is the flame.”_ 🔥
