@@ -1,16 +1,32 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { User, Trophy, Heart, Vote, Award, Copy, ExternalLink, Share } from 'lucide-react';
-import { mockUserProfile } from '@/data/mockData';
-import { useWallet } from '@/hooks/useWallet';
-import { useContract } from '@/hooks/useContract';
-import { useToast } from '@/hooks/use-toast';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  User,
+  Trophy,
+  Heart,
+  Vote,
+  Award,
+  Copy,
+  ExternalLink,
+  Share,
+  Users,
+} from "lucide-react";
+import { mockUserProfile } from "@/data/mockData";
+import { useWallet } from "@/hooks/useWallet";
+import { useContract } from "@/hooks/useContract";
+import { useToast } from "@/hooks/use-toast";
 
 export const ProfilePage: React.FC = () => {
   const { account } = useWallet();
-  const { userBadges, userAura } = useContract();
+  const { userBadges = [], userAura } = useContract();
   const { toast } = useToast();
 
   const handleCopyAddress = () => {
@@ -18,26 +34,35 @@ export const ProfilePage: React.FC = () => {
       navigator.clipboard.writeText(account);
       toast({
         title: "Copied!",
-        description: "Wallet address copied to clipboard"
+        description: "Wallet address copied to clipboard",
       });
     }
   };
 
   const handleShare = () => {
-    const profileUrl = `${window.location.origin}/profile/${account}`;
+    const profileUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/profile/${account}`
+        : "";
     navigator.clipboard.writeText(profileUrl);
     toast({
       title: "Profile Link Copied!",
-      description: "Share your profile with friends"
+      description: "Share your profile with friends",
     });
   };
 
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary': return 'bg-gradient-to-r from-yellow-400 to-orange-500';
-      case 'epic': return 'bg-gradient-to-r from-purple-500 to-pink-500';
-      case 'rare': return 'bg-gradient-to-r from-blue-500 to-cyan-500';
-      default: return 'bg-gradient-to-r from-gray-400 to-gray-500';
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "Quest Master":
+        return "bg-gradient-to-r from-yellow-400 to-orange-500";
+      case "Community Builder":
+        return "bg-gradient-to-r from-blue-500 to-cyan-500";
+      case "Discussion Leader":
+        return "bg-gradient-to-r from-purple-500 to-pink-500";
+      case "Governance Participant":
+        return "bg-gradient-to-r from-green-500 to-emerald-500";
+      default:
+        return "bg-gradient-to-r from-gray-400 to-gray-500";
     }
   };
 
@@ -57,6 +82,11 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
+  const completed = mockUserProfile?.questsCompleted ?? 0;
+  const tips = mockUserProfile?.tipsReceived ?? 0;
+  const votes = mockUserProfile?.totalVotes ?? 0;
+  const won = mockUserProfile?.questsWon ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Profile Header */}
@@ -66,7 +96,7 @@ export const ProfilePage: React.FC = () => {
             <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center">
               <User className="h-10 w-10 text-primary-foreground" />
             </div>
-            
+
             <div className="flex-1 space-y-4">
               <div>
                 <h1 className="text-3xl font-bold gradient-text">Your Profile</h1>
@@ -85,22 +115,10 @@ export const ProfilePage: React.FC = () => {
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-quest">{mockUserProfile.completedQuests}</div>
-                  <div className="text-sm text-muted-foreground">Quests Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{mockUserProfile.tipsReceived}</div>
-                  <div className="text-sm text-muted-foreground">CØRE Tips Received</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-council">{mockUserProfile.totalVotes}</div>
-                  <div className="text-sm text-muted-foreground">Votes Cast</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-quest-glow">{mockUserProfile.questsWon}</div>
-                  <div className="text-sm text-muted-foreground">Quests Won</div>
-                </div>
+                <StatBox label="Quests Completed" value={completed} color="text-quest" />
+                <StatBox label="CØRE Tips Received" value={tips} color="text-primary" />
+                <StatBox label="Votes Cast" value={votes} color="text-council" />
+                <StatBox label="Quests Won" value={won} color="text-quest-glow" />
               </div>
             </div>
           </div>
@@ -125,23 +143,33 @@ export const ProfilePage: React.FC = () => {
               {userBadges.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userBadges.map((badge) => (
-                    <div key={badge.tokenId} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                      <div className={`w-12 h-12 rounded-lg ${getCategoryColor(badge.category)} flex items-center justify-center`}>
+                    <div
+                      key={badge.tokenId}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+                    >
+                      <div
+                        className={`w-12 h-12 rounded-lg ${getCategoryColor(
+                          badge.category
+                        )} flex items-center justify-center`}
+                      >
                         <Award className="h-6 w-6 text-white" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold">{badge.name}</h4>
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className="text-xs border-quest/30 text-quest"
                           >
                             {badge.category}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{badge.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {badge.description}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Minted {new Date(badge.mintedAt).toLocaleDateString()}
+                          Minted{" "}
+                          {new Date(badge.mintedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -162,64 +190,17 @@ export const ProfilePage: React.FC = () => {
 
         {/* Activity Summary */}
         <div className="space-y-4">
-          <Card className="community-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-quest" />
-                Quest Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Completed Quests</span>
-                <Badge className="bg-quest/10 text-quest">
-                  {mockUserProfile.completedQuests}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Quests Won</span>
-                <Badge className="bg-quest-glow/10 text-quest-glow">
-                  {mockUserProfile.questsWon}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Win Rate</span>
-                <Badge variant="outline">
-                  {mockUserProfile.completedQuests > 0 ? 
-                    Math.round((mockUserProfile.questsWon / mockUserProfile.completedQuests) * 100) : 0}%
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <ActivityCard title="Quest Activity" icon={Trophy} color="text-quest" items={[
+            { label: "Completed Quests", value: completed, badgeColor: "bg-quest/10 text-quest" },
+            { label: "Quests Won", value: won, badgeColor: "bg-quest-glow/10 text-quest-glow" },
+            { label: "Win Rate", value: `${completed > 0 ? Math.round((won / completed) * 100) : 0}%`, badgeColor: "border border-quest/30" },
+          ]} />
 
-          <Card className="community-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-primary" />
-                Community Impact
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Tips Received</span>
-                <Badge className="bg-primary/10 text-primary">
-                  {mockUserProfile.tipsReceived} CØRE
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Votes Cast</span>
-                <Badge className="bg-council/10 text-council">
-                  {mockUserProfile.totalVotes}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-sm">Community Rank</span>
-                <Badge variant="outline">
-                  Rising Star
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <ActivityCard title="Community Impact" icon={Heart} color="text-primary" items={[
+            { label: "Tips Received", value: `${tips} CØRE`, badgeColor: "bg-primary/10 text-primary" },
+            { label: "Votes Cast", value: votes, badgeColor: "bg-council/10 text-council" },
+            { label: "Community Rank", value: "Rising Star", badgeColor: "border border-primary/30" },
+          ]} />
 
           <Card className="community-card">
             <CardHeader>
@@ -227,7 +208,7 @@ export const ProfilePage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleShare}>
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Share Profile
                 </Button>
@@ -242,14 +223,52 @@ export const ProfilePage: React.FC = () => {
       </div>
     </div>
   );
-
-  function getCategoryColor(category: string) {
-    switch (category) {
-      case 'Quest Master': return 'bg-gradient-to-r from-yellow-400 to-orange-500';
-      case 'Community Builder': return 'bg-gradient-to-r from-blue-500 to-cyan-500';
-      case 'Discussion Leader': return 'bg-gradient-to-r from-purple-500 to-pink-500';
-      case 'Governance Participant': return 'bg-gradient-to-r from-green-500 to-emerald-500';
-      default: return 'bg-gradient-to-r from-gray-400 to-gray-500';
-    }
-  }
 };
+
+/* -------------------- Sub Components -------------------- */
+const StatBox = ({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  color: string;
+}) => (
+  <div className="text-center">
+    <div className={`text-2xl font-bold ${color}`}>{value}</div>
+    <div className="text-sm text-muted-foreground">{label}</div>
+  </div>
+);
+
+const ActivityCard = ({
+  title,
+  icon: Icon,
+  color,
+  items,
+}: {
+  title: string;
+  icon: any;
+  color: string;
+  items: { label: string; value: string | number; badgeColor: string }[];
+}) => (
+  <Card className="community-card">
+    <CardHeader>
+      <CardTitle className={`flex items-center gap-2 ${color}`}>
+        <Icon className="h-5 w-5" />
+        {title}
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between p-3 bg-secondary rounded-lg"
+        >
+          <span className="text-sm">{item.label}</span>
+          <Badge className={item.badgeColor}>{item.value}</Badge>
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);

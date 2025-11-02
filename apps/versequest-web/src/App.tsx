@@ -18,7 +18,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation isAdmin={isAdmin} />
-      <ScrollToTop /> 
+      <ScrollToTop />
 
       <main className="container mx-auto px-4 py-8">
         <Routes>
@@ -26,7 +26,7 @@ function App() {
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/council" element={<CouncilPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          {/* <Route path="/profile" element={<ProfilePage />} /> */}
           {isAdmin && <Route path="/admin" element={<AdminPage />} />}
         </Routes>
       </main>
