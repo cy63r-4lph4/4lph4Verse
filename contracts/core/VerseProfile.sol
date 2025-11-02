@@ -1,292 +1,460 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
 /**
- * @title VerseProfile
- * @notice Universal identity layer for the 4lph4Verse
+ * @title VerseProfile v2 (Core)
+ * @notice Root identity for the 4lph4Verse. Soulbound VerseID per wallet.
+ *         Minimal on-chain state; rich off-chain metadata. Modules extend behavior.
  *
- * Phase 1 design (direct interactions):
- * - No ERC2771 / relayer plumbing.
- * - Plain _msgSender() usage (EOA or AA smart account will call directly).
- * - Upgradeable via UUPS.
+ * Key features:
+ *  - One profile per wallet (soulbound; no transfers)
+ *  - Global unique handle (case-insensitive via normalization)
+ *  - Purpose tag (why this profile exists in the Verse)
+ *  - Metadata URI (ipfs:// or https://)
+ *  - Delegate/guardian for management
+ *  - UUPS upgradeability + roles + pausable
+ *  - EIP-712 meta-transactions for gasless updates
+ *  - Module system with per-hook subscriptions and cheap dispatch
  *
- * Features:
- * - One profile (VerseID) per wallet
- * - Global unique handle (e.g., @cy63r_4lph4)
- * - Per-app nicknames (scoped to appId)
- * - ENS link (optional)
- * - Minimal onchain state (rich metadata offchain)
- *
- * Reputation & scoring live outside this contract (ReputationHub, ScoreModels).
+ * Notes:
+ *  - ENS linkage intentionally removed (can live in metadata or a module)
+ *  - App-specific nicknames moved to a module to keep core slim
  */
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
+
+interface IVerseModule {
+    /**
+     * @dev Generic hook for Verse lifecycle events.
+     * @param hook   keccak256("onProfileCreated"), keccak256("onHandleChanged"), etc.
+     * @param verseId The VerseID the event pertains to
+     * @param data   ABI-encoded aux data, schema per hook
+     *
+     * Expected signatures (examples):
+     *   - onProfileCreated: abi.encode(address owner, string handle, string purpose)
+     *   - onHandleChanged:  abi.encode(string oldHandle, string newHandle)
+     *   - onPurposeUpdated: abi.encode(string newPurpose)
+     *   - onMetadataSet:    abi.encode(string newURI)
+     *   - onDelegateSet:    abi.encode(address newDelegate)
+     */
+    function onVerseEvent(
+        bytes32 hook,
+        uint256 verseId,
+        bytes calldata data
+    ) external;
+}
 
 contract VerseProfile is
     Initializable,
     UUPSUpgradeable,
     PausableUpgradeable,
-    AccessControlUpgradeable
+    AccessControlUpgradeable,
+    EIP712Upgradeable
 {
-    // -------- Roles --------
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    using ECDSA for bytes32;
 
-    // -------- Types --------
+    // -------------------- Roles --------------------
+    bytes32 public constant PROFILE_ADMIN_ROLE =
+        keccak256("PROFILE_ADMIN_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+
+    // -------------------- Hook IDs --------------------
+    // (pre-computed constants to save a tiny bit of gas vs keccak at runtime)
+    bytes32 public constant HOOK_ON_PROFILE_CREATED =
+        keccak256("onProfileCreated");
+    bytes32 public constant HOOK_ON_HANDLE_CHANGED =
+        keccak256("onHandleChanged");
+    bytes32 public constant HOOK_ON_PURPOSE_UPDATED =
+        keccak256("onPurposeUpdated");
+    bytes32 public constant HOOK_ON_METADATA_SET = keccak256("onMetadataSet");
+    bytes32 public constant HOOK_ON_DELEGATE_SET = keccak256("onDelegateSet");
+
+    // -------------------- Types & Storage --------------------
     struct Profile {
-        address owner;
-        string verseHandle; // unique across Verse
-        string metadataURI; // ipfs://... JSON
-        bytes32 ensNamehash; // optional
-        uint64 createdAt;
+        address owner; // wallet or smart account
+        string handle; // globally unique, normalized lowercase
+        string metadataURI; // ipfs://... or https://...
+        string purpose; // human-readable purpose
+        address delegate; // optional manager/guardian
+        uint64 createdAt; // block.timestamp
+        uint8 version; // schema version
     }
 
-    // -------- Storage --------
-    uint256 public nextProfileId;
-    mapping(uint256 => Profile) private profiles; // verseId => Profile
-    mapping(address => uint256) public profileOf; // wallet => verseId
-    mapping(bytes32 => uint256) private handleToId; // keccak(lowercase(handle)) => verseId
+    uint256 public nextVerseId; // starts at 1
 
-    // per-app nicknames
-    mapping(bytes32 => mapping(bytes32 => uint256)) private appNickToId; // appId => keccak(nick) => verseId
-    mapping(uint256 => mapping(bytes32 => string)) private appNickOf; // verseId => appId => nickname
+    mapping(uint256 => Profile) private _profiles; // verseId => Profile
+    mapping(address => uint256) public profileOf; // wallet  => verseId
+    mapping(bytes32 => uint256) private _handleToId; // keccak256(handleLower) => verseId
 
-    // -------- Events --------
+    // EIP-712 nonces (per verseId)
+    mapping(uint256 => uint256) public nonces;
+
+    // Module registry
+    mapping(bytes32 => address) public modules; // key => module address
+
+    // Per-hook subscriptions (cheap dispatch)
+    mapping(bytes32 => address[]) private _hookSubs; // hook => subscribers
+
+    // -------------------- Events --------------------
     event ProfileCreated(
         uint256 indexed verseId,
         address indexed owner,
+        string handle,
+        string purpose,
         string metadataURI
     );
-    event OwnerChanged(
+    event HandleChanged(
         uint256 indexed verseId,
-        address indexed oldOwner,
-        address indexed newOwner
+        string oldHandle,
+        string newHandle
     );
-    event VerseHandleSet(uint256 indexed verseId, string handle);
-    event MetadataURISet(uint256 indexed verseId, string uri);
-    event ENSLinked(uint256 indexed verseId, bytes32 namehash);
-    event AppNicknameSet(
+    event MetadataURISet(uint256 indexed verseId, string newURI);
+    event PurposeUpdated(uint256 indexed verseId, string newPurpose);
+    event DelegateSet(uint256 indexed verseId, address indexed delegate);
+    event ModuleRegistered(bytes32 indexed key, address indexed module);
+    event ModuleRemoved(bytes32 indexed key, address indexed module);
+    event HookSubscribed(bytes32 indexed hook, address indexed module);
+    event HookUnsubscribed(bytes32 indexed hook, address indexed module);
+    event ModuleCallFailed(
+        bytes32 indexed hook,
         uint256 indexed verseId,
-        bytes32 indexed appId,
-        string nickname
+        address indexed module
     );
 
-    // -------- UUPS pattern: disable impl init --------
+    // -------------------- UUPS: disable impl init --------------------
     constructor() {
         _disableInitializers();
     }
 
-    // -------- Init / Upgrade --------
+    // -------------------- Initialize --------------------
     function initialize(address admin) external initializer {
         require(admin != address(0), "bad admin");
 
         __UUPSUpgradeable_init();
         __Pausable_init();
         __AccessControl_init();
+        __ERC165_init();
+        __EIP712_init("VerseProfile", "2"); // bump if EIP-712 structs change
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(ADMIN_ROLE, admin);
+        _grantRole(PROFILE_ADMIN_ROLE, admin);
+        _grantRole(UPGRADER_ROLE, admin);
 
-        nextProfileId = 1;
+        nextVerseId = 1;
     }
 
+    // -------------------- Access / Upgrade --------------------
     function _authorizeUpgrade(
         address
-    ) internal override onlyRole(ADMIN_ROLE) {}
+    ) internal override onlyRole(UPGRADER_ROLE) {}
 
-    // -------- Helpers --------
-    function _key(string memory s) internal pure returns (bytes32) {
-        // Frontend should pre-lowercase; contract stays simple.
-        return keccak256(bytes(s));
-    }
-
-    function _requireOwner(uint256 verseId) internal view {
-        require(profiles[verseId].owner == _msgSender(), "not owner");
-    }
-
-    // -------- Views --------
+    // -------------------- Views --------------------
     function getProfile(
         uint256 verseId
-    )
-        external
-        view
-        returns (
-            address owner,
-            string memory verseHandle,
-            string memory metadataURI,
-            bytes32 ensNamehash,
-            uint64 createdAt
-        )
-    {
-        Profile storage p = profiles[verseId];
-        return (
-            p.owner,
-            p.verseHandle,
-            p.metadataURI,
-            p.ensNamehash,
-            p.createdAt
-        );
+    ) external view returns (Profile memory) {
+        return _profiles[verseId];
     }
 
     function verseIdByHandle(
         string calldata handle
     ) external view returns (uint256) {
-        return handleToId[_key(handle)];
+        return _handleToId[_handleKey(_normalize(handle))];
     }
 
-    function getAppNickname(
-        uint256 verseId,
-        bytes32 appId
-    ) external view returns (string memory) {
-        return appNickOf[verseId][appId];
+    function ownerOf(uint256 verseId) external view returns (address) {
+        return _profiles[verseId].owner;
     }
 
-    function verseIdByAppNickname(
-        bytes32 appId,
-        string calldata nickname
-    ) external view returns (uint256) {
-        return appNickToId[appId][_key(nickname)];
-    }
-
-    /// @notice Returns true if a wallet already has a VerseProfile
     function hasProfile(address user) external view returns (bool) {
         return profileOf[user] != 0;
     }
 
-    /// Best display handle for an app context (nickname -> verseHandle -> fallback offchain)
-    function getDisplayHandle(
-        uint256 verseId,
-        bytes32 appId
-    ) external view returns (string memory) {
-        string memory appNick = appNickOf[verseId][appId];
-        if (bytes(appNick).length != 0) return appNick;
-        return profiles[verseId].verseHandle;
-    }
-
-    // -------- Core: Create / Ensure --------
+    // -------------------- Core: Create --------------------
     function createProfile(
-        string calldata verseHandle,
+        string calldata handle,
         string calldata metadataURI,
-        bytes32 ensNamehash
+        string calldata purpose
     ) external whenNotPaused returns (uint256 verseId) {
         address sender = _msgSender();
         require(profileOf[sender] == 0, "already have profile");
 
-        verseId = nextProfileId++;
-        profiles[verseId] = Profile({
+        // Normalize & claim handle (optional empty handle allowed at creation, but recommended to set)
+        string memory norm = _normalize(handle);
+        if (bytes(norm).length != 0) {
+            bytes32 key = _handleKey(norm);
+            uint256 existing = _handleToId[key];
+            require(existing == 0, "handle taken");
+        }
+
+        verseId = nextVerseId++;
+        _profiles[verseId] = Profile({
             owner: sender,
-            verseHandle: "",
+            handle: norm,
             metadataURI: metadataURI,
-            ensNamehash: ensNamehash,
-            createdAt: uint64(block.timestamp)
+            purpose: purpose,
+            delegate: address(0),
+            createdAt: uint64(block.timestamp),
+            version: 2
         });
         profileOf[sender] = verseId;
 
-        emit ProfileCreated(verseId, sender, metadataURI);
+        // Claim handle if provided
+        if (bytes(norm).length != 0) {
+            _handleToId[_handleKey(norm)] = verseId;
+        }
 
-        if (bytes(verseHandle).length != 0)
-            _setVerseHandle(verseId, verseHandle);
-        if (ensNamehash != bytes32(0)) emit ENSLinked(verseId, ensNamehash);
+        emit ProfileCreated(verseId, sender, norm, purpose, metadataURI);
+
+        // Minimal synchronous hooks (keep subscriber list short)
+        _trigger(
+            HOOK_ON_PROFILE_CREATED,
+            verseId,
+            abi.encode(sender, norm, purpose)
+        );
     }
 
-    // -------- Owner actions --------
-    function setVerseHandle(
+    // -------------------- Owner/Delegate actions --------------------
+    function setHandle(
         uint256 verseId,
         string calldata newHandle
     ) external whenNotPaused {
-        _requireOwner(verseId);
-        _setVerseHandle(verseId, newHandle);
-    }
+        _requireOwnerOrDelegate(verseId);
 
-    function _setVerseHandle(
-        uint256 verseId,
-        string calldata newHandle
-    ) internal {
-        require(bytes(newHandle).length != 0, "empty handle");
-        bytes32 key = _key(newHandle);
+        string memory norm = _normalize(newHandle);
+        require(bytes(norm).length != 0, "empty handle");
+        bytes32 key = _handleKey(norm);
 
-        uint256 existing = handleToId[key];
+        uint256 existing = _handleToId[key];
         require(existing == 0 || existing == verseId, "handle taken");
 
-        string memory old = profiles[verseId].verseHandle;
-        if (bytes(old).length != 0) handleToId[_key(old)] = 0;
+        // free old
+        string memory old = _profiles[verseId].handle;
+        if (bytes(old).length != 0) {
+            _handleToId[_handleKey(old)] = 0;
+        }
 
-        handleToId[key] = verseId;
-        profiles[verseId].verseHandle = newHandle;
-        emit VerseHandleSet(verseId, newHandle);
+        _profiles[verseId].handle = norm;
+        _handleToId[key] = verseId;
+        emit HandleChanged(verseId, old, norm);
+
+        _trigger(HOOK_ON_HANDLE_CHANGED, verseId, abi.encode(old, norm));
     }
 
     function setMetadataURI(
         uint256 verseId,
         string calldata newURI
     ) external whenNotPaused {
-        _requireOwner(verseId);
-        profiles[verseId].metadataURI = newURI;
+        _requireOwnerOrDelegate(verseId);
+        _profiles[verseId].metadataURI = newURI;
         emit MetadataURISet(verseId, newURI);
+
+        // Prefer event-only for most modules; still provide hook for those that opt-in.
+        _trigger(HOOK_ON_METADATA_SET, verseId, abi.encode(newURI));
     }
 
-    function linkENS(uint256 verseId, bytes32 namehash) external whenNotPaused {
-        _requireOwner(verseId);
-        profiles[verseId].ensNamehash = namehash;
-        emit ENSLinked(verseId, namehash);
-    }
-
-    function transferOwnershipOfProfile(
+    function setPurpose(
         uint256 verseId,
-        address newOwner
+        string calldata newPurpose
     ) external whenNotPaused {
-        _requireOwner(verseId);
-        require(newOwner != address(0), "zero");
-        require(profileOf[newOwner] == 0, "new owner already has profile");
+        _requireOwnerOrDelegate(verseId);
+        _profiles[verseId].purpose = newPurpose;
+        emit PurposeUpdated(verseId, newPurpose);
 
-        address old = profiles[verseId].owner;
-        profiles[verseId].owner = newOwner;
-        profileOf[old] = 0;
-        profileOf[newOwner] = verseId;
-
-        emit OwnerChanged(verseId, old, newOwner);
+        _trigger(HOOK_ON_PURPOSE_UPDATED, verseId, abi.encode(newPurpose));
     }
 
-    // -------- Per-App Nicknames --------
-    function setAppNickname(
+    function setDelegate(
         uint256 verseId,
-        bytes32 appId,
-        string calldata nickname
+        address newDelegate
     ) external whenNotPaused {
-        _requireOwner(verseId);
+        _requireOwnerOrDelegate(verseId);
+        _profiles[verseId].delegate = newDelegate;
+        emit DelegateSet(verseId, newDelegate);
 
-        // empty nickname clears value
-        bytes32 key = _key(nickname);
-        uint256 existing = appNickToId[appId][key];
-        require(existing == 0 || existing == verseId, "app nickname taken");
-
-        // clear previous if set
-        string memory old = appNickOf[verseId][appId];
-        if (bytes(old).length != 0) {
-            appNickToId[appId][_key(old)] = 0;
-        }
-
-        if (bytes(nickname).length != 0) {
-            appNickToId[appId][key] = verseId;
-            appNickOf[verseId][appId] = nickname;
-        } else {
-            appNickOf[verseId][appId] = "";
-        }
-
-        emit AppNicknameSet(verseId, appId, nickname);
+        _trigger(HOOK_ON_DELEGATE_SET, verseId, abi.encode(newDelegate));
     }
 
-    // -------- Pause controls --------
-    function pause() external onlyRole(ADMIN_ROLE) {
+    // -------------------- Gasless: EIP-712 meta-ops --------------------
+    // struct for setMetadataWithSig
+    struct SetURIWithSig {
+        uint256 verseId;
+        string newURI;
+        uint256 nonce;
+        uint256 deadline;
+    }
+    bytes32 private constant _SET_URI_TYPEHASH =
+        keccak256(
+            "SetURIWithSig(uint256 verseId,string newURI,uint256 nonce,uint256 deadline)"
+        );
+
+    function setMetadataWithSig(
+        SetURIWithSig calldata op,
+        bytes calldata sig
+    ) external whenNotPaused {
+        require(block.timestamp <= op.deadline, "expired");
+        require(op.nonce == nonces[op.verseId]++, "bad nonce");
+
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    _SET_URI_TYPEHASH,
+                    op.verseId,
+                    keccak256(bytes(op.newURI)),
+                    op.nonce,
+                    op.deadline
+                )
+            )
+        );
+        address signer = _resolveSigner(op.verseId, digest, sig);
+        require(signer == _profiles[op.verseId].owner, "not owner");
+
+        _profiles[op.verseId].metadataURI = op.newURI;
+        emit MetadataURISet(op.verseId, op.newURI);
+        _trigger(HOOK_ON_METADATA_SET, op.verseId, abi.encode(op.newURI));
+    }
+
+    // (Extend similarly for setPurposeWithSig, setHandleWithSig if desired)
+
+    // -------------------- Module Registry --------------------
+    function registerModule(
+        bytes32 key,
+        address module
+    ) external onlyRole(PROFILE_ADMIN_ROLE) {
+        require(module != address(0), "zero module");
+        modules[key] = module;
+        emit ModuleRegistered(key, module);
+    }
+
+    function removeModule(bytes32 key) external onlyRole(PROFILE_ADMIN_ROLE) {
+        address old = modules[key];
+        modules[key] = address(0);
+        emit ModuleRemoved(key, old);
+    }
+
+    function subscribeHook(
+        bytes32 hook,
+        address module
+    ) external onlyRole(PROFILE_ADMIN_ROLE) {
+        require(module != address(0), "zero module");
+        _hookSubs[hook].push(module);
+        emit HookSubscribed(hook, module);
+    }
+
+    function unsubscribeHook(
+        bytes32 hook,
+        address module
+    ) external onlyRole(PROFILE_ADMIN_ROLE) {
+        address[] storage arr = _hookSubs[hook];
+        uint256 n = arr.length;
+        for (uint256 i; i < n; ++i) {
+            if (arr[i] == module) {
+                arr[i] = arr[n - 1];
+                arr.pop();
+                emit HookUnsubscribed(hook, module);
+                break;
+            }
+        }
+    }
+
+    function getHookSubscribers(
+        bytes32 hook
+    ) external view returns (address[] memory) {
+        return _hookSubs[hook];
+    }
+
+    // -------------------- Pause controls --------------------
+    function pause() external onlyRole(PROFILE_ADMIN_ROLE) {
         _pause();
     }
 
-    function unpause() external onlyRole(ADMIN_ROLE) {
+    function unpause() external onlyRole(PROFILE_ADMIN_ROLE) {
         _unpause();
     }
 
-    // -------- Upgrade gap --------
-    uint256[41] private __gap;
+    // -------------------- Internal: Hook Dispatch (cheap) --------------------
+    /**
+     * @dev Cheap dispatch: only call subscribed modules for this hook.
+     * Uses a small gas stipend to avoid griefing; ignore failures.
+     */
+    function _trigger(
+        bytes32 hook,
+        uint256 verseId,
+        bytes memory data
+    ) internal {
+        address[] memory subs = _hookSubs[hook];
+        uint256 len = subs.length;
+        for (uint256 i; i < len; ++i) {
+            address m = subs[i];
+            if (m == address(0)) continue;
+
+            (bool success, ) = m.call{gas: 50_000}(
+                abi.encodeWithSelector(
+                    IVerseModule.onVerseEvent.selector,
+                    hook,
+                    verseId,
+                    data
+                )
+            );
+
+            // Optional: emit event if a module call failed (for debugging)
+            if (!success) emit ModuleCallFailed(hook, verseId, m);
+        }
+    }
+
+    // -------------------- Internal: Utils --------------------
+    function _requireOwnerOrDelegate(uint256 verseId) internal view {
+        Profile storage p = _profiles[verseId];
+        address s = _msgSender();
+        require(s == p.owner || s == p.delegate, "no auth");
+    }
+
+    function _handleKey(string memory lower) internal pure returns (bytes32) {
+        return keccak256(bytes(lower));
+    }
+
+    function _normalize(string memory s) internal pure returns (string memory) {
+        // ASCII lowercase normalization; extendable to full unicode if needed.
+        bytes memory b = bytes(s);
+        for (uint256 i; i < b.length; ++i) {
+            uint8 c = uint8(b[i]);
+            if (c >= 65 && c <= 90) {
+                // 'A'..'Z'
+                b[i] = bytes1(c + 32);
+            }
+        }
+        return string(b);
+    }
+
+    // Resolve EOA vs Smart Account (EIP-1271)
+    function _resolveSigner(
+        uint256 verseId,
+        bytes32 digest,
+        bytes calldata sig
+    ) internal view returns (address) {
+        address owner = _profiles[verseId].owner;
+        if (owner.code.length == 0) {
+            return ECDSA.recover(digest, sig);
+        } else {
+            bytes4 ok = IERC1271(owner).isValidSignature(digest, sig);
+            require(ok == 0x1626ba7e, "bad 1271 sig");
+            return owner;
+        }
+    }
+
+    // -------------------- ERC165 --------------------
+    function supportsInterface(
+        bytes4 iid
+    ) public view override(AccessControlUpgradeable) returns (bool) {
+        return super.supportsInterface(iid);
+    }
+
+    // -------------------- Storage gap --------------------
+    uint256[44] private __gap;
 }
