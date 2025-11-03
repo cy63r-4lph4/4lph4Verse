@@ -141,7 +141,7 @@ contract VerseProfile is
         __Pausable_init();
         __AccessControl_init();
         __ERC165_init();
-        __EIP712_init("VerseProfile", "2"); // bump if EIP-712 structs change
+        __EIP712_init("VerseProfile", "0.1"); // bump if EIP-712 structs change
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(PROFILE_ADMIN_ROLE, admin);

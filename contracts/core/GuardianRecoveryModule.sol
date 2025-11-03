@@ -13,15 +13,16 @@ pragma solidity ^0.8.24;
  *   - Recovery proposals and execution
  *   - Meta nonce epoch bumps (for invalidating signed meta tx)
  *
- * This module itself is:
+ * Design:
  * - Upgradeable via UUPS
- * - Meta-tx compatible via EIP-2771 (trusted forwarder)
+ * - Governed via AccessControl (same pattern as VerseProfile)
+ * - Meta-tx compatibility achieved via EIP-712 signatures (no ERC2771 here)
  */
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {ERC2771ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/metatx/ERC2771ContextUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 interface IVerseProfileMinimal {
     function ownerOf(uint256 verseId) external view returns (address);
@@ -33,9 +34,18 @@ interface IVerseProfileMinimal {
 contract GuardianRecoveryModule is
     Initializable,
     UUPSUpgradeable,
-    OwnableUpgradeable,
-    ERC2771ContextUpgradeable
+    PausableUpgradeable,
+    AccessControlUpgradeable
 {
+    // ------------------------------------------------------------------------
+    // Roles
+    // ------------------------------------------------------------------------
+
+    bytes32 public constant MODULE_ADMIN_ROLE =
+        keccak256("MODULE_ADMIN_ROLE");
+    bytes32 public constant UPGRADER_ROLE =
+        keccak256("UPGRADER_ROLE");
+
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
@@ -94,7 +104,7 @@ contract GuardianRecoveryModule is
     // Recovery state
     mapping(uint256 => RecoveryState) public recovery;     // verseId => recovery info
 
-    // Meta-tx safety: epoch per verseId
+    // Meta-tx safety: epoch per verseId (for EIP-712 domain separation / invalidation)
     mapping(uint256 => uint64) public metaNonceEpoch;      // verseId => epoch
 
     // ------------------------------------------------------------------------
@@ -141,7 +151,7 @@ contract GuardianRecoveryModule is
     event MetaNonceEpochBumped(uint256 indexed verseId, uint64 newEpoch);
 
     // ------------------------------------------------------------------------
-    // Constructor (for implementation) + Initializer (for proxy)
+    // Constructor (implementation) + Initialize (proxy)
     // ------------------------------------------------------------------------
 
     /// @dev Disable initializers on the implementation contract.
@@ -151,19 +161,23 @@ contract GuardianRecoveryModule is
 
     /**
      * @notice Initialize the module behind a UUPS proxy.
+     * @param admin Address that receives DEFAULT_ADMIN_ROLE, MODULE_ADMIN_ROLE, and UPGRADER_ROLE
      * @param verseProfileAddress Address of the VerseProfile core contract
-     * @param trustedForwarder Address of the EIP-2771 trusted forwarder
      */
     function initialize(
-        address verseProfileAddress,
-        address trustedForwarder
+        address admin,
+        address verseProfileAddress
     ) external initializer {
-        require(verseProfileAddress != address(0), "zero verseProfile");
-        require(trustedForwarder != address(0), "zero forwarder");
+        require(admin != address(0), "GuardianModule: bad admin");
+        require(verseProfileAddress != address(0), "GuardianModule: zero verseProfile");
 
         __UUPSUpgradeable_init();
-        __Ownable_init();
-        __ERC2771Context_init(trustedForwarder);
+        __Pausable_init();
+        __AccessControl_init();
+
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(MODULE_ADMIN_ROLE, admin);
+        _grantRole(UPGRADER_ROLE, admin);
 
         verseProfile = IVerseProfileMinimal(verseProfileAddress);
     }
@@ -173,51 +187,46 @@ contract GuardianRecoveryModule is
     // ------------------------------------------------------------------------
 
     modifier onlyProfileOwner(uint256 verseId) {
-        require(verseProfile.ownerOf(verseId) == _msgSender(), "not owner");
+        require(verseProfile.ownerOf(verseId) == _msgSender(), "GuardianModule: not owner");
         _;
     }
 
     modifier notHardFrozen(uint256 verseId) {
-        require(!hardFrozen[verseId], "profile hard frozen");
+        require(!hardFrozen[verseId], "GuardianModule: profile hard frozen");
         _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Pause Controls (optional, module-level)
+    // ------------------------------------------------------------------------
+
+    function pause() external onlyRole(MODULE_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(MODULE_ADMIN_ROLE) {
+        _unpause();
     }
 
     // ------------------------------------------------------------------------
     // UUPS upgrade authorization
     // ------------------------------------------------------------------------
 
-    function _authorizeUpgrade(address) internal override onlyOwner {}
+    function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
     // ------------------------------------------------------------------------
-    // EIP-2771 meta-tx: override _msgSender/_msgData to use trusted forwarder
+    // STEP 1C COMPLETE: upgradeable, role-based, Verse-style skeleton.
     // ------------------------------------------------------------------------
-
-    function _msgSender()
-        internal
-        view
-        override(ERC2771ContextUpgradeable)
-        returns (address)
-    {
-        return ERC2771ContextUpgradeable._msgSender();
-    }
-
-    function _msgData()
-        internal
-        view
-        override(ERC2771ContextUpgradeable)
-        returns (bytes calldata)
-    {
-        return ERC2771ContextUpgradeable._msgData();
-    }
-
-    // ------------------------------------------------------------------------
-    // STEP 1B COMPLETE: upgradeable + EIP-2771 ready skeleton.
-    // ------------------------------------------------------------------------
-    // Next steps:
+    // Next steps (we'll add incrementally):
     // - Functions to propose/apply guardian sets (with delays + epoch bumps)
     // - Functions to soft/hard freeze and unfreeze
     // - Functions to initiate/cancel/execute recovery
     // - Functions to bump metaNonceEpoch
     // - Signature verification (EIP-712) for guardian approvals
     // - Restricted call into VerseProfile to change owner on successful recovery
+
+    // ------------------------------------------------------------------------
+    // Storage gap for future upgrades
+    // ------------------------------------------------------------------------
+    uint256[44] private __gap;
 }
