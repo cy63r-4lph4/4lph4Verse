@@ -12,7 +12,16 @@ pragma solidity ^0.8.24;
  *   - Freezing (soft/hard)
  *   - Recovery proposals and execution
  *   - Meta nonce epoch bumps (for invalidating signed meta tx)
+ *
+ * This module itself is:
+ * - Upgradeable via UUPS
+ * - Meta-tx compatible via EIP-2771 (trusted forwarder)
  */
+
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ERC2771ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/metatx/ERC2771ContextUpgradeable.sol";
 
 interface IVerseProfileMinimal {
     function ownerOf(uint256 verseId) external view returns (address);
@@ -21,7 +30,12 @@ interface IVerseProfileMinimal {
     // function recoverySetOwner(uint256 verseId, address newOwner) external;
 }
 
-contract GuardianRecoveryModule {
+contract GuardianRecoveryModule is
+    Initializable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
+    ERC2771ContextUpgradeable
+{
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
@@ -127,20 +141,39 @@ contract GuardianRecoveryModule {
     event MetaNonceEpochBumped(uint256 indexed verseId, uint64 newEpoch);
 
     // ------------------------------------------------------------------------
-    // Constructor
+    // Constructor (for implementation) + Initializer (for proxy)
     // ------------------------------------------------------------------------
 
-    constructor(address verseProfileAddress) {
+    /// @dev Disable initializers on the implementation contract.
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
+     * @notice Initialize the module behind a UUPS proxy.
+     * @param verseProfileAddress Address of the VerseProfile core contract
+     * @param trustedForwarder Address of the EIP-2771 trusted forwarder
+     */
+    function initialize(
+        address verseProfileAddress,
+        address trustedForwarder
+    ) external initializer {
         require(verseProfileAddress != address(0), "zero verseProfile");
+        require(trustedForwarder != address(0), "zero forwarder");
+
+        __UUPSUpgradeable_init();
+        __Ownable_init();
+        __ERC2771Context_init(trustedForwarder);
+
         verseProfile = IVerseProfileMinimal(verseProfileAddress);
     }
 
     // ------------------------------------------------------------------------
-    // Modifiers (we'll flesh these out in next steps)
+    // Modifiers
     // ------------------------------------------------------------------------
 
     modifier onlyProfileOwner(uint256 verseId) {
-        require(verseProfile.ownerOf(verseId) == msg.sender, "not owner");
+        require(verseProfile.ownerOf(verseId) == _msgSender(), "not owner");
         _;
     }
 
@@ -149,16 +182,39 @@ contract GuardianRecoveryModule {
         _;
     }
 
-    // Later we may add:
-    // - onlyGuardian(verseId)
-    // - onlyThresholdGuardians(verseId, signatures)
-    // - notSoftFrozen / etc.
+    // ------------------------------------------------------------------------
+    // UUPS upgrade authorization
+    // ------------------------------------------------------------------------
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     // ------------------------------------------------------------------------
-    // STEP 1 COMPLETE: skeleton contract only.
+    // EIP-2771 meta-tx: override _msgSender/_msgData to use trusted forwarder
     // ------------------------------------------------------------------------
-    // In the next steps we will add:
-    // - Functions to propose/apply guardian sets (with delays)
+
+    function _msgSender()
+        internal
+        view
+        override(ERC2771ContextUpgradeable)
+        returns (address)
+    {
+        return ERC2771ContextUpgradeable._msgSender();
+    }
+
+    function _msgData()
+        internal
+        view
+        override(ERC2771ContextUpgradeable)
+        returns (bytes calldata)
+    {
+        return ERC2771ContextUpgradeable._msgData();
+    }
+
+    // ------------------------------------------------------------------------
+    // STEP 1B COMPLETE: upgradeable + EIP-2771 ready skeleton.
+    // ------------------------------------------------------------------------
+    // Next steps:
+    // - Functions to propose/apply guardian sets (with delays + epoch bumps)
     // - Functions to soft/hard freeze and unfreeze
     // - Functions to initiate/cancel/execute recovery
     // - Functions to bump metaNonceEpoch
