@@ -403,7 +403,6 @@ contract VerseProfile is
                 )
             );
 
-            // Optional: emit event if a module call failed (for debugging)
             if (!success) emit ModuleCallFailed(hook, verseId, m);
         }
     }
