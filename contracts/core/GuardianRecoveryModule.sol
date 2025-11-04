@@ -306,6 +306,55 @@ contract GuardianRecoveryModule is
     // - Signature verification (EIP-712) for guardian approvals
     // - Restricted call into VerseProfile to change owner on successful recovery
 
+        /**
+     * @notice Apply a previously proposed guardian set after the delay has passed.
+     * @dev Anyone can call this once the proposal is mature and not expired.
+     */
+    function applyGuardians(uint256 verseId)
+        external
+        notHardFrozen(verseId)
+        whenNotPaused
+    {
+        GuardianChange storage op = guardianOps[verseId];
+        require(op.applyAfter != 0, "GuardianModule: no pending change");
+        require(
+            block.timestamp >= op.applyAfter,
+            "GuardianModule: too early"
+        );
+        require(
+            op.expiresAt == 0 || block.timestamp <= op.expiresAt,
+            "GuardianModule: proposal expired"
+        );
+
+        uint256 len = op.pending.length;
+        require(len >= MIN_GUARDIANS, "GuardianModule: too few guardians");
+        require(
+            op.newThreshold > 0 && op.newThreshold <= len,
+            "GuardianModule: bad threshold"
+        );
+
+        GuardianSet storage set = guardians[verseId];
+
+        // Replace active set
+        delete set.active;
+        for (uint256 i; i < len; ++i) {
+            set.active.push(op.pending[i]);
+        }
+        set.threshold = op.newThreshold;
+        set.epoch += 1; // bump epoch so old guardian signatures can't be replayed
+
+        // Keep metaNonceEpoch in sync with guardian epoch (optional, but nice)
+        metaNonceEpoch[verseId] = set.epoch;
+
+        uint64 newEpoch = set.epoch;
+
+        // Clear pending proposal
+        delete guardianOps[verseId];
+
+        emit GuardiansApplied(verseId, set.active, set.threshold, newEpoch);
+    }
+
+
     // ------------------------------------------------------------------------
     // Storage gap for future upgrades
     // ------------------------------------------------------------------------
