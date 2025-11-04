@@ -217,6 +217,65 @@ contract GuardianRecoveryModule is
     }
 
     // ------------------------------------------------------------------------
+    // Guardian configuration: propose + apply
+    // ------------------------------------------------------------------------
+
+    /**
+     * @notice Propose a new full guardian set for a VerseID.
+     *         Does NOT take effect immediately. Must be applied after GUARDIAN_DELAY.
+     *
+     * @dev Only the current VerseProfile owner can propose a change.
+     */
+    function proposeGuardians(
+        uint256 verseId,
+        address[] calldata newGuardians,
+        uint8 newThreshold
+    ) external onlyProfileOwner(verseId) notHardFrozen(verseId) whenNotPaused {
+        uint256 len = newGuardians.length;
+        require(len >= MIN_GUARDIANS, "GuardianModule: too few guardians");
+        require(
+            newThreshold > 0 && newThreshold <= len,
+            "GuardianModule: bad threshold"
+        );
+
+        // Validate non-zero & no duplicates (O(n^2), but guardian sets are small)
+        for (uint256 i; i < len; ++i) {
+            address g = newGuardians[i];
+            require(g != address(0), "GuardianModule: zero guardian");
+            for (uint256 j = i + 1; j < len; ++j) {
+                require(
+                    newGuardians[j] != g,
+                    "GuardianModule: duplicate guardian"
+                );
+            }
+        }
+
+        uint64 applyAfter = uint64(block.timestamp + GUARDIAN_DELAY);
+        // Optional expiry: proposal is only valid for another GUARDIAN_DELAY after it becomes applyable
+        uint64 expiresAt = applyAfter + GUARDIAN_DELAY;
+
+        GuardianChange storage op = guardianOps[verseId];
+
+        // Reset and store the new proposal
+        delete op.pending;
+        for (uint256 i; i < len; ++i) {
+            op.pending.push(newGuardians[i]);
+        }
+
+        op.newThreshold = newThreshold;
+        op.applyAfter = applyAfter;
+        op.expiresAt = expiresAt;
+
+        emit GuardiansProposed(
+            verseId,
+            newGuardians,
+            newThreshold,
+            applyAfter,
+            expiresAt
+        );
+    }
+
+    // ------------------------------------------------------------------------
     // Pause Controls (optional, module-level)
     // ------------------------------------------------------------------------
 
