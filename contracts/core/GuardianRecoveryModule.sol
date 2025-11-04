@@ -26,6 +26,7 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 
 interface IVerseProfileMinimal {
     function ownerOf(uint256 verseId) external view returns (address);
+
     function hasProfile(address user) external view returns (bool);
     // Later we will add a restricted function on VerseProfile like:
     // function recoverySetOwner(uint256 verseId, address newOwner) external;
@@ -41,10 +42,8 @@ contract GuardianRecoveryModule is
     // Roles
     // ------------------------------------------------------------------------
 
-    bytes32 public constant MODULE_ADMIN_ROLE =
-        keccak256("MODULE_ADMIN_ROLE");
-    bytes32 public constant UPGRADER_ROLE =
-        keccak256("UPGRADER_ROLE");
+    bytes32 public constant MODULE_ADMIN_ROLE = keccak256("MODULE_ADMIN_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     // ------------------------------------------------------------------------
     // Constants
@@ -67,23 +66,23 @@ contract GuardianRecoveryModule is
     // ------------------------------------------------------------------------
 
     struct GuardianSet {
-        address[] active;   // current guardians
-        uint8 threshold;    // signatures required for actions (>= 1, <= active.length)
-        uint64 epoch;       // incremented when guardian set changes (for signature domains)
+        address[] active; // current guardians
+        uint8 threshold; // signatures required for actions (>= 1, <= active.length)
+        uint64 epoch; // incremented when guardian set changes (for signature domains)
     }
 
     struct GuardianChange {
-        address[] pending;  // proposed full new set
+        address[] pending; // proposed full new set
         uint8 newThreshold; // proposed threshold
-        uint64 applyAfter;  // timestamp when change can be applied
-        uint64 expiresAt;   // optional expiry for the proposal
+        uint64 applyAfter; // timestamp when change can be applied
+        uint64 expiresAt; // optional expiry for the proposal
     }
 
     struct RecoveryState {
         address pendingNewOwner; // proposed new owner
-        uint64 eta;              // earliest time when executeRecovery is allowed
-        uint256 nonce;           // incremented for each new recovery attempt
-        bool active;             // whether a recovery is currently in progress
+        uint64 eta; // earliest time when executeRecovery is allowed
+        uint256 nonce; // incremented for each new recovery attempt
+        bool active; // whether a recovery is currently in progress
     }
 
     // ------------------------------------------------------------------------
@@ -94,18 +93,18 @@ contract GuardianRecoveryModule is
     IVerseProfileMinimal public verseProfile;
 
     // Per-verseId guardian data
-    mapping(uint256 => GuardianSet) public guardians;      // verseId => guardian set
+    mapping(uint256 => GuardianSet) public guardians; // verseId => guardian set
     mapping(uint256 => GuardianChange) public guardianOps; // verseId => pending change
 
     // Freeze state
-    mapping(uint256 => uint64) public softFreezeUntil;     // verseId => timestamp
-    mapping(uint256 => bool)   public hardFrozen;          // verseId => hard freeze flag
+    mapping(uint256 => uint64) public softFreezeUntil; // verseId => timestamp
+    mapping(uint256 => bool) public hardFrozen; // verseId => hard freeze flag
 
     // Recovery state
-    mapping(uint256 => RecoveryState) public recovery;     // verseId => recovery info
+    mapping(uint256 => RecoveryState) public recovery; // verseId => recovery info
 
     // Meta-tx safety: epoch per verseId (for EIP-712 domain separation / invalidation)
-    mapping(uint256 => uint64) public metaNonceEpoch;      // verseId => epoch
+    mapping(uint256 => uint64) public metaNonceEpoch; // verseId => epoch
 
     // ------------------------------------------------------------------------
     // Events
@@ -151,6 +150,21 @@ contract GuardianRecoveryModule is
     event MetaNonceEpochBumped(uint256 indexed verseId, uint64 newEpoch);
 
     // ------------------------------------------------------------------------
+    // Views
+    // ------------------------------------------------------------------------
+
+    function getGuardians(
+        uint256 verseId
+    )
+        external
+        view
+        returns (address[] memory active, uint8 threshold, uint64 epoch)
+    {
+        GuardianSet storage set = guardians[verseId];
+        return (set.active, set.threshold, set.epoch);
+    }
+
+    // ------------------------------------------------------------------------
     // Constructor (implementation) + Initialize (proxy)
     // ------------------------------------------------------------------------
 
@@ -169,7 +183,10 @@ contract GuardianRecoveryModule is
         address verseProfileAddress
     ) external initializer {
         require(admin != address(0), "GuardianModule: bad admin");
-        require(verseProfileAddress != address(0), "GuardianModule: zero verseProfile");
+        require(
+            verseProfileAddress != address(0),
+            "GuardianModule: zero verseProfile"
+        );
 
         __UUPSUpgradeable_init();
         __Pausable_init();
@@ -187,7 +204,10 @@ contract GuardianRecoveryModule is
     // ------------------------------------------------------------------------
 
     modifier onlyProfileOwner(uint256 verseId) {
-        require(verseProfile.ownerOf(verseId) == _msgSender(), "GuardianModule: not owner");
+        require(
+            verseProfile.ownerOf(verseId) == _msgSender(),
+            "GuardianModule: not owner"
+        );
         _;
     }
 
@@ -212,7 +232,9 @@ contract GuardianRecoveryModule is
     // UUPS upgrade authorization
     // ------------------------------------------------------------------------
 
-    function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(UPGRADER_ROLE) {}
 
     // ------------------------------------------------------------------------
     // STEP 1C COMPLETE: upgradeable, role-based, Verse-style skeleton.
