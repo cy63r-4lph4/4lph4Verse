@@ -355,6 +355,17 @@ contract GuardianRecoveryModule is
     }
 
 
+
+    function supportsInterface(bytes4 iid)
+        public
+        view
+        override(AccessControlUpgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(iid);
+    }
+
+
     // ------------------------------------------------------------------------
     // Storage gap for future upgrades
     // ------------------------------------------------------------------------
