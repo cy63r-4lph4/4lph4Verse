@@ -343,6 +343,17 @@ contract VerseProfile is
         modules[key] = address(0);
         emit ModuleRemoved(key, old);
     }
+    /**
+     * @notice Grant recovery permissions to a GuardianRecoveryModule (or similar).
+     * @dev Callable by PROFILE_ADMIN_ROLE. You can call this multiple times for new modules.
+     */
+    function grantRecoveryModule(address module)
+        external
+        onlyRole(PROFILE_ADMIN_ROLE)
+    {
+        require(module != address(0), "VerseProfile: zero module");
+        _grantRole(RECOVERY_ROLE, module);
+    }
 
     function subscribeHook(
         bytes32 hook,
