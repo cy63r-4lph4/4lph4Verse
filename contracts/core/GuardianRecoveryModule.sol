@@ -23,6 +23,8 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 interface IVerseProfileMinimal {
     function ownerOf(uint256 verseId) external view returns (address);
@@ -36,14 +38,39 @@ contract GuardianRecoveryModule is
     Initializable,
     UUPSUpgradeable,
     PausableUpgradeable,
-    AccessControlUpgradeable
+    AccessControlUpgradeable,
+    EIP712Upgradeable
 {
+    using ECDSA for bytes32;
+
     // ------------------------------------------------------------------------
     // Roles
     // ------------------------------------------------------------------------
 
     bytes32 public constant MODULE_ADMIN_ROLE = keccak256("MODULE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    // ------------------------------------------------------------------------
+    // EIP-712: guardian approvals
+    // ------------------------------------------------------------------------
+
+    struct GuardianSignature {
+        address guardian;
+        bytes signature;
+    }
+
+    // action labels so guardians know exactly what they are signing
+    bytes32 private constant ACTION_HARD_FREEZE = keccak256("HARD_FREEZE");
+    bytes32 private constant ACTION_UNFREEZE = keccak256("UNFREEZE");
+    bytes32 private constant ACTION_RECOVERY_INIT = keccak256("RECOVERY_INIT");
+    bytes32 private constant ACTION_RECOVERY_EXEC =
+        keccak256("RECOVERY_EXECUTE");
+    bytes32 private constant ACTION_RECOVERY_CANCEL =
+        keccak256("RECOVERY_CANCEL");
+
+    bytes32 private constant _GUARDIAN_APPROVAL_TYPEHASH =
+        keccak256(
+            "GuardianApproval(uint256 verseId,bytes32 action,bytes32 paramsHash,uint64 guardianEpoch,uint256 recoveryNonce,uint256 deadline)"
+        );
 
     // ------------------------------------------------------------------------
     // Constants
