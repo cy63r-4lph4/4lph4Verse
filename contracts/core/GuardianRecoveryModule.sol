@@ -28,8 +28,8 @@ interface IVerseProfileMinimal {
     function ownerOf(uint256 verseId) external view returns (address);
 
     function hasProfile(address user) external view returns (bool);
-    // Later we will add a restricted function on VerseProfile like:
-    // function recoverySetOwner(uint256 verseId, address newOwner) external;
+
+    function recoverySetOwner(uint256 verseId, address newOwner) external;
 }
 
 contract GuardianRecoveryModule is
@@ -440,7 +440,7 @@ contract GuardianRecoveryModule is
         emit RecoveryInitiated(verseId, newOwner, r.eta, r.nonce);
     }
 
-        /**
+    /**
      * @notice Complete a recovery after delay has passed.
      * @dev Requires guardian quorum. Calls VerseProfile to set new owner.
      */
@@ -450,7 +450,10 @@ contract GuardianRecoveryModule is
     ) external whenNotPaused notHardFrozen(verseId) {
         RecoveryState storage r = recovery[verseId];
         require(r.active, "GuardianModule: no active recovery");
-        require(block.timestamp >= r.eta, "GuardianModule: recovery delay not over");
+        require(
+            block.timestamp >= r.eta,
+            "GuardianModule: recovery delay not over"
+        );
         require(
             _verifyGuardianApprovals(verseId, approvingGuardians),
             "GuardianModule: insufficient guardian approvals"
@@ -472,15 +475,12 @@ contract GuardianRecoveryModule is
         softFreezeUntil[verseId] = 0;
     }
 
-        function bumpMetaNonceEpoch(uint256 verseId)
-        external
-        onlyProfileOwner(verseId)
-    {
+    function bumpMetaNonceEpoch(
+        uint256 verseId
+    ) external onlyProfileOwner(verseId) {
         metaNonceEpoch[verseId]++;
         emit MetaNonceEpochBumped(verseId, metaNonceEpoch[verseId]);
     }
-
-
 
     // ------------------------------------------------------------------------
     // Freeze controls
