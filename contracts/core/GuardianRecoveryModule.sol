@@ -563,7 +563,8 @@ contract GuardianRecoveryModule is
      */
     function executeRecovery(
         uint256 verseId,
-        address[] calldata approvingGuardians
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
     ) external whenNotPaused notFrozen(verseId) {
         RecoveryState storage r = recovery[verseId];
         require(r.active, "GuardianModule: no active recovery");
@@ -571,16 +572,22 @@ contract GuardianRecoveryModule is
             block.timestamp >= r.eta,
             "GuardianModule: recovery delay not over"
         );
-        require(
-            _verifyGuardianApprovals(verseId, approvingGuardians),
-            "GuardianModule: insufficient guardian approvals"
+
+        bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
+
+        _requireGuardianThreshold(
+            verseId,
+            ACTION_RECOVERY_EXEC,
+            paramsHash,
+            r.nonce,
+            deadline,
+            approvals
         );
 
         address oldOwner = verseProfile.ownerOf(verseId);
         address newOwner = r.pendingNewOwner;
         require(newOwner != address(0), "GuardianModule: no pending owner");
 
-        // 🔐 call into VerseProfile to perform the actual owner change
         verseProfile.recoverySetOwner(verseId, newOwner);
 
         r.active = false;
@@ -588,7 +595,7 @@ contract GuardianRecoveryModule is
 
         emit RecoveryExecuted(verseId, oldOwner, newOwner, r.nonce);
 
-        // Unfreeze profile after successful recovery
+        // Unfreeze after successful recovery
         hardFrozen[verseId] = false;
         softFreezeUntil[verseId] = 0;
         emit Unfrozen(verseId);
