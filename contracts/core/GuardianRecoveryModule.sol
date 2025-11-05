@@ -421,23 +421,86 @@ contract GuardianRecoveryModule is
         return false;
     }
 
-    /**
-     * @dev Placeholder for future guardian signature verification.
-     * For now, just require caller count >= threshold (off-chain logic simulation).
+     /**
+     * @dev Verify guardian EIP-712 signatures for a specific action.
+     * @param verseId Verse profile ID the action targets
+     * @param action  One of the ACTION_* constants
+     * @param paramsHash keccak256-encoded extra params (e.g. newOwner)
+     * @param recoveryNonce  Recovery nonce (0 for non-recovery actions)
+     * @param deadline  Timestamp after which signatures are invalid
+     * @param approvals  Guardians + their signatures
+     * @return validCount  Number of valid, unique guardian approvals
      */
-    function _verifyGuardianApprovals(
+    function _verifyGuardianApprovalsTyped(
         uint256 verseId,
-        address[] calldata approvingGuardians
-    ) internal view returns (bool) {
+        bytes32 action,
+        bytes32 paramsHash,
+        uint256 recoveryNonce,
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
+    ) internal view returns (uint256 validCount) {
+        require(block.timestamp <= deadline, "GuardianModule: approvals expired");
+
         GuardianSet storage set = guardians[verseId];
-        uint256 count;
-        for (uint256 i; i < approvingGuardians.length; ++i) {
-            if (_isGuardian(verseId, approvingGuardians[i])) {
-                ++count;
+        uint256 lenSet = set.active.length;
+        require(lenSet >= MIN_GUARDIANS, "GuardianModule: no guardians configured");
+
+        // Common digest all guardians sign
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _GUARDIAN_APPROVAL_TYPEHASH,
+                verseId,
+                action,
+                paramsHash,
+                set.epoch,
+                recoveryNonce,
+                deadline
+            )
+        );
+        bytes32 digest = _hashTypedDataV4(structHash);
+
+        // Track which guardians we've already counted to avoid double-count
+        bool[] memory seen = new bool[](lenSet);
+
+        for (uint256 i; i < approvals.length; ++i) {
+            address claimedGuardian = approvals[i].guardian;
+            // Recover signer from signature
+            address signer = digest.recover(approvals[i].signature);
+            if (signer != claimedGuardian) continue;
+
+            // Check that this address is an active guardian and not counted yet
+            for (uint256 j; j < lenSet; ++j) {
+                if (set.active[j] == claimedGuardian && !seen[j]) {
+                    seen[j] = true;
+                    ++validCount;
+                    break;
+                }
             }
         }
-        return count >= set.threshold;
     }
+
+    function _requireGuardianThreshold(
+        uint256 verseId,
+        bytes32 action,
+        bytes32 paramsHash,
+        uint256 recoveryNonce,
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
+    ) internal view {
+        uint256 count = _verifyGuardianApprovalsTyped(
+            verseId,
+            action,
+            paramsHash,
+            recoveryNonce,
+            deadline,
+            approvals
+        );
+        require(
+            count >= guardians[verseId].threshold,
+            "GuardianModule: insufficient guardian approvals"
+        );
+    }
+
 
     modifier onlyGuardian(uint256 verseId) {
         require(
