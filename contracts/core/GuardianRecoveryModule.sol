@@ -409,6 +409,37 @@ contract GuardianRecoveryModule is
         _;
     }
 
+    /**
+     * @notice Start a recovery flow proposing a new owner.
+     * @dev Requires guardian quorum approval. Starts RECOVERY_DELAY timer.
+     */
+    function initiateRecovery(
+        uint256 verseId,
+        address newOwner,
+        address[] calldata approvingGuardians
+    ) external whenNotPaused notHardFrozen(verseId) {
+        require(newOwner != address(0), "GuardianModule: zero new owner");
+        require(
+            _verifyGuardianApprovals(verseId, approvingGuardians),
+            "GuardianModule: insufficient guardian approvals"
+        );
+
+        RecoveryState storage r = recovery[verseId];
+        require(!r.active, "GuardianModule: recovery already active");
+
+        // Freeze the profile during recovery
+        softFreezeUntil[verseId] = uint64(
+            block.timestamp + SOFT_FREEZE_DURATION
+        );
+
+        r.pendingNewOwner = newOwner;
+        r.eta = uint64(block.timestamp + RECOVERY_DELAY);
+        r.nonce += 1;
+        r.active = true;
+
+        emit RecoveryInitiated(verseId, newOwner, r.eta, r.nonce);
+    }
+
     // ------------------------------------------------------------------------
     // Freeze controls
     // ------------------------------------------------------------------------
