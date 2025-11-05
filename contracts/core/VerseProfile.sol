@@ -386,6 +386,38 @@ contract VerseProfile is
         return _hookSubs[hook];
     }
 
+    /**
+     * @notice Set a new owner for a VerseID during recovery.
+     * @dev Only callable by an address with RECOVERY_ROLE (typically GuardianRecoveryModule).
+     *
+     * Requirements:
+     * - verseId must exist
+     * - newOwner must be non-zero
+     * - newOwner must not already have a profile
+     */
+    function recoverySetOwner(uint256 verseId, address newOwner)
+        external
+        onlyRole(RECOVERY_ROLE)
+    {
+        require(newOwner != address(0), "VerseProfile: zero new owner");
+
+        Profile storage p = _profiles[verseId];
+        address oldOwner = p.owner;
+        require(oldOwner != address(0), "VerseProfile: no profile");
+        require(
+            profileOf[newOwner] == 0,
+            "VerseProfile: new owner already has profile"
+        );
+
+        // clear old mapping
+        profileOf[oldOwner] = 0;
+        // set new
+        profileOf[newOwner] = verseId;
+        p.owner = newOwner;
+
+        emit OwnerRecovered(verseId, oldOwner, newOwner);
+    }
+
     // -------------------- Pause controls --------------------
     function pause() external onlyRole(PROFILE_ADMIN_ROLE) {
         _pause();
