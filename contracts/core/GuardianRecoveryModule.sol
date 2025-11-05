@@ -163,7 +163,8 @@ contract GuardianRecoveryModule is
         GuardianSet storage set = guardians[verseId];
         return (set.active, set.threshold, set.epoch);
     }
-  // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
     // Freeze views
     // ------------------------------------------------------------------------
 
@@ -178,6 +179,7 @@ contract GuardianRecoveryModule is
         }
         return false;
     }
+
     // ------------------------------------------------------------------------
     // Constructor (implementation) + Initialize (proxy)
     // ------------------------------------------------------------------------
@@ -320,21 +322,16 @@ contract GuardianRecoveryModule is
     // - Signature verification (EIP-712) for guardian approvals
     // - Restricted call into VerseProfile to change owner on successful recovery
 
-        /**
+    /**
      * @notice Apply a previously proposed guardian set after the delay has passed.
      * @dev Anyone can call this once the proposal is mature and not expired.
      */
-    function applyGuardians(uint256 verseId)
-        external
-        notHardFrozen(verseId)
-        whenNotPaused
-    {
+    function applyGuardians(
+        uint256 verseId
+    ) external notHardFrozen(verseId) whenNotPaused {
         GuardianChange storage op = guardianOps[verseId];
         require(op.applyAfter != 0, "GuardianModule: no pending change");
-        require(
-            block.timestamp >= op.applyAfter,
-            "GuardianModule: too early"
-        );
+        require(block.timestamp >= op.applyAfter, "GuardianModule: too early");
         require(
             op.expiresAt == 0 || block.timestamp <= op.expiresAt,
             "GuardianModule: proposal expired"
@@ -394,16 +391,32 @@ contract GuardianRecoveryModule is
         _;
     }
 
+    // ------------------------------------------------------------------------
+    // Freeze controls
+    // ------------------------------------------------------------------------
 
-    function supportsInterface(bytes4 iid)
-        public
-        view
-        override(AccessControlUpgradeable)
-        returns (bool)
-    {
-        return super.supportsInterface(iid);
+    /**
+     * @notice Soft-freeze a profile for a limited time.
+     * @dev Any active guardian can call this.
+     *      Soft freeze auto-expires after SOFT_FREEZE_DURATION.
+     */
+    function softFreeze(
+        uint256 verseId
+    ) external onlyGuardian(verseId) whenNotPaused {
+        uint64 until = uint64(block.timestamp + SOFT_FREEZE_DURATION);
+
+        // If there is already a soft freeze further in the future, don't shorten it.
+        if (until > softFreezeUntil[verseId]) {
+            softFreezeUntil[verseId] = until;
+            emit SoftFrozen(verseId, until);
+        }
     }
 
+    function supportsInterface(
+        bytes4 iid
+    ) public view override(AccessControlUpgradeable) returns (bool) {
+        return super.supportsInterface(iid);
+    }
 
     // ------------------------------------------------------------------------
     // Storage gap for future upgrades
