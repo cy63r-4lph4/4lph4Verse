@@ -382,6 +382,7 @@ contract GuardianRecoveryModule is
         }
         return false;
     }
+
     /**
      * @dev Placeholder for future guardian signature verification.
      * For now, just require caller count >= threshold (off-chain logic simulation).
@@ -428,7 +429,8 @@ contract GuardianRecoveryModule is
             emit SoftFrozen(verseId, until);
         }
     }
-        /**
+
+    /**
      * @notice Permanently freeze a profile until unfreezed by guardian quorum.
      * @dev Requires threshold approval. Emits HardFrozen event.
      */
@@ -446,6 +448,24 @@ contract GuardianRecoveryModule is
         emit HardFrozen(verseId);
     }
 
+    /**
+     * @notice Lift a hard freeze after investigation.
+     * @dev Requires guardian threshold approvals.
+     */
+    function unfreeze(
+        uint256 verseId,
+        address[] calldata approvingGuardians
+    ) external whenNotPaused {
+        require(hardFrozen[verseId], "GuardianModule: not hard frozen");
+        require(
+            _verifyGuardianApprovals(verseId, approvingGuardians),
+            "GuardianModule: insufficient guardian approvals"
+        );
+
+        hardFrozen[verseId] = false;
+        softFreezeUntil[verseId] = 0;
+        emit Unfrozen(verseId);
+    }
 
     /**
      * @notice Clear both soft and hard freeze state for a profile.
