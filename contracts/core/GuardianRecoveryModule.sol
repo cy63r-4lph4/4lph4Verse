@@ -421,7 +421,7 @@ contract GuardianRecoveryModule is
         return false;
     }
 
-     /**
+    /**
      * @dev Verify guardian EIP-712 signatures for a specific action.
      * @param verseId Verse profile ID the action targets
      * @param action  One of the ACTION_* constants
@@ -439,11 +439,17 @@ contract GuardianRecoveryModule is
         uint256 deadline,
         GuardianSignature[] calldata approvals
     ) internal view returns (uint256 validCount) {
-        require(block.timestamp <= deadline, "GuardianModule: approvals expired");
+        require(
+            block.timestamp <= deadline,
+            "GuardianModule: approvals expired"
+        );
 
         GuardianSet storage set = guardians[verseId];
         uint256 lenSet = set.active.length;
-        require(lenSet >= MIN_GUARDIANS, "GuardianModule: no guardians configured");
+        require(
+            lenSet >= MIN_GUARDIANS,
+            "GuardianModule: no guardians configured"
+        );
 
         // Common digest all guardians sign
         bytes32 structHash = keccak256(
@@ -500,7 +506,6 @@ contract GuardianRecoveryModule is
             "GuardianModule: insufficient guardian approvals"
         );
     }
-
 
     modifier onlyGuardian(uint256 verseId) {
         require(
@@ -612,12 +617,17 @@ contract GuardianRecoveryModule is
      */
     function hardFreeze(
         uint256 verseId,
-        address[] calldata approvingGuardians
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
     ) external whenNotPaused {
         require(!hardFrozen[verseId], "GuardianModule: already hard frozen");
-        require(
-            _verifyGuardianApprovals(verseId, approvingGuardians),
-            "GuardianModule: insufficient guardian approvals"
+        _requireGuardianThreshold(
+            verseId,
+            ACTION_HARD_FREEZE,
+            bytes32(0), // no extra params
+            0, // no recovery nonce involved
+            deadline,
+            approvals
         );
 
         hardFrozen[verseId] = true;
