@@ -677,6 +677,37 @@ contract GuardianRecoveryModule is
         emit Unfrozen(verseId);
     }
 
+    function cancelRecovery(
+        uint256 verseId,
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
+    ) external whenNotPaused {
+        RecoveryState storage r = recovery[verseId];
+        require(r.active, "GuardianModule: no active recovery");
+
+        address owner = verseProfile.ownerOf(verseId);
+        bool byOwner = owner == _msgSender();
+        bool byGuardians = false;
+
+        if (!byOwner) {
+            bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
+            _requireGuardianThreshold(
+                verseId,
+                ACTION_RECOVERY_CANCEL,
+                paramsHash,
+                r.nonce,
+                deadline,
+                approvals
+            );
+            byGuardians = true;
+        }
+
+        require(byOwner || byGuardians, "GuardianModule: no cancel authority");
+
+        r.active = false;
+        emit RecoveryCanceled(verseId, r.nonce);
+    }
+
     /**
      * @notice Clear both soft and hard freeze state for a profile.
      * @dev Callable by module admin. Use with care.
