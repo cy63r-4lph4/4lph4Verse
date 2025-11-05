@@ -64,6 +64,7 @@ contract VerseProfile is
         keccak256("PROFILE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+    bytes32 public constant RECOVERY_ROLE = keccak256("RECOVERY_ROLE");
 
     // -------------------- Hook IDs --------------------
     // (pre-computed constants to save a tiny bit of gas vs keccak at runtime)
