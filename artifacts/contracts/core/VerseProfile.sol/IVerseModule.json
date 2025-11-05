@@ -1,0 +1,37 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "IVerseModule",
+  "sourceName": "contracts/core/VerseProfile.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "hook",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "onVerseEvent",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/core/VerseProfile.sol",
+  "buildInfoId": "solc-0_8_28-ca11b0521c5aa8d0035de1bef353af111591fa01"
+}

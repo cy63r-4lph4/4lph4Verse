@@ -163,7 +163,21 @@ contract GuardianRecoveryModule is
         GuardianSet storage set = guardians[verseId];
         return (set.active, set.threshold, set.epoch);
     }
+  // ------------------------------------------------------------------------
+    // Freeze views
+    // ------------------------------------------------------------------------
 
+    function isFrozen(uint256 verseId) public view returns (bool) {
+        // soft freeze active?
+        if (softFreezeUntil[verseId] > block.timestamp) {
+            return true;
+        }
+        // hard freeze flag
+        if (hardFrozen[verseId]) {
+            return true;
+        }
+        return false;
+    }
     // ------------------------------------------------------------------------
     // Constructor (implementation) + Initialize (proxy)
     // ------------------------------------------------------------------------

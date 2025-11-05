@@ -15,7 +15,7 @@ export interface IVerseAppRegistry$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IVerseAppRegistry.sol";
-  readonly buildInfoId: "solc-0_8_28-0fe3582d5796dea884643468ba71ab354132d24c";
+  readonly buildInfoId: "solc-0_8_28-ca11b0521c5aa8d0035de1bef353af111591fa01";
 };
 
 import "hardhat/types/artifacts";
