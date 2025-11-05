@@ -368,6 +368,31 @@ contract GuardianRecoveryModule is
         emit GuardiansApplied(verseId, set.active, set.threshold, newEpoch);
     }
 
+    // ------------------------------------------------------------------------
+    // Internal: guardian helpers
+    // ------------------------------------------------------------------------
+
+    function _isGuardian(
+        uint256 verseId,
+        address account
+    ) internal view returns (bool) {
+        GuardianSet storage set = guardians[verseId];
+        uint256 len = set.active.length;
+        for (uint256 i; i < len; ++i) {
+            if (set.active[i] == account) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    modifier onlyGuardian(uint256 verseId) {
+        require(
+            _isGuardian(verseId, _msgSender()),
+            "GuardianModule: not guardian"
+        );
+        _;
+    }
 
 
     function supportsInterface(bytes4 iid)
