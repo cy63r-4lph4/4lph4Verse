@@ -412,6 +412,18 @@ contract GuardianRecoveryModule is
         }
     }
 
+    /**
+     * @notice Clear both soft and hard freeze state for a profile.
+     * @dev Callable by module admin. Use with care.
+     */
+    function forceUnfreeze(
+        uint256 verseId
+    ) external onlyRole(MODULE_ADMIN_ROLE) {
+        softFreezeUntil[verseId] = 0;
+        hardFrozen[verseId] = false;
+        emit Unfrozen(verseId);
+    }
+
     function supportsInterface(
         bytes4 iid
     ) public view override(AccessControlUpgradeable) returns (bool) {
