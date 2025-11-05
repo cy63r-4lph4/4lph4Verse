@@ -472,6 +472,15 @@ contract GuardianRecoveryModule is
         softFreezeUntil[verseId] = 0;
     }
 
+        function bumpMetaNonceEpoch(uint256 verseId)
+        external
+        onlyProfileOwner(verseId)
+    {
+        metaNonceEpoch[verseId]++;
+        emit MetaNonceEpochBumped(verseId, metaNonceEpoch[verseId]);
+    }
+
+
 
     // ------------------------------------------------------------------------
     // Freeze controls
