@@ -231,6 +231,17 @@ contract GuardianRecoveryModule is
         require(!hardFrozen[verseId], "GuardianModule: profile hard frozen");
         _;
     }
+        modifier notFrozen(uint256 verseId) {
+        // soft or hard freeze both block this
+        if (softFreezeUntil[verseId] > block.timestamp) {
+            revert("GuardianModule: soft frozen");
+        }
+        if (hardFrozen[verseId]) {
+            revert("GuardianModule: hard frozen");
+        }
+        _;
+    }
+
 
     // ------------------------------------------------------------------------
     // Guardian configuration: propose + apply
