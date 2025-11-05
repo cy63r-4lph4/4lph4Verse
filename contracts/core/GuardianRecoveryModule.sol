@@ -382,6 +382,23 @@ contract GuardianRecoveryModule is
         }
         return false;
     }
+    /**
+     * @dev Placeholder for future guardian signature verification.
+     * For now, just require caller count >= threshold (off-chain logic simulation).
+     */
+    function _verifyGuardianApprovals(
+        uint256 verseId,
+        address[] calldata approvingGuardians
+    ) internal view returns (bool) {
+        GuardianSet storage set = guardians[verseId];
+        uint256 count;
+        for (uint256 i; i < approvingGuardians.length; ++i) {
+            if (_isGuardian(verseId, approvingGuardians[i])) {
+                ++count;
+            }
+        }
+        return count >= set.threshold;
+    }
 
     modifier onlyGuardian(uint256 verseId) {
         require(
