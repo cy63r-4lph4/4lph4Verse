@@ -128,6 +128,11 @@ contract VerseProfile is
         uint256 indexed verseId,
         address indexed module
     );
+    event OwnerRecovered(
+        uint256 indexed verseId,
+        address indexed oldOwner,
+        address indexed newOwner
+    );
 
     // -------------------- UUPS: disable impl init --------------------
     constructor() {
