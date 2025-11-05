@@ -640,12 +640,18 @@ contract GuardianRecoveryModule is
      */
     function unfreeze(
         uint256 verseId,
-        address[] calldata approvingGuardians
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
     ) external whenNotPaused {
         require(hardFrozen[verseId], "GuardianModule: not hard frozen");
-        require(
-            _verifyGuardianApprovals(verseId, approvingGuardians),
-            "GuardianModule: insufficient guardian approvals"
+
+        _requireGuardianThreshold(
+            verseId,
+            ACTION_UNFREEZE,
+            bytes32(0),
+            0,
+            deadline,
+            approvals
         );
 
         hardFrozen[verseId] = false;
