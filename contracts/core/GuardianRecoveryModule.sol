@@ -234,6 +234,7 @@ contract GuardianRecoveryModule is
         __UUPSUpgradeable_init();
         __Pausable_init();
         __AccessControl_init();
+        __EIP712_init("GuardianRecoveryModule", "0.1");
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MODULE_ADMIN_ROLE, admin);
