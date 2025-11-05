@@ -440,6 +440,39 @@ contract GuardianRecoveryModule is
         emit RecoveryInitiated(verseId, newOwner, r.eta, r.nonce);
     }
 
+        /**
+     * @notice Complete a recovery after delay has passed.
+     * @dev Requires guardian quorum. Calls VerseProfile to set new owner.
+     */
+    function executeRecovery(
+        uint256 verseId,
+        address[] calldata approvingGuardians
+    ) external whenNotPaused notHardFrozen(verseId) {
+        RecoveryState storage r = recovery[verseId];
+        require(r.active, "GuardianModule: no active recovery");
+        require(block.timestamp >= r.eta, "GuardianModule: recovery delay not over");
+        require(
+            _verifyGuardianApprovals(verseId, approvingGuardians),
+            "GuardianModule: insufficient guardian approvals"
+        );
+
+        address oldOwner = verseProfile.ownerOf(verseId);
+        address newOwner = r.pendingNewOwner;
+
+        // Simulate calling VerseProfile (to be wired later)
+        // verseProfile.recoverySetOwner(verseId, newOwner);
+
+        r.active = false;
+        r.pendingNewOwner = address(0);
+
+        emit RecoveryExecuted(verseId, oldOwner, newOwner, r.nonce);
+
+        // Unfreeze profile after successful recovery
+        hardFrozen[verseId] = false;
+        softFreezeUntil[verseId] = 0;
+    }
+
+
     // ------------------------------------------------------------------------
     // Freeze controls
     // ------------------------------------------------------------------------
