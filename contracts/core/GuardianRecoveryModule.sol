@@ -231,7 +231,7 @@ contract GuardianRecoveryModule is
         require(!hardFrozen[verseId], "GuardianModule: profile hard frozen");
         _;
     }
-        modifier notFrozen(uint256 verseId) {
+    modifier notFrozen(uint256 verseId) {
         // soft or hard freeze both block this
         if (softFreezeUntil[verseId] > block.timestamp) {
             revert("GuardianModule: soft frozen");
@@ -241,7 +241,6 @@ contract GuardianRecoveryModule is
         }
         _;
     }
-
 
     // ------------------------------------------------------------------------
     // Guardian configuration: propose + apply
@@ -458,7 +457,7 @@ contract GuardianRecoveryModule is
     function executeRecovery(
         uint256 verseId,
         address[] calldata approvingGuardians
-    ) external whenNotPaused notHardFrozen(verseId) {
+    ) external whenNotPaused notFrozen(verseId) {
         RecoveryState storage r = recovery[verseId];
         require(r.active, "GuardianModule: no active recovery");
         require(
@@ -472,9 +471,10 @@ contract GuardianRecoveryModule is
 
         address oldOwner = verseProfile.ownerOf(verseId);
         address newOwner = r.pendingNewOwner;
+        require(newOwner != address(0), "GuardianModule: no pending owner");
 
-        // Simulate calling VerseProfile (to be wired later)
-        // verseProfile.recoverySetOwner(verseId, newOwner);
+        // 🔐 call into VerseProfile to perform the actual owner change
+        verseProfile.recoverySetOwner(verseId, newOwner);
 
         r.active = false;
         r.pendingNewOwner = address(0);
@@ -484,6 +484,7 @@ contract GuardianRecoveryModule is
         // Unfreeze profile after successful recovery
         hardFrozen[verseId] = false;
         softFreezeUntil[verseId] = 0;
+        emit Unfrozen(verseId);
     }
 
     function bumpMetaNonceEpoch(
