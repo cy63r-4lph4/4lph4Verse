@@ -192,6 +192,14 @@ contract VerseProfile is
         p = _profiles[verseId];
     }
 
+    function isHandleAvailable(
+        string calldata handle
+    ) external view returns (bool) {
+        string memory norm = _normalize(handle);
+        if (bytes(norm).length == 0) return false;
+        return _handleToId[_handleKey(norm)] == 0;
+    }
+
     // -------------------- Core: Create --------------------
     function createProfile(
         string calldata handle,
