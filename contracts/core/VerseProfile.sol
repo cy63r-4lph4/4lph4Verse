@@ -283,63 +283,6 @@ contract VerseProfile is
         _trigger(HOOK_ON_HANDLE_CHANGED, verseId, abi.encode(old, norm));
     }
 
-    struct SetHandleWithSig {
-        uint256 verseId;
-        string newHandle;
-        uint256 nonce;
-        uint256 deadline;
-    }
-
-    bytes32 private constant _SET_HANDLE_TYPEHASH =
-        keccak256(
-            "SetHandleWithSig(uint256 verseId,string newHandle,uint256 nonce,uint256 deadline)"
-        );
-
-    function setHandleWithSig(
-        SetHandleWithSig calldata op,
-        bytes calldata sig
-    ) external whenNotPaused {
-        require(block.timestamp <= op.deadline, "expired");
-        require(op.nonce == nonces[op.verseId]++, "bad nonce");
-
-        Profile storage p = _profiles[op.verseId];
-        require(p.owner != address(0), "VerseProfile: no profile");
-
-        string memory norm = _normalize(op.newHandle);
-        require(bytes(norm).length != 0, "empty handle");
-        bytes32 key = _handleKey(norm);
-
-        uint256 existing = _handleToId[key];
-        require(existing == 0 || existing == op.verseId, "handle taken");
-
-        bytes32 digest = _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    _SET_HANDLE_TYPEHASH,
-                    op.verseId,
-                    keccak256(bytes(norm)),
-                    op.nonce,
-                    op.deadline
-                )
-            )
-        );
-
-        address signer = _resolveSigner(p.owner, digest, sig);
-        require(signer == p.owner, "not owner");
-
-        // free old
-        string memory old = p.handle;
-        if (bytes(old).length != 0) {
-            _handleToId[_handleKey(old)] = 0;
-        }
-
-        p.handle = norm;
-        _handleToId[key] = op.verseId;
-
-        emit HandleChanged(op.verseId, old, norm);
-        _trigger(HOOK_ON_HANDLE_CHANGED, op.verseId, abi.encode(old, norm));
-    }
-
     function setMetadataURI(
         uint256 verseId,
         string calldata newURI
@@ -361,52 +304,6 @@ contract VerseProfile is
         emit PurposeUpdated(verseId, newPurpose);
 
         _trigger(HOOK_ON_PURPOSE_UPDATED, verseId, abi.encode(newPurpose));
-    }
-
-    struct SetPurposeWithSig {
-        uint256 verseId;
-        string newPurpose;
-        uint256 nonce;
-        uint256 deadline;
-    }
-
-    bytes32 private constant _SET_PURPOSE_TYPEHASH =
-        keccak256(
-            "SetPurposeWithSig(uint256 verseId,string newPurpose,uint256 nonce,uint256 deadline)"
-        );
-
-    function setPurposeWithSig(
-        SetPurposeWithSig calldata op,
-        bytes calldata sig
-    ) external whenNotPaused {
-        require(block.timestamp <= op.deadline, "expired");
-        require(op.nonce == nonces[op.verseId]++, "bad nonce");
-
-        Profile storage p = _profiles[op.verseId];
-        require(p.owner != address(0), "VerseProfile: no profile");
-
-        bytes32 digest = _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    _SET_PURPOSE_TYPEHASH,
-                    op.verseId,
-                    keccak256(bytes(op.newPurpose)),
-                    op.nonce,
-                    op.deadline
-                )
-            )
-        );
-
-        address signer = _resolveSigner(p.owner, digest, sig);
-        require(signer == p.owner, "not owner");
-
-        p.purpose = op.newPurpose;
-        emit PurposeUpdated(op.verseId, op.newPurpose);
-        _trigger(
-            HOOK_ON_PURPOSE_UPDATED,
-            op.verseId,
-            abi.encode(op.newPurpose)
-        );
     }
 
     function setDelegate(
@@ -462,7 +359,149 @@ contract VerseProfile is
         _trigger(HOOK_ON_METADATA_SET, op.verseId, abi.encode(op.newURI));
     }
 
-    // (Extend similarly for setPurposeWithSig, setHandleWithSig if desired)
+    struct SetDelegateWithSig {
+        uint256 verseId;
+        address newDelegate;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    bytes32 private constant _SET_DELEGATE_TYPEHASH =
+        keccak256(
+            "SetDelegateWithSig(uint256 verseId,address newDelegate,uint256 nonce,uint256 deadline)"
+        );
+
+    function setDelegateWithSig(
+        SetDelegateWithSig calldata op,
+        bytes calldata sig
+    ) external whenNotPaused {
+        require(block.timestamp <= op.deadline, "expired");
+        require(op.nonce == nonces[op.verseId]++, "bad nonce");
+
+        Profile storage p = _profiles[op.verseId];
+        require(p.owner != address(0), "VerseProfile: no profile");
+
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    _SET_DELEGATE_TYPEHASH,
+                    op.verseId,
+                    op.newDelegate,
+                    op.nonce,
+                    op.deadline
+                )
+            )
+        );
+
+        address signer = _resolveSigner(p.owner, digest, sig);
+        require(signer == p.owner, "not owner");
+
+        p.delegate = op.newDelegate;
+        emit DelegateSet(op.verseId, op.newDelegate);
+        _trigger(HOOK_ON_DELEGATE_SET, op.verseId, abi.encode(op.newDelegate));
+    }
+
+    struct SetPurposeWithSig {
+        uint256 verseId;
+        string newPurpose;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    bytes32 private constant _SET_PURPOSE_TYPEHASH =
+        keccak256(
+            "SetPurposeWithSig(uint256 verseId,string newPurpose,uint256 nonce,uint256 deadline)"
+        );
+
+    function setPurposeWithSig(
+        SetPurposeWithSig calldata op,
+        bytes calldata sig
+    ) external whenNotPaused {
+        require(block.timestamp <= op.deadline, "expired");
+        require(op.nonce == nonces[op.verseId]++, "bad nonce");
+
+        Profile storage p = _profiles[op.verseId];
+        require(p.owner != address(0), "VerseProfile: no profile");
+
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    _SET_PURPOSE_TYPEHASH,
+                    op.verseId,
+                    keccak256(bytes(op.newPurpose)),
+                    op.nonce,
+                    op.deadline
+                )
+            )
+        );
+
+        address signer = _resolveSigner(p.owner, digest, sig);
+        require(signer == p.owner, "not owner");
+
+        p.purpose = op.newPurpose;
+        emit PurposeUpdated(op.verseId, op.newPurpose);
+        _trigger(
+            HOOK_ON_PURPOSE_UPDATED,
+            op.verseId,
+            abi.encode(op.newPurpose)
+        );
+    }
+
+    struct SetHandleWithSig {
+        uint256 verseId;
+        string newHandle;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    bytes32 private constant _SET_HANDLE_TYPEHASH =
+        keccak256(
+            "SetHandleWithSig(uint256 verseId,string newHandle,uint256 nonce,uint256 deadline)"
+        );
+
+    function setHandleWithSig(
+        SetHandleWithSig calldata op,
+        bytes calldata sig
+    ) external whenNotPaused {
+        require(block.timestamp <= op.deadline, "expired");
+        require(op.nonce == nonces[op.verseId]++, "bad nonce");
+
+        Profile storage p = _profiles[op.verseId];
+        require(p.owner != address(0), "VerseProfile: no profile");
+
+        string memory norm = _normalize(op.newHandle);
+        require(bytes(norm).length != 0, "empty handle");
+        bytes32 key = _handleKey(norm);
+
+        uint256 existing = _handleToId[key];
+        require(existing == 0 || existing == op.verseId, "handle taken");
+
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    _SET_HANDLE_TYPEHASH,
+                    op.verseId,
+                    keccak256(bytes(norm)),
+                    op.nonce,
+                    op.deadline
+                )
+            )
+        );
+
+        address signer = _resolveSigner(p.owner, digest, sig);
+        require(signer == p.owner, "not owner");
+
+        string memory old = p.handle;
+        if (bytes(old).length != 0) {
+            _handleToId[_handleKey(old)] = 0;
+        }
+
+        p.handle = norm;
+        _handleToId[key] = op.verseId;
+
+        emit HandleChanged(op.verseId, old, norm);
+        _trigger(HOOK_ON_HANDLE_CHANGED, op.verseId, abi.encode(old, norm));
+    }
 
     // -------------------- Module Registry --------------------
     function registerModule(
