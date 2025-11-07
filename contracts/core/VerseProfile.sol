@@ -63,7 +63,6 @@ contract VerseProfile is
     bytes32 public constant PROFILE_ADMIN_ROLE =
         keccak256("PROFILE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
     bytes32 public constant RECOVERY_ROLE = keccak256("RECOVERY_ROLE");
 
     // -------------------- Hook IDs --------------------
@@ -146,7 +145,6 @@ contract VerseProfile is
         __UUPSUpgradeable_init();
         __Pausable_init();
         __AccessControl_init();
-        __ERC165_init();
         __EIP712_init("VerseProfile", "0.1"); // bump if EIP-712 structs change
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -318,10 +316,13 @@ contract VerseProfile is
                 )
             )
         );
-        address signer = _resolveSigner(op.verseId, digest, sig);
-        require(signer == _profiles[op.verseId].owner, "not owner");
+        Profile storage p = _profiles[op.verseId];
+        require(p.owner != address(0), "VerseProfile: no profile");
 
-        _profiles[op.verseId].metadataURI = op.newURI;
+        address signer = _resolveSigner(p.owner, digest, sig);
+        require(signer == p.owner, "not owner");
+
+        p.metadataURI = op.newURI;
         emit MetadataURISet(op.verseId, op.newURI);
         _trigger(HOOK_ON_METADATA_SET, op.verseId, abi.encode(op.newURI));
     }
@@ -487,11 +488,10 @@ contract VerseProfile is
 
     // Resolve EOA vs Smart Account (EIP-1271)
     function _resolveSigner(
-        uint256 verseId,
+        address owner,
         bytes32 digest,
         bytes calldata sig
     ) internal view returns (address) {
-        address owner = _profiles[verseId].owner;
         if (owner.code.length == 0) {
             return ECDSA.recover(digest, sig);
         } else {
