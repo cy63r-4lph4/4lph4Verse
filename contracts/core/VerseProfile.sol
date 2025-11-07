@@ -95,6 +95,7 @@ contract VerseProfile is
 
     // EIP-712 nonces (per verseId)
     mapping(uint256 => uint256) public nonces;
+    mapping(address => uint256) public createNonces;
 
     // Module registry
     mapping(bytes32 => address) public modules; // key => module address
@@ -318,7 +319,82 @@ contract VerseProfile is
     }
 
     // -------------------- Gasless: EIP-712 meta-ops --------------------
-    // struct for setMetadataWithSig
+    struct CreateProfileWithSig {
+        address owner;
+        string handle;
+        string metadataURI;
+        string purpose;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    bytes32 private constant _CREATE_PROFILE_TYPEHASH =
+        keccak256(
+            "CreateProfileWithSig(address owner,string handle,string metadataURI,string purpose,uint256 nonce,uint256 deadline)"
+        );
+
+    function createProfileWithSig(
+        CreateProfileWithSig calldata op,
+        bytes calldata sig
+    ) external whenNotPaused returns (uint256 verseId) {
+        require(block.timestamp <= op.deadline, "expired");
+        require(op.nonce == createNonces[op.owner]++, "bad nonce");
+        require(profileOf[op.owner] == 0, "already have profile");
+
+        string memory norm = _normalize(op.handle);
+        if (bytes(norm).length != 0) {
+            bytes32 key = _handleKey(norm);
+            uint256 existing = _handleToId[key];
+            require(existing == 0, "handle taken");
+        }
+
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    _CREATE_PROFILE_TYPEHASH,
+                    op.owner,
+                    keccak256(bytes(norm)),
+                    keccak256(bytes(op.metadataURI)),
+                    keccak256(bytes(op.purpose)),
+                    op.nonce,
+                    op.deadline
+                )
+            )
+        );
+
+        address signer = _resolveSigner(op.owner, digest, sig);
+        require(signer == op.owner, "not owner");
+
+        verseId = nextVerseId++;
+        _profiles[verseId] = Profile({
+            owner: op.owner,
+            handle: norm,
+            metadataURI: op.metadataURI,
+            purpose: op.purpose,
+            delegate: address(0),
+            createdAt: uint64(block.timestamp),
+            version: 2
+        });
+
+        profileOf[op.owner] = verseId;
+        if (bytes(norm).length != 0) {
+            _handleToId[_handleKey(norm)] = verseId;
+        }
+
+        emit ProfileCreated(
+            verseId,
+            op.owner,
+            norm,
+            op.purpose,
+            op.metadataURI
+        );
+        _trigger(
+            HOOK_ON_PROFILE_CREATED,
+            verseId,
+            abi.encode(op.owner, norm, op.purpose)
+        );
+    }
+
     struct SetURIWithSig {
         uint256 verseId;
         string newURI;
