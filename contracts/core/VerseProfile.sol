@@ -343,14 +343,14 @@ contract VerseProfile is
         modules[key] = address(0);
         emit ModuleRemoved(key, old);
     }
+
     /**
      * @notice Grant recovery permissions to a GuardianRecoveryModule (or similar).
      * @dev Callable by PROFILE_ADMIN_ROLE. You can call this multiple times for new modules.
      */
-    function grantRecoveryModule(address module)
-        external
-        onlyRole(PROFILE_ADMIN_ROLE)
-    {
+    function grantRecoveryModule(
+        address module
+    ) external onlyRole(PROFILE_ADMIN_ROLE) {
         require(module != address(0), "VerseProfile: zero module");
         _grantRole(RECOVERY_ROLE, module);
     }
@@ -395,10 +395,10 @@ contract VerseProfile is
      * - newOwner must be non-zero
      * - newOwner must not already have a profile
      */
-    function recoverySetOwner(uint256 verseId, address newOwner)
-        external
-        onlyRole(RECOVERY_ROLE)
-    {
+    function recoverySetOwner(
+        uint256 verseId,
+        address newOwner
+    ) external onlyRole(RECOVERY_ROLE) {
         require(newOwner != address(0), "VerseProfile: zero new owner");
 
         Profile storage p = _profiles[verseId];
@@ -414,6 +414,11 @@ contract VerseProfile is
         // set new
         profileOf[newOwner] = verseId;
         p.owner = newOwner;
+
+        if (p.delegate != address(0)) {
+            p.delegate = address(0);
+            emit DelegateSet(verseId, address(0));
+        }
 
         emit OwnerRecovered(verseId, oldOwner, newOwner);
     }
