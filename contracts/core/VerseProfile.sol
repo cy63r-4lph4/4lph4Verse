@@ -200,6 +200,14 @@ contract VerseProfile is
         return _handleToId[_handleKey(norm)] == 0;
     }
 
+    function isOwnerOrDelegate(
+        uint256 verseId,
+        address account
+    ) external view returns (bool) {
+        Profile storage p = _profiles[verseId];
+        return account == p.owner || account == p.delegate;
+    }
+
     // -------------------- Core: Create --------------------
     function createProfile(
         string calldata handle,
