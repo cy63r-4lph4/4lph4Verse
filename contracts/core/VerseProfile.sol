@@ -208,6 +208,10 @@ contract VerseProfile is
         return account == p.owner || account == p.delegate;
     }
 
+    function domainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
+    }
+
     // -------------------- Core: Create --------------------
     function createProfile(
         string calldata handle,
