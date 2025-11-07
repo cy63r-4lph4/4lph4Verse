@@ -180,6 +180,10 @@ contract VerseProfile is
         return profileOf[user] != 0;
     }
 
+    function profileExists(uint256 verseId) external view returns (bool) {
+        return _profiles[verseId].owner != address(0);
+    }
+
     // -------------------- Core: Create --------------------
     function createProfile(
         string calldata handle,
