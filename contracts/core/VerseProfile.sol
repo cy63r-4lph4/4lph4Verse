@@ -184,6 +184,14 @@ contract VerseProfile is
         return _profiles[verseId].owner != address(0);
     }
 
+    function getProfileByOwner(
+        address owner
+    ) external view returns (Profile memory p, uint256 verseId) {
+        verseId = profileOf[owner];
+        require(verseId != 0, "VerseProfile: no profile");
+        p = _profiles[verseId];
+    }
+
     // -------------------- Core: Create --------------------
     function createProfile(
         string calldata handle,
