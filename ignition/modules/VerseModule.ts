@@ -4,23 +4,51 @@ export default buildModule("VerseModule", (m) => {
   const admin = m.getAccount(0);
 
   /* -------------------------------------------------------------------------- */
-  /* VerseProfile (UUPS Root Identity)                                          */
+  /* 🧩 VerseProfile (UUPS Root Identity)                                       */
   /* -------------------------------------------------------------------------- */
-  const profileImpl = m.contract("VerseProfile");
-  const initData = m.encodeFunctionCall(profileImpl, "initialize", [admin]);
-  const profileProxy = m.contract("ERC1967Proxy", [profileImpl, initData]);
-  const verseProfile = m.contractAt("VerseProfile", profileProxy);
+  const verseProfileImpl = m.contract("VerseProfile", [], { id: "VerseProfileImpl" });
+
+  const initVerseProfile = m.encodeFunctionCall(verseProfileImpl, "initialize", [admin]);
+
+  const verseProfileProxy = m.contract(
+    "ERC1967Proxy",
+    [verseProfileImpl, initVerseProfile],
+    { id: "VerseProfileProxy" }
+  );
+
+  const verseProfile = m.contractAt("VerseProfile", verseProfileProxy, {
+    id: "VerseProfile",
+  });
 
   /* -------------------------------------------------------------------------- */
-  /* (Optional) GuardianRecoveryModule                                          */
+  /* 🛡️ GuardianRecoveryModule (UUPS)                                          */
   /* -------------------------------------------------------------------------- */
-  const guardianImpl = m.contract("GuardianRecoveryModule");
-  const guardianInit = m.encodeFunctionCall(guardianImpl, "initialize", [admin, verseProfile]);
-  const guardianProxy = m.contract("ERC1967Proxy", [guardianImpl, guardianInit]);
-  const guardian = m.contractAt("GuardianRecoveryModule", guardianProxy);
-  
-  // Register guardian inside VerseProfile
+  const guardianImpl = m.contract("GuardianRecoveryModule", [], {
+    id: "GuardianRecoveryImpl",
+  });
+
+  const guardianInit = m.encodeFunctionCall(guardianImpl, "initialize", [
+    admin,
+    verseProfile,
+  ]);
+
+  const guardianProxy = m.contract(
+    "ERC1967Proxy",
+    [guardianImpl, guardianInit],
+    { id: "GuardianRecoveryProxy" }
+  );
+
+  const guardian = m.contractAt("GuardianRecoveryModule", guardianProxy, {
+    id: "GuardianRecovery",
+  });
+
+  /* -------------------------------------------------------------------------- */
+  /* 🔗 Register Guardian inside VerseProfile                                   */
+  /* -------------------------------------------------------------------------- */
   m.call(verseProfile, "grantRecoveryModule", [guardian]);
 
+  /* -------------------------------------------------------------------------- */
+  /* ✅ Return Deployments                                                      */
+  /* -------------------------------------------------------------------------- */
   return { verseProfile, guardian };
 });

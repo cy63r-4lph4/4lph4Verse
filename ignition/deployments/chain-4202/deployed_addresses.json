@@ -1,0 +1,8 @@
+{
+  "CoreModule#CoreFaucetImpl": "0x7a58069532202c1bB06CD61A36b470AC89E90fF9",
+  "CoreModule#CoreTokenImpl": "0x565A99925AEd5b53F363EBB5BfE268bBD8d414fe",
+  "CoreModule#CoreTokenProxy": "0x0532c1B35a566A15C1eD3014bA32E463b7428B04",
+  "CoreModule#CoreToken": "0x0532c1B35a566A15C1eD3014bA32E463b7428B04",
+  "CoreModule#CoreFaucetProxy": "0xe869dA17cb35d6c2DAbdB7B7Bda8fD2169A7Ce6e",
+  "CoreModule#CoreFaucet": "0xe869dA17cb35d6c2DAbdB7B7Bda8fD2169A7Ce6e"
+}

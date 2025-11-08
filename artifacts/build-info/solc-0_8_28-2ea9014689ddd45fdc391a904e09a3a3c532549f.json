@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-2ea9014689ddd45fdc391a904e09a3a3c532549f",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/interfaces/IBadgeRegistry.sol": "project/contracts/interfaces/IBadgeRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IBadgeRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IBadgeRegistry\n/// @notice Interface for interacting with the BadgeRegistry contract.\ninterface IBadgeRegistry {\n    // -------- Views --------\n    function soulbound(uint256 badgeId) external view returns (bool);\n\n    function badgeTier(uint256 badgeId) external view returns (uint8);\n\n    function expiryOf(\n        address user,\n        uint256 badgeId\n    ) external view returns (uint256);\n\n    function hasBadge(\n        address user,\n        uint256 badgeId\n    ) external view returns (bool);\n\n    function hasAny(\n        address user,\n        uint256[] calldata badgeIds\n    ) external view returns (bool);\n\n    function tierOf(\n        address user,\n        uint256[] calldata considerIds\n    ) external view returns (uint8);\n\n    // -------- Mutative (apps/admins) --------\n    function mintBadge(address user, uint256 badgeId, uint256 expiry) external;\n\n    function renewBadge(\n        address user,\n        uint256 badgeId,\n        uint256 newExpiry\n    ) external;\n\n    function revokeBadge(address user, uint256 badgeId) external;\n\n    function selfBurn(uint256 badgeId) external;\n\n    // -------- ERC1155 compatibility --------\n    function balanceOf(\n        address account,\n        uint256 id\n    ) external view returns (uint256);\n\n    function safeTransferFrom(\n        address from,\n        address to,\n        uint256 id,\n        uint256 amount,\n        bytes calldata data\n    ) external;\n\n    function safeBatchTransferFrom(\n        address from,\n        address[] calldata tos,\n        uint256 id\n    ) external;\n}\n"
+      }
+    }
+  }
+}

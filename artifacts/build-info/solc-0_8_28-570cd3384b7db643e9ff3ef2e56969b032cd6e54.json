@@ -1,0 +1,42 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-570cd3384b7db643e9ff3ef2e56969b032cd6e54",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/utils/GatingLib.sol": "project/contracts/utils/GatingLib.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IBadgeRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IBadgeRegistry\n/// @notice Interface for interacting with the BadgeRegistry contract.\ninterface IBadgeRegistry {\n    // -------- Views --------\n    function soulbound(uint256 badgeId) external view returns (bool);\n\n    function badgeTier(uint256 badgeId) external view returns (uint8);\n\n    function expiryOf(\n        address user,\n        uint256 badgeId\n    ) external view returns (uint256);\n\n    function hasBadge(\n        address user,\n        uint256 badgeId\n    ) external view returns (bool);\n\n    function hasAny(\n        address user,\n        uint256[] calldata badgeIds\n    ) external view returns (bool);\n\n    function tierOf(\n        address user,\n        uint256[] calldata considerIds\n    ) external view returns (uint8);\n\n    // -------- Mutative (apps/admins) --------\n    function mintBadge(address user, uint256 badgeId, uint256 expiry) external;\n\n    function renewBadge(\n        address user,\n        uint256 badgeId,\n        uint256 newExpiry\n    ) external;\n\n    function revokeBadge(address user, uint256 badgeId) external;\n\n    function selfBurn(uint256 badgeId) external;\n\n    // -------- ERC1155 compatibility --------\n    function balanceOf(\n        address account,\n        uint256 id\n    ) external view returns (uint256);\n\n    function safeTransferFrom(\n        address from,\n        address to,\n        uint256 id,\n        uint256 amount,\n        bytes calldata data\n    ) external;\n\n    function safeBatchTransferFrom(\n        address from,\n        address[] calldata tos,\n        uint256 id\n    ) external;\n}\n"
+      },
+      "project/contracts/utils/GatingLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport { IBadgeRegistry as BadgeRegistry } from \"../interfaces/IBadgeRegistry.sol\";\nlibrary GatingLib {\n    /// @notice Returns true if user has an active badge\n    function hasBadge(\n        BadgeRegistry reg,\n        address user,\n        uint256 badgeId\n    ) internal view returns (bool) {\n        if (address(reg) == address(0)) return false; // gracefully handle missing registry\n        return reg.hasBadge(user, badgeId);\n    }\n\n    /// @notice Returns true if user has any badge among given ids\n    function hasAny(\n        BadgeRegistry reg,\n        address user,\n        uint256[] memory badgeIds\n    ) internal view returns (bool) {\n        if (address(reg) == address(0)) return false;\n        return reg.hasAny(user, badgeIds);\n    }\n\n    /// @notice Returns user's tier (0 if no active badges)\n    function tierOf(\n        BadgeRegistry reg,\n        address user,\n        uint256[] memory considerIds\n    ) internal view returns (uint8) {\n        if (address(reg) == address(0)) return 0;\n        return reg.tierOf(user, considerIds);\n    }\n\n    /// @notice Quick helper: check if user meets at least `minTier`\n    function meetsTier(\n        BadgeRegistry reg,\n        address user,\n        uint256[] memory considerIds,\n        uint8 minTier\n    ) internal view returns (bool) {\n        if (address(reg) == address(0)) return false;\n        return reg.tierOf(user, considerIds) >= minTier;\n    }\n}\n"
+      }
+    }
+  }
+}

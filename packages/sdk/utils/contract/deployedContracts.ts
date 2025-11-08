@@ -4,6 +4,18 @@
  */
 
 import type { Abi } from "viem";
+import CoreFaucetImpl_4202Abi from "./abis/4202/CoreFaucetImpl.json";
+import CoreTokenImpl_4202Abi from "./abis/4202/CoreTokenImpl.json";
+import CoreTokenProxy_4202Abi from "./abis/4202/CoreTokenProxy.json";
+import CoreToken_4202Abi from "./abis/4202/CoreToken.json";
+import CoreFaucetProxy_4202Abi from "./abis/4202/CoreFaucetProxy.json";
+import CoreFaucet_4202Abi from "./abis/4202/CoreFaucet.json";
+import CoreFaucetImpl_84532Abi from "./abis/84532/CoreFaucetImpl.json";
+import CoreTokenImpl_84532Abi from "./abis/84532/CoreTokenImpl.json";
+import CoreTokenProxy_84532Abi from "./abis/84532/CoreTokenProxy.json";
+import CoreToken_84532Abi from "./abis/84532/CoreToken.json";
+import CoreFaucetProxy_84532Abi from "./abis/84532/CoreFaucetProxy.json";
+import CoreFaucet_84532Abi from "./abis/84532/CoreFaucet.json";
 import CoreFaucet_11142220Abi from "./abis/11142220/CoreFaucet.json";
 import CoreToken_11142220Abi from "./abis/11142220/CoreToken.json";
 import HireCoreJobBoardImpl_11142220Abi from "./abis/11142220/HireCoreJobBoardImpl.json";
@@ -30,6 +42,13 @@ import BadgeRegistry_11142220Abi from "./abis/11142220/BadgeRegistry.json";
 import ReputationHub_11142220Abi from "./abis/11142220/ReputationHub.json";
 import ScoreAggregator_11142220Abi from "./abis/11142220/ScoreAggregator.json";
 import VerseProfile_11142220Abi from "./abis/11142220/VerseProfile.json";
+import CoreFaucetImpl_11142220Abi from "./abis/11142220/CoreFaucetImpl.json";
+import CoreTokenImpl_11142220Abi from "./abis/11142220/CoreTokenImpl.json";
+import CoreTokenProxy_11142220Abi from "./abis/11142220/CoreTokenProxy.json";
+import CoreFaucetProxy_11142220Abi from "./abis/11142220/CoreFaucetProxy.json";
+import GuardianRecoveryImpl_11142220Abi from "./abis/11142220/GuardianRecoveryImpl.json";
+import GuardianRecoveryProxy_11142220Abi from "./abis/11142220/GuardianRecoveryProxy.json";
+import GuardianRecovery_11142220Abi from "./abis/11142220/GuardianRecovery.json";
 
 // Utility: preserve ABI type from JSON imports
 type ExtractAbi<T> = T extends Abi ? T : Abi;
@@ -47,14 +66,86 @@ export const chainNames = {
 } as const;
 
 export const deployedContracts = {
+  4202: {
+    CoreFaucetImpl: {
+      address: "0x7a58069532202c1bB06CD61A36b470AC89E90fF9",
+      abi: CoreFaucetImpl_4202Abi as ExtractAbi<typeof CoreFaucetImpl_4202Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreTokenImpl: {
+      address: "0x565A99925AEd5b53F363EBB5BfE268bBD8d414fe",
+      abi: CoreTokenImpl_4202Abi as ExtractAbi<typeof CoreTokenImpl_4202Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreTokenProxy: {
+      address: "0x0532c1B35a566A15C1eD3014bA32E463b7428B04",
+      abi: CoreTokenProxy_4202Abi as ExtractAbi<typeof CoreTokenProxy_4202Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreToken: {
+      address: "0x0532c1B35a566A15C1eD3014bA32E463b7428B04",
+      abi: CoreToken_4202Abi as ExtractAbi<typeof CoreToken_4202Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreFaucetProxy: {
+      address: "0xe869dA17cb35d6c2DAbdB7B7Bda8fD2169A7Ce6e",
+      abi: CoreFaucetProxy_4202Abi as ExtractAbi<
+        typeof CoreFaucetProxy_4202Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreFaucet: {
+      address: "0xe869dA17cb35d6c2DAbdB7B7Bda8fD2169A7Ce6e",
+      abi: CoreFaucet_4202Abi as ExtractAbi<typeof CoreFaucet_4202Abi>,
+      deployedOnBlock: 0,
+    },
+  },
+  84532: {
+    CoreFaucetImpl: {
+      address: "0x2D12e51Ec5846e3F25524c8695f583AB482Fe4E0",
+      abi: CoreFaucetImpl_84532Abi as ExtractAbi<
+        typeof CoreFaucetImpl_84532Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreTokenImpl: {
+      address: "0x08d1324535c07c600bCfD31f60cD3E96fD23211f",
+      abi: CoreTokenImpl_84532Abi as ExtractAbi<typeof CoreTokenImpl_84532Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreTokenProxy: {
+      address: "0xC65ba4e00e4E26eb9B913d1aBCa39CE609375D77",
+      abi: CoreTokenProxy_84532Abi as ExtractAbi<
+        typeof CoreTokenProxy_84532Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreToken: {
+      address: "0xC65ba4e00e4E26eb9B913d1aBCa39CE609375D77",
+      abi: CoreToken_84532Abi as ExtractAbi<typeof CoreToken_84532Abi>,
+      deployedOnBlock: 0,
+    },
+    CoreFaucetProxy: {
+      address: "0xbAFE479Ea9c432D5bF6C097b72f84Fb3a1298477",
+      abi: CoreFaucetProxy_84532Abi as ExtractAbi<
+        typeof CoreFaucetProxy_84532Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreFaucet: {
+      address: "0xbAFE479Ea9c432D5bF6C097b72f84Fb3a1298477",
+      abi: CoreFaucet_84532Abi as ExtractAbi<typeof CoreFaucet_84532Abi>,
+      deployedOnBlock: 0,
+    },
+  },
   11142220: {
     CoreFaucet: {
-      address: "0xb5d8887AB09AdB5983AACEed4e1AbB9267407823",
+      address: "0x32c838B35C1D326c86f683e81cD65c07aAda16F8",
       abi: CoreFaucet_11142220Abi as ExtractAbi<typeof CoreFaucet_11142220Abi>,
       deployedOnBlock: 0,
     },
     CoreToken: {
-      address: "0xB0CB172Ea557F4bd53A11BB259050fFA9e8B2b94",
+      address: "0x6C1d6A3076241f2519670e42A09AFea8C2007162",
       abi: CoreToken_11142220Abi as ExtractAbi<typeof CoreToken_11142220Abi>,
       deployedOnBlock: 0,
     },
@@ -108,7 +199,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileImpl: {
-      address: "0x52EE8E43148a8b18Ee952b5c51ba0FA99FD30d60",
+      address: "0xbbE7A357A93b182ABB22fD4DC612ae661C6e5E4D",
       abi: VerseProfileImpl_11142220Abi as ExtractAbi<
         typeof VerseProfileImpl_11142220Abi
       >,
@@ -164,7 +255,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileProxy: {
-      address: "0x5e041CAF759403c4Ae1a3f8179270571FC31719E",
+      address: "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
       abi: VerseProfileProxy_11142220Abi as ExtractAbi<
         typeof VerseProfileProxy_11142220Abi
       >,
@@ -220,9 +311,58 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfile: {
-      address: "0x5e041CAF759403c4Ae1a3f8179270571FC31719E",
+      address: "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
       abi: VerseProfile_11142220Abi as ExtractAbi<
         typeof VerseProfile_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreFaucetImpl: {
+      address: "0xBF187469715579E727810FF39930E291054948ee",
+      abi: CoreFaucetImpl_11142220Abi as ExtractAbi<
+        typeof CoreFaucetImpl_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreTokenImpl: {
+      address: "0xe9e212121bCb2b1Da31c9647A3769FF9D0f06121",
+      abi: CoreTokenImpl_11142220Abi as ExtractAbi<
+        typeof CoreTokenImpl_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreTokenProxy: {
+      address: "0x6C1d6A3076241f2519670e42A09AFea8C2007162",
+      abi: CoreTokenProxy_11142220Abi as ExtractAbi<
+        typeof CoreTokenProxy_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    CoreFaucetProxy: {
+      address: "0x32c838B35C1D326c86f683e81cD65c07aAda16F8",
+      abi: CoreFaucetProxy_11142220Abi as ExtractAbi<
+        typeof CoreFaucetProxy_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    GuardianRecoveryImpl: {
+      address: "0x6C17a9472d74bcc04c5B7dd9a347A6083bF9b51c",
+      abi: GuardianRecoveryImpl_11142220Abi as ExtractAbi<
+        typeof GuardianRecoveryImpl_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    GuardianRecoveryProxy: {
+      address: "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B",
+      abi: GuardianRecoveryProxy_11142220Abi as ExtractAbi<
+        typeof GuardianRecoveryProxy_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    GuardianRecovery: {
+      address: "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B",
+      abi: GuardianRecovery_11142220Abi as ExtractAbi<
+        typeof GuardianRecovery_11142220Abi
       >,
       deployedOnBlock: 0,
     },

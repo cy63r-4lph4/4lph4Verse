@@ -1,10 +1,10 @@
-import { ChainId } from "@verse/sdk";
 import {
   celo,
   baseSepolia,
   liskSepolia,
 } from "viem/chains";
 import { http } from "viem";
+import { ChainId } from "@verse/sdk";
 
 // ✅ Map supported chains
 export const supportedChains: Record<ChainId, any> = {

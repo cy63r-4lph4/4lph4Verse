@@ -4,6 +4,18 @@
  * Do not edit manually.
  */
 
+export { default as CoreFaucetImplAbi_4202 } from "./4202/CoreFaucetImpl.json";
+export { default as CoreTokenImplAbi_4202 } from "./4202/CoreTokenImpl.json";
+export { default as CoreTokenProxyAbi_4202 } from "./4202/CoreTokenProxy.json";
+export { default as CoreTokenAbi_4202 } from "./4202/CoreToken.json";
+export { default as CoreFaucetProxyAbi_4202 } from "./4202/CoreFaucetProxy.json";
+export { default as CoreFaucetAbi_4202 } from "./4202/CoreFaucet.json";
+export { default as CoreFaucetImplAbi_84532 } from "./84532/CoreFaucetImpl.json";
+export { default as CoreTokenImplAbi_84532 } from "./84532/CoreTokenImpl.json";
+export { default as CoreTokenProxyAbi_84532 } from "./84532/CoreTokenProxy.json";
+export { default as CoreTokenAbi_84532 } from "./84532/CoreToken.json";
+export { default as CoreFaucetProxyAbi_84532 } from "./84532/CoreFaucetProxy.json";
+export { default as CoreFaucetAbi_84532 } from "./84532/CoreFaucet.json";
 export { default as CoreFaucetAbi_11142220 } from "./11142220/CoreFaucet.json";
 export { default as CoreTokenAbi_11142220 } from "./11142220/CoreToken.json";
 export { default as HireCoreJobBoardImplAbi_11142220 } from "./11142220/HireCoreJobBoardImpl.json";
@@ -30,3 +42,10 @@ export { default as BadgeRegistryAbi_11142220 } from "./11142220/BadgeRegistry.j
 export { default as ReputationHubAbi_11142220 } from "./11142220/ReputationHub.json";
 export { default as ScoreAggregatorAbi_11142220 } from "./11142220/ScoreAggregator.json";
 export { default as VerseProfileAbi_11142220 } from "./11142220/VerseProfile.json";
+export { default as CoreFaucetImplAbi_11142220 } from "./11142220/CoreFaucetImpl.json";
+export { default as CoreTokenImplAbi_11142220 } from "./11142220/CoreTokenImpl.json";
+export { default as CoreTokenProxyAbi_11142220 } from "./11142220/CoreTokenProxy.json";
+export { default as CoreFaucetProxyAbi_11142220 } from "./11142220/CoreFaucetProxy.json";
+export { default as GuardianRecoveryImplAbi_11142220 } from "./11142220/GuardianRecoveryImpl.json";
+export { default as GuardianRecoveryProxyAbi_11142220 } from "./11142220/GuardianRecoveryProxy.json";
+export { default as GuardianRecoveryAbi_11142220 } from "./11142220/GuardianRecovery.json";
