@@ -76,23 +76,24 @@ const config: HardhatUserConfig = {
       ],
       chainId: 11142220,
     },
-    alfajores: {
+    
+    baseSepolia: {
       type: "http",
-      url: configVariable("ALFAJORES_RPC")!,
+      url: configVariable("BASE_SEPOLIA_RPC")!,
       accounts: [
         configVariable("DEPLOYER_PRIVATE_KEY")!,
         configVariable("TREASURY_PRIVATE_KEY")!,
       ],
-      chainId: 44787,
+      chainId: 84532,
     },
-    baklava: {
+    liskSepolia: {
       type: "http",
-      url: configVariable("BAKLAVA_RPC")!,
+      url: configVariable("LISK_SEPOLIA_RPC")!,
       accounts: [
         configVariable("DEPLOYER_PRIVATE_KEY")!,
         configVariable("TREASURY_PRIVATE_KEY")!,
       ],
-      chainId: 62320,
+      chainId: 4202,
     },
   },
 
@@ -134,7 +135,34 @@ const config: HardhatUserConfig = {
           },
           
         },
-      },}
+      },
+
+      4202: {
+        name: "LiskSepolia",
+        blockExplorers: {
+          blockscout: {
+            name: "Lisk Sepolia Blockscout",
+            url: "https://lisk-sepolia.blockscout.com",
+            apiUrl: "https://lisk-sepolia.blockscout.com/api",
+          },
+          etherscan: {
+            name: "Lisk Sepolia Etherscan",
+            url: "https://lisk-sepolia.blockscout.com",
+            apiUrl: "https://lisk-sepolia.blockscout.com/api",
+          },
+        },
+      },
+      84532: {
+        name: "BaseSepolia",
+        blockExplorers: {
+          etherscan: {
+            name: "Base Sepolia Etherscan",
+            url: "https://basescan.org",
+            apiUrl: "https://api.basescan.org/api",
+          },
+        },
+      },
+    },
 };
 
 export default config;
