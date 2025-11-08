@@ -1,40 +1,64 @@
-// scripts/verify/verify-core.ts
+// scripts/verify/verify-core-all.ts
 import { execSync } from "child_process";
 import fs from "fs";
 
-const chainId = 11142220; // 👈 change per run (e.g. 84532 for BaseSepolia)
-const base = `ignition/deployments/chain-${chainId}/deployed_addresses.json`;
+const CHAINS = [
+  { name: "celoSepolia", id: 11142220 },
+  { name: "baseSepolia", id: 84532 },
+  { name: "liskSepolia", id: 4202 },
+];
+
+function verify(address: string, network: string, args: any[] = []) {
+  try {
+    console.log(`🧾 Verifying ${address} on ${network}`);
+    const cmd = [
+      "npx hardhat verify",
+      `--network ${network}`,
+      address,
+      ...args,
+    ].join(" ");
+    execSync(cmd, { stdio: "inherit" });
+  } catch (err) {
+    console.warn(`⚠️ Verification failed for ${address} on ${network}`);
+  }
+}
 
 async function main() {
-  if (!fs.existsSync(base)) throw new Error(`No deployment found for chain ${chainId}`);
-  const deployed = JSON.parse(fs.readFileSync(base, "utf8"));
-
-  const coreImpl = deployed["CoreModule#CoreTokenImpl"];
-  const coreProxy = deployed["CoreModule#CoreTokenProxy"];
-  const faucetImpl = deployed["CoreModule#CoreFaucetImpl"];
-  const faucetProxy = deployed["CoreModule#CoreFaucetProxy"];
-  const proxyAdmin = deployed["CoreModule#ProxyAdmin"];
-
-  console.log("🔍 Verifying CoreModule contracts...\n");
-
-  const verify = (address: string, args: any[] = []) => {
-    try {
-      console.log(`🧾 Verifying ${address}`);
-      execSync(
-        `npx hardhat verify --network celoSepolia ${address} ${args.join(" ")}`,
-        { stdio: "inherit" }
-      );
-    } catch (err) {
-      console.warn(`⚠️  Verification failed for ${address}:`, (err as any).message);
+  for (const { name, id } of CHAINS) {
+    const file = `ignition/deployments/chain-${id}/deployed_addresses.json`;
+    if (!fs.existsSync(file)) {
+      console.warn(`⚠️ Skipping ${name} — no deployment found.`);
+      continue;
     }
-  };
 
-  verify(coreImpl);
-  verify(coreProxy, [coreImpl, proxyAdmin, "0x"]);
-  verify(faucetImpl);
-  verify(faucetProxy, [faucetImpl, proxyAdmin, "0x"]);
+    console.log(`\n============================`);
+    console.log(`🌐 Verifying CoreModule on ${name}`);
+    console.log(`============================`);
 
-  console.log("\n✅ CoreModule verification complete.");
+    const deployed = JSON.parse(fs.readFileSync(file, "utf8"));
+
+    const coreImpl = deployed["CoreModule#CoreTokenImpl"];
+    const coreProxy = deployed["CoreModule#CoreTokenProxy"];
+    const faucetImpl = deployed["CoreModule#CoreFaucetImpl"];
+    const faucetProxy = deployed["CoreModule#CoreFaucetProxy"];
+    const proxyAdmin = deployed["CoreModule#ProxyAdmin"];
+
+    if (!coreImpl || !coreProxy) {
+      console.warn(`⚠️ Missing contracts for ${name}, skipping.`);
+      continue;
+    }
+
+    // Verify all CoreModule contracts
+    verify(coreImpl, name);
+    verify(coreProxy, name, [coreImpl, proxyAdmin, "0x"]);
+
+    if (faucetImpl && faucetProxy) {
+      verify(faucetImpl, name);
+      verify(faucetProxy, name, [faucetImpl, proxyAdmin, "0x"]);
+    }
+
+    console.log(`✅ Verification completed for ${name}\n`);
+  }
 }
 
 main().catch(console.error);
