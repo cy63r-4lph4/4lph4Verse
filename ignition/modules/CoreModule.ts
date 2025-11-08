@@ -8,33 +8,61 @@ export default buildModule("CoreModule", (m) => {
   /* -------------------------------------------------------------------------- */
   /* CoreToken (UUPS)                                                           */
   /* -------------------------------------------------------------------------- */
-  const coreImpl = m.contract("CoreToken");
+
+  // Implementation
+  const coreImpl = m.contract("CoreToken", [], { id: "CoreTokenImpl" });
 
   const initCore = m.encodeFunctionCall(coreImpl, "initialize", [
-    admin, // owner
-    treasury, // treasury wallet
-    ethers.parseEther("1000000"), // initial supply = 1M CØRE
-    50, // 0.5% fee
-    false, // feeBurns = false
+    admin,                              // owner
+    treasury,                           // treasury wallet
+    ethers.parseEther("1000000"),       // 1M CØRE
+    50,                                 // 0.5% fee (50 bps)
+    false,                              // feeBurns = false
   ]);
 
-  const coreProxy = m.contract("ERC1967Proxy", [coreImpl, initCore]);
-  const coreToken = m.contractAt("CoreToken", coreProxy);
+  // Proxy
+  const coreProxy = m.contract(
+    "ERC1967Proxy",
+    [coreImpl, initCore],
+    { id: "CoreTokenProxy" }
+  );
+
+  // View through proxy as CoreToken
+  const coreToken = m.contractAt(
+    "CoreToken",
+    coreProxy,
+    { id: "CoreToken" }
+  );
 
   /* -------------------------------------------------------------------------- */
   /* CoreFaucet (UUPS)                                                          */
   /* -------------------------------------------------------------------------- */
-  const faucetImpl = m.contract("CoreFaucet");
+
+  // Implementation
+  const faucetImpl = m.contract("CoreFaucet", [], { id: "CoreFaucetImpl" });
 
   const initFaucet = m.encodeFunctionCall(faucetImpl, "initialize", [
     admin,
-    coreToken, // linked to CØRE token
-    ethers.parseEther("5"), // 5 CØRE per claim
-    12 * 3600, // 12-hour cooldown
+    coreToken,                          // Ignition will resolve to CoreToken proxy address
+    ethers.parseEther("5"),             // 5 CØRE per claim
+    12 * 60 * 60,                       // 12h cooldown
   ]);
 
-  const faucetProxy = m.contract("ERC1967Proxy", [faucetImpl, initFaucet]);
-  const faucet = m.contractAt("CoreFaucet", faucetProxy);
+  // Proxy
+  const faucetProxy = m.contract(
+    "ERC1967Proxy",
+    [faucetImpl, initFaucet],
+    { id: "CoreFaucetProxy" }
+  );
+
+  const faucet = m.contractAt(
+    "CoreFaucet",
+    faucetProxy,
+    { id: "CoreFaucet" }
+  );
+
+  // seed faucet with tokens right after deploy
+  m.call(coreToken, "transfer", [faucet, ethers.parseEther("1000")]);
 
   return { coreToken, faucet };
 });

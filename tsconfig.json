@@ -8,7 +8,6 @@
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },
     { "path": "./packages/providers" },
-    { "path": "./services" },
-    { "path": "./apps/relayer" }
+    { "path": "./services/relayer" }
   ]
 }

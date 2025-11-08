@@ -15,7 +15,7 @@ export interface HireCoreScoreModel$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {"636":[{"length":32,"start":2631},{"length":32,"start":2672},{"length":32,"start":3006}]};
   readonly inputSourceName: "project/contracts/hirecore/HireCoreScoreModel.sol";
-  readonly buildInfoId: "solc-0_8_28-ca11b0521c5aa8d0035de1bef353af111591fa01";
+  readonly buildInfoId: "solc-0_8_28-86fa94fba55064f9de317f893d55cbbfd9fee11c";
 };
 
 import "hardhat/types/artifacts";

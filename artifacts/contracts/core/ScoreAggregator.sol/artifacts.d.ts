@@ -15,7 +15,7 @@ export interface VerseScoreAggregator$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {"636":[{"length":32,"start":3805},{"length":32,"start":3846},{"length":32,"start":4180}]};
   readonly inputSourceName: "project/contracts/core/ScoreAggregator.sol";
-  readonly buildInfoId: "solc-0_8_28-ca11b0521c5aa8d0035de1bef353af111591fa01";
+  readonly buildInfoId: "solc-0_8_28-86fa94fba55064f9de317f893d55cbbfd9fee11c";
 };
 
 import "hardhat/types/artifacts";

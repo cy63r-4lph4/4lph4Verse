@@ -43,8 +43,8 @@
 
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"],
-      "relayer/*": ["apps/relayer/src"]
-      
+      "relayer/*": ["services/relayer/src/*"]
+
     }
   }
 }
