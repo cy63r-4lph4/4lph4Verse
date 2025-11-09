@@ -14,7 +14,8 @@
     "dotenv": "^16.4.0",
     "viem": "^2.21.0",
     "zod": "^3.23.0",
-    "pino": "^9.3.0"
+    "pino": "^9.3.0",
+    "@verse/sdk": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.7.0",

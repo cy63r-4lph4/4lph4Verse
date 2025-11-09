@@ -32,9 +32,10 @@ const ABIS_INDEX_PATH = path.join(ABIS_DIR, "index.ts");
 
 // Known chainId ↔ name mapping
 const chainNames: Record<number, string> = {
-  31337: "localhost",
   42220: "celo",
   11142220: "celoSepolia",
+  84532: "baseSepolia",
+  4202: "liskSepolia",
 };
 
 function loadChainDeployments() {

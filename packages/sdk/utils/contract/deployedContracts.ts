@@ -60,8 +60,9 @@ export type DeployedContract<TAbi extends Abi = Abi> = {
 };
 
 export const chainNames = {
-  "31337": "localhost",
+  "4202": "liskSepolia",
   "42220": "celo",
+  "84532": "baseSepolia",
   "11142220": "celoSepolia",
 } as const;
 

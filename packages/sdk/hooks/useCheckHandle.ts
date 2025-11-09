@@ -4,6 +4,7 @@ import { useChainId, useReadContract } from "wagmi";
 import { useEffect, useState } from "react";
 import type { Abi } from "viem";
 import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
+import { PROFILE_CHAIN } from "config/constants";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -38,14 +39,13 @@ function useDebounce<T>(value: T, delay = 600): T {
 /* Main Hook                                                                  */
 /* -------------------------------------------------------------------------- */
 export function useCheckHandle(handle: string) {
-  const chainId = useChainId() as ChainId;
   const [status, setStatus] = useState<HandleStatus>("idle");
 
   // 🕓 Debounce user input so it only queries after typing stops
   const debouncedHandle = useDebounce(handle.trim().toLowerCase(), 600);
   const isValid = validateHandleFormat(debouncedHandle);
 
-  const registry = getDeployedContract(chainId, "VerseProfile");
+  const registry = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
   const { data, isLoading, error } = useReadContract({
     abi: registry.abi as Abi,

@@ -5,10 +5,8 @@
   "types": "dist/index.d.ts",
   "files": ["dist"],
   "dependencies": {
-  "@verse/providers": "workspace:*",
-  "@verse/services": "workspace:*"
-}
-,
+    "@verse/providers": "workspace:*"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json"
   }

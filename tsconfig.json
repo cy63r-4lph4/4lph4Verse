@@ -8,6 +8,7 @@
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },
     { "path": "./packages/providers" },
-    { "path": "./services/relayer" }
+    { "path": "./services/relayer" },
+    { "path": "./services/val-gateway" }
   ]
 }

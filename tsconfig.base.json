@@ -43,8 +43,8 @@
 
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"],
-      "relayer/*": ["services/relayer/src/*"]
-
+      "relayer/*": ["services/relayer/src/*"],
+      "val/*": ["services/val-gateway/src/*"]
     }
   }
 }
