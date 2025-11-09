@@ -143,8 +143,8 @@ const config: HardhatUserConfig = {
         blockExplorers: {
           blockscout: {
             name: "Lisk Sepolia Blockscout",
-            url: "https://lisk-sepolia.blockscout.com",
-            apiUrl: "https://lisk-sepolia.blockscout.com/api",
+            url: "https://sepolia-blockscout.lisk.com",
+            apiUrl: "https://sepolia-blockscout.lisk.com/api",
           },
           etherscan: {
             name: "Lisk Sepolia Etherscan",

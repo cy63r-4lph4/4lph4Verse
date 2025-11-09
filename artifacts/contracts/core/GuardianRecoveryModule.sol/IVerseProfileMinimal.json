@@ -66,5 +66,5 @@
   "deployedLinkReferences": {},
   "immutableReferences": {},
   "inputSourceName": "project/contracts/core/GuardianRecoveryModule.sol",
-  "buildInfoId": "solc-0_8_28-bfc4af1e690747c14019e45fe6ad85cf5282840b"
+  "buildInfoId": "solc-0_8_28-86fa94fba55064f9de317f893d55cbbfd9fee11c"
 }
