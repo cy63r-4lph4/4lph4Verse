@@ -24,10 +24,8 @@
       "@verse/assets": ["packages/brand-assets/public"],
       "@verse/assets/*": ["packages/brand-assets/public/*"],
 
-      "@verse/services": ["services"],
-      "@verse/services/*": ["services/*"],
       "@verse/services/faucet/*": ["services/faucet/src/*"],
-      "@verse/services/pinata/*": ["services/pinata/*"],
+      "@verse/storage/*": ["services/pinata/*"],
 
       "@verse/services/relayer": ["services/relayer/src"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],

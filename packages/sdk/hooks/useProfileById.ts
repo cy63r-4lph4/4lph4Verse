@@ -4,6 +4,7 @@ import { useReadContract, useChainId } from "wagmi";
 import { getDeployedContract, ChainId } from "../utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/services/pinata";
 import { useEffect, useState } from "react";
+import { PROFILE_CHAIN } from "config/constants";
 
 /* --------------------------------------------------
  🧠 In-memory cache
@@ -15,8 +16,7 @@ const profileCache = new Map<
 const CACHE_TTL = 60_000; // 1 minute
 
 export function useProfileById(id?: string | number) {
-  const chainId = useChainId() as ChainId;
-  const contract = getDeployedContract(chainId, "VerseProfile");
+  const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setLoading] = useState(true);
