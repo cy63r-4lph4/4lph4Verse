@@ -2,14 +2,14 @@ import express from "express";
 import { makeClients } from "val/config/chains";
 import { logger } from "val/utils/logger";
 
-const router = express.Router();
+export const relayRouter = express.Router();
 
 /**
  * @route POST /v1/relay/ping
  * @desc Health check endpoint
  */
 
-router.post("/ping", async (req, res) => {
+relayRouter.post("/ping", async (req, res) => {
   const { chainId } = req.body;
   try {
     const { cfg, publicClient, relayer } = makeClients(chainId);
@@ -33,7 +33,7 @@ router.post("/ping", async (req, res) => {
  * @desc Will relay signed meta-tx (stub for now)
  */
 
-router.post("/execute", async (req, res) => {
+relayRouter.post("/execute", async (req, res) => {
   try {
     const { chainId, target, data } = req.body;
     if (!chainId || !target || !data) {
