@@ -1,6 +1,10 @@
+import { buildProfileTypedData } from "@verse/sdk/dist";
 import express from "express";
+import { get } from "http";
 import { makeClients } from "val/config/chains";
 import { logger } from "val/utils/logger";
+import { getTypedDataTemplate } from "val/utils/typedData";
+import { verifyTypedData } from "viem/actions";
 
 export const relayRouter = express.Router();
 
@@ -35,16 +39,23 @@ relayRouter.post("/ping", async (req, res) => {
 
 relayRouter.post("/execute", async (req, res) => {
   try {
-    const { chainId, target, data } = req.body;
-    if (!chainId || !target || !data) {
+    const { chainId, target, data, from, message, signature ,dapp} = req.body;
+    if (!chainId || !target || !data || !from || !signature) {
       return res
         .status(400)
-        .json({ error: "Missing required fields: chainId, target, data" });
+        .json({
+          error:
+            "Missing required fields: chainId, target, data, from, signature",
+        });
     }
-    // TODO: validate signature, gas estimate, etc.
-    logger.info(`🛰️  Received relay request → ${target} on chain ${chainId}`);
-
-    res.json({ ok: true, message: "Relay endpoint alive!" });
+    const { domain, types, primaryType } = getTypedDataTemplate(dapp, chainId);
+    const valid = await verifyTypedData({
+      address: from as `0x${string}`,
+      domain,
+      primaryType,
+      message,
+      signature: signature as `0x${string}`,
+    });
   } catch (error: any) {
     logger.error(error);
     res.status(400).json({ error: error.message });
