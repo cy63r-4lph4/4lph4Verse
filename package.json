@@ -12,7 +12,7 @@
     "deploy:hirecore": "hardhat ignition deploy ignition/modules/HireCoreModule.ts --network ${npm_config_network:-localhost}",
     "deploy:leasevault": "hardhat ignition deploy ignition/modules/LeaseVaultModule.ts --network ${npm_config_network:-localhost}",
     "deploy:all": "pnpm run deploy:core && pnpm run deploy:hirecore && pnpm run deploy:leasevault && pnpm run export",
-    "export": "ts-node --esm scripts/utils/export-deployment.ts",
+    "export": "ts-node --esm scripts/utils/export-deployment.ts ",
     "verify": "hardhat run scripts/utils/verify.ts --network ${npm_config_network:-localhost}",
     "clean": "rimraf artifacts cache ignition/deployments packages/sdk/utils/contract/deployedContracts.*"
   },

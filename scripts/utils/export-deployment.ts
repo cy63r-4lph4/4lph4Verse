@@ -102,7 +102,8 @@ async function main() {
   // Merge with existing if present
   let existing: Record<number, any> = {};
   if (fs.existsSync(JSON_PATH)) {
-    existing = JSON.parse(fs.readFileSync(JSON_PATH, "utf-8")).deployments || {};
+    existing =
+      JSON.parse(fs.readFileSync(JSON_PATH, "utf-8")).deployments || {};
   }
 
   const merged: Record<number, any> = { ...existing };
@@ -128,9 +129,10 @@ async function main() {
 
   for (const [chainId, contracts] of Object.entries(merged)) {
     contractsWithImports[chainId] = {};
-    for (const [name, c] of Object.entries(
-      contracts
-    ) as [string, { address: string; abi: string; deployedOnBlock: number }][]) {
+    for (const [name, c] of Object.entries(contracts) as [
+      string,
+      { address: string; abi: string; deployedOnBlock: number },
+    ][]) {
       const importName = `${name}_${chainId}Abi`;
       const relPath = `./abis/${chainId}/${name}.json`;
 
@@ -171,7 +173,12 @@ export const deployedContracts = {
 ${Object.entries(contractsWithImports)
   .map(
     ([chainId, contracts]) => `  ${Number(chainId)}: {
-${(Object.entries(contracts) as [string, { address: string; abi: string; deployedOnBlock: number }][])
+${(
+  Object.entries(contracts) as [
+    string,
+    { address: string; abi: string; deployedOnBlock: number },
+  ][]
+)
   .map(
     ([name, c]) =>
       `    ${name}: { address: "${c.address}", abi: ${c.abi} as ExtractAbi<typeof ${c.abi}>, deployedOnBlock: ${c.deployedOnBlock} },`
@@ -204,6 +211,92 @@ export function getDeployedContract<
   }
   fs.writeFileSync(TS_PATH, formatted);
 
+  // --- after deployedContracts.ts generation ---
+
+  const RELAYABLE_TS_PATH = path.join(EXPORT_DIR, "relayableTxTypes.ts");
+
+  function extractRelayableFunctions(abi: any[]) {
+    return abi.filter(
+      (item) => item.type === "function" && item.name.endsWith("WithSig")
+    );
+  }
+
+  function buildRelayableTypes(allAbisDir: string) {
+    const relayable: Record<string, any> = {};
+
+    const chainDirs = fs.readdirSync(allAbisDir, { withFileTypes: true });
+    for (const dir of chainDirs) {
+      if (!dir.isDirectory()) continue;
+      const chainDir = path.join(allAbisDir, dir.name);
+      const abiFiles = fs
+        .readdirSync(chainDir)
+        .filter((f) => f.endsWith(".json"));
+
+      for (const file of abiFiles) {
+        // Skip implementation contracts
+        if (file.endsWith("Impl.json")) continue;
+
+        const contractName = path.basename(file, ".json");
+        const abi = JSON.parse(
+          fs.readFileSync(path.join(chainDir, file), "utf-8")
+        );
+        const relayables = extractRelayableFunctions(abi);
+
+        if (relayables.length === 0) continue;
+        relayable[contractName] = {};
+
+        for (const fn of relayables) {
+          const primaryType =
+            fn.name.charAt(0).toUpperCase() + fn.name.slice(1);
+
+          // Find tuple type (if exists)
+          const opParam = fn.inputs.find((i: any) => i.type === "tuple");
+          const tupleFields = opParam?.components || [];
+
+          relayable[contractName][fn.name] = {
+            primaryType,
+            inputs: fn.inputs,
+            types: {
+              [primaryType]: tupleFields.length
+                ? tupleFields.map((f: any) => ({ name: f.name, type: f.type }))
+                : fn.inputs
+                    .filter((i: any) => i.type !== "bytes") // skip sig
+                    .map((i: any) => ({ name: i.name, type: i.type })),
+            },
+          };
+        }
+      }
+    }
+
+    return relayable;
+  }
+
+  async function generateRelayableTxTypes() {
+    const relayable = buildRelayableTypes(ABIS_DIR);
+
+    const relayableContent = `/**
+ * Auto-generated Relayable Tx Types
+ * Derived from proxy contracts (...WithSig functions)
+ * Do not edit manually.
+ */
+export const RelayableTxTypes = ${JSON.stringify(relayable, null, 2)} as const;
+
+export type RelayableContract = keyof typeof RelayableTxTypes;
+export type RelayableFunction<C extends RelayableContract> =
+  keyof (typeof RelayableTxTypes)[C];
+`;
+
+    let formatted = relayableContent;
+    try {
+      formatted = await prettier.format(relayableContent, {
+        parser: "typescript",
+      });
+    } catch {}
+
+    fs.writeFileSync(RELAYABLE_TS_PATH, formatted);
+    console.log(`✅ Relayable Tx Types generated → ${RELAYABLE_TS_PATH}`);
+  }
+
   // Build abis/index.ts barrel
   let abiIndexContent = `/**
  * Auto-generated ABI Barrel
@@ -229,6 +322,8 @@ ${abiIndexExports.join("\n")}
 - TS:   ${TS_PATH}
 - ABIs: ${ABIS_DIR}/<chainId>/*.json
 - ABI Barrel: ${ABIS_INDEX_PATH}`);
+
+  await generateRelayableTxTypes();
 }
 
 main().catch((err) => {
