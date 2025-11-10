@@ -6,7 +6,7 @@ import {
   buildProfileMetadata,
   uploadFileToPinata,
   uploadProfileMetadata,
-} from "@verse/services/pinata";
+} from "@verse/storage";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { ChainId, getDeployedContract } from "../index";
@@ -20,6 +20,7 @@ import {
   clearCids,
   type ProfileCidCache,
 } from "../utils/profile/profileDraft";
+import { PROFILE_CHAIN } from "config/constants";
 
 const ZERO_BYTES_32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -176,7 +177,7 @@ export function useVerseProfileWizard() {
       return false;
     }
 
-    const contract = getDeployedContract(chainId, "VerseProfile");
+    const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
     if (!contract) {
       setError("VerseProfile contract missing for this chain");
       return false;

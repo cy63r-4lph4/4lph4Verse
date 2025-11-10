@@ -1,8 +1,9 @@
 // utils/profile/fetchVerseProfile.ts
 import { createPublicClient, http } from "viem";
 import { getDeployedContract, ChainId } from "../contract/deployedContracts";
-import { fetchFromPinata } from "@verse/services/pinata";
+import { fetchFromPinata } from "@verse/storage";
 import { celoSepolia } from "viem/chains";
+import { PROFILE_CHAIN } from "config/constants";
 
 /* -------------------------------------------------------------------------- */
 /* 🧠 Simple in-memory cache                                                  */
@@ -33,7 +34,7 @@ export async function fetchVerseProfile(
       transport: http(celoSepolia.rpcUrls.default.http[0]),
     });
 
-    const registry = getDeployedContract(chainId, "VerseProfile");
+    const registry = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
     /* ---------------------------------------------------------------------- */
     /* 🧩 Step 1: Resolve to verseId                                           */

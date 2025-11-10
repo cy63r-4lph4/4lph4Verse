@@ -606,6 +606,9 @@ importers:
       '@verse/providers':
         specifier: workspace:*
         version: link:../providers
+      '@verse/storage':
+        specifier: workspace:*
+        version: link:../../services/storage
 
   packages/ui:
     dependencies:
@@ -722,6 +725,8 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+
+  services/storage: {}
 
   services/val-gateway:
     dependencies:

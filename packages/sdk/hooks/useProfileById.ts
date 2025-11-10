@@ -1,8 +1,8 @@
 "use client";
 
-import { useReadContract, useChainId } from "wagmi";
-import { getDeployedContract, ChainId } from "../utils/contract/deployedContracts";
-import { fetchFromPinata } from "@verse/services/pinata";
+import { useReadContract} from "wagmi";
+import { getDeployedContract } from "../utils/contract/deployedContracts";
+import { fetchFromPinata } from "@verse/storage";
 import { useEffect, useState } from "react";
 import { PROFILE_CHAIN } from "config/constants";
 

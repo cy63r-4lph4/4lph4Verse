@@ -21,11 +21,10 @@
       "@verse/config": ["packages/config"],
       "@verse/config/*": ["packages/config/*"],
 
-      "@verse/assets": ["packages/brand-assets/public"],
-      "@verse/assets/*": ["packages/brand-assets/public/*"],
+      
 
-      "@verse/services/faucet/*": ["services/faucet/src/*"],
-      "@verse/storage/*": ["services/pinata/*"],
+      "@verse/storage": ["services/storage/src"],
+      "@verse/storage/*": ["services/storage/src/*"],
 
       "@verse/services/relayer": ["services/relayer/src"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],

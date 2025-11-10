@@ -1,13 +1,14 @@
-{
-  "name": "@verse/sdk",
-  "version": "0.0.1",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "dependencies": {
-    "@verse/providers": "workspace:*"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json"
+  {
+    "name": "@verse/sdk",
+    "version": "0.0.1",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": ["dist"],
+    "dependencies": {
+      "@verse/providers": "workspace:*",
+      "@verse/storage":"workspace:*"
+    },
+    "scripts": {
+      "build": "tsc -p tsconfig.json"
+    }
   }
-}

@@ -1,1 +1,2 @@
 export const PROFILE_CHAIN=11142220;
+export const HIRECORE_CHAIN=11142220;

@@ -13,5 +13,5 @@
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../sdk" }, { "path": "../../services" }]
+  "references": [{ "path": "../sdk" }]
 }

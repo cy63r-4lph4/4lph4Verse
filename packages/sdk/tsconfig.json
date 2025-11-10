@@ -13,5 +13,5 @@
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../providers" }]
+  "references": [{ "path": "../providers" }, { "path": "../../services/storage" }]
 }

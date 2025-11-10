@@ -6,7 +6,8 @@ import {
   ChainId,
   getDeployedContract,
 } from "../utils/contract/deployedContracts";
-import { fetchFromPinata } from "@verse/services/pinata";
+import { fetchFromPinata } from "@verse/storage";
+import { PROFILE_CHAIN } from "config/constants";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;
@@ -28,7 +29,7 @@ export function useGetVerseID(): UseGetVerseIDResult {
   const { address } = useAccount();
   const chainId = useChainId() as ChainId;
 
-  const contract = getDeployedContract(chainId, "VerseProfile");
+  const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
   const enabled = Boolean(address && contract?.address);
 
   const { data, isLoading, error, refetch } = useReadContract({
@@ -58,9 +59,8 @@ export function useGetVerseID(): UseGetVerseIDResult {
 /* ------------------------- Hook: useVerseProfile ------------------------- */
 export function useVerseProfile(skip = false): UseVerseProfileResult {
   const { address } = useAccount();
-  const chainId = useChainId() as ChainId;
   const { verseID, isLoading: idLoading } = useGetVerseID();
-  const contract = getDeployedContract(chainId, "VerseProfile");
+  const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
   const [profile, setProfile] = useState<any>(null);
   const [cacheLoaded, setCacheLoaded] = useState(false);

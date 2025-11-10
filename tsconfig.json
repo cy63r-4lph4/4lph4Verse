@@ -1,15 +1,15 @@
-{
-  "extends": "./tsconfig.base.json",
-  "files": [],
-  "references": [
-    { "path": "./apps/hirecore-web" },
-    { "path": "./apps/vaultoflove-web" },
-    { "path": "./apps/verse-core" },
-    { "path": "./packages/sdk" },
-    { "path": "./packages/ui" },
-    { "path": "./packages/providers" },
-    { "path": "./services/relayer" },
-    { "path": "./services/val-gateway" },
-    { "path": "./services/storage" }
-  ]
-}
+  {
+    "extends": "./tsconfig.base.json",
+    "files": [],
+    "references": [
+      { "path": "./apps/hirecore-web" },
+      { "path": "./apps/vaultoflove-web" },
+      { "path": "./apps/verse-core" },
+      { "path": "./packages/sdk" },
+      { "path": "./packages/ui" },
+      { "path": "./packages/providers" },
+      { "path": "./services/relayer" },
+      { "path": "./services/val-gateway" },
+      { "path": "./services/storage" }
+    ]
+  }

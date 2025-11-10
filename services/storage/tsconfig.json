@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
+    "composite": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
