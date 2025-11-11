@@ -1,11 +1,15 @@
-import { ChainId, PROFILE_CHAIN } from "@verse/sdk";
+import { ChainId, getDeployedContract, PROFILE_CHAIN } from "@verse/sdk";
 import { RelayableContract } from "val/utils/relayableTxTypes";
 
-export function getContractChain(contract: RelayableContract, chanId: ChainId) {
+export function getContractChain(contract: RelayableContract, chainId: ChainId) {
   switch (contract) {
-    case "VerseProfile":
-      return PROFILE_CHAIN;
-    default:
-      return chanId;
+    case "VerseProfile": {
+      const address = getDeployedContract(PROFILE_CHAIN, contract);
+      return { chain: PROFILE_CHAIN, address };
+    }
+    default: {
+      const address = getDeployedContract(chainId, contract);
+      return { chain: chainId, address };
+    }
   }
 }

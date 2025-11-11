@@ -1,6 +1,7 @@
 import { verifyTypedData } from "viem";
 import { ChainId } from "@verse/sdk";
 import { RelayableContract, RelayableFunction, RelayableTxTypes } from "val/utils/relayableTxTypes";
+import { getContractChain } from "val/utils/contractChain";
 
 type RelayableTxInfo<
   C extends RelayableContract,
@@ -22,12 +23,14 @@ export async function verifyVerseSignature<
     // ⛓ Get the relayable metadata for this contract/function
     const relayInfo = RelayableTxTypes[contract][fn] as RelayableTxInfo<C, F>;
 
+    const chain=getContractChain(contract,chainId)
+
     // 🔧 Build the full typed data dynamically
     const typedData = {
       domain: {
         name: contract,
         version: "1",
-        chainId,
+        chainId:chain,
         verifyingContract: from as `0x${string}`, 
       },
       types: relayInfo.types,
