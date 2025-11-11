@@ -1,10 +1,9 @@
-import { buildProfileTypedData } from "@verse/sdk/dist";
+import { ChainId } from "@verse/sdk/dist";
 import express from "express";
-import { get } from "http";
 import { makeClients } from "val/config/chains";
+import { getContractChain } from "val/utils/contractChain";
 import { logger } from "val/utils/logger";
-import { getTypedDataTemplate } from "val/utils/typedData";
-import { verifyTypedData } from "viem/actions";
+import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
 
 export const relayRouter = express.Router();
 
@@ -39,23 +38,36 @@ relayRouter.post("/ping", async (req, res) => {
 
 relayRouter.post("/execute", async (req, res) => {
   try {
-    const { chainId, target, data, from, message, signature ,dapp} = req.body;
-    if (!chainId || !target || !data || !from || !signature) {
+    const { chainId, target, data, from, message, signature, protocol } = req.body;
+    if (!chainId || !target || !data || !from || !signature || !protocol) {
       return res
         .status(400)
         .json({
           error:
-            "Missing required fields: chainId, target, data, from, signature",
+            "Missing required fields: chainId, target, data, from, signature, protocol",
         });
     }
-    const { domain, types, primaryType } = getTypedDataTemplate(dapp, chainId);
-    const valid = await verifyTypedData({
-      address: from as `0x${string}`,
-      domain,
-      primaryType,
+    const valid = await verifyVerseSignature(
+      target,
+      protocol,
+      chainId,
+      from,
       message,
-      signature: signature as `0x${string}`,
+      signature
+    );
+    if (!valid) {
+      return res.status(400).json({ error: "Invalid signature" });
+    }
+    const { chain, address } = getContractChain(protocol, chainId);
+    const { walletClient, publicClient, relayer } = makeClients(chain as ChainId);
+
+     const txHash = await walletClient.sendTransaction({
+      account: relayer,
+      to: address as `0x${string}`,
+      data: data as `0x${string}`,
     });
+
+    res.json({ ok: true, txHash });
   } catch (error: any) {
     logger.error(error);
     res.status(400).json({ error: error.message });
