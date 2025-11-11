@@ -213,7 +213,9 @@ export function getDeployedContract<
 
   // --- after deployedContracts.ts generation ---
 
-  const RELAYABLE_TS_PATH = path.join(EXPORT_DIR, "relayableTxTypes.ts");
+  const RELAYER_DIR = path.resolve(__dirname, "../../services/val-gateway/src");
+
+  const RELAYABLE_TS_PATH = path.join(RELAYER_DIR, "utils/relayableTxTypes.ts");
 
   function extractRelayableFunctions(abi: any[]) {
     return abi.filter(
