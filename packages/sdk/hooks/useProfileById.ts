@@ -4,7 +4,7 @@ import { useReadContract} from "wagmi";
 import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/storage";
 import { useEffect, useState } from "react";
-import { PROFILE_CHAIN } from "config/constants";
+import { PROFILE_CHAIN } from "../config/constants";
 
 /* --------------------------------------------------
  🧠 In-memory cache

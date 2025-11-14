@@ -3,7 +3,7 @@ import { createPublicClient, http } from "viem";
 import { getDeployedContract, ChainId } from "../contract/deployedContracts";
 import { fetchFromPinata } from "@verse/storage";
 import { celoSepolia } from "viem/chains";
-import { PROFILE_CHAIN } from "config/constants";
+import { PROFILE_CHAIN } from "../../config/constants";
 
 /* -------------------------------------------------------------------------- */
 /* 🧠 Simple in-memory cache                                                  */

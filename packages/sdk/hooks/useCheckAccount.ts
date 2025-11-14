@@ -5,7 +5,7 @@ import {
   ChainId,
   getDeployedContract,
 } from "../utils/contract/deployedContracts"; 
-import { PROFILE_CHAIN } from "config/constants";
+import { PROFILE_CHAIN } from "../config/constants";
 
 type UseCheckProfileResult = {
   hasProfile: boolean;

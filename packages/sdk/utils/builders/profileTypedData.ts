@@ -1,4 +1,4 @@
-import { PROFILE_CHAIN } from "config/constants";
+import { PROFILE_CHAIN } from "../../config/constants";
 import { ChainId, getDeployedContract } from "../contract/deployedContracts";
 
 export function buildProfileTypedData(chainId: ChainId) {
