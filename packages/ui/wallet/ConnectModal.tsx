@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Loader2, X, QrCode } from "lucide-react";

@@ -61,11 +61,7 @@ export default function ConnectWalletButton({
   /* ──────────────────────────────────────────────────────────────── */
   useEffect(() => {
     const shouldOpenWizard =
-      address &&
-      !checkingProfile &&
-      !hasProfile &&
-      !wizardDone &&
-      !faucet;
+      address && !checkingProfile && !hasProfile && !wizardDone && !faucet;
 
     if (shouldOpenWizard) {
       setShowWizard(true);
@@ -91,8 +87,7 @@ export default function ConnectWalletButton({
     "px-4 py-2 font-semibold transition-colors flex items-center gap-3";
   const variants: Record<string, string> = {
     primary: "bg-indigo-600 text-white hover:bg-indigo-700",
-    secondary:
-      "bg-gray-100 text-indigo-600 hover:text-white hover:bg-white/10",
+    secondary: "bg-gray-100 text-indigo-600 hover:text-white hover:bg-white/10",
     ghost: "bg-transparent text-indigo-600 hover:bg-indigo-50",
   };
   const roundedMap: Record<string, string> = {
@@ -151,20 +146,6 @@ export default function ConnectWalletButton({
                   >
                     Wrong network
                   </button>
-                ) : faucet ? (
-                  // ✅ Faucet mode: use RainbowKit modals
-                  <div className="flex items-center gap-3">
-                    <button onClick={openAccountModal} type="button">
-                      {account.displayName}
-                    </button>
-                    <button
-                      onClick={openChainModal}
-                      type="button"
-                      className="hidden md:inline"
-                    >
-                      {chain.name}
-                    </button>
-                  </div>
                 ) : (
                   // ✅ Normal mode: profile avatar / dropdown
                   <div className="flex items-center gap-3 relative">
