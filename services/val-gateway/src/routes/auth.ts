@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import express from "express";
 import { deleteNonce, getNonce, saveNonce } from "val/core/auth/nonceStore";
+import { removeRefreshToken, storeRefreshToken, verifyStoredRefreshToken } from "val/core/auth/refreshStore";
 import {
   createTokens,
   verifyRefreshToken,
@@ -83,13 +84,25 @@ authRouter.post("/verify", async (req, res) => {
   }
 });
 
-authRouter.post("/refresh", (req, res) => {
-  const refresh = req.body.refreshToken;
+authRouter.post("/refresh", async (req, res) => {
+  const oldRefresh = req.body.refreshToken;
 
-  const session = verifyRefreshToken(refresh);
+  // Validate cryptographically
+  const session = verifyRefreshToken(oldRefresh);
   if (!session) return res.status(401).json({ error: "Invalid refresh token" });
+
+  // Validate in Redis
+  const storedAddress = await verifyStoredRefreshToken(oldRefresh);
+  if (!storedAddress) {
+    return res.status(401).json({ error: "Refresh token expired or revoked" });
+  }
+
+  await removeRefreshToken(oldRefresh);
 
   const { accessToken, refreshToken } = createTokens(session.address);
 
+  await storeRefreshToken(refreshToken, session.address);
+
   return res.json({ accessToken, refreshToken });
 });
+
