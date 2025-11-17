@@ -9,7 +9,8 @@ import {
 import { getContractChain } from "val/utils/contractChain";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
-import {isReplay} from "val/utils/isReplay"
+import { isReplay } from "val/utils/isReplay";
+import { rateLimit } from "val/utils/rateLimit";
 
 export const relayRouter = express.Router();
 
@@ -65,6 +66,10 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     }
     if (await isReplay(message, signature)) {
       return res.status(400).json({ error: "Duplicate or replayed request" });
+    }
+    const allowed = await rateLimit(from);
+    if (!allowed) {
+      return res.status(429).json({ error: "Too many requests, try later" });
     }
     const { chain, address } = getContractChain(protocol, chainId);
     const { walletClient, publicClient, relayer } = makeClients(
