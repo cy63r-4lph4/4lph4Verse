@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "val/core/sessions/sessionStore";
 
-export async function sessionAuth(
+export async function verifyVerseSession(
   req: Request,
   res: Response,
   next: NextFunction
