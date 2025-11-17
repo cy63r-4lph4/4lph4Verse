@@ -2,6 +2,7 @@ import { ChainId } from "@verse/sdk/dist";
 import express from "express";
 import { makeClients } from "val/config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";
+import { storeTransaction } from "val/core/transaction/txnStore";
 import { getContractChain } from "val/utils/contractChain";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
@@ -68,6 +69,17 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
       to: address as `0x${string}`,
       data: data as `0x${string}`,
     });
+    const txPayload = {
+      from,
+      target,
+      chainId,
+      protocol,
+      dataHash: data.slice(0, 10), // optional: short hash for reference
+      status: "pending",
+      createdAt: Date.now(),
+    };
+
+    await storeTransaction(txHash, txPayload);
 
     res.json({ ok: true, txHash });
   } catch (error: any) {
