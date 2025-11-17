@@ -2,10 +2,14 @@ import { ChainId } from "@verse/sdk/dist";
 import express from "express";
 import { makeClients } from "val/config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";
-import { getTransaction, storeTransaction } from "val/core/transaction/txnStore";
+import {
+  getTransaction,
+  storeTransaction,
+} from "val/core/transaction/txnStore";
 import { getContractChain } from "val/utils/contractChain";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
+import {isReplay} from "val/utils/isReplay"
 
 export const relayRouter = express.Router();
 
@@ -58,6 +62,9 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     );
     if (!valid) {
       return res.status(400).json({ error: "Invalid signature" });
+    }
+    if (await isReplay(message, signature)) {
+      return res.status(400).json({ error: "Duplicate or replayed request" });
     }
     const { chain, address } = getContractChain(protocol, chainId);
     const { walletClient, publicClient, relayer } = makeClients(

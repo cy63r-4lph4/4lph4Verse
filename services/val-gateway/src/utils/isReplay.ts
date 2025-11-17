@@ -1,7 +1,7 @@
 import { redis } from "val/core/redis";
 import crypto from "crypto";
 
-async function isReplay(message: any, signature: string) {
+export async function isReplay(message: any, signature: string) {
   const hash = crypto
     .createHash("sha256")
     .update(JSON.stringify(message) + signature)
