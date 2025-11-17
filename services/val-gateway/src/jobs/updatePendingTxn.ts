@@ -19,8 +19,9 @@ async function updatePendingTxs() {
 
       const { publicClient } = makeClients(chainId as ChainId);
 
+      const formattedHash = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
       const receipt = await publicClient.getTransactionReceipt({
-        hash: txHash as `0x${string}`,
+        hash: formattedHash as `0x${string}`,
       });
 
       if (!receipt) continue;
