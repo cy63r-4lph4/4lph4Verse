@@ -1,7 +1,11 @@
 import { randomBytes } from "crypto";
 import express from "express";
 import { deleteNonce, getNonce, saveNonce } from "val/core/auth/nonceStore";
-import { removeRefreshToken, storeRefreshToken, verifyStoredRefreshToken } from "val/core/auth/refreshStore";
+import {
+  removeRefreshToken,
+  storeRefreshToken,
+  verifyStoredRefreshToken,
+} from "val/core/auth/refreshStore";
 import {
   createTokens,
   verifyRefreshToken,
@@ -71,6 +75,7 @@ authRouter.post("/verify", async (req, res) => {
     await deleteNonce(address);
 
     const { accessToken, refreshToken } = createTokens(address);
+    await storeRefreshToken(refreshToken, address);
 
     return res.json({
       ok: true,
@@ -105,4 +110,3 @@ authRouter.post("/refresh", async (req, res) => {
 
   return res.json({ accessToken, refreshToken });
 });
-
