@@ -2,7 +2,7 @@ import { ChainId } from "@verse/sdk/dist";
 import express from "express";
 import { makeClients } from "val/config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";
-import { storeTransaction } from "val/core/transaction/txnStore";
+import { getTransaction, storeTransaction } from "val/core/transaction/txnStore";
 import { getContractChain } from "val/utils/contractChain";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
@@ -74,7 +74,7 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
       target,
       chainId,
       protocol,
-      dataHash: data.slice(0, 10), // optional: short hash for reference
+      dataHash: data.slice(0, 10),
       status: "pending",
       createdAt: Date.now(),
     };
@@ -87,4 +87,11 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     res.status(400).json({ error: error.message });
     return;
   }
+});
+
+relayRouter.get("/status/:txHash", async (req, res) => {
+  const { txHash } = req.params;
+  const tx = await getTransaction(txHash);
+  if (!tx) return res.status(404).json({ error: "Transaction not found" });
+  res.json(tx);
 });
