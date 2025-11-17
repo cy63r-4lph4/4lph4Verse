@@ -1,6 +1,9 @@
 import { randomBytes } from "crypto";
 import express from "express";
-import { createSession } from "val/core/sessions/sessionStore";
+import {
+  createTokens,
+  verifyRefreshToken,
+} from "val/core/sessions/sessionStore";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
 
@@ -65,15 +68,27 @@ authRouter.post("/verify", async (req, res) => {
       return res.status(400).json({ error: "Invalid signature" });
     }
 
-    const token = createSession(address);
+    const { accessToken, refreshToken } = createTokens(address);
 
     return res.json({
       ok: true,
       address,
-      token,
+      accessToken,
+      refreshToken,
     });
   } catch (err: any) {
     logger.error(err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
+});
+
+authRouter.post("/refresh", (req, res) => {
+  const refresh = req.body.refreshToken;
+
+  const session = verifyRefreshToken(refresh);
+  if (!session) return res.status(401).json({ error: "Invalid refresh token" });
+
+  const { accessToken, refreshToken } = createTokens(session.address);
+
+  return res.json({ accessToken, refreshToken });
 });
