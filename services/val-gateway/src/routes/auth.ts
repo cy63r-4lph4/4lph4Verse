@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import express from "express";
+import { deleteNonce, getNonce, saveNonce } from "val/core/auth/nonceStore";
 import {
   createTokens,
   verifyRefreshToken,
@@ -8,8 +9,6 @@ import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
 
 export const authRouter = express.Router();
-
-const nonces = new Map<string, string>();
 
 /**
  * @route POST /v1/auth/challenge
@@ -23,7 +22,7 @@ authRouter.post("/challenge", async (req, res) => {
       return res.status(400).json({ error: "Missing address" });
     }
     const nonce = randomBytes(16).toString("hex");
-    nonces.set(address.toLowerCase(), nonce);
+    await saveNonce(address, nonce);
     return res.json({
       address,
       nonce,
@@ -50,7 +49,7 @@ authRouter.post("/verify", async (req, res) => {
       });
     }
 
-    const expectedNonce = nonces.get(address.toLowerCase());
+    const expectedNonce = await getNonce(address);
     if (!expectedNonce || !message.includes(expectedNonce)) {
       return res.status(400).json({ error: "Invalid or expired nonce" });
     }
@@ -67,6 +66,8 @@ authRouter.post("/verify", async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ error: "Invalid signature" });
     }
+
+    await deleteNonce(address);
 
     const { accessToken, refreshToken } = createTokens(address);
 
