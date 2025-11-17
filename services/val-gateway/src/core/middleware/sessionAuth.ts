@@ -1,9 +1,15 @@
 // val/core/middleware/sessionAuth.ts
-import { verifyVerseSession } from "val/utils/verifySession";
+import type { Request, Response, NextFunction } from "express";
 
-export async function sessionAuth(req, res, next) {
+import { verifyVerseSession } from "val/utils/verifyVerseSession";
+
+export async function sessionAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    const token = req.headers["x-verse-session"];
+    const token = req.headers["x-verse-session"] as string;
     if (!token) return res.status(401).json({ error: "Missing session token" });
 
     const session = await verifyVerseSession(token);

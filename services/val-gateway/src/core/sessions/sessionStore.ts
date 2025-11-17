@@ -1,21 +1,25 @@
-
-const sessions = new Map<string, { address: string; createdAt: number }>();
+import jwt from "jsonwebtoken";
+const SECRET = process.env.JWT_SECRET as string;
+const EXPIRESIN = "12h";
 
 export function createSession(address: string) {
-  const token = Buffer.from(`${address}:${Date.now()}`).toString("base64");
+  if (!SECRET) throw new Error("JWT_SECRET is missing");
 
-  sessions.set(token, {
-    address,
-    createdAt: Date.now(),
-  });
-
+  const token = jwt.sign({ address }, SECRET, { expiresIn: EXPIRESIN });
   return token;
 }
 
-export function getSession(token: string) {
-  return sessions.get(token);
-}
-
-export function deleteSession(token: string) {
-  sessions.delete(token);
+export function verifySession(token: string) {
+  try {
+    const payload = jwt.verify(token, SECRET) as {
+      address: string;
+      iat: number;
+      exp: number;
+    };
+    return {
+      address: payload.address,
+    };
+  } catch (error) {
+    return null;
+  }
 }

@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import express from "express";
+import { createSession } from "val/core/sessions/sessionStore";
 import { logger } from "val/utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
 
@@ -64,8 +65,7 @@ authRouter.post("/verify", async (req, res) => {
       return res.status(400).json({ error: "Invalid signature" });
     }
 
-    // Generate simple session token (replace with JWT later)
-    const token = Buffer.from(`${address}:${Date.now()}`).toString("base64");
+    const token = createSession(address);
 
     return res.json({
       ok: true,
