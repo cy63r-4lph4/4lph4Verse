@@ -1,125 +1,92 @@
-"use client";
+
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@verse/ui/components/ui/button";
 
+import { Inter } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google"; // Main font
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const jet = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet" });
+
 export default function Home() {
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-background text-foreground perspective-1000">
+    <main
+      className="relative min-h-screen w-full overflow-hidden bg-[#0b0d10] text-white font-inter variable-font-smoothing"
+    >
       {/* -------------------------------------------------- */}
-      {/* Cosmic Particle Field */}
+      {/* PARTICLES */}
       {/* -------------------------------------------------- */}
       <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0 animate-float-slow opacity-[0.35]"
-          style={{ backgroundImage: "url('/noise.png')" }}
-        />
+        <canvas
+          id="particleCanvas"
+          className="absolute inset-0 w-full h-full opacity-60"
+        ></canvas>
       </div>
 
       {/* -------------------------------------------------- */}
-      {/* PORTAL CORE */}
+      {/* PORTAL CORE (Refined Look) */}
       {/* -------------------------------------------------- */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {/* Outer Dimensional Ring */}
-        <div className="absolute w-[900px] h-[900px] rounded-full border border-[var(--verse-secondary)]/15 animate-portal-spin-slow blur-[1px]" />
-
-        {/* Second rotating layer */}
-        <div className="absolute w-[750px] h-[750px] rounded-full border border-[var(--verse-accent)]/15 animate-portal-spin-reverse blur-[1px]" />
-
-        {/* Core Pulse */}
-        <div className="absolute w-[550px] h-[550px] bg-[var(--verse-primary)]/20 rounded-full blur-[120px] animate-pulse-soft" />
-
-        {/* Inner Quantum Ring */}
-        <div className="absolute w-[260px] h-[260px] border-2 border-[var(--verse-accent)]/40 rounded-full animate-portal-ring" />
-
-        {/* Portal Core Sphere */}
-        <div className="absolute w-[180px] h-[180px] rounded-full verse-gradient-verse blur-[4px] animate-core-breathe shadow-[0_0_40px_var(--verse-secondary)]" />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+        <div className="absolute w-[900px] h-[900px] rounded-full border border-white/5 animate-portal-spin-slow blur-[1px]" />
+        <div className="absolute w-[700px] h-[700px] rounded-full border border-cyan-400/10 animate-portal-spin-reverse blur-[1px]" />
+        <div className="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] animate-core-breathe" />
+        <div className="absolute w-[240px] h-[240px] border-2 border-purple-400/30 rounded-full animate-portal-ring" />
+        <div className="absolute w-[160px] h-[160px] rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 blur-[3px] animate-core-breathe shadow-[0_0_40px_rgba(56,189,248,0.5)]" />
       </div>
 
       {/* -------------------------------------------------- */}
-      {/* CAMERA FLOAT ANIMATION */}
+      {/* CONTENT */}
       {/* -------------------------------------------------- */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6 animate-camera-drift">
-        {/* BRAND */}
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-          <span className="bg-gradient-to-tr from-blue-500 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-            VerseWallet
-          </span>
-        </h1>s
+        <h1
+          className="text-5xl md:text-7xl font-bold tracking-tight leading-tight font-jetbrains-mono bg-gradient-to-br from-cyan-600 via-sky-400 to-purple-800 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(56,189,248,0.35)]"
+        >
+          VerseWallet
+        </h1>
 
-        <p className="mt-4 max-w-xl text-lg md:text-xl text-muted-foreground drop-shadow-[0_0_6px_var(--verse-primary)]">
+        <p className="mt-4 max-w-xl text-lg md:text-xl text-[#b7c2cc] drop-shadow-[0_0_10px_rgba(56,189,248,0.15)]">
           Step beyond the boundary.
           <br />
-          The sovereign portal of the{" "}
-          <span className="text-[var(--verse-secondary)] font-semibold">
-            4lph4Verse
-          </span>
-          .
+          Your sovereign gateway to the <span className="text-cyan-300 font-semibold">4lph4Verse</span>.
         </p>
 
-        {/* CTA */}
         <div className="mt-10 flex flex-col md:flex-row gap-4">
-          {/* ENTER PORTAL BUTTON */}
           <Link href="/dashboard">
             <Button
               size="lg"
-              className="
-        group px-7 py-5 text-base font-semibold rounded-xl 
-        bg-[var(--verse-primary)] text-black
-        hover:bg-[var(--verse-secondary)] transition-all
-        shadow-[0_0_20px_var(--verse-primary)/60]
-        relative overflow-hidden
-      "
+              className="group px-7 py-5 text-base font-semibold rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 text-white hover:brightness-110 transition-all shadow-[0_0_25px_rgba(56,189,248,0.55)] relative overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
                 Enter Portal
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </span>
-
-              {/* Soft Pulse Glow */}
-              <span
-                className="absolute inset-0 bg-[radial-gradient(circle,var(--verse-primary),transparent_70%)]
-        opacity-20 group-hover:opacity-40 blur-2xl transition-opacity"
-              />
+              <span className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.4),transparent_70%)] opacity-20 group-hover:opacity-40 blur-2xl transition-opacity" />
             </Button>
           </Link>
 
-          {/* CREATE IDENTITY BUTTON */}
           <Link href="/auth/signup">
             <Button
               variant="outline"
               size="lg"
-              className="
-        px-7 py-5 text-base font-semibold rounded-xl 
-        border-white/15 text-white
-        backdrop-blur-sm hover:bg-white/5
-        transition-all
-      "
+              className="px-7 py-5 text-base font-semibold rounded-xl border-white/15 text-white backdrop-blur-sm hover:bg-white/10 transition-all"
             >
               Create Identity
             </Button>
           </Link>
         </div>
 
-        {/* Secondary */}
-        <p className="mt-6 text-sm text-muted-foreground">
-          Already a citizen?{" "}
-          <Link
-            href="/auth/login"
-            className="text-[var(--verse-secondary)] hover:underline underline-offset-4"
-          >
+        <p className="mt-6 text-sm text-[#9aa5b1]">
+          Already a citizen?{' '}
+          <Link href="/auth/login" className="text-cyan-300 hover:underline underline-offset-4">
             Restore Access
           </Link>
         </p>
       </div>
 
-      {/* BOTTOM FADE */}
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/30 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/40 to-transparent" />
 
-      {/* -------------------------------------------------- */}
-      {/* KEYFRAME ANIMATIONS (INLINE BECAUSE REUSABLE) */}
-      {/* -------------------------------------------------- */}
       <style>{`
         @keyframes portalSpin {
           from { transform: rotate(0deg); }
@@ -131,24 +98,19 @@ export default function Home() {
         }
         @keyframes coreBreathe {
           0%, 100% { transform: scale(1); opacity: 0.9; }
-          50% { transform: scale(1.05); opacity: 1; }
+          50% { transform: scale(1.06); opacity: 1; }
         }
         @keyframes portalRing {
-          0% { transform: scale(0.95) rotate(0deg); opacity: 0.8; }
-          50% { transform: scale(1.05) rotate(3deg); opacity: 1; }
-          100% { transform: scale(0.95) rotate(0deg); opacity: 0.8; }
-        }
-        @keyframes floatSlow {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-          100% { transform: translateY(0px); }
+          0% { transform: scale(0.9) rotate(0deg); opacity: 0.7; }
+          50% { transform: scale(1.07) rotate(3deg); opacity: 1; }
+          100% { transform: scale(0.9) rotate(0deg); opacity: 0.7; }
         }
         @keyframes cameraDrift {
-          0% { transform: translate3d(0,0,0) rotateX(0deg); }
-          50% { transform: translate3d(0,-8px,4px) rotateX(0.5deg); }
-          100% { transform: translate3d(0,0,0) rotateX(0deg); }
+          0% { transform: translate3d(0,0,0); }
+          50% { transform: translate3d(0,-10px,6px); }
+          100% { transform: translate3d(0,0,0); }
         }
-
+        
         .animate-portal-spin-slow {
           animation: portalSpin 18s linear infinite;
         }
@@ -161,13 +123,60 @@ export default function Home() {
         .animate-portal-ring {
           animation: portalRing 4s ease-in-out infinite;
         }
-        .animate-float-slow {
-          animation: floatSlow 16s ease-in-out infinite;
-        }
         .animate-camera-drift {
           animation: cameraDrift 14s ease-in-out infinite;
         }
       `}</style>
+
+      {/* -------------------------------------------------- */}
+      {/* PARTICLE SCRIPT */}
+      {/* -------------------------------------------------- */}
+      <script>{`
+        const canvas = document.getElementById('particleCanvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          const particles = [];
+          const count = 70;
+
+          function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+          }
+          resize();
+          window.onresize = resize;
+
+          for (let i = 0; i < count; i++) {
+            particles.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              r: Math.random() * 2 + 1,
+              dx: (Math.random() - 0.5) * 0.5,
+              dy: (Math.random() - 0.5) * 0.5,
+            });
+          }
+
+          function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(148, 212, 255, 0.7)';
+              ctx.fill();
+
+              p.x += p.dx;
+              p.y += p.dy;
+
+              if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+              if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            });
+
+            requestAnimationFrame(draw);
+          }
+
+          draw();
+        }
+      `}</script>
     </main>
   );
 }
