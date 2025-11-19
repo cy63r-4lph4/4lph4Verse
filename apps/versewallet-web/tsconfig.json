@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "jsx": "preserve",
+  "types": ["node"],
+  "incremental": true,
+  "compilerOptions": {
+    "jsx": "preserve",
+    "types": ["node"],
+    "incremental": true,
+
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@verse-wallet/*": ["./*"],
+      "@verse/ui/*": ["../../packages/ui/*"],
+      "@verse/config/*": ["../../packages/config/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
