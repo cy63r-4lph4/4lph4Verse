@@ -46,7 +46,7 @@ export default function Home() {
           <span className="bg-gradient-to-tr from-blue-500 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
             VerseWallet
           </span>
-        </h1>
+        </h1>s
 
         <p className="mt-4 max-w-xl text-lg md:text-xl text-muted-foreground drop-shadow-[0_0_6px_var(--verse-primary)]">
           Step beyond the boundary.

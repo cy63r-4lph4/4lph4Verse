@@ -75,8 +75,10 @@ export default function TestGaslessPermit() {
       } else {
         setResult(`❌ Error: ${data.error}`);
       }
-    } catch (e: any) {
-      setResult(`❌ Failed: ${e.message}`);
+    } catch (e: unknown) {
+      setResult(
+        `❌ Failed: ${e instanceof Error ? e.message : "Unknown error"}`
+      );
     } finally {
       setLoading(false);
     }

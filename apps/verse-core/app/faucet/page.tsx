@@ -61,12 +61,14 @@ export default function FaucetPageMythicCosmic() {
   const coreToken = contracts?.CoreToken;
   const coreFaucet = contracts?.CoreFaucet;
 
-  const faucetAbi = useMemo(() => (coreFaucet?.abi ?? []) as Abi, [
-    coreFaucet?.abi,
-  ]);
-  const tokenAbi = useMemo(() => (coreToken?.abi ?? []) as Abi, [
-    coreToken?.abi,
-  ]);
+  const faucetAbi = useMemo(
+    () => (coreFaucet?.abi ?? []) as Abi,
+    [coreFaucet?.abi]
+  );
+  const tokenAbi = useMemo(
+    () => (coreToken?.abi ?? []) as Abi,
+    [coreToken?.abi]
+  );
 
   const lastClaimFn = useMemo(() => {
     if (hasFn(faucetAbi, "lastClaimTimestamp")) return "lastClaimTimestamp";
@@ -207,14 +209,16 @@ export default function FaucetPageMythicCosmic() {
   // progress ring percentage (0..1)
   const cooldownNumber = cooldown ? Number(cooldown) : null;
   const progress =
-    remaining === null || !cooldownNumber ? 1 : Math.max(0, 1 - remaining / cooldownNumber);
+    remaining === null || !cooldownNumber
+      ? 1
+      : Math.max(0, 1 - remaining / cooldownNumber);
 
   // time label
   const timeLabel = !readsReady
     ? "—"
     : remaining && remaining > 0
-    ? `Next claim in ${TimeUtils.formatRemaining(remaining)}`
-    : "Ready to claim";
+      ? `Next claim in ${TimeUtils.formatRemaining(remaining)}`
+      : "Ready to claim";
 
   // --- visual component -------------------------------------------------
   return (
@@ -232,7 +236,8 @@ export default function FaucetPageMythicCosmic() {
             </h1>
             <p className="max-w-xl text-sm text-slate-300">
               Invoke the 4lph4 CØRE — a mythic conduit of energy. Once the rift
-              stabilizes you may harvest tokens. The ritual hums in the background.
+              stabilizes you may harvest tokens. The ritual hums in the
+              background.
             </p>
 
             {/* CRYSTAL + RING */}
@@ -244,7 +249,10 @@ export default function FaucetPageMythicCosmic() {
                 transition={{ duration: 4, repeat: Infinity }}
               >
                 {/* progress ring (svg) */}
-                <svg className="w-56 h-56 md:w-72 md:h-72" viewBox="0 0 120 120">
+                <svg
+                  className="w-56 h-56 md:w-72 md:h-72"
+                  viewBox="0 0 120 120"
+                >
                   <defs>
                     <linearGradient id="g1" x1="0%" x2="100%">
                       <stop offset="0%" stopColor="#8be9fd" />
@@ -271,7 +279,9 @@ export default function FaucetPageMythicCosmic() {
                     strokeLinecap="round"
                     fill="none"
                     strokeDasharray={Math.PI * 2 * 48}
-                    animate={{ strokeDashoffset: (1 - progress) * Math.PI * 2 * 48 }}
+                    animate={{
+                      strokeDashoffset: (1 - progress) * Math.PI * 2 * 48,
+                    }}
                     transition={{ duration: 0.7 }}
                     style={{ rotate: -90 }}
                   />
@@ -286,10 +296,21 @@ export default function FaucetPageMythicCosmic() {
                 >
                   <div className="relative w-full h-full">
                     <div className="absolute inset-0 rounded-full blur-2xl opacity-60 bg-gradient-to-tr from-[#5eead4]/50 via-[#7c4dff]/40 to-[#ffd166]/35" />
-                    <svg viewBox="0 0 100 100" className="relative z-10 w-full h-full">
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="relative z-10 w-full h-full"
+                    >
                       <g transform="translate(50,50)">
-                        <polygon points="0,-30 18,-10 11,24 -11,24 -18,-10" fill="#a78bfa" opacity="0.95" />
-                        <polygon points="0,30 -18,10 -11,-24 11,-24 18,10" fill="#7dd3fc" opacity="0.85" />
+                        <polygon
+                          points="0,-30 18,-10 11,24 -11,24 -18,-10"
+                          fill="#a78bfa"
+                          opacity="0.95"
+                        />
+                        <polygon
+                          points="0,30 -18,10 -11,-24 11,-24 18,10"
+                          fill="#7dd3fc"
+                          opacity="0.85"
+                        />
                       </g>
                     </svg>
                   </div>
@@ -309,12 +330,12 @@ export default function FaucetPageMythicCosmic() {
                 {!readsReady
                   ? "Aligning the rift…"
                   : isPending
-                  ? "Confirm in wallet…"
-                  : isConfirming
-                  ? "Claiming…"
-                  : remaining! > 0
-                  ? `Harvest in ${TimeUtils.formatRemaining(remaining!)}`
-                  : "Claim CØRE — Harvest the Rift"}
+                    ? "Confirm in wallet…"
+                    : isConfirming
+                      ? "Claiming…"
+                      : remaining! > 0
+                        ? `Harvest in ${TimeUtils.formatRemaining(remaining!)}`
+                        : "Claim CØRE — Harvest the Rift"}
               </motion.button>
 
               <button
@@ -324,31 +345,45 @@ export default function FaucetPageMythicCosmic() {
                 Add CØRE
               </button>
             </div>
-
+            <ConnectWalletButton faucet={true} rounded="full" />
             {/* feedback & errors */}
             <div className="w-full">
               {(!lastClaimFn || !cooldownFn) && (
-                <p className="text-amber-300 text-sm">Heads up: faucet ABI missing expected getters; UI will skip cooldown gating.</p>
+                <p className="text-amber-300 text-sm">
+                  Heads up: faucet ABI missing expected getters; UI will skip
+                  cooldown gating.
+                </p>
               )}
 
-              {writeError && <TxErrorCard error={writeError} onRetry={handleClaim} />}
+              {writeError && (
+                <TxErrorCard error={writeError} onRetry={handleClaim} />
+              )}
               {isReceiptError && (
                 <TxErrorCard
                   error={
-                    receiptError || new Error("Transaction reverted. Likely cooldown still active.")
+                    receiptError ||
+                    new Error(
+                      "Transaction reverted. Likely cooldown still active."
+                    )
                   }
                 />
               )}
 
               {isSuccess && (
-                <p className="mt-2 text-center text-green-400 text-sm">ENERGY TRANSFER COMPLETE ⚡</p>
+                <p className="mt-2 text-center text-green-400 text-sm">
+                  ENERGY TRANSFER COMPLETE ⚡
+                </p>
               )}
 
               {status && !writeError && !isReceiptError && (
-                <p className="mt-2 text-center text-cyan-300 text-sm">{status}</p>
+                <p className="mt-2 text-center text-cyan-300 text-sm">
+                  {status}
+                </p>
               )}
 
-              <p className="mt-3 text-center text-xss text-slate-400">{timeLabel}</p>
+              <p className="mt-3 text-center text-xss text-slate-400">
+                {timeLabel}
+              </p>
             </div>
           </div>
         </div>
@@ -368,18 +403,26 @@ export default function FaucetPageMythicCosmic() {
       {/* small inline styles for starfield and tilt */}
       <style jsx>{`
         .animate-tilt {
-          background-image: radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+          background-image: radial-gradient(
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px
+          );
           background-size: 3px 3px;
           transform: translateZ(0);
           animation: tilt 60s linear infinite;
         }
 
         @keyframes tilt {
-          0% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-          100% { transform: translateY(0) rotate(360deg); }
+          0% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(180deg);
+          }
+          100% {
+            transform: translateY(0) rotate(360deg);
+          }
         }
-
       `}</style>
     </div>
   );
