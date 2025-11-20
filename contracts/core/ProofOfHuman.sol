@@ -17,8 +17,6 @@ pragma solidity ^0.8.24;
 */
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 /// @notice Minimal interface your VerseProfile contract must expose for this module to write verification status.
@@ -28,8 +26,6 @@ interface IVerseProfile {
 }
 
 contract HumanVerificationModule is
-    Initializable,
-    UUPSUpgradeable,
     AccessControlUpgradeable,
     SelfVerificationRoot
 {
@@ -49,8 +45,17 @@ contract HumanVerificationModule is
     mapping(address => uint256) public verifiedAt;
 
     /// @notice events
-    event HumanVerified(address indexed subject, address operator, uint256 timestamp, bytes userData);
-    event HumanRevoked(address indexed subject, address operator, uint256 timestamp);
+    event HumanVerified(
+        address indexed subject,
+        address operator,
+        uint256 timestamp,
+        bytes userData
+    );
+    event HumanRevoked(
+        address indexed subject,
+        address operator,
+        uint256 timestamp
+    );
     event VerificationConfigIdUpdated(bytes32 configId);
     event VerseProfileUpdated(address indexed verseProfile);
     event ScopeSeedUpdated(bytes32 scopeSeed);
@@ -59,36 +64,11 @@ contract HumanVerificationModule is
     error AlreadyVerified(address who);
     error NotVerified(address who);
 
-    // -------------------------
-    // INITIALIZER
-    // -------------------------
-    /// @param admin role admin
-    /// @param _verseProfile address of VerseProfile contract that will store the verified flag
-    /// @param _scopeSeed optional scope seed (helps frontend compute scope)
-    /// @param identityVerificationHub optional Self IdentityVerificationHub address (if Self root requires it)
-    function initialize(
-        address admin,
-        address _verseProfile,
-        bytes32 _scopeSeed,
-        address identityVerificationHub // pass zero if not needed by your Self root init
-    ) public initializer {
-        if (admin == address(0)) revert ZeroAddress();
-        if (_verseProfile == address(0)) revert ZeroAddress();
-
-        __UUPSUpgradeable_init();
-        __AccessControl_init();
-
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(ADMIN_ROLE, admin);
-
-        verseProfile = _verseProfile;
-        scopeSeed = _scopeSeed;
-
-        // If your Self version requires explicit initialization, call the initializer here.
-        // Example (if available): _initializeSelfVerificationRoot(identityVerificationHub, _scopeSeed);
-        // If there is no such initializer in your Self package, this should be omitted.
-        emit VerseProfileUpdated(_verseProfile);
-        emit ScopeSeedUpdated(_scopeSeed);
+     constructor(address identityVerificationHub)
+        SelfVerificationRoot(identityVerificationHub, "")
+    {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
     }
 
     // -------------------------
@@ -133,7 +113,9 @@ contract HumanVerificationModule is
     // -------------------------
     // Admin utilities
     // -------------------------
-    function setVerseProfile(address _verseProfile) external onlyRole(ADMIN_ROLE) {
+    function setVerseProfile(
+        address _verseProfile
+    ) external onlyRole(ADMIN_ROLE) {
         if (_verseProfile == address(0)) revert ZeroAddress();
         verseProfile = _verseProfile;
         emit VerseProfileUpdated(_verseProfile);
@@ -176,9 +158,5 @@ contract HumanVerificationModule is
         return verifiedAt[who] != 0;
     }
 
-    // -------------------------
-    // UUPS authorization
-    // -------------------------
-    function _authorizeUpgrade(address newImpl) internal override onlyRole(ADMIN_ROLE) {}
-
+    
 }
