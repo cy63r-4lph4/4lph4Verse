@@ -1,5 +1,5 @@
 import type { HardhatUserConfig } from "hardhat/config";
-import { configVariable } from "hardhat/config"; // if you’re using your own config util
+import { configVariable } from "hardhat/config"; 
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
 import hardhatIgnitionViemPlugin from "@nomicfoundation/hardhat-ignition-viem";

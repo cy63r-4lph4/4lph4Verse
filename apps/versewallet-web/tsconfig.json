@@ -18,11 +18,7 @@
         "name": "next"
       }
     ],
-    "paths": {
-      "@verse-wallet/*": ["./*"],
-      "@verse/ui/*": ["../../packages/ui/*"],
-      "@verse/config/*": ["../../packages/config/*"]
-    }
+    "baseUrl": ".",
   },
   "include": [
     "next-env.d.ts",
@@ -30,7 +26,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "../../packages/ui/components/ui/button.tsx"
   ],
   "exclude": ["node_modules"]
 }
