@@ -17,18 +17,15 @@ pragma solidity ^0.8.24;
 */
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /// @notice Minimal interface your VerseProfile contract must expose for this module to write verification status.
 /// Adjust the function signature to match your real VerseProfile contract.
 interface IVerseProfile {
-    function setHumanVerified(address subject, bool verified) external;
+    function setHumanVerified(address subject, bytes memory dochash) external;
 }
 
-contract HumanVerificationModule is
-    AccessControlUpgradeable,
-    SelfVerificationRoot
-{
+contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
@@ -39,15 +36,14 @@ contract HumanVerificationModule is
     bytes32 public verificationConfigId;
 
     /// @notice optional scope seed recorded locally (for SDK/frontend)
-    bytes32 public scopeSeed;
+    string public scopeSeed = "proof-of-alpha";
 
     /// @notice mapping to track when an address was verified
     mapping(address => uint256) public verifiedAt;
 
     /// @notice events
     event HumanVerified(
-        address indexed subject,
-        address operator,
+        ISelfVerificationRoot.GenericDiscloseOutputV2 output,
         uint256 timestamp,
         bytes userData
     );
@@ -58,33 +54,25 @@ contract HumanVerificationModule is
     );
     event VerificationConfigIdUpdated(bytes32 configId);
     event VerseProfileUpdated(address indexed verseProfile);
-    event ScopeSeedUpdated(bytes32 scopeSeed);
+    event ScopeSeedUpdated(string scopeSeed);
 
     error ZeroAddress();
     error AlreadyVerified(address who);
     error NotVerified(address who);
 
-     constructor(address identityVerificationHub)
-        SelfVerificationRoot(identityVerificationHub, "")
-    {
+    constructor(
+        address identityVerificationHub
+    ) SelfVerificationRoot(identityVerificationHub, scopeSeed) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
     }
 
-    // -------------------------
-    // SELF HOOK - called by the Self verification flow
-    // -------------------------
-    //
-    // NOTE: many Self examples use:
-    //   function customVerificationHook(ISelfVerificationRoot.GenericDiscloseOutputV2 memory output, bytes memory userData) internal override
-    // Adjust the input type name if your installed Self contract exposes another name.
-    //
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal override {
-        // decode subject address from userData (support packed or ABI-encoded)
         address subject;
+        bytes memory dochash;
         if (userData.length == 20) {
             // packed 20-byte address from abi.encodePacked(address)
             subject = address(uint160(bytes20(userData)));
@@ -93,11 +81,20 @@ contract HumanVerificationModule is
             subject = abi.decode(userData, (address));
         }
 
-        // optional: basic guard - don't set twice
         if (verifiedAt[subject] != 0) {
-            // If you prefer to update timestamp on re-verify, remove this check.
             revert AlreadyVerified(subject);
         }
+        dochash = abi.encodePacked(
+            keccak256(
+                abi.encode(
+                    output.name,
+                    output.idNumber,
+                    output.nationality,
+                    output.dateOfBirth,
+                    output.gender
+                )
+            )
+        );
 
         // mark verified in this module
         verifiedAt[subject] = block.timestamp;
@@ -105,9 +102,9 @@ contract HumanVerificationModule is
         // write-back to VerseProfile (single source of truth)
         // We call the external contract; ensure VerseProfile permits this module (access control).
         IVerseProfile vp = IVerseProfile(verseProfile);
-        vp.setHumanVerified(subject, true);
+        vp.setHumanVerified(subject, dochash);
 
-        emit HumanVerified(subject, msg.sender, block.timestamp, userData);
+        emit HumanVerified(output, block.timestamp, userData);
     }
 
     // -------------------------
@@ -126,7 +123,9 @@ contract HumanVerificationModule is
         emit VerificationConfigIdUpdated(configId_);
     }
 
-    function setScopeSeed(bytes32 newScope) external onlyRole(ADMIN_ROLE) {
+    function setScopeSeed(
+        string memory newScope
+    ) external onlyRole(ADMIN_ROLE) {
         scopeSeed = newScope;
         emit ScopeSeedUpdated(newScope);
     }
@@ -135,7 +134,7 @@ contract HumanVerificationModule is
     function revokeVerification(address subject) external onlyRole(ADMIN_ROLE) {
         if (verifiedAt[subject] == 0) revert NotVerified(subject);
         verifiedAt[subject] = 0;
-        IVerseProfile(verseProfile).setHumanVerified(subject, false);
+        IVerseProfile(verseProfile).setHumanVerified(subject, "");
         emit HumanRevoked(subject, msg.sender, block.timestamp);
     }
 
@@ -144,9 +143,9 @@ contract HumanVerificationModule is
     // -------------------------
     // This returns the config id to the hub when requested. Frontend and contract config must match.
     function getConfigId(
-        bytes32 /* destinationChainId */,
-        bytes32 /* userIdentifier */,
-        bytes memory /* userDefinedData */
+        bytes32,
+        bytes32,
+        bytes memory
     ) public view override returns (bytes32) {
         return verificationConfigId;
     }
@@ -157,6 +156,4 @@ contract HumanVerificationModule is
     function isHuman(address who) external view returns (bool) {
         return verifiedAt[who] != 0;
     }
-
-    
 }
