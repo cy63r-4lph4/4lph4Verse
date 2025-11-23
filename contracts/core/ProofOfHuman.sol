@@ -27,7 +27,6 @@ interface IVerseProfile {
 
 contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
     /// @notice reference to VerseProfile contract (single source of truth)
     address public verseProfile;

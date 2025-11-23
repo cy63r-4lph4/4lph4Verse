@@ -64,6 +64,7 @@ contract VerseProfile is
         keccak256("PROFILE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant RECOVERY_ROLE = keccak256("RECOVERY_ROLE");
+    bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
     // -------------------- Hook IDs --------------------
     // (pre-computed constants to save a tiny bit of gas vs keccak at runtime)
@@ -85,6 +86,7 @@ contract VerseProfile is
         address delegate; // optional manager/guardian
         uint64 createdAt; // block.timestamp
         uint8 version; // schema version
+        bytes dochash;
     }
 
     uint256 public nextVerseId; // starts at 1
@@ -238,7 +240,8 @@ contract VerseProfile is
             purpose: purpose,
             delegate: address(0),
             createdAt: uint64(block.timestamp),
-            version: 2
+            version: 2,
+            dochash: ""
         });
         profileOf[sender] = verseId;
 
@@ -373,7 +376,8 @@ contract VerseProfile is
             purpose: op.purpose,
             delegate: address(0),
             createdAt: uint64(block.timestamp),
-            version: 2
+            version: 2,
+            dochash: ""
         });
 
         profileOf[op.owner] = verseId;
@@ -393,6 +397,15 @@ contract VerseProfile is
             verseId,
             abi.encode(op.owner, norm, op.purpose)
         );
+    }
+
+    function setHumanVerified(
+        address subject,
+        bytes memory dochash
+    ) external onlyRole(VERIFIER_ROLE) {
+        uint256 owner = profileOf[subject];
+        Profile storage p = _profiles[owner];
+        p.dochash = dochash;
     }
 
     struct SetURIWithSig {
