@@ -86,7 +86,17 @@ contract VerseProfile is
         address delegate; // optional manager/guardian
         uint64 createdAt; // block.timestamp
         uint8 version; // schema version
-        bytes dochash;
+        bytes dochash; // proof of verification
+    }
+    struct ProfileSum {
+        address owner;
+        string handle;
+        string metadataURI;
+        string purpose;
+        address delegate;
+        uint64 createdAt;
+        uint8 version;
+        bool verified;
     }
 
     uint256 public nextVerseId; // starts at 1
@@ -104,6 +114,10 @@ contract VerseProfile is
 
     // Per-hook subscriptions (cheap dispatch)
     mapping(bytes32 => address[]) private _hookSubs; // hook => subscribers
+
+    // -------------------- Constants --------------------
+
+    bytes4 constant _ERC1271_MAGIC = 0x1626ba7e;
 
     // -------------------- Events --------------------
     event ProfileCreated(
@@ -135,6 +149,11 @@ contract VerseProfile is
         address indexed oldOwner,
         address indexed newOwner
     );
+    event DelegateResetByRecovery(
+        uint256 indexed verseId,
+        address indexed oldDelegate
+    );
+    event HumanVerified(uint256 indexed verseId);
 
     // -------------------- UUPS: disable impl init --------------------
     constructor() {
@@ -175,12 +194,33 @@ contract VerseProfile is
         return _handleToId[_handleKey(_normalize(handle))];
     }
 
+    function verseIdOfOwner(address owner) external view returns (uint256) {
+        return profileOf[owner];
+    }
+
     function ownerOf(uint256 verseId) external view returns (address) {
         return _profiles[verseId].owner;
     }
 
     function hasProfile(address user) external view returns (bool) {
         return profileOf[user] != 0;
+    }
+
+    function getProfileSummary(
+        uint256 verseId
+    ) external view returns (ProfileSum memory) {
+        Profile memory p = _profiles[verseId];
+        ProfileSum memory ps = ProfileSum({
+            owner: p.owner,
+            handle: p.handle,
+            metadataURI: p.metadataURI,
+            purpose: p.purpose,
+            delegate: p.delegate,
+            createdAt: p.createdAt,
+            version: p.version,
+            verified: p.dochash.length > 0
+        });
+        return ps;
     }
 
     function profileExists(uint256 verseId) external view returns (bool) {
@@ -224,7 +264,7 @@ contract VerseProfile is
         address sender = _msgSender();
         require(profileOf[sender] == 0, "already have profile");
 
-        // Normalize & claim handle (optional empty handle allowed at creation, but recommended to set)
+        // Normalize & claim handle
         string memory norm = _normalize(handle);
         require(bytes(norm).length != 0, "empty handle");
 
@@ -241,14 +281,11 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: ""
+            dochash: bytes("")
         });
         profileOf[sender] = verseId;
 
-        // Claim handle if provided
-        if (bytes(norm).length != 0) {
-            _handleToId[_handleKey(norm)] = verseId;
-        }
+        _handleToId[key] = verseId;
 
         emit ProfileCreated(verseId, sender, norm, purpose, metadataURI);
 
@@ -341,7 +378,8 @@ contract VerseProfile is
         bytes calldata sig
     ) external whenNotPaused returns (uint256 verseId) {
         require(block.timestamp <= op.deadline, "expired");
-        require(op.nonce == createNonces[op.owner]++, "bad nonce");
+        require(op.nonce == createNonces[op.owner], "bad nonce");
+        createNonces[op.owner]++;
         require(profileOf[op.owner] == 0, "already have profile");
 
         string memory norm = _normalize(op.handle);
@@ -377,7 +415,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: ""
+            dochash: bytes("")
         });
 
         profileOf[op.owner] = verseId;
@@ -403,9 +441,11 @@ contract VerseProfile is
         address subject,
         bytes memory dochash
     ) external onlyRole(VERIFIER_ROLE) {
-        uint256 owner = profileOf[subject];
-        Profile storage p = _profiles[owner];
+        uint256 verseId = profileOf[subject];
+        require(verseId != 0, "VerseProfile: no profile");
+        Profile storage p = _profiles[verseId];
         p.dochash = dochash;
+        emit HumanVerified(verseId);
     }
 
     struct SetURIWithSig {
@@ -624,7 +664,10 @@ contract VerseProfile is
         address module
     ) external onlyRole(PROFILE_ADMIN_ROLE) {
         require(module != address(0), "zero module");
-        _hookSubs[hook].push(module);
+        address[] storage arr = _hookSubs[hook];
+        for (uint i = 0; i < arr.length; i++)
+            require(arr[i] != module, "already subscribed");
+        arr.push(module);
         emit HookSubscribed(hook, module);
     }
 
@@ -673,15 +716,14 @@ contract VerseProfile is
             "VerseProfile: new owner already has profile"
         );
 
-        // clear old mapping
         profileOf[oldOwner] = 0;
-        // set new
         profileOf[newOwner] = verseId;
         p.owner = newOwner;
 
         if (p.delegate != address(0)) {
+            address oldDelegate = p.delegate;
             p.delegate = address(0);
-            emit DelegateSet(verseId, address(0));
+            emit DelegateResetByRecovery(verseId, oldDelegate);
         }
 
         emit OwnerRecovered(verseId, oldOwner, newOwner);
@@ -759,7 +801,7 @@ contract VerseProfile is
             return ECDSA.recover(digest, sig);
         } else {
             bytes4 ok = IERC1271(owner).isValidSignature(digest, sig);
-            require(ok == 0x1626ba7e, "bad 1271 sig");
+            require(ok == _ERC1271_MAGIC, "bad 1271 sig");
             return owner;
         }
     }
