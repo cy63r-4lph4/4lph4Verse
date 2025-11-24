@@ -226,11 +226,11 @@ contract VerseProfile is
 
         // Normalize & claim handle (optional empty handle allowed at creation, but recommended to set)
         string memory norm = _normalize(handle);
-        if (bytes(norm).length != 0) {
-            bytes32 key = _handleKey(norm);
-            uint256 existing = _handleToId[key];
-            require(existing == 0, "handle taken");
-        }
+        require(bytes(norm).length != 0, "empty handle");
+
+        bytes32 key = _handleKey(norm);
+        uint256 existing = _handleToId[key];
+        require(existing == 0, "handle taken");
 
         verseId = nextVerseId++;
         _profiles[verseId] = Profile({
@@ -345,11 +345,11 @@ contract VerseProfile is
         require(profileOf[op.owner] == 0, "already have profile");
 
         string memory norm = _normalize(op.handle);
-        if (bytes(norm).length != 0) {
-            bytes32 key = _handleKey(norm);
-            uint256 existing = _handleToId[key];
-            require(existing == 0, "handle taken");
-        }
+        require(bytes(norm).length != 0, "empty handle");
+
+        bytes32 key = _handleKey(norm);
+        uint256 existing = _handleToId[key];
+        require(existing == 0, "handle taken");
 
         bytes32 digest = _hashTypedDataV4(
             keccak256(
