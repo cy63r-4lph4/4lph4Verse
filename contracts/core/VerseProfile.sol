@@ -86,7 +86,7 @@ contract VerseProfile is
         address delegate; // optional manager/guardian
         uint64 createdAt; // block.timestamp
         uint8 version; // schema version
-        bytes dochash; // proof of verification
+        bytes32 dochash; // proof of verification
     }
     struct ProfileSum {
         address owner;
@@ -281,7 +281,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes("")
+            dochash: bytes32 ("")
         });
         profileOf[sender] = verseId;
 
@@ -415,7 +415,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes("")
+            dochash: bytes32 ("")
         });
 
         profileOf[op.owner] = verseId;
@@ -439,7 +439,7 @@ contract VerseProfile is
 
     function setHumanVerified(
         address subject,
-        bytes memory dochash
+        bytes32  dochash
     ) external onlyRole(VERIFIER_ROLE) {
         uint256 verseId = profileOf[subject];
         require(verseId != 0, "VerseProfile: no profile");

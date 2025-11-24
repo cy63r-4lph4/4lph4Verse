@@ -5,24 +5,16 @@ pragma solidity ^0.8.24;
  HumanVerificationModule.sol
 
  - Inherits SelfVerificationRoot from @selfxyz/contracts (your installed package)
- - Upgradeable (UUPS) + AccessControl
  - On successful Self verification, marks subject as human-verified and
    writes result back to a VerseProfile contract via a minimal interface.
 
- Notes:
- - Your Self package only had `contracts/abstract/SelfVerificationRoot.sol`
-   so we import that path.
- - If the Self root uses a different `GenericDiscloseOutput` type name,
-   compile errors will point to the exact type name; paste them and I'll update.
 */
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/// @notice Minimal interface your VerseProfile contract must expose for this module to write verification status.
-/// Adjust the function signature to match your real VerseProfile contract.
 interface IVerseProfile {
-    function setHumanVerified(address subject, bytes memory dochash) external;
+    function setHumanVerified(address subject, bytes32 dochash) external;
 }
 
 contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
@@ -34,7 +26,7 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     /// @notice config id returned by getConfigId (optional)
     bytes32 public verificationConfigId;
 
-    /// @notice optional scope seed recorded locally (for SDK/frontend)
+    /// @notice  scope seed recorded locally (for SDK/frontend)
     string public scopeSeed = "proof-of-alpha";
 
     /// @notice mapping to track when an address was verified
@@ -53,7 +45,6 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     );
     event VerificationConfigIdUpdated(bytes32 configId);
     event VerseProfileUpdated(address indexed verseProfile);
-    event ScopeSeedUpdated(string scopeSeed);
 
     error ZeroAddress();
     error AlreadyVerified(address who);
@@ -71,7 +62,7 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
         bytes memory userData
     ) internal override {
         address subject;
-        bytes memory dochash;
+        bytes32 dochash;
         if (userData.length == 20) {
             // packed 20-byte address from abi.encodePacked(address)
             subject = address(uint160(bytes20(userData)));
@@ -83,15 +74,13 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
         if (verifiedAt[subject] != 0) {
             revert AlreadyVerified(subject);
         }
-        dochash = abi.encodePacked(
-            keccak256(
-                abi.encode(
-                    output.name,
-                    output.idNumber,
-                    output.nationality,
-                    output.dateOfBirth,
-                    output.gender
-                )
+        dochash = keccak256(
+            abi.encode(
+                output.name,
+                output.idNumber,
+                output.nationality,
+                output.dateOfBirth,
+                output.gender
             )
         );
 
@@ -100,7 +89,9 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
 
         // write-back to VerseProfile (single source of truth)
         // We call the external contract; ensure VerseProfile permits this module (access control).
+        if (verseProfile == address(0)) revert ZeroAddress();
         IVerseProfile vp = IVerseProfile(verseProfile);
+
         vp.setHumanVerified(subject, dochash);
 
         emit HumanVerified(output, block.timestamp, userData);
@@ -122,18 +113,12 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
         emit VerificationConfigIdUpdated(configId_);
     }
 
-    function setScopeSeed(
-        string memory newScope
-    ) external onlyRole(ADMIN_ROLE) {
-        scopeSeed = newScope;
-        emit ScopeSeedUpdated(newScope);
-    }
-
     /// Admin-revoke verification and sync back to VerseProfile
     function revokeVerification(address subject) external onlyRole(ADMIN_ROLE) {
         if (verifiedAt[subject] == 0) revert NotVerified(subject);
         verifiedAt[subject] = 0;
-        IVerseProfile(verseProfile).setHumanVerified(subject, "");
+        if (verseProfile == address(0)) revert ZeroAddress();
+        IVerseProfile(verseProfile).setHumanVerified(subject, bytes32(""));
         emit HumanRevoked(subject, msg.sender, block.timestamp);
     }
 
