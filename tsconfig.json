@@ -11,6 +11,7 @@
     { "path": "./services/relayer" },
     { "path": "./services/val-gateway" },
     { "path": "./services/storage" },
-    { "path": "./apps/versewallet-web" }
+    { "path": "./apps/versewallet-web" },
+    { "path": "./apps/profile-web" }
   ]
 }

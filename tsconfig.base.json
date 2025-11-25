@@ -37,11 +37,16 @@
 
       "@verse/vaultoflove-web": ["apps/vaultoflove-web"],
       "@verse/vaultoflove-web/*": ["apps/vaultoflove-web/*"],
+
       "@verse/versewallet-web": ["apps/versewallet-web"],
       "@verse/versewallet-web/*": ["apps/versewallet-web/*"],
 
+      "@verse/profile-web": ["apps/profile-web"],
+      "@verse/profile-web/*": ["apps/profile-web/*"],
+
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"],
+
       "relayer/*": ["services/relayer/src/*"],
       "val/*": ["services/val-gateway/src/*"]
     }
