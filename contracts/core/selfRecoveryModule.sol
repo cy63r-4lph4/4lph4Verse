@@ -15,8 +15,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import {SelfUtils} from "@selfxyz/contracts/contracts/libraries/SelfUtils.sol";
 import {SelfStructs} from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
 import {IIdentityVerificationHubV2} from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
-
-
+import {IVerseProfile} from "../interfaces/IVerseProfile.sol";
 
 contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -136,5 +135,4 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
     ) public view override returns (bytes32) {
         return verificationConfigId;
     }
-
 }
