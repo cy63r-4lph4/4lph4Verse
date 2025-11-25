@@ -98,8 +98,6 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
             )
         );
 
-        // write-back to VerseProfile (single source of truth)
-        // We call the external contract; ensure VerseProfile permits this module (access control).
         if (verseProfile == address(0)) revert ZeroAddress();
         IVerseProfile vp = IVerseProfile(verseProfile);
         uint256 verseId = vp.verseIdOfOwner(subject);
@@ -139,7 +137,4 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         return verificationConfigId;
     }
 
-    // -------------------------
-    // View helpers
-    // -------------------------
 }

@@ -188,6 +188,10 @@ contract VerseProfile is
         return _profiles[verseId];
     }
 
+    function getDochash(uint256 verseId) external view returns (bytes32) {
+        return _profiles[verseId].dochash;
+    }
+
     function verseIdByHandle(
         string calldata handle
     ) external view returns (uint256) {
@@ -281,7 +285,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32 ("")
+            dochash: bytes32("")
         });
         profileOf[sender] = verseId;
 
@@ -415,7 +419,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32 ("")
+            dochash: bytes32("")
         });
 
         profileOf[op.owner] = verseId;
@@ -439,7 +443,7 @@ contract VerseProfile is
 
     function setHumanVerified(
         address subject,
-        bytes32  dochash
+        bytes32 dochash
     ) external onlyRole(VERIFIER_ROLE) {
         uint256 verseId = profileOf[subject];
         require(verseId != 0, "VerseProfile: no profile");
