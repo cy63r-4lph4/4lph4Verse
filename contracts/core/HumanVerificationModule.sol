@@ -7,11 +7,17 @@ pragma solidity ^0.8.24;
  - Inherits SelfVerificationRoot from @selfxyz/contracts (your installed package)
  - On successful Self verification, marks subject as human-verified and
    writes result back to a VerseProfile contract via a minimal interface.
+   When a user is verified, His or her profile can be recovered during compromise by 
+   re-verifying in the selfRecovery module without needing a guardian
 
 */
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import { SelfUtils } from "@selfxyz/contracts/contracts/libraries/SelfUtils.sol";
+import { SelfStructs } from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
+import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
+
 
 interface IVerseProfile {
     function setHumanVerified(address subject, bytes32 dochash) external;
@@ -50,12 +56,38 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     error AlreadyVerified(address who);
     error NotVerified(address who);
 
-    constructor(
-        address identityVerificationHub
-    ) SelfVerificationRoot(identityVerificationHub, scopeSeed) {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(ADMIN_ROLE, msg.sender);
-    }
+   constructor(
+    address identityVerificationHub
+)
+    SelfVerificationRoot(identityVerificationHub, scopeSeed)
+{
+    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    _grantRole(ADMIN_ROLE, msg.sender);
+
+    // -----------------------------------------
+    // 1. Build minimal verification config
+    // -----------------------------------------
+    SelfUtils.UnformattedVerificationConfigV2 memory rawCfg =
+        SelfUtils.UnformattedVerificationConfigV2({
+            olderThan: 0,                     // No age restriction
+            forbiddenCountries: new string[](0), // Allow all countries
+            ofacEnabled: false                // No sanctions screening
+        });
+
+    // -----------------------------------------
+    // 2. Format config for the Hub
+    // -----------------------------------------
+    SelfStructs.VerificationConfigV2 memory formatted =
+        SelfUtils.formatVerificationConfigV2(rawCfg);
+
+    // -----------------------------------------
+    // 3. Register with the Identity Hub (Self)
+    // -----------------------------------------
+    verificationConfigId =
+        IIdentityVerificationHubV2(identityVerificationHub)
+            .setVerificationConfigV2(formatted);
+}
+
 
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
