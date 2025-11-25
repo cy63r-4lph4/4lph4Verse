@@ -105,7 +105,6 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
             vp.recoverySetOwner(verseId, verifier);
         }
 
-        //call the recovery function with the subject
     }
 
     // -------------------------

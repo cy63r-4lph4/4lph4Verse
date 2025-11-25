@@ -14,14 +14,10 @@ pragma solidity ^0.8.24;
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import { SelfUtils } from "@selfxyz/contracts/contracts/libraries/SelfUtils.sol";
-import { SelfStructs } from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
-import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
-
-
-interface IVerseProfile {
-    function setHumanVerified(address subject, bytes32 dochash) external;
-}
+import {SelfUtils} from "@selfxyz/contracts/contracts/libraries/SelfUtils.sol";
+import {SelfStructs} from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
+import {IIdentityVerificationHubV2} from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
+import {IVerseProfile} from "../interfaces/IVerseProfile.sol";
 
 contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -56,53 +52,42 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
     error AlreadyVerified(address who);
     error NotVerified(address who);
 
-   constructor(
-    address identityVerificationHub
-)
-    SelfVerificationRoot(identityVerificationHub, scopeSeed)
-{
-    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    _grantRole(ADMIN_ROLE, msg.sender);
+    constructor(
+        address identityVerificationHub
+    ) SelfVerificationRoot(identityVerificationHub, scopeSeed) {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
 
-    // -----------------------------------------
-    // 1. Build minimal verification config
-    // -----------------------------------------
-    SelfUtils.UnformattedVerificationConfigV2 memory rawCfg =
-        SelfUtils.UnformattedVerificationConfigV2({
-            olderThan: 0,                     // No age restriction
-            forbiddenCountries: new string[](0), // Allow all countries
-            ofacEnabled: false                // No sanctions screening
-        });
+        // -----------------------------------------
+        // 1. Build minimal verification config
+        // -----------------------------------------
+        SelfUtils.UnformattedVerificationConfigV2 memory rawCfg = SelfUtils
+            .UnformattedVerificationConfigV2({
+                olderThan: 0, // No age restriction
+                forbiddenCountries: new string[](0), // Allow all countries
+                ofacEnabled: false // No sanctions screening
+            });
 
-    // -----------------------------------------
-    // 2. Format config for the Hub
-    // -----------------------------------------
-    SelfStructs.VerificationConfigV2 memory formatted =
-        SelfUtils.formatVerificationConfigV2(rawCfg);
+        // -----------------------------------------
+        // 2. Format config for the Hub
+        // -----------------------------------------
+        SelfStructs.VerificationConfigV2 memory formatted = SelfUtils
+            .formatVerificationConfigV2(rawCfg);
 
-    // -----------------------------------------
-    // 3. Register with the Identity Hub (Self)
-    // -----------------------------------------
-    verificationConfigId =
-        IIdentityVerificationHubV2(identityVerificationHub)
-            .setVerificationConfigV2(formatted);
-}
-
+        // -----------------------------------------
+        // 3. Register with the Identity Hub (Self)
+        // -----------------------------------------
+        verificationConfigId = IIdentityVerificationHubV2(
+            identityVerificationHub
+        ).setVerificationConfigV2(formatted);
+    }
 
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal override {
-        address subject;
         bytes32 dochash;
-        if (userData.length == 20) {
-            // packed 20-byte address from abi.encodePacked(address)
-            subject = address(uint160(bytes20(userData)));
-        } else {
-            // standard abi.encode(address)
-            subject = abi.decode(userData, (address));
-        }
-
+        address subject = address(uint160(output.userIdentifier));
         if (verifiedAt[subject] != 0) {
             revert AlreadyVerified(subject);
         }

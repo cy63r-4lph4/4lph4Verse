@@ -66,10 +66,12 @@ interface IVerseProfile {
         uint256 verseId,
         string calldata newHandle
     ) external;
-    function recoverySetOwner(uint256 verseId,address newOwner) external ;
+
+    function recoverySetOwner(uint256 verseId, address newOwner) external;
+
+    function setHumanVerified(address subject, bytes32 dochash) external;
 
     function setMetadataURI(uint256 verseId, string calldata newURI) external;
-
 
     function transferOwnershipOfProfile(
         uint256 verseId,
