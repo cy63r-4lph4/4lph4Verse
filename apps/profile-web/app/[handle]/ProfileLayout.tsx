@@ -7,7 +7,13 @@ import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 import ProfileHeader from "./components/ProfileHeader";
 import ProfileTabs from "./components/ProfileTabs";
 
-export default function ProfileLayout({ handle, isOwner }) {
+export default function ProfileLayout({
+  handle,
+  isOwner,
+}: {
+  handle: string;
+  isOwner: boolean;
+}) {
   const [activeTab, setActiveTab] = React.useState("overview");
 
   return (

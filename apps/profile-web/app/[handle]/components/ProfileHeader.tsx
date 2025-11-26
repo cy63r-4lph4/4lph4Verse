@@ -6,7 +6,13 @@ import OwnerProfileActions from "./OwnerProfileActions";
 import VisitorProfileActions from "./VisitorProfileActions";
 import { motion } from "framer-motion";
 
-export default function ProfileHeader({ handle, isOwner }) {
+export default function ProfileHeader({
+  handle,
+  isOwner,
+}: {
+  handle: string;
+  isOwner: boolean;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
