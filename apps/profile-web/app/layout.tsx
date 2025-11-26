@@ -24,8 +24,9 @@ export default function RootLayout({
         <Web3Provider>
           <main className="relative min-h-screen overflow-hidden bg-[#03040a] text-white tracking-wide">
             {/* particle background */}
-            <ParticleField />
-
+            <div className="pointer-events-none">
+              <ParticleField />
+            </div>
             {/* enhanced nebula gradients */}
             <div className="absolute inset-0 pointer-events-none -z-10 opacity-60">
               <div

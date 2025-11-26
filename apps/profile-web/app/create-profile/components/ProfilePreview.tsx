@@ -1,14 +1,16 @@
 "use client";
 
 import { Card } from "@verse/ui/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@verse/ui/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@verse/ui/components/ui/avatar";
 
 export default function ProfilePreview({ form }: any) {
   return (
     <Card className="p-10 bg-white/5 border-white/10 backdrop-blur-xl shadow-xl h-fit">
-
       <div className="flex flex-col items-center">
-
         {/* Avatar */}
         <Avatar className="h-32 w-32 border-2 border-cyan-400 mb-6">
           {form.avatar ? (
@@ -63,7 +65,6 @@ export default function ProfilePreview({ form }: any) {
           )}
         </div>
       </div>
-
     </Card>
   );
 }

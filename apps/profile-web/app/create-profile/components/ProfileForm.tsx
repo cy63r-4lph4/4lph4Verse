@@ -39,7 +39,7 @@ export default function ProfileForm({ form, setForm }: any) {
   return (
     <Card className="p-8 backdrop-blur-xl bg-white/5 border-white/10 shadow-lg space-y-8">
 
-      <h1 className="text-3xl font-bold">Create Your Verse Identity</h1>
+      <h1 className="text-3xl font-bold">Forge Your Verse Identity</h1>
 
       {/* Avatar */}
       <div className="flex items-center gap-6">
@@ -126,12 +126,7 @@ export default function ProfileForm({ form, setForm }: any) {
         ))}
       </div>
 
-      <Button
-        className="w-full py-6 text-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
-        disabled={!form.handle || !form.displayName}
-      >
-        Create Profile
-      </Button>
+      
 
     </Card>
   );
