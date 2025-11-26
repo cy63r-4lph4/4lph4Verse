@@ -9,54 +9,8 @@ import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 
 export default function Page() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#03040a] text-white tracking-wide">
-      {/* particle background */}
-      <ParticleField />
-
-      {/* enhanced nebula gradients */}
-      <div className="absolute inset-0 pointer-events-none -z-10 opacity-60">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 25% 35%, rgba(70,150,255,0.25), transparent 55%), radial-gradient(circle at 80% 65%, rgba(180,80,255,0.22), transparent 40%)",
-            filter: "blur(65px)",
-          }}
-        />
-      </div>
-
-      {/* bright cosmic streak */}
-      <div
-        className="absolute inset-0 -z-10 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(115deg, rgba(0,255,255,0.04), rgba(255,0,255,0.05))",
-          opacity: 0.15,
-        }}
-      />
-
-      {/* Header */}
-      <header className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-6">
-        <Link
-          href="/"
-          className="text-lg font-semibold text-cyan-200 hover:text-cyan-300"
-        >
-          4lph4Verse • Identity
-        </Link>
-
-        <div className="flex items-center gap-6">
-          <Link
-            href="/guardians"
-            className="text-sm text-slate-300 hover:text-cyan-300 transition"
-          >
-            Guardian Registry
-          </Link>
-
-          <ConnectWalletButton />
-        </div>
-      </header>
-
-      {/* content wrapper */}
+    <>
+      {" "}
       <div className="relative z-10 max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">
         <div className="w-full flex flex-col lg:flex-row items-center gap-14 py-12">
           {/* left side */}
@@ -138,12 +92,10 @@ export default function Page() {
           </div>
         </div>
       </div>
-
       {/* watermark */}
       <div className="absolute bottom-6 left-6 text-xs text-slate-400 opacity-50 z-20">
         Forged in the 4lph4Verse • Identity Layer by Self.xyz
       </div>
-
       {/* animation keyframes */}
       <style>{`
         @keyframes pulse {
@@ -152,6 +104,6 @@ export default function Page() {
           100% { opacity: 0.1; transform: scale(0.96); }
         }
       `}</style>
-    </main>
+    </>
   );
 }

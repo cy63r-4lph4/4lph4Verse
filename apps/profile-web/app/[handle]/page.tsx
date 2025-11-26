@@ -8,7 +8,7 @@ export default function ProfilePage() {
   const handle = pathname.replace("/", "");
 
   // TODO: Replace with real ownership check later
-  const isOwner = false;
+  const isOwner = true;
 
   return <ProfileLayout handle={handle} isOwner={isOwner} />;
 }
