@@ -110,7 +110,7 @@ export default function ParticleField() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 z-10 pointer-events-none bg-transparent"
+      className="fixed inset-0 z-10  bg-transparent"
     />
   );
 }

@@ -5,12 +5,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import ParticleField from "../components/particles";
 import { RuneSVG } from "../components/runeSvg";
-import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton"
+import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 
 export default function Page() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#03040a] text-white tracking-wide">
-
       {/* particle background */}
       <ParticleField />
 
@@ -38,26 +37,28 @@ export default function Page() {
 
       {/* Header */}
       <header className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-6">
-        <Link href="/" className="text-lg font-semibold text-cyan-200 hover:text-cyan-300">
+        <Link
+          href="/"
+          className="text-lg font-semibold text-cyan-200 hover:text-cyan-300"
+        >
           4lph4Verse • Identity
         </Link>
 
         <div className="flex items-center gap-6">
           <Link
-            href="/guardian"
+            href="/guardians"
             className="text-sm text-slate-300 hover:text-cyan-300 transition"
           >
             Guardian Registry
           </Link>
 
-          <ConnectWalletButton/>
+          <ConnectWalletButton />
         </div>
       </header>
 
       {/* content wrapper */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">
         <div className="w-full flex flex-col lg:flex-row items-center gap-14 py-12">
-
           {/* left side */}
           <div className="flex-1 text-center lg:text-left">
             <motion.div
@@ -135,7 +136,6 @@ export default function Page() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
