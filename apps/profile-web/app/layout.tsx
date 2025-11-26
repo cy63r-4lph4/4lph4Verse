@@ -5,8 +5,7 @@ import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
 import Link from "next/link";
 import ParticleField from "@verse/profile-web/components/particles";
-import VerseConnectButton from "@verse/ui/wallet/VerseConnectButton";
-
+import ConnectWallet from "@verse/profile-web/app/[handle]/components/ConnectWallet";
 export const metadata: Metadata = {
   title: "Verse Profile",
   description: "The Identity Hub for the 4lph4Verse",
@@ -66,16 +65,7 @@ export default function RootLayout({
                   Guardian Registry
                 </Link>
 
-                <VerseConnectButton
-                  variant="glass"
-                  size="md"
-                  radius="xl"
-                  glow="cyan"
-                  showBalance
-                  showProfile
-                  showWizard={false}
-                  className="shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.04] active:scale-95 transition"
-                />
+                <ConnectWallet />
               </div>
             </header>
             {children}

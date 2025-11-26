@@ -18,7 +18,11 @@ import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
 
 /* --------------------------- Types & Props --------------------------- */
-export type PersonaField = { name: string; label?: string; placeholder?: string };
+export type PersonaField = {
+  name: string;
+  label?: string;
+  placeholder?: string;
+};
 
 export type WalletContext = {
   account: any | null;
@@ -66,6 +70,7 @@ export type VerseConnectButtonProps = {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onWizardComplete?: () => void;
+  onMissingProfile?: () => void;
 };
 
 /* -------------------------- Default style system -------------------------- */
@@ -152,6 +157,7 @@ export default function VerseConnectButton({
   onConnect,
   onDisconnect,
   onWizardComplete,
+  onMissingProfile,
 }: VerseConnectButtonProps) {
   /* Wallet & Verse hooks */
   const { address } = useAccount();
@@ -175,8 +181,17 @@ export default function VerseConnectButton({
   /* Auto-open wizard when conditions are met */
   useEffect(() => {
     const shouldOpenWizard =
-      address && !checkingProfile && !hasProfile && !wizardDone && !faucet && showWizard;
+      address &&
+      !checkingProfile &&
+      !hasProfile &&
+      !wizardDone &&
+      !faucet &&
+      showWizard;
     if (shouldOpenWizard) setShowWizardState(true);
+    else if (onMissingProfile) {
+      onMissingProfile();
+      return;
+    }
   }, [address, checkingProfile, hasProfile, wizardDone, faucet, showWizard]);
 
   async function handleWizardComplete() {
@@ -234,17 +249,30 @@ export default function VerseConnectButton({
             <div className="flex items-center gap-4">
               {/* Balance */}
               {showBalance && connected && address && balance !== undefined && (
-                <>{renderBalance ? renderBalance(ctx) : <DefaultBalance balance={balance} />}</>
+                <>
+                  {renderBalance ? (
+                    renderBalance(ctx)
+                  ) : (
+                    <DefaultBalance balance={balance} />
+                  )}
+                </>
               )}
 
               {/* Main connect button area */}
-              <div className={clsx(!connected && !chain?.unsupported && buttonClasses)}>
+              <div
+                className={clsx(
+                  !connected && !chain?.unsupported && buttonClasses
+                )}
+              >
                 {!connected ? (
                   // Disconnected state
                   renderDisconnected ? (
                     renderDisconnected(() => setShowConnectModal(true))
                   ) : (
-                    <button onClick={() => setShowConnectModal(true)} type="button">
+                    <button
+                      onClick={() => setShowConnectModal(true)}
+                      type="button"
+                    >
                       Connect Wallet
                     </button>
                   )
@@ -253,62 +281,62 @@ export default function VerseConnectButton({
                   <button
                     onClick={() => setShowChainModal(true)}
                     type="button"
-                    className={buttonClasses + " bg-red-600 text-white hover:bg-red-700"}
+                    className={
+                      buttonClasses + " bg-red-600 text-white hover:bg-red-700"
+                    }
                   >
                     Wrong network
                   </button>
+                ) : // Connected state
+                renderConnected ? (
+                  renderConnected(ctx)
                 ) : (
-                  // Connected state
-                  renderConnected ? (
-                    renderConnected(ctx)
-                  ) : (
-                    <div className="flex items-center gap-3 relative">
+                  <div className="flex items-center gap-3 relative">
+                    <button
+                      onClick={() => setMenuOpen((o) => !o)}
+                      type="button"
+                      className="relative flex items-center gap-3"
+                    >
+                      {/* Avatar or spinner */}
+                      {loadingProfile ? (
+                        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      ) : renderAvatar ? (
+                        renderAvatar(ctx)
+                      ) : (
+                        showAvatar && <DefaultAvatar profile={profile} />
+                      )}
+
+                      {/* small address hint for md+ */}
+                      <span className="hidden md:inline text-sm text-gray-300">
+                        {account?.displayName ?? account?.address}
+                      </span>
+                    </button>
+
+                    {/* Network name button */}
+                    {showNetwork && (
                       <button
-                        onClick={() => setMenuOpen((o) => !o)}
+                        onClick={() => setShowChainModal(true)}
                         type="button"
-                        className="relative flex items-center gap-3"
+                        className="hidden md:inline text-sm text-gray-300 hover:text-white"
                       >
-                        {/* Avatar or spinner */}
-                        {loadingProfile ? (
-                          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                        ) : renderAvatar ? (
-                          renderAvatar(ctx)
-                        ) : (
-                          showAvatar && <DefaultAvatar profile={profile} />
-                        )}
-
-                        {/* small address hint for md+ */}
-                        <span className="hidden md:inline text-sm text-gray-300">
-                          {account?.displayName ?? account?.address}
-                        </span>
+                        {chain?.name}
                       </button>
+                    )}
 
-                      {/* Network name button */}
-                      {showNetwork && (
-                        <button
-                          onClick={() => setShowChainModal(true)}
-                          type="button"
-                          className="hidden md:inline text-sm text-gray-300 hover:text-white"
-                        >
-                          {chain?.name}
-                        </button>
-                      )}
-
-                      {/* Dropdown */}
-                      {menuOpen && showDropdown && (
-                        <div className="absolute right-0 mt-12 z-50">
-                          {DropdownComponent ? (
-                            <DropdownComponent
-                              account={account}
-                              openChainModal={() => setShowChainModal(true)}
-                              menuOpen={menuOpen}
-                              setMenuOpen={setMenuOpen}
-                            />
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                  )
+                    {/* Dropdown */}
+                    {menuOpen && showDropdown && (
+                      <div className="absolute right-0 mt-12 z-50">
+                        {DropdownComponent ? (
+                          <DropdownComponent
+                            account={account}
+                            openChainModal={() => setShowChainModal(true)}
+                            menuOpen={menuOpen}
+                            setMenuOpen={setMenuOpen}
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -328,11 +356,17 @@ export default function VerseConnectButton({
       )}
 
       {ChainModalComponent && (
-        <ChainModalComponent open={showChainModal} onClose={() => setShowChainModal(false)} />
+        <ChainModalComponent
+          open={showChainModal}
+          onClose={() => setShowChainModal(false)}
+        />
       )}
 
       {ConnectModalComponent && (
-        <ConnectModalComponent open={showConnectModal} onClose={() => setShowConnectModal(false)} />
+        <ConnectModalComponent
+          open={showConnectModal}
+          onClose={() => setShowConnectModal(false)}
+        />
       )}
     </div>
   );

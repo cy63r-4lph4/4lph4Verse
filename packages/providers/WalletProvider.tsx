@@ -6,7 +6,7 @@ import {
   RainbowKitProvider,
   connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
-import { celoSepolia,baseSepolia,liskSepolia } from "wagmi/chains";
+import { celoSepolia, baseSepolia, liskSepolia } from "wagmi/chains";
 import {
   coinbaseWallet,
   ledgerWallet,
