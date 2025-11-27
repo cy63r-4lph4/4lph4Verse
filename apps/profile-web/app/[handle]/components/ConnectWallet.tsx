@@ -6,21 +6,19 @@ import { useRef } from "react";
 
 export default function ConnectWallet() {
   const router = useRouter();
-  const didRedirectRef = useRef(false); 
+  const didRedirectRef = useRef(false);
 
   return (
     <VerseConnectButton
       variant="glass"
       size="md"
-      radius="xl"
-      glow="cyan"
+      rounded="lg"
       showBalance
-      showProfile
       showWizard={false}
       className="shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.04] active:scale-95 transition"
       onMissingProfile={() => {
         if (!didRedirectRef.current) {
-          didRedirectRef.current = true; 
+          didRedirectRef.current = true;
           router.push("/create-profile");
         }
       }}

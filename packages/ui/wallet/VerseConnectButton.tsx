@@ -41,6 +41,7 @@ export type VerseConnectButtonProps = {
   variant?: "solid" | "outline" | "glass" | "ghost" | "custom";
   size?: "sm" | "md" | "lg";
   rounded?: "none" | "sm" | "md" | "lg" | "full";
+  glow?: "cyan" | "blue" | "pink" | "none";
 
   /* Feature toggles */
   showBalance?: boolean;
@@ -48,7 +49,6 @@ export type VerseConnectButtonProps = {
   showAvatar?: boolean;
   showDropdown?: boolean;
   showWizard?: boolean;
-  faucet?: boolean; // kept for backwards-compatibility with your code
 
   /* Layout / Render Override Points */
   renderDisconnected?: (open: () => void) => React.ReactNode;
@@ -139,7 +139,6 @@ export default function VerseConnectButton({
   showAvatar = true,
   showDropdown = true,
   showWizard = true,
-  faucet = false,
 
   renderDisconnected,
   renderConnected,
@@ -181,18 +180,13 @@ export default function VerseConnectButton({
   /* Auto-open wizard when conditions are met */
   useEffect(() => {
     const shouldOpenWizard =
-      address &&
-      !checkingProfile &&
-      !hasProfile &&
-      !wizardDone &&
-      !faucet &&
-      showWizard;
+      address && !checkingProfile && !hasProfile && !wizardDone && showWizard;
     if (shouldOpenWizard) setShowWizardState(true);
     else if (onMissingProfile) {
       onMissingProfile();
       return;
     }
-  }, [address, checkingProfile, hasProfile, wizardDone, faucet, showWizard]);
+  }, [address, checkingProfile, hasProfile, wizardDone, showWizard]);
 
   async function handleWizardComplete() {
     setWizardDone(true);

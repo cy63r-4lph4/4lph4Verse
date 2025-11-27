@@ -45,17 +45,17 @@ relayRouter.post("/ping", async (req, res) => {
 
 relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
   try {
-    const { chainId, target, data, from, message, signature, protocol } =
-      req.body;
-    if (!chainId || !target || !data || !from || !signature || !protocol) {
+    const { contract, fn, chainId, from, data, message, signature } = req.body;
+
+    if (!chainId || !contract || !from || !data || !signature || !fn) {
       return res.status(400).json({
         error:
           "Missing required fields: chainId, target, data, from, signature, protocol",
       });
     }
     const valid = await verifyVerseSignature(
-      target,
-      protocol,
+      contract,
+      fn,
       chainId,
       from,
       message,
@@ -71,7 +71,7 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     if (!allowed) {
       return res.status(429).json({ error: "Too many requests, try later" });
     }
-    const { chain, address } = getContractChain(protocol, chainId);
+    const { chain, address } = getContractChain(contract, chainId);
     const { walletClient, publicClient, relayer } = makeClients(
       chain as ChainId
     );
@@ -83,9 +83,9 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     });
     const txPayload = {
       from,
-      target,
+      contract,
       chainId,
-      protocol,
+      fn,
       dataHash: data.slice(0, 10),
       status: "pending",
       createdAt: Date.now(),

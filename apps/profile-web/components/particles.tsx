@@ -34,7 +34,7 @@ export default function ParticleField() {
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 110) {
+          if (dist < 110 && ctx) {
             ctx.strokeStyle = `rgba(255,255,255,${1 - dist / 110})`;
             ctx.lineWidth = 0.4;
             ctx.beginPath();
@@ -49,6 +49,7 @@ export default function ParticleField() {
     let mouse = { x: null, y: null };
 
     function draw() {
+      if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "#ffffff";
 
