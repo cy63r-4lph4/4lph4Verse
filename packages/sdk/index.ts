@@ -11,3 +11,4 @@ export * from "./utils/address/addressUtils";
 export * from "./utils/time/timeUtils";
 export * from "./utils/profile/fetchProfile";
 export * from "./config/constants";
+export * from "./config/chainConfig"

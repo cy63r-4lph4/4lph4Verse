@@ -72,13 +72,12 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
       return res.status(429).json({ error: "Too many requests, try later" });
     }
     const { chain, address } = getContractChain(contract, chainId);
-    const { walletClient, publicClient, relayer } = makeClients(
-      chain as ChainId
-    );
+    const { walletClient, relayer } = makeClients(chain as ChainId);
 
     const txHash = await walletClient.sendTransaction({
       account: relayer,
       to: address as `0x${string}`,
+      chain: walletClient.chain,
       data: data as `0x${string}`,
     });
     const txPayload = {

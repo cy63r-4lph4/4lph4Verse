@@ -10,7 +10,6 @@ import {
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import { ChainId, getDeployedContract } from "../index";
-import { buildProfileTypedData } from "../index";
 import {
   loadDraft,
   saveDraft,
@@ -21,9 +20,12 @@ import {
   type ProfileCidCache,
 } from "../utils/profile/profileDraft";
 import { PROFILE_CHAIN } from "../config/constants";
-
-const ZERO_BYTES_32 =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
+import {
+  buildCreateProfileCalldata,
+  buildCreateProfileOp,
+  buildTypedDataForCreateProfile,
+} from "utils/helpers/relayerHelpers";
+import { makeFrontendPublicClient } from "utils/helpers/makeFrontendClient";
 
 type Progress =
   | "idle"
@@ -47,7 +49,8 @@ export function useVerseProfileWizard() {
     bio: "",
     avatar: "",
     banner: "",
-    wallet: address || "",
+    owner: address || "",
+    purpose: "",
     reputation: 0,
     location: "",
     joinedAt: new Date().toISOString(),
@@ -75,12 +78,15 @@ export function useVerseProfileWizard() {
         wallet: address || draft.wallet || "",
       }));
     }
-    const cids = loadCids(address, draft?.handle || profile.handle || undefined);
+    const cids = loadCids(
+      address,
+      draft?.handle || profile.handle || undefined
+    );
     setCidState({
       avatarCID: cids.avatarCID ?? null,
       metadataCID: cids.metadataCID ?? null,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // initial mount only
 
   // Persist draft on profile changes (throttled via ref)
@@ -103,7 +109,11 @@ export function useVerseProfileWizard() {
   function updateProfile(partial: Partial<VerseProfile>) {
     // If avatar changes, clear dependent CIDs
     if (Object.prototype.hasOwnProperty.call(partial, "avatar")) {
-      setCidState((prev:{}) => ({ ...prev, avatarCID: null, metadataCID: null }));
+      setCidState((prev: {}) => ({
+        ...prev,
+        avatarCID: null,
+        metadataCID: null,
+      }));
     }
     // If any core metadata field changes after metadataCID exists, clear metadataCID
     const touchesMetadata =
@@ -112,7 +122,7 @@ export function useVerseProfileWizard() {
       "bio" in partial ||
       "personas" in partial;
     if (touchesMetadata && metadataCID) {
-      setCidState((prev:{}) => ({ ...prev, metadataCID: null }));
+      setCidState((prev: {}) => ({ ...prev, metadataCID: null }));
     }
     setProfile((prev) => ({ ...prev, ...partial }));
   }
@@ -154,7 +164,7 @@ export function useVerseProfileWizard() {
       bio: "",
       avatar: "",
       banner: "",
-      wallet: address || "",
+      owner: address || "",
       reputation: 0,
       location: "",
       joinedAt: new Date().toISOString(),
@@ -177,8 +187,8 @@ export function useVerseProfileWizard() {
       return false;
     }
 
-    const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
-    if (!contract) {
+    const contractMeta = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
+    if (!contractMeta) {
       setError("VerseProfile contract missing for this chain");
       return false;
     }
@@ -194,11 +204,18 @@ export function useVerseProfileWizard() {
           setProgress("uploading-avatar");
           const { cid } = await uploadFileToPinata(profile.avatar, "avatar");
           finalAvatarCID = cid;
-          setCidState((prev:{}) => ({ ...prev, avatarCID: cid, metadataCID: null }));
-        } else if (typeof profile.avatar === "string" && profile.avatar.startsWith("ipfs://")) {
+          setCidState((prev: {}) => ({
+            ...prev,
+            avatarCID: cid,
+            metadataCID: null,
+          }));
+        } else if (
+          typeof profile.avatar === "string" &&
+          profile.avatar.startsWith("ipfs://")
+        ) {
           // already IPFS
           finalAvatarCID = profile.avatar.replace("ipfs://", "");
-          setCidState((prev:{}) => ({ ...prev, avatarCID: finalAvatarCID }));
+          setCidState((prev: {}) => ({ ...prev, avatarCID: finalAvatarCID }));
         }
         // If avatar is empty string or http url fallback, just omit avatar in metadata
       }
@@ -218,7 +235,7 @@ export function useVerseProfileWizard() {
         });
         const { cid } = await uploadProfileMetadata(metadata, profile.handle);
         finalMetadataCID = cid;
-        setCidState((prev:{}) => ({ ...prev, metadataCID: cid }));
+        setCidState((prev: {}) => ({ ...prev, metadataCID: cid }));
       }
       const metadataURI = `ipfs://${finalMetadataCID}`;
 
@@ -227,38 +244,99 @@ export function useVerseProfileWizard() {
 
       if (relayerEnabled && walletClient) {
         setProgress("signing");
-        const typedData = {
-          ...buildProfileTypedData(chainId),
-          primaryType: "CreateProfile",
-          message: { wallet: address, handle: profile.handle, metadataURI },
-        };
+
+        // 1) get nonce (try relayer then fallback to chain)
+        let nonce: bigint;
+        try {
+          const nonceRes = await fetch(
+            `${process.env.NEXT_PUBLIC_RELAYER_URL}/v1/relay/nonce?contract=VerseProfile&address=${address}`
+          );
+          if (nonceRes.ok) {
+            const json = await nonceRes.json();
+            nonce = json.nonce;
+          } else {
+            throw new Error("Relayer nonce endpoint failed");
+          }
+        } catch (err) {
+          // fallback: try to read from chain (optional)
+          const publicClient = makeFrontendPublicClient(PROFILE_CHAIN);
+          try {
+            const onChainNonce = await publicClient.readContract({
+              address: contractMeta.address as `0x${string}`,
+              abi: contractMeta.abi,
+              functionName: "createNonces",
+              args: [address],
+            });
+            nonce = onChainNonce as bigint;
+          } catch (e) {
+            console.warn("Could not fetch nonce from relayer or chain", e);
+            // As last resort set 0 (NOT recommended). Better to fail and ask relayer support.
+            throw new Error("Unable to obtain nonce for signature");
+          }
+        }
+
+        // 2) deadline
+        const now = Math.floor(Date.now() / 1000);
+        const deadline = now + 60 * 60; // 1 hour validity
+
+        // 3) build op exactly matching RelayableTxTypes.VerseProfile.createProfileWithSig
+        const op = buildCreateProfileOp({
+          owner: address,
+          handle: profile.handle,
+          metadataURI,
+          purpose: profile.purpose ?? "",
+          nonce,
+          deadline,
+        });
+
+        // 4) typedData
+        const typedData = buildTypedDataForCreateProfile({
+          verifyingContract: contractMeta.address as `0x${string}`,
+          op,
+        });
+
+        // 5) Sign typed data
         const signature = await walletClient.signTypedData({
           domain: typedData.domain,
           types: typedData.types,
-          primaryType: "CreateProfile",
+          primaryType: typedData.primaryType,
           message: typedData.message,
         });
 
         setProgress("relaying");
+
+        // 6) build calldata for on-chain relayer to send
+        const data = buildCreateProfileCalldata(op, signature);
+
+        // 7) POST to relayer execute endpoint
+        const body = {
+          contract: "VerseProfile",
+          fn: "createProfileWithSig",
+          chainId,
+          from: address,
+          message: op,
+          signature,
+          data,
+        };
+
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_RELAYER_URL}/relay/profile/create`,
+          `${process.env.NEXT_PUBLIC_RELAYER_URL}/v1/relay/execute`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              wallet: address,
-              handle: profile.handle,
-              metadataURI,
-              signature,
-              chainId,
-            }),
+            body: JSON.stringify(body),
           }
         );
-        const data = await res.json();
-        if (!data.txHash) throw new Error(data.error || "Relayer failed");
+
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || "Relayer returned failure");
+        }
+
+        const txHash = result.txHash;
+        if (!txHash) throw new Error("Relayer did not return txHash");
 
         setProgress("done");
-        // success: clear caches
         clearDraft(address, profile.handle);
         clearCids(address, profile.handle);
         return true;
@@ -266,10 +344,10 @@ export function useVerseProfileWizard() {
 
       setProgress("writing");
       const tx = await writeContract(config, {
-        address: contract.address,
-        abi: contract.abi,
+        address: contractMeta.address,
+        abi: contractMeta.abi,
         functionName: "createProfile",
-        args: [profile.handle, metadataURI, ZERO_BYTES_32],
+        args: [profile.handle, metadataURI],
       });
       await waitForTransactionReceipt(config, { hash: tx });
 

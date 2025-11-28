@@ -4,16 +4,17 @@
 
 export interface VerseProfile {
   /** Verse-wide universal identity */
-  verseId: number;                 
-  handle: string;                     // @cy63r_4lph4
-  displayName: string;                // Cy63r_4lph4~🐉
-  avatar?: string|File;                    // IPFS / CDN link
-  banner?: string;                    // Profile banner image
-  bio?: string;                       // Universal bio / creed
-  wallet: string;                     // Primary wallet
-  reputation?: number;                // Verse-wide trust score (0–100)
-  location?: string;                  // Optional location string
-  joinedAt?: string;                  // ISO date
+  verseId: number;
+  handle: string; // @cy63r_4lph4
+  displayName: string; // Cy63r_4lph4~🐉
+  avatar?: string | File; // IPFS / CDN link
+  banner?: string; // Profile banner image
+  bio?: string; // Universal bio / creed
+  purpose?: string;
+  owner: string; // Primary wallet
+  reputation?: number; // Verse-wide trust score (0–100)
+  location?: string; // Optional location string
+  joinedAt?: string; // ISO date
 
   /** Dynamic, app-specific persona modules */
   personas: {
@@ -24,9 +25,9 @@ export interface VerseProfile {
     [key: string]: any; // for future realms
   };
 
-    // UI-only fields (not sent on-chain)
-  avatarPreview?: string;             // blob preview for chosen File
-  previousAvatarURL?: string; 
+  // UI-only fields (not sent on-chain)
+  avatarPreview?: string; // blob preview for chosen File
+  previousAvatarURL?: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -34,14 +35,14 @@ export interface VerseProfile {
 /* -------------------------------------------------------------------------- */
 
 export interface HireCorePersona {
-  nickname?: string;                         // @architect_of_tomorrow
+  nickname?: string; // @architect_of_tomorrow
   type: "individual" | "organization";
   organizationName?: string | null;
   visibility?: "public" | "private" | "restricted";
 
   verseReputation?: {
-    score: number;                           // 0–100
-    level: string;                           // "Novice" | "Adept" | "Master"
+    score: number; // 0–100
+    level: string; // "Novice" | "Adept" | "Master"
     badges?: string[];
   };
 
@@ -59,10 +60,10 @@ export interface HireCorePersona {
 export interface WorkerProfile {
   title?: string;
   bio?: string;
-  hub?: string;                             // e.g. "Accra Digital Hub"
+  hub?: string; // e.g. "Accra Digital Hub"
   skills?: string[];
   services?: string[];
-  applications?: any[];                  // Job applications made
+  applications?: any[]; // Job applications made
   availability?: "available" | "busy" | "away";
   hourlyRate?: number;
   completedTasks?: number;
@@ -79,7 +80,7 @@ export interface WorkerProfile {
 export interface HirerProfile {
   title?: string;
   bio?: string;
-  hub?: string;                             // e.g. "Accra HQ"
+  hub?: string; // e.g. "Accra HQ"
   postedTasks?: number;
   activeHires?: number;
   totalSpent?: number;
@@ -89,7 +90,7 @@ export interface HirerProfile {
   paymentVerified?: boolean;
   hireHistory?: HireHistoryItem[];
   teams?: string[];
-  recentTasks?: any[];                   // Recent tasks posted
+  recentTasks?: any[]; // Recent tasks posted
   portfolio?: PortfolioItem[];
   preferences?: HirerPreferences;
 }
