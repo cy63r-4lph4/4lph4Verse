@@ -1,11 +1,14 @@
 "use client";
 
-
-import { Avatar, AvatarImage, AvatarFallback } from "@verse/ui/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@verse/ui/components/ui/avatar";
 import { Input } from "@verse/ui/components/ui/input";
 import { Textarea } from "@verse/ui/components/ui/textarea";
-import {Button } from "@verse/ui/components/ui/button";
-import {Card} from "@verse/ui/components/ui/card"
+import { Card } from "@verse/ui/components/ui/card";
+import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
 
 export default function ProfileForm({ form, setForm }: any) {
   const interestOptions = [
@@ -19,10 +22,14 @@ export default function ProfileForm({ form, setForm }: any) {
     "Fitness",
   ];
 
+  // --------------------------
+  // HANDLE VERIFICATION HOOK
+  // --------------------------
+  const { status} = useCheckHandle(form.handle);
+
   const handleAvatar = (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const url = URL.createObjectURL(file);
     setForm((f: any) => ({ ...f, avatar: url }));
   };
@@ -36,9 +43,28 @@ export default function ProfileForm({ form, setForm }: any) {
     }));
   };
 
+  // UI label text
+  const handleStatusText = {
+    idle: "",
+    checking: "Checking availability...",
+    available: "Handle is available ✔",
+    taken: "Handle is already taken ✘",
+    invalid: "Invalid handle format (a-z, 0-9, _ — min 3 chars)",
+    error: "Unable to check handle. Try again.",
+  }[status];
+
+  // Border color logic
+  const handleBorder =
+    status === "available"
+      ? "border-green-400"
+      : status === "taken" || status === "invalid"
+      ? "border-red-400"
+      : status === "checking"
+      ? "border-yellow-400"
+      : "border-white/20";
+
   return (
     <Card className="p-8 backdrop-blur-xl bg-white/5 border-white/10 shadow-lg space-y-8">
-
       <h1 className="text-3xl font-bold">Forge Your Verse Identity</h1>
 
       {/* Avatar */}
@@ -56,11 +82,37 @@ export default function ProfileForm({ form, setForm }: any) {
 
       {/* Handle + Display Name */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input
-          placeholder="@handle"
-          value={form.handle}
-          onChange={(e) => setForm((f: any) => ({ ...f, handle: e.target.value }))}
-        />
+        <div className="space-y-1">
+          <Input
+            placeholder="@handle"
+            className={`${handleBorder}`}
+            value={form.handle}
+            onChange={(e) =>
+              setForm((f: any) => ({
+                ...f,
+                handle: e.target.value.replace(" ", "").toLowerCase(),
+              }))
+            }
+          />
+
+          {/* Status label */}
+          {status !== "idle" && (
+            <p
+              className={`text-xs ${
+                status === "available"
+                  ? "text-green-400"
+                  : status === "taken" || status === "invalid"
+                  ? "text-red-400"
+                  : status === "checking"
+                  ? "text-yellow-300"
+                  : "text-red-300"
+              }`}
+            >
+              {handleStatusText}
+            </p>
+          )}
+        </div>
+
         <Input
           placeholder="Display Name"
           value={form.displayName}
@@ -125,9 +177,6 @@ export default function ProfileForm({ form, setForm }: any) {
           />
         ))}
       </div>
-
-      
-
     </Card>
   );
 }

@@ -3,8 +3,8 @@ import {
   RelayableTxTypes,
 } from "../contract/relayableTxTypes";
 import { getDeployedContract } from "../contract/deployedContracts";
-import { encodeFunctionData, keccak256, encodeAbiParameters } from "viem";
-import { PROFILE_CHAIN } from "config/constants";
+import { encodeFunctionData } from "viem";
+import { PROFILE_CHAIN } from "../../config/constants";
 
 type CreateProfileOp = {
   owner: `0x${string}`;

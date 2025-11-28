@@ -24,8 +24,8 @@ import {
   buildCreateProfileCalldata,
   buildCreateProfileOp,
   buildTypedDataForCreateProfile,
-} from "utils/helpers/relayerHelpers";
-import { makeFrontendPublicClient } from "utils/helpers/makeFrontendClient";
+} from "../utils/helpers/relayerHelpers";
+import { makeFrontendPublicClient } from "../utils/helpers/makeFrontendClient";
 
 type Progress =
   | "idle"
