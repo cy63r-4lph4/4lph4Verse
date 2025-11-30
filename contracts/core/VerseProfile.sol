@@ -222,7 +222,7 @@ contract VerseProfile is
             delegate: p.delegate,
             createdAt: p.createdAt,
             version: p.version,
-            verified: p.dochash.length > 0
+            verified: p.dochash != bytes32(0)
         });
         return ps;
     }
@@ -285,7 +285,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32("")
+            dochash: bytes32(0)
         });
         profileOf[sender] = verseId;
 
@@ -419,7 +419,7 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32("")
+            dochash: bytes32(0)
         });
 
         profileOf[op.owner] = verseId;

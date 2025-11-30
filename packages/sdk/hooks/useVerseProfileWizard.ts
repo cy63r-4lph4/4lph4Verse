@@ -57,8 +57,8 @@ export function useVerseProfileWizard() {
     personas: {},
     previousAvatarURL: undefined,
     avatarPreview: undefined,
-    interests:[],
-    links:{}
+    interests: [],
+    links: {},
   });
 
   const [{ avatarCID, metadataCID }, setCidState] = useState<ProfileCidCache>({
@@ -173,8 +173,8 @@ export function useVerseProfileWizard() {
       personas: {},
       previousAvatarURL: undefined,
       avatarPreview: undefined,
-      interests:[],
-      linkes:{}
+      interests: [],
+      links: {},
     });
     setSubmitting(false);
     setProgress("idle");
