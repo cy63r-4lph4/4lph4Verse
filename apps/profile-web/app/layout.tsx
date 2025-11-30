@@ -22,7 +22,7 @@ export default function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased bg-black`}
       >
         <Web3Provider>
-          <main className="relative min-h-screen overflow-hidden bg-[#03040a] text-white tracking-wide">
+          <main className="relative min-h-screen bg-[#03040a] text-white tracking-wide">
             {/* particle background */}
             <div className="pointer-events-none">
               <ParticleField />
@@ -50,7 +50,7 @@ export default function RootLayout({
             />
 
             {/* Header */}
-            <header className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-6">
+            <header className="fixed top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-6">
               <Link
                 href="/"
                 className="text-lg font-semibold text-cyan-200 hover:text-cyan-300"

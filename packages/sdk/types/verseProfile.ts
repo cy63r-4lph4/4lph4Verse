@@ -15,6 +15,8 @@ export interface VerseProfile {
   reputation?: number; // Verse-wide trust score (0–100)
   location?: string; // Optional location string
   joinedAt?: string; // ISO date
+  interests: string[];
+  links:{}
 
   /** Dynamic, app-specific persona modules */
   personas: {

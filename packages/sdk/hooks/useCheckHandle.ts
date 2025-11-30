@@ -3,7 +3,10 @@
 import { useChainId, useReadContract } from "wagmi";
 import { useEffect, useState } from "react";
 import type { Abi } from "viem";
-import { ChainId, getDeployedContract } from "../utils/contract/deployedContracts";
+import {
+  ChainId,
+  getDeployedContract,
+} from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
 
 /* -------------------------------------------------------------------------- */
@@ -48,6 +51,7 @@ export function useCheckHandle(handle: string) {
   const registry = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
   const { data, isLoading, error } = useReadContract({
+    chainId: PROFILE_CHAIN,
     abi: registry.abi as Abi,
     address: registry.address as `0x${string}`,
     functionName: "verseIdByHandle",
@@ -61,8 +65,7 @@ export function useCheckHandle(handle: string) {
     if (!debouncedHandle) return setStatus("idle");
     if (!isValid) return setStatus("invalid");
     if (isLoading) return setStatus("checking");
-    if (error) 
-        return setStatus("error");
+    if (error) return setStatus("error");
 
     if (data === undefined) return setStatus("idle");
     if (data === 0n) setStatus("available");

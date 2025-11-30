@@ -10,7 +10,11 @@ import { Textarea } from "@verse/ui/components/ui/textarea";
 import { Card } from "@verse/ui/components/ui/card";
 import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
 
-export default function ProfileForm({ form, setForm }: any) {
+export default function ProfileForm({
+  form,
+  updateProfile,
+  setAvatarFromFile,
+}: any) { 
   const interestOptions = [
     "Web3",
     "AI",
@@ -25,17 +29,17 @@ export default function ProfileForm({ form, setForm }: any) {
   // --------------------------
   // HANDLE VERIFICATION HOOK
   // --------------------------
-  const { status} = useCheckHandle(form.handle);
+  const { status } = useCheckHandle(form.handle);
 
-  const handleAvatar = (e: any) => {
+  const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setForm((f: any) => ({ ...f, avatar: url }));
+    if (file) {
+      setAvatarFromFile(file);
+    }
   };
 
   const toggleInterest = (v: string) => {
-    setForm((f: any) => ({
+    updateProfile((f: any) => ({
       ...f,
       interests: f.interests.includes(v)
         ? f.interests.filter((i: string) => i !== v)
@@ -58,10 +62,10 @@ export default function ProfileForm({ form, setForm }: any) {
     status === "available"
       ? "border-green-400"
       : status === "taken" || status === "invalid"
-      ? "border-red-400"
-      : status === "checking"
-      ? "border-yellow-400"
-      : "border-white/20";
+        ? "border-red-400"
+        : status === "checking"
+          ? "border-yellow-400"
+          : "border-white/20";
 
   return (
     <Card className="p-8 backdrop-blur-xl bg-white/5 border-white/10 shadow-lg space-y-8">
@@ -87,11 +91,10 @@ export default function ProfileForm({ form, setForm }: any) {
             placeholder="@handle"
             className={`${handleBorder}`}
             value={form.handle}
-            onChange={(e) =>
-              setForm((f: any) => ({
-                ...f,
-                handle: e.target.value.replace(" ", "").toLowerCase(),
-              }))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              updateProfile({
+                handle: e.target.value.replace(/^@/, "").toLowerCase(),
+              })
             }
           />
 
@@ -102,10 +105,10 @@ export default function ProfileForm({ form, setForm }: any) {
                 status === "available"
                   ? "text-green-400"
                   : status === "taken" || status === "invalid"
-                  ? "text-red-400"
-                  : status === "checking"
-                  ? "text-yellow-300"
-                  : "text-red-300"
+                    ? "text-red-400"
+                    : status === "checking"
+                      ? "text-yellow-300"
+                      : "text-red-300"
               }`}
             >
               {handleStatusText}
@@ -116,8 +119,8 @@ export default function ProfileForm({ form, setForm }: any) {
         <Input
           placeholder="Display Name"
           value={form.displayName}
-          onChange={(e) =>
-            setForm((f: any) => ({ ...f, displayName: e.target.value }))
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            updateProfile({ displayName: e.target.value })
           }
         />
       </div>
@@ -127,15 +130,17 @@ export default function ProfileForm({ form, setForm }: any) {
         rows={4}
         placeholder="Tell the Verse who you are..."
         value={form.bio}
-        onChange={(e) => setForm((f: any) => ({ ...f, bio: e.target.value }))}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+          updateProfile({ bio: e.target.value })
+        }
       />
 
       {/* Location */}
       <Input
         placeholder="Location (optional)"
         value={form.location}
-        onChange={(e) =>
-          setForm((f: any) => ({ ...f, location: e.target.value }))
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          updateProfile({ location: e.target.value })
         }
       />
 
@@ -169,10 +174,9 @@ export default function ProfileForm({ form, setForm }: any) {
             placeholder={key}
             value={form.links[key]}
             onChange={(e) =>
-              setForm((f: any) => ({
-                ...f,
-                links: { ...f.links, [key]: e.target.value },
-              }))
+              updateProfile({
+                links: { ...form.links, [key]: e.target.value },
+              })
             }
           />
         ))}

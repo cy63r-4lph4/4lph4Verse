@@ -7,9 +7,19 @@ import {
   AvatarFallback,
 } from "@verse/ui/components/ui/avatar";
 
+import { Twitter, Github, Send, Globe, Network } from "lucide-react";
+
 export default function ProfilePreview({ form }: any) {
+  const socialIcons: any = {
+    twitter: <Twitter className="w-5 h-5 text-cyan-400" />,
+    github: <Github className="w-5 h-5 text-cyan-400" />,
+    telegram: <Send className="w-5 h-5 text-cyan-400" />,
+    website: <Globe className="w-5 h-5 text-cyan-400" />,
+    farcaster: <Network className="w-5 h-5 text-cyan-400" />,
+  };
+
   return (
-    <Card className="p-10 bg-white/5 border-white/10 backdrop-blur-xl shadow-xl h-fit">
+    <Card className="p-10 bg-white/5 border-white/10 backdrop-blur-xl shadow-xl max-h-[80vh]">
       <div className="flex flex-col items-center">
         {/* Avatar */}
         <Avatar className="h-32 w-32 border-2 border-cyan-400 mb-6">
@@ -54,13 +64,19 @@ export default function ProfilePreview({ form }: any) {
           </div>
         )}
 
-        {/* Social Links */}
-        <div className="mt-8 w-full space-y-2">
+        {/* Social Icons */}
+        <div className="mt-10 flex gap-4 justify-center">
           {Object.entries(form.links).map(([key, value]: any) =>
             value ? (
-              <p key={key} className="text-sm text-white/60">
-                <span className="capitalize text-white">{key}:</span> {value}
-              </p>
+              <a
+                key={key}
+                href={value.startsWith("http") ? value : `https://${value}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"
+              >
+                {socialIcons[key]}
+              </a>
             ) : null
           )}
         </div>
