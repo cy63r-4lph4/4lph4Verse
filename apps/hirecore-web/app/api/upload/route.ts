@@ -1,5 +1,5 @@
+import { pinata } from "@verse/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { pinata } from "@verse/config/pinataConfig";
 
 
 export const dynamic = "force-dynamic";

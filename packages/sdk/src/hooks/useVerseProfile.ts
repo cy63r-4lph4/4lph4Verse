@@ -6,8 +6,8 @@ import {
   ChainId,
   getDeployedContract,
 } from "../utils/contract/deployedContracts";
-import { fetchFromPinata } from "@verse/storage";
 import { PROFILE_CHAIN } from "../config/constants";
+import { fetchFromPinata } from "../services/storage";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;

@@ -1,13 +1,11 @@
 "use client";
 
-import { useChainId, useReadContract } from "wagmi";
+import { useReadContract } from "wagmi";
 import { useEffect, useState } from "react";
 import type { Abi } from "viem";
-import {
-  ChainId,
-  getDeployedContract,
-} from "../utils/contract/deployedContracts";
+import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
+import { validateHandle } from "../utils/handle/validateHandle";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -23,10 +21,6 @@ export type HandleStatus =
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
-function validateHandleFormat(handle: string) {
-  return /^[a-z0-9_]{3,20}$/.test(handle);
-}
-
 function useDebounce<T>(value: T, delay = 600): T {
   const [debounced, setDebounced] = useState(value);
 
@@ -46,10 +40,15 @@ export function useCheckHandle(handle: string) {
 
   // 🕓 Debounce user input so it only queries after typing stops
   const debouncedHandle = useDebounce(handle.trim().toLowerCase(), 600);
-  const isValid = validateHandleFormat(debouncedHandle);
 
+  // Validate using production-grade rules
+  const validation = validateHandle(debouncedHandle);
+  const isValid = validation.valid;
+
+  // Get VerseProfile contract
   const registry = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
 
+  // Only query contract if handle is valid
   const { data, isLoading, error } = useReadContract({
     chainId: PROFILE_CHAIN,
     abi: registry.abi as Abi,
@@ -58,6 +57,7 @@ export function useCheckHandle(handle: string) {
     args: isValid && debouncedHandle ? [debouncedHandle] : undefined,
     query: { enabled: Boolean(isValid && debouncedHandle) },
   });
+
   /* ---------------------------------------------------------------------- */
   /* Reactively compute status based on wagmi state                         */
   /* ---------------------------------------------------------------------- */
@@ -76,5 +76,6 @@ export function useCheckHandle(handle: string) {
     status,
     isChecking: isLoading,
     isAvailable: status === "available",
+    validationReason: validation.reason, // optional, useful for UX
   };
 }

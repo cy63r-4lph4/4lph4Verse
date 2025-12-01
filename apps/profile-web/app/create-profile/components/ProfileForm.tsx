@@ -14,7 +14,7 @@ export default function ProfileForm({
   form,
   updateProfile,
   setAvatarFromFile,
-}: any) { 
+}: any) {
   const interestOptions = [
     "Web3",
     "AI",
@@ -29,7 +29,7 @@ export default function ProfileForm({
   // --------------------------
   // HANDLE VERIFICATION HOOK
   // --------------------------
-  const { status } = useCheckHandle(form.handle);
+  const { status, validationReason } = useCheckHandle(form.handle);
 
   const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,7 +111,15 @@ export default function ProfileForm({
                       : "text-red-300"
               }`}
             >
-              {handleStatusText}
+              {status === "invalid" && validationReason
+                ? validationReason.replace(/_/g, " ").toLowerCase() // nicer UX
+                : status === "available"
+                  ? "Handle is available ✔"
+                  : status === "taken"
+                    ? "Handle is already taken ✘"
+                    : status === "checking"
+                      ? "Checking availability..."
+                      : "Unable to check handle. Try again."}
             </p>
           )}
         </div>
