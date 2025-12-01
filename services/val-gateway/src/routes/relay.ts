@@ -1,4 +1,4 @@
-import { ChainId } from "@verse/sdk/dist";
+import { ChainId } from "@verse/sdk";
 import express from "express";
 import { makeClients } from "val/config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";

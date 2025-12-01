@@ -73,15 +73,18 @@ export async function uploadToPinata(
 /* --------------------------------------------------
  * 🔹 Fetch From Pinata (Gateway)
  * -------------------------------------------------- */
-export async function fetchFromPinata(ipfsURI: string) {
+async function fetchFromPinata(ipfsURI: string) {
   if (!ipfsURI) throw new Error("Missing IPFS URI");
 
-  const gateway = process.env.NEXT_PUBLIC_PINATA_GATEWAY || "https://gateway.pinata.cloud/ipfs/";
+  const gateway =
+    process.env.NEXT_PUBLIC_PINATA_GATEWAY ||
+    "https://gateway.pinata.cloud/ipfs/";
   const cid = ipfsURI.replace("ipfs://", "");
   const url = `${gateway}${cid}`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch from Pinata: ${res.statusText}`);
+  if (!res.ok)
+    throw new Error(`Failed to fetch from Pinata: ${res.statusText}`);
 
   return res.json();
 }

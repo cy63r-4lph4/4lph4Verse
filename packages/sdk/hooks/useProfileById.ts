@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadContract} from "wagmi";
+import { useReadContract } from "wagmi";
 import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { fetchFromPinata } from "@verse/storage";
 import { useEffect, useState } from "react";

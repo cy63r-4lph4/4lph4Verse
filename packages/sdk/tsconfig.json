@@ -6,12 +6,15 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
     "outDir": "dist",
     "rootDir": ".",
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../providers" }, { "path": "../../services/storage" }]
+  "references": [
+    { "path": "../providers" },
+    { "path": "../../services/storage" }
+  ]
 }
