@@ -7,7 +7,7 @@ import { Coins, User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBalance } from "@verse/sdk/hooks/useBalance";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
-import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { useVerseProfile } from "@verse/sdk/src/hooks/useVerseProfile";
 import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
@@ -22,8 +22,8 @@ export type ConnectWalletButtonProps = {
   faucet?: boolean;
   dapp?: string;
   personaFields?: PersonaField[];
-  showBalance?:boolean;
-  showwizard?:boolean;
+  showBalance?: boolean;
+  showwizard?: boolean;
 };
 
 export default function ConnectWalletButton({
@@ -209,7 +209,7 @@ export default function ConnectWalletButton({
       </ConnectButton.Custom>
 
       {/* ⚙️ Modals */}
-      {showWizard && showwizard&& (
+      {showWizard && showwizard && (
         <VerseProfileWizardV2
           open={showWizard}
           onClose={handleWizardClose}

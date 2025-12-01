@@ -6,9 +6,7 @@
     "types": "dist/index.d.ts",
     "files": ["dist"],
     "dependencies": {
-      "@verse/providers": "workspace:*",
-      "@verse/storage":"workspace:*"
-    },
+      "@verse/providers": "workspace:*"    },
     "scripts": {
       "build": "tsc -p tsconfig.build.json"
     }

@@ -6,10 +6,10 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { WizardNav } from "../ui/WizardNav";
 import { AvatarPicker } from "../ui/AvatarPicker";
-import type { VerseProfile } from "@verse/sdk/types";
+import type { VerseProfile } from "@verse/sdk";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
-import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
+import { useCheckHandle } from "@verse/sdk";
 
 type IdentityStepProps = {
   profile: VerseProfile;

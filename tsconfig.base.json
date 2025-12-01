@@ -9,8 +9,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@verse/sdk": ["packages/sdk"],
-      "@verse/sdk/*": ["packages/sdk/*"],
+      "@verse/sdk": ["packages/sdk/src"],
+      "@verse/sdk/*": ["packages/sdk/src/*"],
 
       "@verse/providers": ["packages/providers"],
       "@verse/providers/*": ["packages/providers/*"],
@@ -21,10 +21,6 @@
       "@verse/config": ["packages/config"],
       "@verse/config/*": ["packages/config/*"],
 
-      
-
-      "@verse/storage": ["services/storage/src"],
-      "@verse/storage/*": ["services/storage/src/*"],
 
       "@verse/services/relayer": ["services/relayer/src"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],

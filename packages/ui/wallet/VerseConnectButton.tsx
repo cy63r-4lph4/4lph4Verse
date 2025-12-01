@@ -9,7 +9,7 @@ import { Coins, User2 } from "lucide-react";
 /* Verse SDK hooks (stubs are imported names in your real project) */
 import { useBalance } from "@verse/sdk/hooks/useBalance";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
-import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { useVerseProfile } from "@verse/sdk/src/hooks/useVerseProfile";
 
 /* Local components - can be overridden by props */
 import WalletDropdown from "./WalletDropdown";

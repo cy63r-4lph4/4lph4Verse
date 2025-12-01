@@ -8,13 +8,10 @@
     "declarationMap": true,
     "emitDeclarationOnly": false,
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
   "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../providers" },
-    { "path": "../../services/storage" }
-  ]
+  "references": [{ "path": "../providers" }]
 }
