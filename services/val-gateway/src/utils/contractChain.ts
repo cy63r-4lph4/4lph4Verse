@@ -1,5 +1,5 @@
 import { ChainId, getDeployedContract, PROFILE_CHAIN } from "@verse/sdk";
-import { RelayableContract } from "val/utils/relayableTxTypes";
+import { RelayableContract } from "../utils/relayableTxTypes";
 
 export function getContractChain(
   contract: RelayableContract,

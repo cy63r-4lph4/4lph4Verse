@@ -1,4 +1,4 @@
-import { redis } from "val/core/redis";
+import { redis } from "../core/redis";
 
 export async function rateLimit(address: string, limit = 5, ttl = 60) {
   const key = `relay:rate:${address}`;

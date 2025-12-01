@@ -1,4 +1,4 @@
-import { redis } from "val/core/redis";
+import { redis } from "../core/redis";
 import crypto from "crypto";
 
 export async function isReplay(message: any, signature: string) {

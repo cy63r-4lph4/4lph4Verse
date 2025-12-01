@@ -1,16 +1,16 @@
 import { ChainId } from "@verse/sdk";
 import express from "express";
-import { makeClients } from "val/config/chains";
+import { makeClients } from "../config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";
 import {
   getTransaction,
   storeTransaction,
 } from "val/core/transaction/txnStore";
-import { getContractChain } from "val/utils/contractChain";
-import { logger } from "val/utils/logger";
+import { getContractChain } from "../utils/contractChain";
+import { logger } from "../utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
-import { isReplay } from "val/utils/isReplay";
-import { rateLimit } from "val/utils/rateLimit";
+import { isReplay } from "../utils/isReplay";
+import { rateLimit } from "../utils/rateLimit";
 
 export const relayRouter = express.Router();
 

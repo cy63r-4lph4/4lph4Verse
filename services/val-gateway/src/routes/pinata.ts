@@ -1,5 +1,5 @@
+import { pinata } from "@verse/sdk";
 import express from "express";
-import { pinata } from "@verse/config/pinataConfig";
 
 export const pinataRouter = express.Router();
 
