@@ -24,7 +24,7 @@ export default function ProfilePreview({ form }: any) {
         {/* Avatar */}
         <Avatar className="h-32 w-32 border-2 border-cyan-400 mb-6">
           {form.avatar ? (
-            <AvatarImage src={form.avatar} />
+            <AvatarImage src={form.avatarPreview} />
           ) : (
             <AvatarFallback className="bg-white/10">VP</AvatarFallback>
           )}

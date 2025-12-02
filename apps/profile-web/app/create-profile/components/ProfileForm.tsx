@@ -75,7 +75,7 @@ export default function ProfileForm({
       <div className="flex items-center gap-6">
         <Avatar className="h-24 w-24 border border-white/20">
           {form.avatar ? (
-            <AvatarImage src={form.avatar} />
+            <AvatarImage src={form.avatarPreview} />
           ) : (
             <AvatarFallback className="bg-white/10">VP</AvatarFallback>
           )}
