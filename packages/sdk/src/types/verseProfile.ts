@@ -16,7 +16,13 @@ export interface VerseProfile {
   location?: string; // Optional location string
   joinedAt?: string; // ISO date
   interests: string[];
-  links:{}
+  links: {
+    x: string;
+    github: string;
+    telegram: string;
+    website: string;
+    farcaster: string;
+  };
 
   /** Dynamic, app-specific persona modules */
   personas: {

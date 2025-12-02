@@ -5,7 +5,12 @@ import type { VerseProfile } from "../types/verseProfile";
 
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
-import { ChainId, getDeployedContract } from "../index";
+import {
+  CHAIN_CONFIG,
+  CHAIN_OBJECTS,
+  ChainId,
+  getDeployedContract,
+} from "../index";
 import {
   loadDraft,
   saveDraft,
@@ -27,6 +32,7 @@ import {
   uploadFileToPinata,
   uploadProfileMetadata,
 } from "../services/storage";
+import { switchChain } from "viem/actions";
 
 type Progress =
   | "idle"
@@ -59,7 +65,7 @@ export function useVerseProfileWizard() {
     previousAvatarURL: undefined,
     avatarPreview: undefined,
     interests: [],
-    links: {},
+    links: { x: "", github: "", telegram: "", website: "", farcaster: "" },
   });
 
   const [{ avatarCID, metadataCID }, setCidState] = useState<ProfileCidCache>({
@@ -70,6 +76,24 @@ export function useVerseProfileWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState<Progress>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  // Switch chain if not on PROFILE_CHAIN
+  useEffect(() => {
+    const doSwitch = async () => {
+      if (chainId !== PROFILE_CHAIN) {
+        try {
+          // @ts-expect-error pass config to switchChain, 
+          // depending on SDK type definitions you might need to adjust
+          await switchChain(config, { chainId: PROFILE_CHAIN });
+        } catch (err: any) {
+          setError(err?.message || "Failed to switch chain");
+        }
+      }
+    };
+    doSwitch();
+    // Only run this effect when chainId or config changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chainId, config]);
 
   // Load draft and CIDs on mount
   useEffect(() => {
@@ -123,7 +147,9 @@ export function useVerseProfileWizard() {
       "handle" in partial ||
       "displayName" in partial ||
       "bio" in partial ||
-      "personas" in partial;
+      "personas" in partial ||
+      "interests" in partial ||
+      "links" in partial;
     if (touchesMetadata && metadataCID) {
       setCidState((prev: {}) => ({ ...prev, metadataCID: null }));
     }
@@ -175,7 +201,7 @@ export function useVerseProfileWizard() {
       previousAvatarURL: undefined,
       avatarPreview: undefined,
       interests: [],
-      links: {},
+      links: { x: "", github: "", telegram: "", website: "", farcaster: "" },
     });
     setSubmitting(false);
     setProgress("idle");
@@ -197,7 +223,8 @@ export function useVerseProfileWizard() {
       setError("VerseProfile contract missing for this chain");
       return false;
     }
-
+    const chain = CHAIN_OBJECTS[PROFILE_CHAIN];
+    console.log(chain);
     try {
       setSubmitting(true);
       setError(null);
@@ -346,13 +373,13 @@ export function useVerseProfileWizard() {
         clearCids(address, profile.handle);
         return true;
       }
-
       setProgress("writing");
       const tx = await writeContract(config, {
+        chain: chain,
         address: contractMeta.address,
         abi: contractMeta.abi,
         functionName: "createProfile",
-        args: [profile.handle, metadataURI],
+        args: [profile.handle, metadataURI, "alpha"],
       });
       await waitForTransactionReceipt(config, { hash: tx });
 

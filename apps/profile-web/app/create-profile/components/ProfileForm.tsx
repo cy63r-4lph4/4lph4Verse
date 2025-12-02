@@ -39,12 +39,11 @@ export default function ProfileForm({
   };
 
   const toggleInterest = (v: string) => {
-    updateProfile((f: any) => ({
-      ...f,
-      interests: f.interests.includes(v)
-        ? f.interests.filter((i: string) => i !== v)
-        : [...f.interests, v],
-    }));
+    const interests = form.interests.includes(v)
+      ? form.interests.filter((i: string) => i !== v)
+      : [...form.interests, v];
+
+    updateProfile({ interests: interests });
   };
 
   // UI label text

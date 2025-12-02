@@ -8,6 +8,7 @@ import { useVerseProfileWizard } from "@verse/sdk";
 import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import TxErrorCard from "@verse/ui/components/ErrorCard";
 
 export default function ProfileCreator() {
   const {
@@ -18,6 +19,7 @@ export default function ProfileCreator() {
     submitting,
     progress,
     error,
+    retrySubmit,
   } = useVerseProfileWizard();
   const { status } = useCheckHandle(profile.handle);
   const [ready, setReady] = useState(false);
@@ -68,6 +70,13 @@ export default function ProfileCreator() {
                 <span>Create Profile</span>
               )}
             </Button>
+            {error && (
+              <TxErrorCard
+                error={error}
+                expectedChain="Base"
+                onRetry={retrySubmit}
+              />
+            )}
           </div>
         </div>
       </div>

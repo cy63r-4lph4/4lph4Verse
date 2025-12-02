@@ -11,13 +11,12 @@ import { Twitter, Github, Send, Globe, Network } from "lucide-react";
 
 export default function ProfilePreview({ form }: any) {
   const socialIcons: any = {
-    twitter: <Twitter className="w-5 h-5 text-cyan-400" />,
+    x: <Twitter className="w-5 h-5 text-cyan-400" />,
     github: <Github className="w-5 h-5 text-cyan-400" />,
     telegram: <Send className="w-5 h-5 text-cyan-400" />,
     website: <Globe className="w-5 h-5 text-cyan-400" />,
     farcaster: <Network className="w-5 h-5 text-cyan-400" />,
   };
-
   return (
     <Card className="p-10 bg-white/5 border-white/10 backdrop-blur-xl shadow-xl max-h-[80vh]">
       <div className="flex flex-col items-center">

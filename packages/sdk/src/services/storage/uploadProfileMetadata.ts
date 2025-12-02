@@ -10,8 +10,8 @@ export async function uploadProfileMetadata(metadata: any, handle: string) {
   formData.append("file", file);
   formData.append("type", "profile");
   formData.append("name", handle);
-
-  const res = await fetch("/api/upload", {
+  const val_gateway = process.env.NEXT_PUBLIC_VAL_GATEWAY;
+  const res = await fetch(`${val_gateway}/v1/pinata/upload`, {
     method: "POST",
     body: formData,
   });

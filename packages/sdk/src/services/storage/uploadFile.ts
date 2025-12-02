@@ -23,7 +23,6 @@ export async function uploadFileToPinata(
   formData.append("type", type);
   formData.append("name", file.name);
   const val_gateway = process.env.NEXT_PUBLIC_VAL_GATEWAY;
-  console.log(val_gateway)
 
   const res = await fetch(`${val_gateway}/v1/pinata/upload`, {
     method: "POST",
