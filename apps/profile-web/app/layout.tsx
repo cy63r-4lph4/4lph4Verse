@@ -5,7 +5,7 @@ import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
 import Link from "next/link";
 import ParticleField from "@verse/profile-web/components/particles";
-import ConnectWallet from "@verse/profile-web/app/[handle]/components/ConnectWallet";
+import ConnectWallet from "@verse/profile-web/components/ConnectWallet";
 export const metadata: Metadata = {
   title: "Verse Profile",
   description: "The Identity Hub for the 4lph4Verse",
@@ -66,7 +66,7 @@ export default function RootLayout({
                   Guardian Registry
                 </Link>
 
-                <ConnectWallet />
+                {/* <ConnectWallet /> */}
               </div>
             </header>
             {children}

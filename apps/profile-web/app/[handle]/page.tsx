@@ -1,14 +1,35 @@
 "use client";
 
-import ProfileLayout from "./ProfileLayout";
-import { usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useAccount } from "wagmi";
+import ProfileRenderer from "./ProfileRenderer";
 
 export default function ProfilePage() {
-  const pathname = usePathname();
-  const handle = pathname.replace("/", "");
+  const { handle } = useParams() as { handle: string };
+  const { address } = useAccount();
 
-  // TODO: Replace with real ownership check later
-  const isOwner = true;
+  // ❗ TEMP MOCK — until you finish hooking real profile data
+  const mockProfile = {
+    handle,
+    verseId: 123,
+    displayName: "Cy63r ~🐉",
+    avatar: null,
+    bio: "Building the verse from Ghana.",
+    location: "Accra, Ghana",
+    links: {
+      x: "https://x.com",
+      github: "",
+      telegram: "",
+      website: "",
+      farcaster: "",
+    },
+    owner: "0x123",
+    verified: false,
+  };
 
-  return <ProfileLayout handle={handle} isOwner={isOwner} />;
+  const isOwner = mockProfile.owner?.toLowerCase() === address?.toLowerCase();
+
+  return (
+    <ProfileRenderer profile={mockProfile} isOwner={isOwner} />
+  );
 }
