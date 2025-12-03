@@ -7,6 +7,7 @@ import ProfileRenderer from "./ProfileRenderer";
 export default function ProfilePage() {
   const { handle } = useParams() as { handle: string };
   const { address } = useAccount();
+ 
 
   // ❗ TEMP MOCK — until you finish hooking real profile data
   const mockProfile = {
@@ -18,7 +19,7 @@ export default function ProfilePage() {
     location: "Accra, Ghana",
     links: {
       x: "https://x.com",
-      github: "",
+      github: "https://x.com",
       telegram: "",
       website: "",
       farcaster: "",
@@ -30,6 +31,6 @@ export default function ProfilePage() {
   const isOwner = mockProfile.owner?.toLowerCase() === address?.toLowerCase();
 
   return (
-    <ProfileRenderer profile={mockProfile} isOwner={isOwner} />
+    <ProfileRenderer profile={mockProfile} isOwner={false} />
   );
 }

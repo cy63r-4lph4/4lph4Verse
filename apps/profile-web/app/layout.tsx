@@ -66,7 +66,7 @@ export default function RootLayout({
                   Guardian Registry
                 </Link>
 
-                {/* <ConnectWallet /> */}
+                <ConnectWallet />
               </div>
             </header>
             {children}

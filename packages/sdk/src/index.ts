@@ -3,6 +3,8 @@ export * from "./hooks/useOutsideClick";
 export * from "./hooks/useProfileById";
 export * from "./hooks/useVerseProfileWizard";
 export * from "./hooks/useCheckHandle";
+export * from "./hooks/useCheckAccount";
+
 export * from "./utils/builders/permitTypedData";
 export * from "./utils/builders/profileTypedData";
 export * from "./utils/contract/deployedContracts";

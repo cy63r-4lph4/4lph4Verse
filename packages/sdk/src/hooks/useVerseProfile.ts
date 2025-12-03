@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useChainId } from "wagmi";
 import {
-  ChainId,
   getDeployedContract,
 } from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
@@ -27,7 +26,6 @@ interface UseVerseProfileResult {
 /* ------------------------- Hook: useGetVerseID ------------------------- */
 export function useGetVerseID(): UseGetVerseIDResult {
   const { address } = useAccount();
-  const chainId = useChainId() as ChainId;
 
   const contract = getDeployedContract(PROFILE_CHAIN, "VerseProfile");
   const enabled = Boolean(address && contract?.address);

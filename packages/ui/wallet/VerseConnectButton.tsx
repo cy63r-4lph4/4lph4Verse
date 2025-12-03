@@ -6,12 +6,10 @@ import { useAccount, useDisconnect } from "wagmi";
 import clsx from "clsx";
 import { Coins, User2 } from "lucide-react";
 
-/* Verse SDK hooks (stubs are imported names in your real project) */
-import { useBalance } from "@verse/sdk/hooks/useBalance";
-import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
+import { useBalance } from "@verse/sdk";
+import { useCheckProfile } from "@verse/sdk";
 import { useVerseProfile } from "@verse/sdk/src/hooks/useVerseProfile";
 
-/* Local components - can be overridden by props */
 import WalletDropdown from "./WalletDropdown";
 import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
@@ -182,7 +180,8 @@ export default function VerseConnectButton({
     const shouldOpenWizard =
       address && !checkingProfile && !hasProfile && !wizardDone && showWizard;
     if (shouldOpenWizard) setShowWizardState(true);
-    else if (onMissingProfile) {
+    else if (onMissingProfile && address) {
+      console.log(address);
       onMissingProfile();
       return;
     }
