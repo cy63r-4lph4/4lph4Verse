@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@verse/ui/components/ui/button";
 
 import { Inter } from "next/font/google";
 import { JetBrains_Mono } from "next/font/google"; // Main font
+import { Button } from "../../../packages/ui/components/ui/button";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jet = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet" });
