@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveAvatarUrl } from "@verse/sdk";
 import { Card } from "@verse/ui/components/ui/card";
 import {
   User,
@@ -21,7 +22,12 @@ export default function PublicView({ profile }: any) {
     website: <Globe className="w-5 h-5 text-cyan-400" />,
     farcaster: <Network className="w-5 h-5 text-cyan-400" />,
   };
-
+  function renderAvatar(profile: any) {
+    const avatarUrl = resolveAvatarUrl(profile.avatar) as string;
+    return (
+      <img src={avatarUrl} className="w-full h-full object-cover rounded-2xl" />
+    );
+  }
   return (
     <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 space-y-12">
       {/* TOP SECTION */}
@@ -31,10 +37,7 @@ export default function PublicView({ profile }: any) {
           {/* AVATAR */}
           <div className="w-32 h-32 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center overflow-hidden">
             {profile.avatar ? (
-              <img
-                src={profile.avatar}
-                className="w-full h-full object-cover rounded-2xl"
-              />
+              renderAvatar(profile)
             ) : (
               <User size={48} className="text-neutral-600" />
             )}

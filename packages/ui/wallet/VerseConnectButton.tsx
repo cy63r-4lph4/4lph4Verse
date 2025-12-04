@@ -14,6 +14,7 @@ import WalletDropdown from "./WalletDropdown";
 import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
+import { resolveAvatarUrl } from "@verse/sdk";
 
 /* --------------------------- Types & Props --------------------------- */
 export type PersonaField = {
@@ -108,12 +109,11 @@ function DefaultBalance({ balance }: { balance?: string | number }) {
 
 function DefaultAvatar({ profile }: { profile?: any }) {
   if (profile?.avatar) {
-    const src = profile.avatar.startsWith("ipfs://")
-      ? profile.avatar.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")
-      : profile.avatar;
+    const avatarUrl = resolveAvatarUrl(profile.avatar) as string;
+
     return (
       <div className="bg-white rounded-full overflow-hidden w-8 h-8">
-        <img src={src} alt="avatar" className="w-8 h-8 object-cover" />
+        <img src={avatarUrl} alt="avatar" className="w-8 h-8 object-cover" />
       </div>
     );
   }

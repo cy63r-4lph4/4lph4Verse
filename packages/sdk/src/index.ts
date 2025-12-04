@@ -16,3 +16,5 @@ export * from "./config/constants";
 export * from "./config/chainConfig";
 export * from "./types";
 export * from "./config/pinataConfig";
+
+export * from "./utils/profile"
