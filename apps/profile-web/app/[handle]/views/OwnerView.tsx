@@ -26,7 +26,7 @@ export default function OwnerView({ profile }: any) {
     website: <Globe className="w-5 h-5 text-cyan-400" />,
     farcaster: <Network className="w-5 h-5 text-cyan-400" />,
   };
-
+  console.log(profile.avatar);
   return (
     <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 space-y-12">
       {/* TOP PROFILE CARD */}
@@ -52,7 +52,9 @@ export default function OwnerView({ profile }: any) {
 
             <p className="text-cyan-400 text-sm">@{profile.handle}</p>
 
-            <p className="text-slate-400 text-sm">Verse ID • {profile.verseId}</p>
+            <p className="text-slate-400 text-sm">
+              Verse ID • {profile.verseId}
+            </p>
 
             {/* VERIFIED STATUS */}
             {verified ? (
@@ -119,7 +121,9 @@ export default function OwnerView({ profile }: any) {
           )}
 
           {/* SOCIAL LINKS */}
-          {Object.values(profile.links).some((v) => typeof v === "string" && v) && (
+          {Object.values(profile.links).some(
+            (v) => typeof v === "string" && v
+          ) && (
             <section>
               <h2 className="text-xl font-bold mb-4">Social Links</h2>
 
@@ -128,7 +132,9 @@ export default function OwnerView({ profile }: any) {
                   value ? (
                     <a
                       key={key}
-                      href={value.startsWith("http") ? value : `https://${value}`}
+                      href={
+                        value.startsWith("http") ? value : `https://${value}`
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"

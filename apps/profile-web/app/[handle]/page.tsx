@@ -46,8 +46,7 @@ export default function ProfilePage() {
   }
 
   // 🧍 OWNER CHECK
-  const isOwner =
-    profile.owner?.toLowerCase() === address?.toLowerCase();
+  const isOwner = profile.owner?.toLowerCase() === address?.toLowerCase();
 
   // 🎉 SUCCESS — RENDER PROFILE
   return <ProfileRenderer profile={profile} isOwner={isOwner} />;

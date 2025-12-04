@@ -92,19 +92,25 @@ export function useProfileById(id?: string | number) {
     },
   });
 
- useEffect(() => {
+  useEffect(() => {
     if (!raw || !verseId) return;
-
-    const parsed = parseVerseProfile(raw, verseId);
-    setProfile(parsed);
-
-    profileCache.set(id!, {
-      data: parsed,
-      timestamp: Date.now(),
-    });
-
-    setLoading(false);
+  
+    (async () => {
+      setLoading(true);
+  
+      const parsed = await parseVerseProfile(raw, verseId);
+  
+      setProfile(parsed);
+  
+      profileCache.set(id!, {
+        data: parsed,
+        timestamp: Date.now(),
+      });
+  
+      setLoading(false);
+    })();
   }, [raw, verseId, id]);
+  
 
   /* ------------------------------------------------
    🧩 Step 4: Handle errors gracefully
@@ -115,6 +121,8 @@ export function useProfileById(id?: string | number) {
       setLoading(false);
     }
   }, [readError, idError]);
+
+
 
   return {
     profile,

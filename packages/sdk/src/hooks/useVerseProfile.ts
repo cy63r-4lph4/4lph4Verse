@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useChainId } from "wagmi";
 import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
-import { fetchFromPinata } from "../services/storage";
-import { VerseProfile } from "src/types";
-import { parseVerseProfile } from "src/utils/profile/parseVerseProfile";
+
+import { parseVerseProfile } from "../utils/profile/parseVerseProfile";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;
@@ -107,20 +106,24 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
    * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
    * ----------------------------------------------------------- */
   useEffect(() => {
-    if (!data || !verseID) return;
+    {
+      if (!data || !verseID) return;
 
-    const parsed = parseVerseProfile(data, verseID);
-    setProfile(parsed);
-    try {
-      // Cache locally
-      if (address) {
-        localStorage.setItem(
-          `verseProfile:${address.toLowerCase()}`,
-          JSON.stringify(parsed)
-        );
-      }
-    } catch (err) {
-      console.error("Failed to load metadata:", err);
+      async () => {
+        const parsed = parseVerseProfile(data, verseID);
+        setProfile(parsed);
+        try {
+          // Cache locally
+          if (address) {
+            localStorage.setItem(
+              `verseProfile:${address.toLowerCase()}`,
+              JSON.stringify(parsed)
+            );
+          }
+        } catch (err) {
+          console.error("Failed to load metadata:", err);
+        }
+      };
     }
   }, [data, verseID, address, skip]);
 
