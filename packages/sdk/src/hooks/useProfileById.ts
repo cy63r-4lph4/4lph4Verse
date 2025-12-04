@@ -96,7 +96,7 @@ export function useProfileById(id?: string | number) {
    🧩 Step 3: Fetch metadata from Pinata + cache it
   ------------------------------------------------ */
   useEffect(() => {
-    if (!profileData || !Array.isArray(profileData)) return;
+    if (!profileData || typeof data !== "object") return;
 
     (async () => {
       try {

@@ -125,7 +125,6 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
       }
 
       try {
-        console.log("metadataURI", metadataURI);
         const json = await fetchFromPinata(metadataURI);
 
         // ------------------------------

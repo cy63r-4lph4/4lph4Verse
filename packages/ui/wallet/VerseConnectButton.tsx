@@ -161,12 +161,17 @@ export default function VerseConnectButton({
   const { disconnect } = useDisconnect();
   const { balance } = useBalance();
 
-  const { hasProfile, isLoading: checkingProfile, refetch } = useCheckProfile();
+  const {
+    hasProfile,
+    hasCache,
+    isLoading: checkingProfile,
+    refetch,
+  } = useCheckProfile();
   const {
     profile,
     isLoading: loadingProfile,
     refetch: refetchProfile,
-  } = useVerseProfile();
+  } = useVerseProfile(hasCache);
 
   /* Local UI State */
   const [menuOpen, setMenuOpen] = useState(false);
