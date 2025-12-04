@@ -4,7 +4,7 @@ import { useReadContract } from "wagmi";
 import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { useEffect, useState } from "react";
 import { PROFILE_CHAIN } from "../config/constants";
-import { fetchFromPinata } from "../services/storage";
+import { parseVerseProfile } from "../utils/profile/parseVerseProfile";
 
 /* --------------------------------------------------
  🧠 In-memory cache
@@ -78,7 +78,7 @@ export function useProfileById(id?: string | number) {
    🧩 Step 2: Fetch onchain profile (getProfile)
   ------------------------------------------------ */
   const {
-    data: profileData,
+    data: raw,
     error: readError,
     isLoading: readLoading,
   } = useReadContract({
@@ -95,47 +95,60 @@ export function useProfileById(id?: string | number) {
   /* ------------------------------------------------
    🧩 Step 3: Fetch metadata from Pinata + cache it
   ------------------------------------------------ */
+  // useEffect(() => {
+  //   if (!profileData || typeof data !== "object") return;
+
+  //   (async () => {
+  //     try {
+  //       const [owner, handle, metadataURI, ens, createdAt] = profileData;
+
+  //       let metadata = {};
+  //       if (metadataURI?.startsWith("ipfs://")) {
+  //         try {
+  //           const json = await fetchFromPinata(metadataURI);
+  //           metadata = json || {};
+  //         } catch (err) {
+  //           console.warn("⚠️ Failed to load IPFS metadata:", err);
+  //         }
+  //       }
+
+  //       const finalProfile = {
+  //         verseId,
+  //         owner,
+  //         handle,
+  //         metadataURI,
+  //         ensNamehash: ens,
+  //         createdAt: Number(createdAt),
+  //         ...metadata,
+  //       };
+
+  //       profileCache.set(id!, {
+  //         data: finalProfile,
+  //         timestamp: Date.now(),
+  //       });
+
+  //       setProfile(finalProfile);
+  //     } catch (err) {
+  //       console.error("❌ Failed to fetch profile metadata:", err);
+  //       setError(err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   })();
+  // }, [profileData, verseId, id]);
   useEffect(() => {
-    if (!profileData || typeof data !== "object") return;
+    if (!raw || !verseId) return;
 
-    (async () => {
-      try {
-        const [owner, handle, metadataURI, ens, createdAt] = profileData;
+    const parsed = parseVerseProfile(raw, verseId);
+    setProfile(parsed);
 
-        let metadata = {};
-        if (metadataURI?.startsWith("ipfs://")) {
-          try {
-            const json = await fetchFromPinata(metadataURI);
-            metadata = json || {};
-          } catch (err) {
-            console.warn("⚠️ Failed to load IPFS metadata:", err);
-          }
-        }
+    profileCache.set(id!, {
+      data: parsed,
+      timestamp: Date.now(),
+    });
 
-        const finalProfile = {
-          verseId,
-          owner,
-          handle,
-          metadataURI,
-          ensNamehash: ens,
-          createdAt: Number(createdAt),
-          ...metadata,
-        };
-
-        profileCache.set(id!, {
-          data: finalProfile,
-          timestamp: Date.now(),
-        });
-
-        setProfile(finalProfile);
-      } catch (err) {
-        console.error("❌ Failed to fetch profile metadata:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [profileData, verseId, id]);
+    setLoading(false);
+  }, [raw, verseId, id]);
 
   /* ------------------------------------------------
    🧩 Step 4: Handle errors gracefully
