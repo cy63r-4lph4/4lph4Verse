@@ -166,7 +166,7 @@ export default function VerseConnectButton({
     profile,
     isLoading: loadingProfile,
     refetch: refetchProfile,
-  } = useVerseProfile(hasProfile);
+  } = useVerseProfile();
 
   /* Local UI State */
   const [menuOpen, setMenuOpen] = useState(false);
@@ -180,8 +180,7 @@ export default function VerseConnectButton({
     const shouldOpenWizard =
       address && !checkingProfile && !hasProfile && !wizardDone && showWizard;
     if (shouldOpenWizard) setShowWizardState(true);
-    else if (onMissingProfile && address) {
-      console.log(address);
+    else if (onMissingProfile && address && !hasProfile && !loadingProfile) {
       onMissingProfile();
       return;
     }

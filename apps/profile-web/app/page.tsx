@@ -54,7 +54,7 @@ export default function Page() {
           </div>
 
           {/* right side visual */}
-          <div className="flex-shrink-0 flex items-center justify-center">
+          <div className="shrink-0 flex items-center justify-center">
             <div className="relative w-[420px] h-[420px] hidden lg:block">
               <div
                 className="absolute inset-0 rounded-3xl blur-3xl opacity-30"
@@ -83,7 +83,7 @@ export default function Page() {
 
             {/* Mobile Rune */}
             <div className="lg:hidden w-44 h-44 flex items-center justify-center">
-              <div className="w-44 h-44 rounded-2xl bg-gradient-to-br from-cyan-400/10 to-violet-400/10 p-4 flex items-center justify-center">
+              <div className="w-44 h-44 rounded-2xl bg-linear-to-br from-cyan-400/10 to-violet-400/10 p-4 flex items-center justify-center">
                 <RuneSVG size={160} />
               </div>
             </div>

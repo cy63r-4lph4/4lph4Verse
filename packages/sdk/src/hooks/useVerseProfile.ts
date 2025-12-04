@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useChainId } from "wagmi";
-import {
-  getDeployedContract,
-} from "../utils/contract/deployedContracts";
+import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
 import { fetchFromPinata } from "../services/storage";
+import { VerseProfile } from "src/types";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;
@@ -62,8 +61,11 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
 
   const [profile, setProfile] = useState<any>(null);
   const [cacheLoaded, setCacheLoaded] = useState(false);
+  const [hasCache, setHasCache] = useState(false);
 
-  const enabled = Boolean(!skip && verseID && contract?.address && cacheLoaded);
+  const enabled = Boolean(
+    !skip && !hasCache && verseID && contract?.address && cacheLoaded
+  );
 
   const { data, isLoading, error, refetch } = useReadContract({
     abi: contract.abi,
@@ -75,7 +77,6 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
       refetchOnWindowFocus: false,
     },
   });
-
   /* -----------------------------------------------------------
    * 1️⃣ Always check cache first (even if skip=true)
    * ----------------------------------------------------------- */
@@ -89,12 +90,15 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
       try {
         const parsed = JSON.parse(cached);
         setProfile(parsed);
+        setHasCache(true); // <-- important
       } catch {
         localStorage.removeItem(cacheKey);
+        setHasCache(false);
       }
+    } else {
+      setHasCache(false);
     }
 
-    // mark cache as checked so wagmi can start fetching if allowed
     setCacheLoaded(true);
   }, [address]);
 
@@ -102,32 +106,82 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
    * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
    * ----------------------------------------------------------- */
   useEffect(() => {
-    if (!data || !Array.isArray(data) || skip) return;
+    if (!data || typeof data !== "object" || skip) return;
 
     (async () => {
-      const [owner, handle, metadataURI, ens, createdAt] = data;
+      const {
+        owner,
+        handle,
+        metadataURI,
+        purpose,
+        version,
+        delegate,
+        createdAt,
+      } = data as any;
 
-      if (metadataURI?.startsWith("ipfs://")) {
-        try {
-          const json = await fetchFromPinata(metadataURI);
-          const fullProfile = {
-            verseID,
-            address: owner,
-            handle,
-            metadataURI,
-            ensNamehash: ens,
-            createdAt: Number(createdAt),
-            ...json,
-          };
+      // Only process IPFS metadata
+      if (!metadataURI?.startsWith("ipfs://")) {
+        return;
+      }
 
-          setProfile(fullProfile);
+      try {
+        console.log("metadataURI", metadataURI);
+        const json = await fetchFromPinata(metadataURI);
+
+        // ------------------------------
+        // BUILD A SAFE, VALID PROFILE
+        // ------------------------------
+        const fullProfile: VerseProfile = {
+          verseId: verseID || 0,
+          handle: handle || json?.handle || "", // fallback
+          displayName: json?.displayName || handle || "",
+          avatar: json?.avatar,
+          banner: json?.banner,
+          bio: json?.bio || "",
+          purpose: purpose || json?.purpose || "",
+          owner: owner,
+          reputation: json?.reputation || 0,
+          location: json?.location || "",
+          joinedAt:
+            json?.joinedAt || new Date(Number(createdAt) * 1000).toISOString(),
+          interests: json?.interests || [],
+          links: {
+            x: json?.links?.x || "",
+            github: json?.links?.github || "",
+            telegram: json?.links?.telegram || "",
+            website: json?.links?.website || "",
+            farcaster: json?.links?.farcaster || "",
+          },
+          personas: {
+            hirecore: json?.personas?.hirecore || undefined,
+            vaultoflove: json?.personas?.vaultoflove || undefined,
+            leasevault: json?.personas?.leasevault || undefined,
+            echain: json?.personas?.echain || undefined,
+            ...(json?.personas || {}), // allow future realms
+          },
+
+          // On-chain extras
+          // delegate,
+          // version,
+          // createdAt: Number(createdAt),
+
+          // UI-only fields
+          avatarPreview: undefined,
+          previousAvatarURL: json?.avatar,
+        };
+
+        // Save final profile
+        setProfile(fullProfile);
+
+        // Cache locally
+        if (address) {
           localStorage.setItem(
-            `verseProfile:${address?.toLowerCase()}`,
+            `verseProfile:${address.toLowerCase()}`,
             JSON.stringify(fullProfile)
           );
-        } catch (err) {
-          console.error("Failed to load metadata:", err);
         }
+      } catch (err) {
+        console.error("Failed to load metadata:", err);
       }
     })();
   }, [data, verseID, address, skip]);
