@@ -1,111 +1,26 @@
 @import "tailwindcss";
-
-@source "@verse/ui/**/*.{ts,tsx}";
-
-/* ------------------------------------------------------------
-   VerseWallet Root Theme Tokens
-   These define the universal identity of the Verse.
-------------------------------------------------------------- */
-
+@source "../../packages/ui/**/*.{ts,tsx}";
 :root {
-  /* Light Mode (default fallback) */
-  --background: #f8fafc; /* soft, clean surface */
-  --foreground: #0a0f1c; /* deep verse navy */
-  --card: #ffffff;
-  --card-foreground: #0a0f1c;
-
-  --verse-primary: #2563eb;  /* Blue Core */
-  --verse-secondary: #0ea5e9; /* Cyan Pulse */
-  --verse-accent: #a855f7;    /* Violet Rift */
-  --verse-glow: rgba(14, 165, 233, 0.5);
-
-  --border: rgba(0, 0, 0, 0.1);
-  --muted: #64748b;
-  --muted-foreground: #475569;
-
-  /* Radiant gradients */
-  --gradient-core: linear-gradient(135deg, #2563eb, #0ea5e9);
-  --gradient-verse: linear-gradient(145deg, #2563eb, #0ea5e9, #a855f7);
+  --background: #ffffff;
+  --foreground: #171717;
 }
-
-/* ------------------------------------------------------------
-   DARK MODE — VerseWallet Default Theme
-   The true Verse identity lives here.
-------------------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #05070d; /* nearly cosmic black */
-    --foreground: #e2e8f0; /* soft cold gray */
-    --card: #0b1120;       /* deep blue-black */
-    --card-foreground: #f1f5f9;
-
-    --verse-primary: #3b82f6;  
-    --verse-secondary: #22d3ee; 
-    --verse-accent: #c084fc;
-
-    --border: rgba(255, 255, 255, 0.08);
-    --muted: #94a3b8;
-    --muted-foreground: #cbd5e1;
-
-    --verse-glow: rgba(59, 130, 246, 0.18);
-
-    --gradient-core: linear-gradient(135deg, #1d4ed8, #0891b2);
-    --gradient-verse: linear-gradient(145deg, #1d4ed8, #0891b2, #9333ea);
-  }
-}
-
-/* ------------------------------------------------------------
-   Tailwind @theme mapping
-------------------------------------------------------------- */
-@source "@verse/ui/**/*.{ts,tsx}";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
-  --color-primary: var(--verse-primary);
-  --color-secondary: var(--verse-secondary);
-  --color-accent: var(--verse-accent);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-
-  --gradient-core: var(--gradient-core);
-  --gradient-verse: var(--gradient-verse);
 }
 
-/* ------------------------------------------------------------
-   Base Styles
-------------------------------------------------------------- */
-html, body {
-  padding: 0;
-  margin: 0;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-* {
-  border-color: var(--border);
-}
-
-/* ------------------------------------------------------------
-   VerseWallet Identity Effects
-------------------------------------------------------------- */
-.verse-glow {
-  box-shadow: 0 0 30px var(--verse-glow);
-}
-
-.verse-gradient-core {
-  background: var(--gradient-core);
-}
-
-.verse-gradient-verse {
-  background: var(--gradient-verse);
+  font-family: Arial, Helvetica, sans-serif;
 }

@@ -1,5 +1,3 @@
-
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@verse/ui/components/ui/button";
@@ -12,9 +10,7 @@ const jet = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet" });
 
 export default function Home() {
   return (
-    <main
-      className="relative min-h-screen w-full overflow-hidden bg-[#0b0d10] text-white font-inter variable-font-smoothing"
-    >
+    <main className="relative min-h-screen w-full overflow-hidden bg-[#0b0d10] text-white font-inter variable-font-smoothing">
       {/* -------------------------------------------------- */}
       {/* PARTICLES */}
       {/* -------------------------------------------------- */}
@@ -40,23 +36,22 @@ export default function Home() {
       {/* CONTENT */}
       {/* -------------------------------------------------- */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6 animate-camera-drift">
-        <h1
-          className="text-5xl md:text-7xl font-bold tracking-tight leading-tight font-jetbrains-mono bg-gradient-to-br from-cyan-600 via-sky-400 to-purple-800 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(56,189,248,0.35)]"
-        >
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight font-jetbrains-mono bg-gradient-to-br from-cyan-400 via-sky-400 to-purple-600 bg-clip-text text-transparent ">
           VerseWallet
         </h1>
 
-        <p className="mt-4 max-w-xl text-lg md:text-xl text-[#b7c2cc] drop-shadow-[0_0_10px_rgba(56,189,248,0.15)]">
+        <p className="mt-4 max-w-xl text-lg md:text-xl text-white mb-20 drop-shadow-[0_0_10px_rgba(56,189,248,0.15)]">
           Step beyond the boundary.
           <br />
-          Your sovereign gateway to the <span className="text-cyan-300 font-semibold">4lph4Verse</span>.
+          Your sovereign gateway to the{" "}
+          <span className="text-cyan-400 font-semibold">4lph4Verse</span>.
         </p>
 
         <div className="mt-10 flex flex-col md:flex-row gap-4">
           <Link href="/dashboard">
             <Button
               size="lg"
-              className="group px-7 py-5 text-base font-semibold rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 text-white hover:brightness-110 transition-all shadow-[0_0_25px_rgba(56,189,248,0.55)] relative overflow-hidden"
+              className="group px-7 py-5 text-base font-semibold rounded-xl bg-gradient-to-br from-cyan-500 to-purple-700 text-white hover:brightness-110 transition-all  relative overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
                 Enter Portal
@@ -78,8 +73,11 @@ export default function Home() {
         </div>
 
         <p className="mt-6 text-sm text-[#9aa5b1]">
-          Already a citizen?{' '}
-          <Link href="/auth/login" className="text-cyan-300 hover:underline underline-offset-4">
+          Already a citizen?{" "}
+          <Link
+            href="/auth/login"
+            className="text-cyan-400 hover:underline underline-offset-4"
+          >
             Restore Access
           </Link>
         </p>
