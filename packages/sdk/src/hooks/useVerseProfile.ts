@@ -6,6 +6,7 @@ import { getDeployedContract } from "../utils/contract/deployedContracts";
 import { PROFILE_CHAIN } from "../config/constants";
 import { fetchFromPinata } from "../services/storage";
 import { VerseProfile } from "src/types";
+import { parseVerseProfile } from "src/utils/profile/parseVerseProfile";
 /* ------------------------- Types ------------------------- */
 interface UseGetVerseIDResult {
   verseID: number | null;
@@ -106,83 +107,21 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
    * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
    * ----------------------------------------------------------- */
   useEffect(() => {
-    if (!data || typeof data !== "object" || skip) return;
+    if (!data || !verseID) return;
 
-    (async () => {
-      const {
-        owner,
-        handle,
-        metadataURI,
-        purpose,
-        version,
-        delegate,
-        createdAt,
-      } = data as any;
-
-      // Only process IPFS metadata
-      if (!metadataURI?.startsWith("ipfs://")) {
-        return;
+    const parsed = parseVerseProfile(data, verseID);
+    setProfile(parsed);
+    try {
+      // Cache locally
+      if (address) {
+        localStorage.setItem(
+          `verseProfile:${address.toLowerCase()}`,
+          JSON.stringify(parsed)
+        );
       }
-
-      try {
-        const json = await fetchFromPinata(metadataURI);
-
-        // ------------------------------
-        // BUILD A SAFE, VALID PROFILE
-        // ------------------------------
-        const fullProfile: VerseProfile = {
-          verseId: verseID || 0,
-          handle: handle || json?.handle || "", // fallback
-          displayName: json?.displayName || handle || "",
-          avatar: json?.avatar,
-          banner: json?.banner,
-          bio: json?.bio || "",
-          purpose: purpose || json?.purpose || "",
-          owner: owner,
-          reputation: json?.reputation || 0,
-          location: json?.location || "",
-          joinedAt:
-            json?.joinedAt || new Date(Number(createdAt) * 1000).toISOString(),
-          interests: json?.interests || [],
-          links: {
-            x: json?.links?.x || "",
-            github: json?.links?.github || "",
-            telegram: json?.links?.telegram || "",
-            website: json?.links?.website || "",
-            farcaster: json?.links?.farcaster || "",
-          },
-          personas: {
-            hirecore: json?.personas?.hirecore || undefined,
-            vaultoflove: json?.personas?.vaultoflove || undefined,
-            leasevault: json?.personas?.leasevault || undefined,
-            echain: json?.personas?.echain || undefined,
-            ...(json?.personas || {}), // allow future realms
-          },
-
-          // On-chain extras
-          // delegate,
-          // version,
-          // createdAt: Number(createdAt),
-
-          // UI-only fields
-          avatarPreview: undefined,
-          previousAvatarURL: json?.avatar,
-        };
-
-        // Save final profile
-        setProfile(fullProfile);
-
-        // Cache locally
-        if (address) {
-          localStorage.setItem(
-            `verseProfile:${address.toLowerCase()}`,
-            JSON.stringify(fullProfile)
-          );
-        }
-      } catch (err) {
-        console.error("Failed to load metadata:", err);
-      }
-    })();
+    } catch (err) {
+      console.error("Failed to load metadata:", err);
+    }
   }, [data, verseID, address, skip]);
 
   /* -----------------------------------------------------------
