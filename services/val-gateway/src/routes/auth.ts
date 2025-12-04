@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import express from "express";
-import { deleteNonce, getNonce, saveNonce } from "val/core/auth/nonceStore";
+import { deleteNonce, getNonce, saveNonce } from "../core/auth/nonceStore";
 import {
   removeRefreshToken,
   storeRefreshToken,

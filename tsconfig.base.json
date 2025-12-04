@@ -9,8 +9,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@verse/sdk": ["packages/sdk"],
-      "@verse/sdk/*": ["packages/sdk/*"],
+      "@verse/sdk": ["packages/sdk/src"],
+      "@verse/sdk/*": ["packages/sdk/src/*"],
 
       "@verse/providers": ["packages/providers"],
       "@verse/providers/*": ["packages/providers/*"],
@@ -21,10 +21,6 @@
       "@verse/config": ["packages/config"],
       "@verse/config/*": ["packages/config/*"],
 
-      
-
-      "@verse/storage": ["services/storage/src"],
-      "@verse/storage/*": ["services/storage/src/*"],
 
       "@verse/services/relayer": ["services/relayer/src"],
       "@verse/services/relayer/*": ["services/relayer/src/*"],
@@ -37,11 +33,16 @@
 
       "@verse/vaultoflove-web": ["apps/vaultoflove-web"],
       "@verse/vaultoflove-web/*": ["apps/vaultoflove-web/*"],
+
       "@verse/versewallet-web": ["apps/versewallet-web"],
       "@verse/versewallet-web/*": ["apps/versewallet-web/*"],
 
+      "@verse/profile-web": ["apps/profile-web"],
+      "@verse/profile-web/*": ["apps/profile-web/*"],
+
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"],
+
       "relayer/*": ["services/relayer/src/*"],
       "val/*": ["services/val-gateway/src/*"]
     }

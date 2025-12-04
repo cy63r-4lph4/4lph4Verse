@@ -4,8 +4,8 @@ import {
   RelayableContract,
   RelayableFunction,
   RelayableTxTypes,
-} from "val/utils/relayableTxTypes";
-import { getContractChain } from "val/utils/contractChain";
+} from "../utils/relayableTxTypes";
+import { getContractChain } from "../utils/contractChain";
 
 type RelayableTxInfo<
   C extends RelayableContract,

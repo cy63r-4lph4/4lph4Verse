@@ -7,7 +7,7 @@ import { Coins, User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBalance } from "@verse/sdk/hooks/useBalance";
 import { useCheckProfile } from "@verse/sdk/hooks/useCheckAccount";
-import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { useVerseProfile } from "@verse/sdk/src/hooks/useVerseProfile";
 import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
@@ -22,6 +22,8 @@ export type ConnectWalletButtonProps = {
   faucet?: boolean;
   dapp?: string;
   personaFields?: PersonaField[];
+  showBalance?: boolean;
+  showwizard?: boolean;
 };
 
 export default function ConnectWalletButton({
@@ -32,6 +34,8 @@ export default function ConnectWalletButton({
   faucet = false,
   dapp,
   personaFields = [],
+  showBalance,
+  showwizard,
 }: ConnectWalletButtonProps) {
   /* ──────────────────────────────────────────────────────────────── */
   /*  Wallet & Verse Hooks                                           */
@@ -111,7 +115,7 @@ export default function ConnectWalletButton({
           return (
             <div className="flex items-center gap-4">
               {/* 🪙 Core Token Balance */}
-              {!faucet && connected && address && balance !== undefined && (
+              {showBalance && connected && address && balance !== undefined && (
                 <div className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
                   <Coins className="w-5 h-5 text-yellow-400" />
                   <span className="text-sm text-white">
@@ -205,7 +209,7 @@ export default function ConnectWalletButton({
       </ConnectButton.Custom>
 
       {/* ⚙️ Modals */}
-      {showWizard && !faucet && (
+      {showWizard && showwizard && (
         <VerseProfileWizardV2
           open={showWizard}
           onClose={handleWizardClose}

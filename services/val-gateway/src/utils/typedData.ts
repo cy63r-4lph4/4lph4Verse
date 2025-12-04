@@ -1,5 +1,5 @@
 import { ChainId, getDeployedContract, PROFILE_CHAIN } from "@verse/sdk";
-import { RelayableContract, RelayableTxTypes } from "val/utils/relayableTxTypes";
+import { RelayableContract, RelayableTxTypes } from "../utils/relayableTxTypes";
 
 /**
  * Supported dApps for typed-data schema resolution.

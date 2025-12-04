@@ -1,16 +1,16 @@
-import { ChainId } from "@verse/sdk/dist";
+import { ChainId } from "@verse/sdk";
 import express from "express";
-import { makeClients } from "val/config/chains";
+import { makeClients } from "../config/chains";
 import { verifyVerseSession } from "val/core/middleware/sessionAuth";
 import {
   getTransaction,
   storeTransaction,
 } from "val/core/transaction/txnStore";
-import { getContractChain } from "val/utils/contractChain";
-import { logger } from "val/utils/logger";
+import { getContractChain } from "../utils/contractChain";
+import { logger } from "../utils/logger";
 import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
-import { isReplay } from "val/utils/isReplay";
-import { rateLimit } from "val/utils/rateLimit";
+import { isReplay } from "../utils/isReplay";
+import { rateLimit } from "../utils/rateLimit";
 
 export const relayRouter = express.Router();
 
@@ -45,17 +45,17 @@ relayRouter.post("/ping", async (req, res) => {
 
 relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
   try {
-    const { chainId, target, data, from, message, signature, protocol } =
-      req.body;
-    if (!chainId || !target || !data || !from || !signature || !protocol) {
+    const { contract, fn, chainId, from, data, message, signature } = req.body;
+
+    if (!chainId || !contract || !from || !data || !signature || !fn) {
       return res.status(400).json({
         error:
           "Missing required fields: chainId, target, data, from, signature, protocol",
       });
     }
     const valid = await verifyVerseSignature(
-      target,
-      protocol,
+      contract,
+      fn,
       chainId,
       from,
       message,
@@ -71,21 +71,20 @@ relayRouter.post("/execute", verifyVerseSession, async (req, res) => {
     if (!allowed) {
       return res.status(429).json({ error: "Too many requests, try later" });
     }
-    const { chain, address } = getContractChain(protocol, chainId);
-    const { walletClient, publicClient, relayer } = makeClients(
-      chain as ChainId
-    );
+    const { chain, address } = getContractChain(contract, chainId);
+    const { walletClient, relayer } = makeClients(chain as ChainId);
 
     const txHash = await walletClient.sendTransaction({
       account: relayer,
       to: address as `0x${string}`,
+      chain: walletClient.chain,
       data: data as `0x${string}`,
     });
     const txPayload = {
       from,
-      target,
+      contract,
       chainId,
-      protocol,
+      fn,
       dataHash: data.slice(0, 10),
       status: "pending",
       createdAt: Date.now(),

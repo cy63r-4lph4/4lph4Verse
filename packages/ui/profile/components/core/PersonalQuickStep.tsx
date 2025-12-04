@@ -5,7 +5,7 @@ import { GlassCard } from "../ui/GlassCard";
 import { WizardNav } from "../ui/WizardNav";
 import { BadgePlus,  ChevronDown } from "lucide-react";
 import { useState } from "react";
-import type { VerseProfile } from "@verse/sdk/types";
+import type { VerseProfile } from "@verse/sdk";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 
