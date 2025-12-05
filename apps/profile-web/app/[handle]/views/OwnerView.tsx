@@ -26,6 +26,9 @@ export default function OwnerView({ profile }: any) {
 
   // modal state
   const [openVerify, setOpenVerify] = useState(false);
+  const endpoint=process.env.NEXT_PUBLIC_SELF_ENDPOINT!;
+  const appName=process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Docs";
+  const scope=process.env.NEXT_PUBLIC_SELF_SCOPE || "self-docs";
 
   // social icon mapping
   const socialIcons: any = {
@@ -108,7 +111,7 @@ export default function OwnerView({ profile }: any) {
 
       {/* 🔮 VERIFY MODAL */}
       <ModalWrapper open={openVerify} onClose={() => setOpenVerify(false)}>
-        <Verify />
+        <Verify scope={scope} endpoint={endpoint} appName={appName} />
       </ModalWrapper>
     </>
   );

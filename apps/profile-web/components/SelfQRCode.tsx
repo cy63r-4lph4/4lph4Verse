@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { countries, SelfQRcodeWrapper, SelfAppBuilder } from "@selfxyz/qrcode";
 import { useAccount } from "wagmi";
 
-export default function Verify() {
+export default function Verify({
+  scope,
+  appName,
+  endpoint,
+}: {
+  scope: string;
+  appName: string;
+  endpoint: string;
+}) {
   const [selfApp, setSelfApp] = useState<any | null>(null);
   const { address } = useAccount();
 
@@ -13,9 +21,9 @@ export default function Verify() {
 
     const app = new SelfAppBuilder({
       version: 2,
-      appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Docs",
-      scope: process.env.NEXT_PUBLIC_SELF_SCOPE || "self-docs",
-      endpoint: process.env.NEXT_PUBLIC_SELF_ENDPOINT!,
+      appName,
+      scope,
+      endpoint,
       logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png",
       userId: address,
       endpointType: "staging_celo",
