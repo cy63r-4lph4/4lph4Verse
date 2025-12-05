@@ -72,6 +72,7 @@ export default function RootLayout({
             {children}
           </main>
         </Web3Provider>
+        <div id="modal-root" />
       </body>
     </html>
   );
