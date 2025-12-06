@@ -172,7 +172,6 @@ export default function VerseConnectButton({
     isLoading: loadingProfile,
     refetch: refetchProfile,
   } = useVerseProfile(hasCache);
-
   /* Local UI State */
   const [menuOpen, setMenuOpen] = useState(false);
   const [showChainModal, setShowChainModal] = useState(false);

@@ -85,12 +85,11 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
 
     const cacheKey = `verseProfile:${address.toLowerCase()}`;
     const cached = localStorage.getItem(cacheKey);
-
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
         setProfile(parsed);
-        setHasCache(true); // <-- important
+        setHasCache(true);
       } catch {
         localStorage.removeItem(cacheKey);
         setHasCache(false);
@@ -106,25 +105,23 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
    * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
    * ----------------------------------------------------------- */
   useEffect(() => {
-    {
-      if (!data || !verseID) return;
+    if (!data || !verseID) return;
+    (async () => {
+      const parsed = await parseVerseProfile(data, verseID);
+      setProfile(parsed);
 
-      async () => {
-        const parsed = parseVerseProfile(data, verseID);
-        setProfile(parsed);
-        try {
-          // Cache locally
-          if (address) {
-            localStorage.setItem(
-              `verseProfile:${address.toLowerCase()}`,
-              JSON.stringify(parsed)
-            );
-          }
-        } catch (err) {
-          console.error("Failed to load metadata:", err);
+      try {
+        // Cache locally
+        if (address) {
+          localStorage.setItem(
+            `verseProfile:${address.toLowerCase()}`,
+            JSON.stringify(parsed)
+          );
         }
-      };
-    }
+      } catch (err) {
+        console.error("Failed to load metadata:", err);
+      }
+    })();
   }, [data, verseID, address, skip]);
 
   /* -----------------------------------------------------------
@@ -137,7 +134,7 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
     setCacheLoaded(false);
     await refetch();
   };
-
+  // console.log(profile)
   return {
     verseID,
     profile,

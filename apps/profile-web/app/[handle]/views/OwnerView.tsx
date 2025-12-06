@@ -45,7 +45,6 @@ export default function OwnerView({ profile }: any) {
       <img src={avatarUrl} className="w-full h-full object-cover rounded-2xl" />
     );
   }
-
   return (
     <>
       {/* MAIN PROFILE VIEW */}
@@ -103,10 +102,13 @@ export default function OwnerView({ profile }: any) {
           </div>
         </Card>
 
-        {/* DETAILS CARD — BIO, LOCATION, INTERESTS, SOCIAL LINKS */}
-        <Card className="p-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
-          {/* ... your same content ... */}
+        {profile.bio && (
+        <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(80,150,255,0.12)]">
+          <h2 className="text-xl font-semibold mb-3">Bio</h2>
+          <p className="text-neutral-300 leading-relaxed">{profile.bio}</p>
         </Card>
+      )}
+      
       </div>
 
       {/* 🔮 VERIFY MODAL */}
