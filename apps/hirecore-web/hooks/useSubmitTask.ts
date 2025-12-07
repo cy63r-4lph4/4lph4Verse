@@ -8,10 +8,10 @@ import {
   getDeployedContract,
 } from "@verse/sdk/utils/contract/deployedContracts";
 import type { TaskPayload } from "@verse/hirecore-web/utils/Interfaces";
-import { uploadFileToPinata, uploadJsonToPinata } from "@verse/services/pinata";
 import { TokenUtils } from "@verse/sdk";
 import { signTypedData, waitForTransactionReceipt } from "wagmi/actions";
 import { encodeFunctionData } from "viem";
+import { uploadFileToPinata, uploadJsonToPinata } from "@verse/sdk/services/storage";
 
 type PostStage =
   | "idle"

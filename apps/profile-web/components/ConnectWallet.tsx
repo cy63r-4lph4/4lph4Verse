@@ -13,7 +13,7 @@ export default function ConnectWallet() {
       variant="glass"
       size="md"
       rounded="lg"
-      showBalance
+      showBalance={false}
       showWizard={false}
       className="shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.04] active:scale-95 transition"
       onMissingProfile={() => {

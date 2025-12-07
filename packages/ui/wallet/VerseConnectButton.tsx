@@ -228,7 +228,6 @@ export default function VerseConnectButton({
       onDisconnect?.();
     },
   };
-
   /* --------------------------- Render --------------------------- */
   return (
     <div className="relative flex items-center" style={style}>
@@ -304,7 +303,10 @@ export default function VerseConnectButton({
 
                       {/* small address hint for md+ */}
                       <span className="hidden md:inline text-sm text-gray-300">
-                        {account?.displayName ?? account?.address}
+                        {profile?.displayName ??
+                          profile?.handle ??
+                          account?.displayName ??
+                          account?.address}
                       </span>
                     </button>
 

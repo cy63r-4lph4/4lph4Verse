@@ -30,15 +30,8 @@ export default function Verify({
       userIdType: "hex",
       userDefinedData: "Hello from the Docs!!",
       disclosures: {
-        minimumAge: 18,
-        excludedCountries: [
-          countries.CUBA,
-          countries.IRAN,
-          countries.NORTH_KOREA,
-          countries.RUSSIA,
-        ],
-        nationality: true,
-        gender: true,
+        minimumAge: 0,
+        excludedCountries: [],
       },
     }).build();
 
