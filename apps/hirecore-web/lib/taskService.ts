@@ -1,12 +1,12 @@
 // lib/fetchTaskById.ts
 import { getDeployedContract, ChainId } from "@verse/sdk/utils/contract/deployedContracts";
-import { fetchFromPinata } from "@verse/services/pinata";
 import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
 import { createPublicClient, http } from "viem";
 import { celoSepolia } from "viem/chains";
 import {fetchVerseProfile} from "@verse/sdk/utils/profile/fetchProfile";
 import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
 import { Attachment, TaskMetadata } from "@verse/hirecore-web/utils/Interfaces";
+import { fetchFromPinata } from "@verse/sdk/services/storage";
 
 
 

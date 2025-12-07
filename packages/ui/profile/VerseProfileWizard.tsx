@@ -7,13 +7,11 @@ import { X, Loader2, Check, Wand2, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { Stepper } from "./components/Stepper";
 import { ModalWrapper } from "./components/ModalWrapper";
-import {
-  ChainId,
-  getDeployedContract,
-} from "@verse/sdk/utils/contract/deployedContracts";
-import { uploadProfileToPinata } from "@verse/services/pinata";
+
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { useConfig } from "wagmi";
+import { uploadProfileToPinata } from "@verse/sdk/src/services/storage";
+import { ChainId, getDeployedContract } from "@verse/sdk";
 
 /** ------------------------------------------------------
  *  4lph4Verse — VerseProfile Wizard (SDK-ready)
