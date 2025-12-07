@@ -45,7 +45,7 @@ export default function Page() {
                 className="mt-10 flex items-center justify-center lg:justify-start gap-4"
               >
                 <Link href="/profile" className="inline-block">
-                  <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
+                  <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
                     Enter Your Profile
                   </button>
                 </Link>

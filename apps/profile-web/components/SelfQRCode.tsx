@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { countries, SelfQRcodeWrapper, SelfAppBuilder } from "@selfxyz/qrcode";
+import { SelfQRcodeWrapper, SelfAppBuilder } from "@selfxyz/qrcode";
 import { useAccount } from "wagmi";
 
 export default function Verify({

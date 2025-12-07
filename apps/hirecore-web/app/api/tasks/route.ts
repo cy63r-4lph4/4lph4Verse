@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   const limit = Math.max(Number(searchParams.get("limit") ?? PAGE_SIZE), 1);
 
   try {
-    const jobBoard = getDeployedContract(chainId as ChainId, "HireCoreJobBoard");
+    const jobBoard = getDeployedContract(11142220, "HireCoreJobBoard");
     const client = createPublicClient({
       chain: celoSepolia,
       transport: http(celoSepolia.rpcUrls.default.http[0]),
