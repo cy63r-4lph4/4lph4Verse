@@ -11,6 +11,7 @@ export interface VerseProfile {
   banner?: string; // Profile banner image
   bio?: string; // Universal bio / creed
   purpose?: string;
+  verified?: boolean;
   owner: string; // Primary wallet
   reputation?: number; // Verse-wide trust score (0–100)
   location?: string; // Optional location string

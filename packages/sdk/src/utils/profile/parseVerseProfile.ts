@@ -16,6 +16,7 @@ export async function parseVerseProfile(
     purpose,
     version,
     delegate,
+    verified,
     createdAt,
   } = raw;
 
@@ -36,6 +37,7 @@ export async function parseVerseProfile(
       bio: json?.bio || "",
       purpose: purpose || json?.purpose || "",
       owner,
+      verified,
       reputation: json?.reputation || 0,
       location: json?.location || "",
       joinedAt:

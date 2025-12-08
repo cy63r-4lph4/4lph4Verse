@@ -79,7 +79,7 @@ export default function OwnerView({ profile }: any) {
               {verified ? (
                 <div className="flex items-center gap-2 text-green-400">
                   <ShieldCheck size={20} />
-                  <span className="font-medium">Verified with Self.ID</span>
+                  <span className="font-medium">Verified</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-yellow-400">
@@ -98,7 +98,7 @@ export default function OwnerView({ profile }: any) {
                   className="min-w-[160px] bg-purple-600 hover:bg-purple-700"
                   onClick={() => setOpenVerify(true)}
                 >
-                  Verify with Self.ID
+                  Verify with Self.xyz
                 </Button>
               )}
             </div>

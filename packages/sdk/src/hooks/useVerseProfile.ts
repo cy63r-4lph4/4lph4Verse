@@ -70,7 +70,7 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
   const { data, isLoading, error, refetch } = useReadContract({
     abi: contract.abi,
     address: contract.address,
-    functionName: "getProfile",
+    functionName: "getProfileSummary",
     args: verseID ? [verseID] : undefined,
     query: {
       enabled,
