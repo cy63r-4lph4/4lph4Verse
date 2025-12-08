@@ -75,5 +75,5 @@
   "deployedLinkReferences": {},
   "immutableReferences": {},
   "inputSourceName": "npm/@openzeppelin/contracts@5.0.2/proxy/ERC1967/ERC1967Proxy.sol",
-  "buildInfoId": "solc-0_8_28-901f0c7cd39d5a0d8126eb2173bec8cc465562f7"
+  "buildInfoId": "solc-0_8_28-cd763d5c441bad7d14ee6a4d94a33eebe0d35d99"
 }

@@ -42,6 +42,7 @@ async function main() {
     const faucetImpl = deployed["CoreModule#CoreFaucetImpl"];
     const faucetProxy = deployed["CoreModule#CoreFaucetProxy"];
     const proxyAdmin = deployed["CoreModule#ProxyAdmin"];
+    const humanModule = deployed["VerseFullSetup#HumanVerificationModule"];
 
     if (!coreImpl || !coreProxy) {
       console.warn(`⚠️ Missing contracts for ${name}, skipping.`);
@@ -55,6 +56,11 @@ async function main() {
     if (faucetImpl && faucetProxy) {
       verify(faucetImpl, name);
       verify(faucetProxy, name, [faucetImpl, proxyAdmin, "0x"]);
+    }
+    // --- Verify HumanVerificationModule ---
+    if (humanModule) {
+      const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"; // IMPORTANT
+      verify(humanModule, name, [identityHub]);
     }
 
     console.log(`✅ Verification completed for ${name}\n`);

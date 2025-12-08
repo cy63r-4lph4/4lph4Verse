@@ -24,7 +24,7 @@ const __dirname = path.dirname(__filename);
 const DEPLOYMENTS_DIR = path.resolve(__dirname, "../../ignition/deployments");
 
 // SDK target output
-const EXPORT_DIR = path.resolve(__dirname, "../../packages/sdk/utils/contract");
+const EXPORT_DIR = path.resolve(__dirname, "../../packages/sdk/src/utils/contract");
 const ABIS_DIR = path.join(EXPORT_DIR, "abis");
 const JSON_PATH = path.join(EXPORT_DIR, "deployedContracts.json");
 const TS_PATH = path.join(EXPORT_DIR, "deployedContracts.ts");

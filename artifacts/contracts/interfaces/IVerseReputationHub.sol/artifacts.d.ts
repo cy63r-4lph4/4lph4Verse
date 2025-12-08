@@ -15,7 +15,7 @@ export interface IVerseReputationHub$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IVerseReputationHub.sol";
-  readonly buildInfoId: "solc-0_8_28-86fa94fba55064f9de317f893d55cbbfd9fee11c";
+  readonly buildInfoId: "solc-0_8_28-f5a1d0bae2aefbd66c7a58eb0b4cce3ea903cd02";
 };
 
 import "hardhat/types/artifacts";

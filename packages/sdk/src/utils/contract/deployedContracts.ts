@@ -49,6 +49,7 @@ import CoreFaucetProxy_11142220Abi from "./abis/11142220/CoreFaucetProxy.json";
 import GuardianRecoveryImpl_11142220Abi from "./abis/11142220/GuardianRecoveryImpl.json";
 import GuardianRecoveryProxy_11142220Abi from "./abis/11142220/GuardianRecoveryProxy.json";
 import GuardianRecovery_11142220Abi from "./abis/11142220/GuardianRecovery.json";
+import HumanVerificationModule_11142220Abi from "./abis/11142220/HumanVerificationModule.json";
 
 // Utility: preserve ABI type from JSON imports
 type ExtractAbi<T> = T extends Abi ? T : Abi;
@@ -200,7 +201,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileImpl: {
-      address: "0xbbE7A357A93b182ABB22fD4DC612ae661C6e5E4D",
+      address: "0xa72c3a73f682DF057BED0255b30BAB97aFC068D7",
       abi: VerseProfileImpl_11142220Abi as ExtractAbi<
         typeof VerseProfileImpl_11142220Abi
       >,
@@ -256,7 +257,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileProxy: {
-      address: "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
+      address: "0xe5EA10A3Df5470b424894D2Cf3549B00a78D4D07",
       abi: VerseProfileProxy_11142220Abi as ExtractAbi<
         typeof VerseProfileProxy_11142220Abi
       >,
@@ -312,7 +313,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfile: {
-      address: "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
+      address: "0xe5EA10A3Df5470b424894D2Cf3549B00a78D4D07",
       abi: VerseProfile_11142220Abi as ExtractAbi<
         typeof VerseProfile_11142220Abi
       >,
@@ -347,23 +348,30 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     GuardianRecoveryImpl: {
-      address: "0x6C17a9472d74bcc04c5B7dd9a347A6083bF9b51c",
+      address: "0x4b3e46F52A033a6EC93D9f914d51a6532C5e8E39",
       abi: GuardianRecoveryImpl_11142220Abi as ExtractAbi<
         typeof GuardianRecoveryImpl_11142220Abi
       >,
       deployedOnBlock: 0,
     },
     GuardianRecoveryProxy: {
-      address: "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B",
+      address: "0x15444cDc869a511dce38Df700EB4969B081e8b7a",
       abi: GuardianRecoveryProxy_11142220Abi as ExtractAbi<
         typeof GuardianRecoveryProxy_11142220Abi
       >,
       deployedOnBlock: 0,
     },
     GuardianRecovery: {
-      address: "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B",
+      address: "0x15444cDc869a511dce38Df700EB4969B081e8b7a",
       abi: GuardianRecovery_11142220Abi as ExtractAbi<
         typeof GuardianRecovery_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    HumanVerificationModule: {
+      address: "0x231e818c3b8ec8Acd20fCd610A34fCf280a2640f",
+      abi: HumanVerificationModule_11142220Abi as ExtractAbi<
+        typeof HumanVerificationModule_11142220Abi
       >,
       deployedOnBlock: 0,
     },

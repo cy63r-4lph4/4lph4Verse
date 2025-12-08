@@ -49,3 +49,4 @@ export { default as CoreFaucetProxyAbi_11142220 } from "./11142220/CoreFaucetPro
 export { default as GuardianRecoveryImplAbi_11142220 } from "./11142220/GuardianRecoveryImpl.json";
 export { default as GuardianRecoveryProxyAbi_11142220 } from "./11142220/GuardianRecoveryProxy.json";
 export { default as GuardianRecoveryAbi_11142220 } from "./11142220/GuardianRecovery.json";
+export { default as HumanVerificationModuleAbi_11142220 } from "./11142220/HumanVerificationModule.json";

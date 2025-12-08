@@ -88,32 +88,73 @@
           "type": "uint256"
         }
       ],
+      "name": "getDochash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        }
+      ],
       "name": "getProfile",
       "outputs": [
         {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "verseHandle",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "metadataURI",
-          "type": "string"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "ensNamehash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint64",
-          "name": "createdAt",
-          "type": "uint64"
+          "components": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "handle",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataURI",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "purpose",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "delegate",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "createdAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "dochash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerseProfile.Profile",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -136,24 +177,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "verseId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "namehash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "linkENS",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -183,6 +206,24 @@
           "type": "uint256"
         },
         {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "recoverySetOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "verseId",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes32",
           "name": "appId",
           "type": "bytes32"
@@ -194,6 +235,24 @@
         }
       ],
       "name": "setAppNickname",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "subject",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "dochash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setHumanVerified",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -294,6 +353,25 @@
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "verseIdOfOwner",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
   ],
   "bytecode": "0x",
@@ -302,5 +380,5 @@
   "deployedLinkReferences": {},
   "immutableReferences": {},
   "inputSourceName": "project/contracts/interfaces/IVerseProfile.sol",
-  "buildInfoId": "solc-0_8_28-86fa94fba55064f9de317f893d55cbbfd9fee11c"
+  "buildInfoId": "solc-0_8_28-c37e2b987ba7365bfc5a04e0d3bdf099f7c7f012"
 }

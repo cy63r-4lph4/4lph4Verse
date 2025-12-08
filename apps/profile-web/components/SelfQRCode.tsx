@@ -18,7 +18,6 @@ export default function Verify({
 
   useEffect(() => {
     if (!address) return;
-
     const app = new SelfAppBuilder({
       version: 2,
       appName,
@@ -31,7 +30,7 @@ export default function Verify({
       userDefinedData:
         "Used only as zero-knowledge recovery - never stored in plain text",
       disclosures: {
-        minimumAge:0,
+        minimumAge: 0,
         nationality: true,
         name: true,
         gender: true,

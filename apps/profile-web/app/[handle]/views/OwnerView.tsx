@@ -15,20 +15,23 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
-import { resolveAvatarUrl } from "@verse/sdk";
+import {
+  APPNAME,
+  resolveAvatarUrl,
+  SCOPE,
+  VERIFICATION_ENDPOINt,
+} from "@verse/sdk";
 import { ModalWrapper } from "@verse/ui/profile/components/ModalWrapper";
 import Verify from "@verse/profile-web/components/SelfQRCode";
-
-
 
 export default function OwnerView({ profile }: any) {
   const verified = profile.verified;
 
   // modal state
   const [openVerify, setOpenVerify] = useState(false);
-  const endpoint=process.env.NEXT_PUBLIC_SELF_ENDPOINT!;
-  const appName=process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Docs";
-  const scope=process.env.NEXT_PUBLIC_SELF_SCOPE || "self-docs";
+  const endpoint = VERIFICATION_ENDPOINt;
+  const appName = APPNAME;
+  const scope = SCOPE;
 
   // social icon mapping
   const socialIcons: any = {
@@ -103,12 +106,11 @@ export default function OwnerView({ profile }: any) {
         </Card>
 
         {profile.bio && (
-        <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(80,150,255,0.12)]">
-          <h2 className="text-xl font-semibold mb-3">Bio</h2>
-          <p className="text-neutral-300 leading-relaxed">{profile.bio}</p>
-        </Card>
-      )}
-      
+          <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(80,150,255,0.12)]">
+            <h2 className="text-xl font-semibold mb-3">Bio</h2>
+            <p className="text-neutral-300 leading-relaxed">{profile.bio}</p>
+          </Card>
+        )}
       </div>
 
       {/* 🔮 VERIFY MODAL */}

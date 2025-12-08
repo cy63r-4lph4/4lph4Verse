@@ -1,14 +1,5 @@
 {
-  "CoreModule#CoreFaucetImpl": "0xBF187469715579E727810FF39930E291054948ee",
-  "CoreModule#CoreTokenImpl": "0xe9e212121bCb2b1Da31c9647A3769FF9D0f06121",
-  "CoreModule#CoreTokenProxy": "0x6C1d6A3076241f2519670e42A09AFea8C2007162",
-  "CoreModule#CoreToken": "0x6C1d6A3076241f2519670e42A09AFea8C2007162",
-  "CoreModule#CoreFaucetProxy": "0x32c838B35C1D326c86f683e81cD65c07aAda16F8",
-  "CoreModule#CoreFaucet": "0x32c838B35C1D326c86f683e81cD65c07aAda16F8",
-  "VerseModule#GuardianRecoveryImpl": "0x6C17a9472d74bcc04c5B7dd9a347A6083bF9b51c",
-  "VerseModule#VerseProfileImpl": "0xbbE7A357A93b182ABB22fD4DC612ae661C6e5E4D",
-  "VerseModule#VerseProfileProxy": "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
-  "VerseModule#VerseProfile": "0x2B4717c8c1971e273db5F08f722EFdb248806bE5",
-  "VerseModule#GuardianRecoveryProxy": "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B",
-  "VerseModule#GuardianRecovery": "0xd6bcD3185D530609cBe6DFfE50152D6CA4763E4B"
+  "VerseModule#GuardianRecoveryImpl": "0xB50B6748faD3f4b006889A8BB60f90aC297E2FE7",
+  "VerseModule#HumanVerificationModule": "0xD2403F09416a5B14657bA1ed6Dbe5de76faFA913",
+  "VerseModule#VerseProfileImpl": "0xC662DF15f5D6A7CE4861A246Ed94feC46bd842c6"
 }

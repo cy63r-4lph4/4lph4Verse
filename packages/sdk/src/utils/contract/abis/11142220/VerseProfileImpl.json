@@ -132,6 +132,25 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "oldDelegate",
+        "type": "address"
+      }
+    ],
+    "name": "DelegateResetByRecovery",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "verseId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "delegate",
         "type": "address"
       }
@@ -206,6 +225,19 @@
       }
     ],
     "name": "HookUnsubscribed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "verseId",
+        "type": "uint256"
+      }
+    ],
+    "name": "HumanVerified",
     "type": "event"
   },
   {
@@ -629,6 +661,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "VERIFIER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -791,6 +836,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "verseId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getDochash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "hook",
         "type": "bytes32"
@@ -853,6 +917,72 @@
             "internalType": "uint8",
             "name": "version",
             "type": "uint8"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "dochash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct VerseProfile.Profile",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "handle",
+        "type": "string"
+      }
+    ],
+    "name": "getProfileByHandle",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "purpose",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "delegate",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "createdAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "version",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "dochash",
+            "type": "bytes32"
           }
         ],
         "internalType": "struct VerseProfile.Profile",
@@ -909,6 +1039,11 @@
             "internalType": "uint8",
             "name": "version",
             "type": "uint8"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "dochash",
+            "type": "bytes32"
           }
         ],
         "internalType": "struct VerseProfile.Profile",
@@ -919,6 +1054,67 @@
         "internalType": "uint256",
         "name": "verseId",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "verseId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProfileSummary",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "purpose",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "delegate",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "createdAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "version",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "verified",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct VerseProfile.ProfileSum",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -1418,6 +1614,24 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "subject",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "dochash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setHumanVerified",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "verseId",
         "type": "uint256"
@@ -1620,6 +1834,25 @@
       }
     ],
     "name": "verseIdByHandle",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "verseIdOfOwner",
     "outputs": [
       {
         "internalType": "uint256",

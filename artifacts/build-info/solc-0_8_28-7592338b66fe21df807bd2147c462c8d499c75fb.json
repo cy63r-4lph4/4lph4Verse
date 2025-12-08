@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-7592338b66fe21df807bd2147c462c8d499c75fb",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/interfaces/IJobManager.sol": "project/contracts/interfaces/IJobManager.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IJobManager.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IJobManager\n/// @notice Minimal external interface for the HireCoreJobManager.\n/// @dev Keep this in sync with JobManager implementation and JobBoard usage.\ninterface IJobManager {\n    // ---------- Types ----------\n    enum JobStatus {\n        Created,\n        Funded,\n        InProgress,\n        Disputed,\n        Completed,\n        Released,\n        Cancelled\n    }\n\n    enum JobType {\n        Simple,\n        Milestone,\n        Streaming\n    }\n\n    struct Milestone {\n        uint256 amount;\n        uint64 dueDate;\n        bool delivered;\n        bool released;\n        bool requiresDeliverable;\n        string deliverableURI;\n        string note;\n    }\n\n    struct CreateJobParams {\n        address worker;\n        address paymentToken;    // address(0) = native\n        uint64 deadline;         // unix ts\n        string metadataURI;      // offchain JSON\n        JobType jobType;         // Simple | Milestone (Streaming reserved)\n        uint256[] amounts;       // milestone amounts (len > 0; =1 for Simple)\n        uint64[] dueDates;       // per-milestone due date\n        bool[] requiresDeliverable; // per-milestone flag\n    }\n\n    struct JobCore {\n        address hirer;\n        address worker;\n        address paymentToken;\n        uint256 totalAmount;\n        uint256 fundedAmount;\n        uint16 feeBpsAtCreation;\n        JobStatus status;\n        JobType jobType;\n        uint64 createdAt;\n        uint64 deadline;\n        string metadataURI;\n        uint256 milestonesCount;\n    }\n\n    // ---------- Events ----------\n    event JobCreated(\n        uint256 indexed jobId,\n        address indexed hirer,\n        address indexed worker,\n        JobType jobType,\n        address paymentToken,\n        uint256 totalAmount,\n        uint16 feeBps\n    );\n\n    event JobFunded(\n        uint256 indexed jobId,\n        address indexed from,\n        uint256 amount,\n        uint256 fundedTotal\n    );\n\n    event MetadataURIUpdated(uint256 indexed jobId, string newURI);\n\n    event MilestoneDelivered(\n        uint256 indexed jobId,\n        uint256 indexed milestoneIndex,\n        string deliverableURI,\n        string note\n    );\n\n    event MilestoneReleased(\n        uint256 indexed jobId,\n        uint256 indexed milestoneIndex,\n        uint256 netToWorker,\n        uint256 feeToTreasury\n    );\n\n    event JobDisputed(uint256 indexed jobId, string reason);\n\n    event JobResolved(\n        uint256 indexed jobId,\n        uint256 workerPayout,\n        uint256 hirerRefund,\n        uint256 feeTaken\n    );\n\n    event JobCancelled(uint256 indexed jobId, uint256 refund);\n\n    // ---------- External: Job lifecycle ----------\n    function createJob(CreateJobParams calldata params)\n        external\n        returns (uint256 jobId);\n\n    function updateJobMetadataURI(uint256 jobId, string calldata newURI) external;\n\n    function fundJob(uint256 jobId, uint256 amount) external;\n\n    function fundJobWithPermit(\n        uint256 jobId,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n\n    function fundJobNative(uint256 jobId) external payable;\n\n    function deliverMilestone(\n        uint256 jobId,\n        uint256 milestoneIndex,\n        string calldata deliverableURI,\n        string calldata note\n    ) external;\n\n    function releaseMilestone(uint256 jobId, uint256 milestoneIndex) external;\n\n    function disputeJob(uint256 jobId, string calldata reason) external;\n\n    function resolveDispute(\n        uint256 jobId,\n        uint256 workerPayout,\n        uint256 hirerRefund\n    ) external;\n\n    function cancelJob(uint256 jobId) external;\n\n    // ---------- External: Views ----------\n    function getJobCore(uint256 jobId) external view returns (JobCore memory);\n\n    function getMilestone(uint256 jobId, uint256 index)\n        external\n        view\n        returns (Milestone memory);\n}\n"
+      }
+    }
+  }
+}
