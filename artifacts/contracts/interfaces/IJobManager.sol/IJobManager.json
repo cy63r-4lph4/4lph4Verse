@@ -630,5 +630,5 @@
   "deployedLinkReferences": {},
   "immutableReferences": {},
   "inputSourceName": "project/contracts/interfaces/IJobManager.sol",
-  "buildInfoId": "solc-0_8_28-7592338b66fe21df807bd2147c462c8d499c75fb"
+  "buildInfoId": "solc-0_8_28-303539a40135dd839c13af8bcc82f54544003c3e"
 }

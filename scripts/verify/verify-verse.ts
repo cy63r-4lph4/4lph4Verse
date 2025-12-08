@@ -13,6 +13,7 @@ async function main() {
   const profileProxy = deployed["VerseModule#VerseProfileProxy"];
   const guardianImpl = deployed["VerseModule#GuardianRecoveryImpl"];
   const guardianProxy = deployed["VerseModule#GuardianRecoveryProxy"];
+  const humanModule = deployed["VerseFullSetup#HumanVerificationModule"];
 
   console.log("🔍 Verifying VerseModule contracts...\n");
 
@@ -32,6 +33,12 @@ async function main() {
   verify(profileProxy, [profileImpl, "0x"]); // UUPS proxies usually take (impl, data)
   verify(guardianImpl);
   verify(guardianProxy, [guardianImpl, "0x"]);
+    // --- Verify HumanVerificationModule ---
+    if (humanModule) {
+      const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"; // IMPORTANT
+      verify(humanModule,  [identityHub]);
+    }
+
 
   console.log("\n✅ VerseModule verification complete.");
 }

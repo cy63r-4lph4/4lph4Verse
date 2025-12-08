@@ -1,5 +1,9 @@
 {
   "VerseModule#GuardianRecoveryImpl": "0xB50B6748faD3f4b006889A8BB60f90aC297E2FE7",
   "VerseModule#HumanVerificationModule": "0xD2403F09416a5B14657bA1ed6Dbe5de76faFA913",
-  "VerseModule#VerseProfileImpl": "0xC662DF15f5D6A7CE4861A246Ed94feC46bd842c6"
+  "VerseModule#VerseProfileImpl": "0xC662DF15f5D6A7CE4861A246Ed94feC46bd842c6",
+  "VerseModule#VerseProfileProxy": "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
+  "VerseModule#VerseProfile": "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
+  "VerseModule#GuardianRecoveryProxy": "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82",
+  "VerseModule#GuardianRecovery": "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82"
 }

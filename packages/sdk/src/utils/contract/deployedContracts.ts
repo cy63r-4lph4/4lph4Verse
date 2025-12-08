@@ -201,7 +201,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileImpl: {
-      address: "0xa72c3a73f682DF057BED0255b30BAB97aFC068D7",
+      address: "0xC662DF15f5D6A7CE4861A246Ed94feC46bd842c6",
       abi: VerseProfileImpl_11142220Abi as ExtractAbi<
         typeof VerseProfileImpl_11142220Abi
       >,
@@ -257,7 +257,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfileProxy: {
-      address: "0xe5EA10A3Df5470b424894D2Cf3549B00a78D4D07",
+      address: "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
       abi: VerseProfileProxy_11142220Abi as ExtractAbi<
         typeof VerseProfileProxy_11142220Abi
       >,
@@ -313,7 +313,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     VerseProfile: {
-      address: "0xe5EA10A3Df5470b424894D2Cf3549B00a78D4D07",
+      address: "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
       abi: VerseProfile_11142220Abi as ExtractAbi<
         typeof VerseProfile_11142220Abi
       >,
@@ -348,28 +348,28 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     GuardianRecoveryImpl: {
-      address: "0x4b3e46F52A033a6EC93D9f914d51a6532C5e8E39",
+      address: "0xB50B6748faD3f4b006889A8BB60f90aC297E2FE7",
       abi: GuardianRecoveryImpl_11142220Abi as ExtractAbi<
         typeof GuardianRecoveryImpl_11142220Abi
       >,
       deployedOnBlock: 0,
     },
     GuardianRecoveryProxy: {
-      address: "0x15444cDc869a511dce38Df700EB4969B081e8b7a",
+      address: "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82",
       abi: GuardianRecoveryProxy_11142220Abi as ExtractAbi<
         typeof GuardianRecoveryProxy_11142220Abi
       >,
       deployedOnBlock: 0,
     },
     GuardianRecovery: {
-      address: "0x15444cDc869a511dce38Df700EB4969B081e8b7a",
+      address: "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82",
       abi: GuardianRecovery_11142220Abi as ExtractAbi<
         typeof GuardianRecovery_11142220Abi
       >,
       deployedOnBlock: 0,
     },
     HumanVerificationModule: {
-      address: "0x231e818c3b8ec8Acd20fCd610A34fCf280a2640f",
+      address: "0xD2403F09416a5B14657bA1ed6Dbe5de76faFA913",
       abi: HumanVerificationModule_11142220Abi as ExtractAbi<
         typeof HumanVerificationModule_11142220Abi
       >,

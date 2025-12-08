@@ -49,7 +49,7 @@ export default function Verify({
   if (!address) return <p>No wallet connected.</p>;
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 bg-gray-300">
       {selfApp ? (
         <SelfQRcodeWrapper
           selfApp={selfApp}
