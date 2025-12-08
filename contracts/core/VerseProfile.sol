@@ -185,6 +185,16 @@ contract VerseProfile is
     function getProfile(
         uint256 verseId
     ) external view returns (Profile memory) {
+        require(_profiles[verseId].owner != address(0), "Invalid profile");
+
+        return _profiles[verseId];
+    }
+
+    function getProfileByHandle(
+        string calldata handle
+    ) external view returns (Profile memory) {
+        uint256 verseId = _handleToId[_handleKey(_normalize(handle))];
+        require(verseId != 0, "Handle not found");
         return _profiles[verseId];
     }
 
@@ -203,6 +213,8 @@ contract VerseProfile is
     }
 
     function ownerOf(uint256 verseId) external view returns (address) {
+        require(_profiles[verseId].owner != address(0), "Invalid profile");
+
         return _profiles[verseId].owner;
     }
 
@@ -213,18 +225,22 @@ contract VerseProfile is
     function getProfileSummary(
         uint256 verseId
     ) external view returns (ProfileSum memory) {
+        require(_profiles[verseId].owner != address(0), "Invalid profile");
+
         Profile memory p = _profiles[verseId];
-        ProfileSum memory ps = ProfileSum({
-            owner: p.owner,
-            handle: p.handle,
-            metadataURI: p.metadataURI,
-            purpose: p.purpose,
-            delegate: p.delegate,
-            createdAt: p.createdAt,
-            version: p.version,
-            verified: p.dochash != bytes32(0)
-        });
-        return ps;
+        require(p.owner != address(0), "Invalid profile");
+
+        return
+            ProfileSum({
+                owner: p.owner,
+                handle: p.handle,
+                metadataURI: p.metadataURI,
+                purpose: p.purpose,
+                delegate: p.delegate,
+                createdAt: p.createdAt,
+                version: p.version,
+                verified: p.dochash != bytes32(0)
+            });
     }
 
     function profileExists(uint256 verseId) external view returns (bool) {
@@ -252,6 +268,7 @@ contract VerseProfile is
         address account
     ) external view returns (bool) {
         Profile storage p = _profiles[verseId];
+        if (p.owner == address(0)) return false;
         return account == p.owner || account == p.delegate;
     }
 

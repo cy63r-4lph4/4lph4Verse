@@ -36,10 +36,11 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
 
     /// @notice events
     event HumanVerified(
-        ISelfVerificationRoot.GenericDiscloseOutputV2 output,
-        uint256 timestamp,
-        bytes userData
+        address indexed subject,
+        bytes32 dochash,
+        uint256 timestamp
     );
+
     event HumanRevoked(
         address indexed subject,
         address operator,
@@ -84,34 +85,32 @@ contract HumanVerificationModule is AccessControl, SelfVerificationRoot {
 
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory userData
+        bytes memory
     ) internal override {
-        bytes32 dochash;
         address subject = address(uint160(output.userIdentifier));
-        if (verifiedAt[subject] != 0) {
-            revert AlreadyVerified(subject);
-        }
-        dochash = keccak256(
+        if (verifiedAt[subject] != 0) revert AlreadyVerified(subject);
+
+        // domain separated human fingerprint v1
+        bytes32 dochash = keccak256(
             abi.encode(
+                keccak256("alpha:human:v1"),
                 output.name,
-                output.idNumber,
                 output.nationality,
                 output.dateOfBirth,
-                output.gender
+                output.gender,
+                output.issuingState
             )
         );
 
-        // mark verified in this module
+        // mark verified in this module (state before external call)
         verifiedAt[subject] = block.timestamp;
 
-        // write-back to VerseProfile (single source of truth)
-        // We call the external contract; ensure VerseProfile permits this module (access control).
+        // write-back to VerseProfile (ensure vp authorizes this module)
         if (verseProfile == address(0)) revert ZeroAddress();
         IVerseProfile vp = IVerseProfile(verseProfile);
-
         vp.setHumanVerified(subject, dochash);
 
-        emit HumanVerified(output, block.timestamp, userData);
+        emit HumanVerified(subject, dochash, block.timestamp);
     }
 
     // -------------------------

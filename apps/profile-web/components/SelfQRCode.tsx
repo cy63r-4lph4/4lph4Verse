@@ -28,10 +28,15 @@ export default function Verify({
       userId: address,
       endpointType: "staging_celo",
       userIdType: "hex",
-      userDefinedData: "Hello from the Docs!!",
+      userDefinedData:
+        "Used only as zero-knowledge recovery - never stored in plain text",
       disclosures: {
-        minimumAge: 0,
-        excludedCountries: [],
+        minimumAge:0,
+        nationality: true,
+        name: true,
+        gender: true,
+        date_of_birth: true,
+        issuing_state: true,
       },
     }).build();
 
