@@ -89,11 +89,12 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
 
         dochash = keccak256(
             abi.encode(
+                keccak256("alpha:human:v1"),
                 output.name,
-                output.idNumber,
                 output.nationality,
                 output.dateOfBirth,
-                output.gender
+                output.gender,
+                output.issuingState
             )
         );
 
@@ -104,7 +105,6 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         if (verifiedHash != bytes32("") && verifiedHash == dochash) {
             vp.recoverySetOwner(verseId, verifier);
         }
-
     }
 
     // -------------------------
