@@ -12,6 +12,7 @@ pragma solidity ^0.8.24;
 
 import "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {SelfUtils} from "@selfxyz/contracts/contracts/libraries/SelfUtils.sol";
 import {SelfStructs} from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
 import {IIdentityVerificationHubV2} from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
@@ -72,20 +73,32 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         ).setVerificationConfigV2(formatted);
     }
 
+    function _parseAddr(string memory _a) internal pure returns (address) {
+        bytes memory tmp = bytes(_a);
+        uint160 iaddr = 0;
+        uint160 b1;
+        uint160 b2;
+        for (uint i = 2; i < 2 + 2 * 20; i += 2) {
+            iaddr *= 256;
+            b1 = uint160(uint8(tmp[i]));
+            b2 = uint160(uint8(tmp[i + 1]));
+            b1 = b1 >= 97 ? b1 - 87 : b1 >= 65 ? b1 - 55 : b1 - 48;
+            b2 = b2 >= 97 ? b2 - 87 : b2 >= 65 ? b2 - 55 : b2 - 48;
+            iaddr += (b1 * 16 + b2);
+        }
+        return address(iaddr);
+    }
+
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal override {
-        address subject;
-        bytes32 dochash;
+        require(userData.length == 42, "BAD_USERDATA_LEN");
+        require(userData[0] == "0" && userData[1] == "x", "MISSING_0X_PREFIX");
+
+        address subject = _parseAddr(string(userData));
         address verifier = address(uint160(output.userIdentifier));
-        if (userData.length == 20) {
-            // packed 20-byte address from abi.encodePacked(address)
-            subject = address(uint160(bytes20(userData)));
-        } else {
-            // standard abi.encode(address)
-            subject = abi.decode(userData, (address));
-        }
+        bytes32 dochash;
 
         dochash = keccak256(
             abi.encode(
@@ -101,8 +114,12 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         if (verseProfile == address(0)) revert ZeroAddress();
         IVerseProfile vp = IVerseProfile(verseProfile);
         uint256 verseId = vp.verseIdOfOwner(subject);
+        require(verseId != 0, "NO_PROFILE_FOR_SUBJECT");
+
         bytes32 verifiedHash = vp.getDochash(verseId);
-        if (verifiedHash != bytes32("") && verifiedHash == dochash) {
+        require(verifiedHash != bytes32(""), "PROFILE_NOT_VERIFIED");
+
+        if (verifiedHash == dochash) {
             vp.recoverySetOwner(verseId, verifier);
         }
     }

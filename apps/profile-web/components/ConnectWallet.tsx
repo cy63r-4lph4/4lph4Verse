@@ -17,10 +17,10 @@ export default function ConnectWallet() {
       showWizard={false}
       className="shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.04] active:scale-95 transition"
       onMissingProfile={() => {
-        if (!didRedirectRef.current) {
-          didRedirectRef.current = true;
-          router.push("/create-profile");
-        }
+        // if (!didRedirectRef.current) {
+        //   didRedirectRef.current = true;
+        //   router.push("/create-profile");
+        // }
       }}
     />
   );

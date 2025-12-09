@@ -17,12 +17,23 @@ export const RESERVED_HANDLES = new Set([
   "contact",
   "official",
   "info",
+  'alpha',
+  '4lph4',
+  "cy63r4lph4",
+  
 
   // Project-specific (IMPORTANT – add your names)
   "verse",
   "verseprofile",
   "verse_id",
   "verseid",
+  "hirecore",
+  "deskmate",
+  "vaultoflove",
+  "vault_lover",
+  "vault_of_love",
+  "lease_vault",
+  "leasevault",
 
   // Generic scams/spoof
   "security",

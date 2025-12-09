@@ -6,14 +6,16 @@ const chainId = 11142220; // Celo Sepolia by default
 const file = `ignition/deployments/chain-${chainId}/deployed_addresses.json`;
 
 async function main() {
-  if (!fs.existsSync(file)) throw new Error(`No deployment found for chain ${chainId}`);
+  if (!fs.existsSync(file))
+    throw new Error(`No deployment found for chain ${chainId}`);
   const deployed = JSON.parse(fs.readFileSync(file, "utf8"));
 
   const profileImpl = deployed["VerseModule#VerseProfileImpl"];
   const profileProxy = deployed["VerseModule#VerseProfileProxy"];
   const guardianImpl = deployed["VerseModule#GuardianRecoveryImpl"];
   const guardianProxy = deployed["VerseModule#GuardianRecoveryProxy"];
-  const humanModule = deployed["VerseFullSetup#HumanVerificationModule"];
+  const humanModule = deployed["VerseModule#HumanVerificationModule"];
+  const selfModule = deployed["VerseModule#SelfRecoveryModule"];
 
   console.log("🔍 Verifying VerseModule contracts...\n");
 
@@ -25,22 +27,30 @@ async function main() {
         { stdio: "inherit" }
       );
     } catch (err) {
-      console.warn(`⚠️  Verification failed for ${addr}:`, (err as any).message);
+      console.warn(
+        `⚠️  Verification failed for ${addr}:`,
+        (err as any).message
+      );
     }
   };
 
-  verify(profileImpl);
-  verify(profileProxy, [profileImpl, "0x"]); // UUPS proxies usually take (impl, data)
-  verify(guardianImpl);
-  verify(guardianProxy, [guardianImpl, "0x"]);
-    // --- Verify HumanVerificationModule ---
-    if (humanModule) {
-      const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"; // IMPORTANT
-      verify(humanModule,  [identityHub]);
-    }
+  // verify(profileImpl);
+  // verify(profileProxy, [profileImpl, "0x"]); // UUPS proxies usually take (impl, data)
+  // verify(guardianImpl);
+  // verify(guardianProxy, [guardianImpl, "0x"]);
+  // --- Verify HumanVerificationModule ---
+  const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"; // IMPORTANT
 
+  // if (humanModule) {
+  //   verify(humanModule, [identityHub]);
+  // }
+
+  if (selfModule) {
+    verify(selfModule, [identityHub]);
+  }
 
   console.log("\n✅ VerseModule verification complete.");
+  console.log(selfModule)
 }
 
 main().catch(console.error);

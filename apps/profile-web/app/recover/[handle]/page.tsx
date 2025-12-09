@@ -17,6 +17,7 @@ import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { RecoverySuccessModal } from "@verse/profile-web/components/recoverySuccessful";
 import { RecoveryErrorModal } from "@verse/profile-web/components/recoveryError";
+import { hexToBytes } from "viem";
 
 function CenteredState({
   title,
@@ -48,7 +49,7 @@ export default function RecoverProfilePage() {
   } | null>(null);
 
   const isOwner = address == profile?.owner;
-
+  const userdata = profile?.owner?.toLowerCase();
   if (isLoading) {
     return (
       <CenteredState
@@ -58,15 +59,15 @@ export default function RecoverProfilePage() {
       />
     );
   }
-  // if (isOwner) {
-  //   return (
-  //     <CenteredState
-  //       icon={<BadgeCheck size={42} className="text-green-400" />}
-  //       title="You already own this profile"
-  //       description="This wallet already controls the Verse identity. No recovery is required."
-  //     />
-  //   );
-  // }
+  if (isOwner) {
+    return (
+      <CenteredState
+        icon={<BadgeCheck size={42} className="text-green-400" />}
+        title="You already own this profile"
+        description="This wallet already controls the Verse identity. No recovery is required."
+      />
+    );
+  }
 
   if (!profile || !profile.owner) {
     return (
@@ -185,7 +186,7 @@ export default function RecoverProfilePage() {
           scope={RECOVERY_SCOPE}
           endpoint={RECOVERY_ENDPOINT}
           appName={APPNAME}
-          userDefinedData={profile.owner}
+          userDefinedData={userdata}
           onSuccessAction={() => {
             setOpenVerify(false);
             setRecoverySuccess(true);

@@ -32,8 +32,7 @@ export default function OwnerView({ profile }: { profile: VerseProfile }) {
   const [openVerify, setOpenVerify] = useState(false);
   const [verifiedSuccess, setVerifiedSuccess] = useState(false);
   const [verifyError, setVerifyError] = useState(false);
-  
-
+  const [verifyStep, setVerifyStep] = useState<"info" | "verify">("info");
 
   const endpoint = VERIFICATION_ENDPOINt;
   const appName = APPNAME;
@@ -126,39 +125,107 @@ export default function OwnerView({ profile }: { profile: VerseProfile }) {
 
       {/* 🔮 VERIFY MODAL */}
       {!verified && (
-        <ModalWrapper open={openVerify} onClose={() => setOpenVerify(false)}>
-          <Card className="p-8 rounded-3xl space-y-6 bg-black/40 backdrop-blur-xl border border-white/10">
-            <div className="flex items-center gap-3 text-purple-400">
-              <ShieldCheck size={26} />
-              <h2 className="text-2xl font-semibold">
-                Verify your Verse identity
-              </h2>
-            </div>
+        <>
+          <ModalWrapper
+            open={openVerify}
+            onClose={() => {
+              setOpenVerify(false);
+              setVerifyStep("info");
+            }}
+          >
+            <Card className="p-8 rounded-3xl space-y-6 bg-black/40 backdrop-blur-xl border border-white/10">
+              <div className="flex items-center gap-3 text-purple-400">
+                <ShieldCheck size={26} />
+                <h2 className="text-2xl font-semibold">
+                  Verify your Verse identity
+                </h2>
+              </div>
 
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Identity verification strengthens your Verse profile, enables
-              secure recovery, and signals trust across the network.
-            </p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Identity verification strengthens your Verse profile, enables
+                secure recovery, and signals trust across the network.
+              </p>
 
-            <ul className="space-y-2 text-sm text-slate-300">
-              <li>• Enables profile recovery</li>
-              <li>• Prevents impersonation</li>
-              <li>• Increases reputation weight</li>
-            </ul>
+              <ul className="space-y-2 text-sm text-slate-300">
+                <li>• Enables profile recovery</li>
+                <li>• Prevents impersonation</li>
+                <li>• Increases reputation weight</li>
+              </ul>
 
-            <Verify
-              scope={scope}
-              endpoint={endpoint}
-              appName={appName}
-              userDefinedData="Used only as zero-knowledge recovery - never stored in plain text"
-              onSuccessAction={() => {
-                setVerifiedSuccess(true);
+              {/* Privacy Notice */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-300 space-y-1">
+                <p className="font-medium text-cyan-400">
+                  Privacy-first verification
+                </p>
+                <p>
+                  Your personal information is{" "}
+                  <span className="font-semibold">never stored</span>.
+                  Verification uses zero-knowledge proofs and cryptographic
+                  hashes only.
+                </p>
+                <p className="text-slate-400">
+                  No documents, biometrics, or identity data are saved by Verse.
+                </p>
+              </div>
+
+              <Button
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                onClick={() => setVerifyStep("verify")}
+              >
+                Continue to verification
+              </Button>
+
+              <p className="text-[11px] text-slate-500 text-center">
+                You're always in control. You can close this at any time.
+              </p>
+            </Card>
+          </ModalWrapper>
+          {verifyStep === "verify" && (
+            <ModalWrapper
+              open={openVerify}
+              onClose={() => {
                 setOpenVerify(false);
+                setVerifyStep("info");
               }}
-              onErrorAction={()=>{setVerifyError(true)}}
-            />
-          </Card>
-        </ModalWrapper>
+            >
+              <Card className="p-8 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-white">
+                    Identity verification
+                  </h2>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400"
+                    onClick={() => setVerifyStep("info")}
+                  >
+                    Back
+                  </Button>
+                </div>
+
+                <Verify
+                  scope={scope}
+                  endpoint={endpoint}
+                  appName={appName}
+                  userDefinedData="Used only as zero-knowledge recovery"
+                  onSuccessAction={() => {
+                    setVerifiedSuccess(true);
+                    setOpenVerify(false);
+                    setVerifyStep("info");
+                  }}
+                  onErrorAction={() => {
+                    setVerifyError(true);
+                  }}
+                />
+
+                <p className="text-[11px] text-slate-500 text-center">
+                  Zero-knowledge verification • No personal data stored
+                </p>
+              </Card>
+            </ModalWrapper>
+          )}
+        </>
       )}
 
       {verifiedSuccess && (

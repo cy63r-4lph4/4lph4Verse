@@ -85,5 +85,5 @@ export default buildModule("VerseModule", (m) => {
   /* -------------------------------------------------------------------------- */
   /* ✅ Return deployments                                                      */
   /* -------------------------------------------------------------------------- */
-  return { verseProfile, guardian, humanModule };
+  return { verseProfile, guardian, humanModule,selfModule };
 });
