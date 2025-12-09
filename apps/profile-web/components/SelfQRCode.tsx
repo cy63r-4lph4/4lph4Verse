@@ -8,12 +8,16 @@ export default function Verify({
   scope,
   appName,
   endpoint,
-  userDefinedData
+  userDefinedData,
+  onSuccessAction,
+  onErrorAction
 }: {
   scope: string;
   appName: string;
   endpoint: string;
   userDefinedData:string;
+  onSuccessAction:()=>{},
+  onErrorAction:()=>{}
 }) {
   const [selfApp, setSelfApp] = useState<any | null>(null);
   const { address } = useAccount();
@@ -44,9 +48,6 @@ export default function Verify({
     setSelfApp(app);
   }, [address]);
 
-  const handleSuccessfulVerification = () => {
-    console.log("Verified!");
-  };
 
   if (!address) return <p>No wallet connected.</p>;
 
@@ -55,8 +56,8 @@ export default function Verify({
       {selfApp ? (
         <SelfQRcodeWrapper
           selfApp={selfApp}
-          onSuccess={handleSuccessfulVerification}
-          onError={() => console.error("Error: Failed to verify identity")}
+          onSuccess={onSuccessAction}
+          onError={onErrorAction}
         />
       ) : (
         <p>Loading QR Code...</p>

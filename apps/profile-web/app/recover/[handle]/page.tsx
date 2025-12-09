@@ -39,6 +39,12 @@ export default function RecoverProfilePage() {
   const { address } = useAccount();
   const { profile, isLoading, error } = useProfileById(handle);
   const [openVerify, setOpenVerify] = useState(false);
+  const [recoverySuccess, setRecoverySuccess] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<{
+    title?: string;
+    message?: string;
+  } | null>(null);
+
   const isOwner = address == profile?.owner;
 
   if (isLoading) {
@@ -178,6 +184,19 @@ export default function RecoverProfilePage() {
           endpoint={RECOVERY_ENDPOINT}
           appName={APPNAME}
           userDefinedData={profile.owner}
+          onSuccessAction={() => {
+            setOpenVerify(false);
+            setRecoverySuccess(true);
+          }}
+          onError={(err?: any) => {
+            setOpenVerify(false);
+            setRecoveryError({
+              title: "Recovery failed",
+              message:
+                err?.message ??
+                "We were unable to verify your identity at this time. No changes have been made to this profile.",
+            });
+          }}
         />
       </ModalWrapper>
     </>
