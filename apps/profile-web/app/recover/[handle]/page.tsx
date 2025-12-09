@@ -15,6 +15,8 @@ import {
 } from "@verse/sdk";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
+import { RecoverySuccessModal } from "@verse/profile-web/components/recoverySuccessful";
+import { RecoveryErrorModal } from "@verse/profile-web/components/recoveryError";
 
 function CenteredState({
   title,
@@ -188,7 +190,7 @@ export default function RecoverProfilePage() {
             setOpenVerify(false);
             setRecoverySuccess(true);
           }}
-          onError={(err?: any) => {
+          onErrorAction={(err?: any) => {
             setOpenVerify(false);
             setRecoveryError({
               title: "Recovery failed",
@@ -199,6 +201,15 @@ export default function RecoverProfilePage() {
           }}
         />
       </ModalWrapper>
+
+      <RecoverySuccessModal
+        open={recoverySuccess}
+        onClose={()=>{setRecoverySuccess(false)}}
+      />
+      <RecoveryErrorModal
+        open={recoveryError != null}
+        onClose={()=>(setRecoveryError(null))}
+      />
     </>
   );
 }

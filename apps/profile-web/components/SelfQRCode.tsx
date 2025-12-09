@@ -10,14 +10,14 @@ export default function Verify({
   endpoint,
   userDefinedData,
   onSuccessAction,
-  onErrorAction
+  onErrorAction,
 }: {
   scope: string;
   appName: string;
   endpoint: string;
-  userDefinedData:string;
-  onSuccessAction:()=>{},
-  onErrorAction:()=>{}
+  userDefinedData: string;
+  onSuccessAction: () => void;
+  onErrorAction: () => void;
 }) {
   const [selfApp, setSelfApp] = useState<any | null>(null);
   const { address } = useAccount();
@@ -33,7 +33,8 @@ export default function Verify({
       userId: address,
       endpointType: "staging_celo",
       userIdType: "hex",
-      userDefinedData:userDefinedData??
+      userDefinedData:
+        userDefinedData ??
         "Used only as zero-knowledge recovery - never stored in plain text",
       disclosures: {
         minimumAge: 0,
@@ -47,7 +48,6 @@ export default function Verify({
 
     setSelfApp(app);
   }, [address]);
-
 
   if (!address) return <p>No wallet connected.</p>;
 
