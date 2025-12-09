@@ -20,11 +20,12 @@ import {
   resolveAvatarUrl,
   SCOPE,
   VERIFICATION_ENDPOINt,
+  VerseProfile,
 } from "@verse/sdk";
 import { ModalWrapper } from "@verse/ui/profile/components/ModalWrapper";
 import Verify from "@verse/profile-web/components/SelfQRCode";
 
-export default function OwnerView({ profile }: any) {
+export default function OwnerView({ profile }: {profile:VerseProfile}) {
   const verified = profile.verified;
 
   // modal state

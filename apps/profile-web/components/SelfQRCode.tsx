@@ -8,10 +8,12 @@ export default function Verify({
   scope,
   appName,
   endpoint,
+  userDefinedData
 }: {
   scope: string;
   appName: string;
   endpoint: string;
+  userDefinedData:string;
 }) {
   const [selfApp, setSelfApp] = useState<any | null>(null);
   const { address } = useAccount();
@@ -27,7 +29,7 @@ export default function Verify({
       userId: address,
       endpointType: "staging_celo",
       userIdType: "hex",
-      userDefinedData:
+      userDefinedData:userDefinedData??
         "Used only as zero-knowledge recovery - never stored in plain text",
       disclosures: {
         minimumAge: 0,
