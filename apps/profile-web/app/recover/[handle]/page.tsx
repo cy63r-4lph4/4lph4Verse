@@ -39,7 +39,7 @@ function CenteredState({
 export default function RecoverProfilePage() {
   const { handle } = useParams() as { handle: string };
   const { address } = useAccount();
-  const { profile, isLoading, error } = useProfileById(handle);
+  const { profile, isLoading, error, refetch } = useProfileById(handle);
   const [openVerify, setOpenVerify] = useState(false);
   const [recoverySuccess, setRecoverySuccess] = useState(false);
   const [recoveryError, setRecoveryError] = useState<{
@@ -189,6 +189,7 @@ export default function RecoverProfilePage() {
           onSuccessAction={() => {
             setOpenVerify(false);
             setRecoverySuccess(true);
+            refetch;
           }}
           onErrorAction={(err?: any) => {
             setOpenVerify(false);
@@ -204,11 +205,13 @@ export default function RecoverProfilePage() {
 
       <RecoverySuccessModal
         open={recoverySuccess}
-        onClose={()=>{setRecoverySuccess(false)}}
+        onClose={() => {
+          setRecoverySuccess(false);
+        }}
       />
       <RecoveryErrorModal
         open={recoveryError != null}
-        onClose={()=>(setRecoveryError(null))}
+        onClose={() => setRecoveryError(null)}
       />
     </>
   );

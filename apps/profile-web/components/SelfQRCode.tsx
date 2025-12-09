@@ -33,9 +33,7 @@ export default function Verify({
       userId: address,
       endpointType: "staging_celo",
       userIdType: "hex",
-      userDefinedData:
-        userDefinedData ??
-        "Used only as zero-knowledge recovery - never stored in plain text",
+      userDefinedData: userDefinedData,
       disclosures: {
         minimumAge: 0,
         nationality: true,

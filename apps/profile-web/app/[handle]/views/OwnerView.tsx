@@ -25,15 +25,19 @@ import {
 import { ModalWrapper } from "@verse/ui/profile/components/ModalWrapper";
 import Verify from "@verse/profile-web/components/SelfQRCode";
 
-export default function OwnerView({ profile }: {profile:VerseProfile}) {
+export default function OwnerView({ profile }: { profile: VerseProfile }) {
   const verified = profile.verified;
 
   // modal state
   const [openVerify, setOpenVerify] = useState(false);
+  const [verifiedSuccess, setVerifiedSuccess] = useState(false);
+  const [verifyError, setVerifyError] = useState(false);
+  
+
+
   const endpoint = VERIFICATION_ENDPOINt;
   const appName = APPNAME;
   const scope = SCOPE;
-
   // social icon mapping
   const socialIcons: any = {
     x: <Twitter className="w-5 h-5 text-cyan-400" />,
@@ -78,14 +82,20 @@ export default function OwnerView({ profile }: {profile:VerseProfile}) {
 
               {/* VERIFIED STATUS */}
               {verified ? (
-                <div className="flex items-center gap-2 text-green-400">
+                <div className="flex items-center gap-3 text-green-400">
                   <ShieldCheck size={20} />
-                  <span className="font-medium">Verified</span>
+                  <span className="font-medium">Verified identity</span>
+                  <span className="text-xs text-slate-400">
+                    Protected by Self.xyz
+                  </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-yellow-400">
+                <div className="flex items-center gap-3 text-yellow-400">
                   <BadgeCheck size={20} />
-                  <span className="font-medium">Not verified</span>
+                  <span className="font-medium">Unverified identity</span>
+                  <span className="text-xs text-slate-400">
+                    Verification unlocks recovery & trust
+                  </span>
                 </div>
               )}
             </div>
@@ -96,10 +106,10 @@ export default function OwnerView({ profile }: {profile:VerseProfile}) {
 
               {!verified && (
                 <Button
-                  className="min-w-[160px] bg-purple-600 hover:bg-purple-700"
+                  className="min-w-[190px] bg-purple-600 hover:bg-purple-700"
                   onClick={() => setOpenVerify(true)}
                 >
-                  Verify with Self.xyz
+                  Secure & Verify Identity
                 </Button>
               )}
             </div>
@@ -115,9 +125,75 @@ export default function OwnerView({ profile }: {profile:VerseProfile}) {
       </div>
 
       {/* 🔮 VERIFY MODAL */}
-      <ModalWrapper open={openVerify} onClose={() => setOpenVerify(false)}>
-        <Verify scope={scope} endpoint={endpoint} appName={appName} />
-      </ModalWrapper>
+      {!verified && (
+        <ModalWrapper open={openVerify} onClose={() => setOpenVerify(false)}>
+          <Card className="p-8 rounded-3xl space-y-6 bg-black/40 backdrop-blur-xl border border-white/10">
+            <div className="flex items-center gap-3 text-purple-400">
+              <ShieldCheck size={26} />
+              <h2 className="text-2xl font-semibold">
+                Verify your Verse identity
+              </h2>
+            </div>
+
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Identity verification strengthens your Verse profile, enables
+              secure recovery, and signals trust across the network.
+            </p>
+
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li>• Enables profile recovery</li>
+              <li>• Prevents impersonation</li>
+              <li>• Increases reputation weight</li>
+            </ul>
+
+            <Verify
+              scope={scope}
+              endpoint={endpoint}
+              appName={appName}
+              userDefinedData="Used only as zero-knowledge recovery - never stored in plain text"
+              onSuccessAction={() => {
+                setVerifiedSuccess(true);
+                setOpenVerify(false);
+              }}
+              onErrorAction={()=>{setVerifyError(true)}}
+            />
+          </Card>
+        </ModalWrapper>
+      )}
+
+      {verifiedSuccess && (
+        <ModalWrapper open onClose={() => setVerifiedSuccess(false)}>
+          <Card className="p-10 rounded-3xl text-center space-y-4 border border-white/10 bg-white/5 backdrop-blur-xl">
+            <ShieldCheck size={48} className="mx-auto text-green-400" />
+            <h2 className="text-3xl font-semibold">Identity verified</h2>
+            <p className="text-slate-400">
+              Your Verse profile is now protected and recoverable.
+            </p>
+
+            <Button
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => setVerifiedSuccess(false)}
+            >
+              Continue
+            </Button>
+          </Card>
+        </ModalWrapper>
+      )}
+
+      {verifyError && (
+        <ModalWrapper open onClose={() => setVerifyError(false)}>
+          <Card className="p-8 rounded-3xl text-center space-y-4 bg-white/5 border border-white/10">
+            <BadgeCheck size={42} className="mx-auto text-yellow-400" />
+            <h2 className="text-xl font-semibold">Verification incomplete</h2>
+            <p className="text-slate-400 text-sm">
+              We couldn't verify your identity this time. You can retry anytime.
+            </p>
+            <Button variant="outline" onClick={() => setVerifyError(false)}>
+              Dismiss
+            </Button>
+          </Card>
+        </ModalWrapper>
+      )}
     </>
   );
 }
