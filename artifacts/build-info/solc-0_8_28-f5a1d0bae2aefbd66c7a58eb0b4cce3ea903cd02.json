@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-f5a1d0bae2aefbd66c7a58eb0b4cce3ea903cd02",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/interfaces/IVerseReputationHub.sol": "project/contracts/interfaces/IVerseReputationHub.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IVerseReputationHub.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IVerseReputationHub\n/// @notice Minimal interface for logging reputation-related events in the Verse.\ninterface IVerseReputationHub {\n    /// @notice Log that a profile has completed an action in an app.\n    /// @param verseId The Verse profile ID of the user.\n    /// @param token   The payment/reward token (0 = native).\n    /// @param amount  Amount earned (can be 0 if not relevant).\n    function logCompleted(uint256 verseId, address token, uint256 amount) external;\n\n    /// @notice Log that a profile has cancelled an action in an app.\n    /// @param verseId The Verse profile ID of the user.\n    function logCancelled(uint256 verseId) external;\n\n    /// @notice Get detailed activity for a profile in a given app.\n    /// @param verseId The Verse profile ID.\n    /// @param appId   The app’s identifier (keccak256(\"HireCore\"), etc.).\n    /// @param token   Token address to check earned amounts.\n    /// @return completed Count of completed actions.\n    /// @return cancelled Count of cancelled actions.\n    /// @return earned    Total tokens earned for this token.\n    function getActivity(\n        uint256 verseId,\n        bytes32 appId,\n        address token\n    ) external view returns (uint64 completed, uint64 cancelled, uint256 earned);\n\n    /// @notice Get just the raw counts (no token info).\n    function getRawCounts(uint256 verseId, bytes32 appId)\n        external\n        view\n        returns (uint64 completed, uint64 cancelled);\n}\n"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-c37e2b987ba7365bfc5a04e0d3bdf099f7c7f012",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/interfaces/IVerseProfile.sol": "project/contracts/interfaces/IVerseProfile.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IVerseProfile.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title IVerseProfile\n/// @notice Interface for interacting with the VerseProfile identity contract.\ninterface IVerseProfile {\n    struct Profile {\n        address owner; // wallet or smart account\n        string handle; // globally unique, normalized lowercase\n        string metadataURI; // ipfs://... or https://...\n        string purpose; // human-readable purpose\n        address delegate; // optional manager/guardian\n        uint64 createdAt; // block.timestamp\n        uint8 version; // schema version\n        bytes32 dochash; // proof of verification\n    }\n    struct ProfileSum {\n        address owner;\n        string handle;\n        string metadataURI;\n        string purpose;\n        address delegate;\n        uint64 createdAt;\n        uint8 version;\n        bool verified;\n    }\n\n    // -------- Views --------\n    function getProfile(uint256 verseId) external view returns (Profile memory);\n\n    function getDochash(uint256 verseId) external view returns (bytes32);\n\n    function verseIdByHandle(\n        string calldata handle\n    ) external view returns (uint256);\n\n    function verseIdOfOwner(address owner) external view returns (uint256);\n\n    function getAppNickname(\n        uint256 verseId,\n        bytes32 appId\n    ) external view returns (string memory);\n\n    function verseIdByAppNickname(\n        bytes32 appId,\n        string calldata nickname\n    ) external view returns (uint256);\n\n    function hasProfile(address user) external view returns (bool);\n\n    function getDisplayHandle(\n        uint256 verseId,\n        bytes32 appId\n    ) external view returns (string memory);\n\n    function profileOf(address user) external view returns (uint256);\n\n    // -------- Mutative --------\n    function createProfile(\n        string calldata verseHandle,\n        string calldata metadataURI,\n        bytes32 ensNamehash\n    ) external returns (uint256 verseId);\n\n    function setVerseHandle(\n        uint256 verseId,\n        string calldata newHandle\n    ) external;\n\n    function recoverySetOwner(uint256 verseId, address newOwner) external;\n\n    function setHumanVerified(address subject, bytes32 dochash) external;\n\n    function setMetadataURI(uint256 verseId, string calldata newURI) external;\n\n    function transferOwnershipOfProfile(\n        uint256 verseId,\n        address newOwner\n    ) external;\n\n    function setAppNickname(\n        uint256 verseId,\n        bytes32 appId,\n        string calldata nickname\n    ) external;\n}\n"
+      }
+    }
+  }
+}

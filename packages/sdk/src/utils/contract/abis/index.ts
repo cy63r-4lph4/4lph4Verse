@@ -50,3 +50,4 @@ export { default as GuardianRecoveryImplAbi_11142220 } from "./11142220/Guardian
 export { default as GuardianRecoveryProxyAbi_11142220 } from "./11142220/GuardianRecoveryProxy.json";
 export { default as GuardianRecoveryAbi_11142220 } from "./11142220/GuardianRecovery.json";
 export { default as HumanVerificationModuleAbi_11142220 } from "./11142220/HumanVerificationModule.json";
+export { default as SelfRecoveryModuleAbi_11142220 } from "./11142220/SelfRecoveryModule.json";

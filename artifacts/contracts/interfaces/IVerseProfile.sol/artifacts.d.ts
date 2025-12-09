@@ -15,7 +15,7 @@ export interface IVerseProfile$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IVerseProfile.sol";
-  readonly buildInfoId: "solc-0_8_28-303539a40135dd839c13af8bcc82f54544003c3e";
+  readonly buildInfoId: "solc-0_8_28-c37e2b987ba7365bfc5a04e0d3bdf099f7c7f012";
 };
 
 import "hardhat/types/artifacts";

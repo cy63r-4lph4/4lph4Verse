@@ -240,6 +240,11 @@
         "address": "0xD2403F09416a5B14657bA1ed6Dbe5de76faFA913",
         "abi": "HumanVerificationModule_11142220",
         "deployedOnBlock": 0
+      },
+      "SelfRecoveryModule": {
+        "address": "0x5136750D6A3576873D95BaB5e936fcdDDBEb139c",
+        "abi": "SelfRecoveryModule_11142220",
+        "deployedOnBlock": 0
       }
     }
   }

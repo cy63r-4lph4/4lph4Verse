@@ -5,5 +5,6 @@
   "VerseModule#VerseProfileProxy": "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
   "VerseModule#VerseProfile": "0xfaA9EF785E450E13144A3BD44e172a8489e38af1",
   "VerseModule#GuardianRecoveryProxy": "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82",
-  "VerseModule#GuardianRecovery": "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82"
+  "VerseModule#GuardianRecovery": "0xF765A222DC3cd54714E7dD0154fFF558F6EB5E82",
+  "VerseModule#SelfRecoveryModule": "0x5136750D6A3576873D95BaB5e936fcdDDBEb139c"
 }

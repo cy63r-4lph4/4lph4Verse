@@ -50,6 +50,7 @@ import GuardianRecoveryImpl_11142220Abi from "./abis/11142220/GuardianRecoveryIm
 import GuardianRecoveryProxy_11142220Abi from "./abis/11142220/GuardianRecoveryProxy.json";
 import GuardianRecovery_11142220Abi from "./abis/11142220/GuardianRecovery.json";
 import HumanVerificationModule_11142220Abi from "./abis/11142220/HumanVerificationModule.json";
+import SelfRecoveryModule_11142220Abi from "./abis/11142220/SelfRecoveryModule.json";
 
 // Utility: preserve ABI type from JSON imports
 type ExtractAbi<T> = T extends Abi ? T : Abi;
@@ -372,6 +373,13 @@ export const deployedContracts = {
       address: "0xD2403F09416a5B14657bA1ed6Dbe5de76faFA913",
       abi: HumanVerificationModule_11142220Abi as ExtractAbi<
         typeof HumanVerificationModule_11142220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    SelfRecoveryModule: {
+      address: "0x5136750D6A3576873D95BaB5e936fcdDDBEb139c",
+      abi: SelfRecoveryModule_11142220Abi as ExtractAbi<
+        typeof SelfRecoveryModule_11142220Abi
       >,
       deployedOnBlock: 0,
     },

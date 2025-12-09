@@ -66,6 +66,22 @@ export default buildModule("VerseModule", (m) => {
   // Grant VERIFIER_ROLE in VerseProfile to HumanVerificationModule
   const VERIFIER_ROLE = keccak256(toBytes("VERIFIER_ROLE"));
   m.call(verseProfile, "grantRole", [VERIFIER_ROLE, humanModule]);
+
+  /* -------------------------------------------------------------------------- */
+  /* 🛡️ SelfRecoveryModule (UUPS)                                          */
+  /* -------------------------------------------------------------------------- */
+  const selfModule = m.contract("selfRecoveryModule", [identityHub], {
+    id: "SelfRecoveryModule",
+  });
+  // Wire VerseProfile into selfRecoveryModule
+  m.call(selfModule, "setVerseProfile", [verseProfile]);
+
+  // Grant VERIFIER_ROLE in VerseProfile to HumanVerificationModule
+
+  const RECOVERY_ROLE = keccak256(toBytes("RECOVERY_ROLE"));
+  m.call(verseProfile, "grantRole", [RECOVERY_ROLE, selfModule], {
+    id: "GrantRecoveryRoleToSelfModule",
+  });
   /* -------------------------------------------------------------------------- */
   /* ✅ Return deployments                                                      */
   /* -------------------------------------------------------------------------- */

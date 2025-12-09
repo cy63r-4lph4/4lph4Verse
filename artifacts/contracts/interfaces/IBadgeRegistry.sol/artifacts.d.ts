@@ -15,7 +15,7 @@ export interface IBadgeRegistry$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IBadgeRegistry.sol";
-  readonly buildInfoId: "solc-0_8_28-303539a40135dd839c13af8bcc82f54544003c3e";
+  readonly buildInfoId: "solc-0_8_28-485273f5f2d5cf47e94602e02b429d6373bba834";
 };
 
 import "hardhat/types/artifacts";

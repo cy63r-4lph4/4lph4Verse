@@ -5,4 +5,4 @@ export const SCOPE = "proof-of-alpha";
 export const RECOVERY_SCOPE = "proof-of-owner";
 export const VERIFICATION_ENDPOINt =
   "0xd2403f09416a5b14657ba1ed6dbe5de76fafa913";
-export const RECOVERY_ENDPOINT = "";
+export const RECOVERY_ENDPOINT = "0x5136750d6a3576873d95bab5e936fcdddbeb139c";
