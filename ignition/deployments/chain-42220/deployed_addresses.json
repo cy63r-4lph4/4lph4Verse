@@ -1,0 +1,7 @@
+{
+  "VerseModule#HumanVerificationModule": "0xE7575C6Ff2fE71783fD80280FE685CaCf38b0774",
+  "VerseModule#SelfRecoveryModule": "0xEe9ab2B8a636bc8a79dCe15bd8bbe17389aF36A7",
+  "VerseModule#VerseProfileImpl": "0xeDAF571966AF2299962e7930Ba707c05fA32aEae",
+  "VerseModule#VerseProfileProxy": "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e",
+  "VerseModule#VerseProfile": "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e"
+}

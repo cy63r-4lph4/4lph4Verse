@@ -15,7 +15,7 @@ export interface IJobManager$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IJobManager.sol";
-  readonly buildInfoId: "solc-0_8_28-7592338b66fe21df807bd2147c462c8d499c75fb";
+  readonly buildInfoId: "solc-0_8_28-d7b1564745b5d99d6e7de74c3364c7290d21ff44";
 };
 
 import "hardhat/types/artifacts";

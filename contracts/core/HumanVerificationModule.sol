@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 /*
  HumanVerificationModule.sol
 
- - Inherits SelfVerificationRoot from @selfxyz/contracts (your installed package)
- - On successful Self verification, marks subject as human-verified and
+ - Inherits SelfVerificationRoot from @selfxyz/contracts 
+ - On successful Self verification, marks subject as human-verified by verification time and
    writes result back to a VerseProfile contract via a minimal interface.
    When a user is verified, His or her profile can be recovered during compromise by 
    re-verifying in the selfRecovery module without needing a guardian

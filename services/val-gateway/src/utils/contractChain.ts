@@ -11,6 +11,12 @@ export function getContractChain(
       return { chain: PROFILE_CHAIN, address: profile.address };
     }
     default: {
+      if (chainId == 42220) {
+        return {
+          chain: 11142220,
+          address: getDeployedContract(11142220, contract).address,
+        };
+      }
       const protocol = getDeployedContract(chainId, contract);
       return { chain: chainId, address: protocol.address };
     }

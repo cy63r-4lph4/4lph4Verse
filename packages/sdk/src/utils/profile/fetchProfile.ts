@@ -1,9 +1,9 @@
 // utils/profile/fetchVerseProfile.ts
 import { createPublicClient, http } from "viem";
-import { getDeployedContract, ChainId } from "../contract/deployedContracts";
+import { getDeployedContract, type ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { celoSepolia } from "viem/chains";
-import { PROFILE_CHAIN } from "../../config/constants";
-import { fetchFromPinata } from "../../services/storage";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
+import { fetchFromPinata } from "@verse/sdk/services/storage";
 
 /* -------------------------------------------------------------------------- */
 /* 🧠 Simple in-memory cache                                                  */

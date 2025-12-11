@@ -1,18 +1,18 @@
 import { ChainId } from "@verse/sdk";
-import express from "express";
+import express, { Router } from "express";
 import { makeClients } from "../config/chains";
-import { verifyVerseSession } from "val/core/middleware/sessionAuth";
+import { verifyVerseSession } from "../core/middleware/sessionAuth";
 import {
   getTransaction,
   storeTransaction,
-} from "val/core/transaction/txnStore";
+} from "../core/transaction/txnStore";
 import { getContractChain } from "../utils/contractChain";
 import { logger } from "../utils/logger";
-import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
+import { verifyVerseSignature } from "../utils/verifyVerseSignature";
 import { isReplay } from "../utils/isReplay";
 import { rateLimit } from "../utils/rateLimit";
 
-export const relayRouter = express.Router();
+export const relayRouter:Router = express.Router();
 
 /**
  * @route POST /v1/relay/ping

@@ -19,6 +19,7 @@ import {
   APPNAME,
   resolveAvatarUrl,
   SCOPE,
+  useProfileById,
   VERIFICATION_ENDPOINt,
   VerseProfile,
 } from "@verse/sdk";
@@ -33,6 +34,7 @@ export default function OwnerView({ profile }: { profile: VerseProfile }) {
   const [verifiedSuccess, setVerifiedSuccess] = useState(false);
   const [verifyError, setVerifyError] = useState(false);
   const [verifyStep, setVerifyStep] = useState<"info" | "verify">("info");
+  const {refetch}=useProfileById();
 
   const endpoint = VERIFICATION_ENDPOINt;
   const appName = APPNAME;
@@ -213,6 +215,7 @@ export default function OwnerView({ profile }: { profile: VerseProfile }) {
                     setVerifiedSuccess(true);
                     setOpenVerify(false);
                     setVerifyStep("info");
+                    refetch();
                   }}
                   onErrorAction={() => {
                     setVerifyError(true);

@@ -1,5 +1,5 @@
-import { ChainId } from "../utils/contract/deployedContracts";
-import { celoSepolia, baseSepolia, liskSepolia } from "viem/chains";
+import type{ ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import { celo, celoSepolia, baseSepolia, liskSepolia } from "viem/chains";
 
 // -----------------------------
 // 1. Define your chain objects
@@ -8,6 +8,7 @@ export const CHAIN_OBJECTS: Record<ChainId, any> = {
   11142220: celoSepolia,
   84532: baseSepolia,
   4202: liskSepolia,
+  42220: celo,
 };
 
 // -----------------------------
@@ -26,4 +27,9 @@ export const CHAIN_CONFIG: Record<ChainId, { name: string; rpcUrl: string }> = {
     name: "Lisk Sepolia",
     rpcUrl: process.env.LISK_SEPOLIA_RPC!,
   },
+  42220: {
+    name: "Celo",
+    rpcUrl: process.env.CELO_RPC!,
+  },
 };
+

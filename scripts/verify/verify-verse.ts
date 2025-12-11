@@ -2,7 +2,7 @@
 import { execSync } from "child_process";
 import fs from "fs";
 
-const chainId = 11142220; // Celo Sepolia by default
+const chainId = 42220;
 const file = `ignition/deployments/chain-${chainId}/deployed_addresses.json`;
 
 async function main() {
@@ -22,10 +22,9 @@ async function main() {
   const verify = (addr: string, args: any[] = []) => {
     try {
       console.log(`🧾 Verifying ${addr}`);
-      execSync(
-        `npx hardhat verify --network celoSepolia ${addr} ${args.join(" ")}`,
-        { stdio: "inherit" }
-      );
+      execSync(`npx hardhat verify --network celo ${addr} ${args.join(" ")}`, {
+        stdio: "inherit",
+      });
     } catch (err) {
       console.warn(
         `⚠️  Verification failed for ${addr}:`,
@@ -34,23 +33,23 @@ async function main() {
     }
   };
 
-  // verify(profileImpl);
-  // verify(profileProxy, [profileImpl, "0x"]); // UUPS proxies usually take (impl, data)
+  verify(profileImpl);
+  verify(profileProxy, [profileImpl, "0x"]); // UUPS proxies usually take (impl, data)
   // verify(guardianImpl);
   // verify(guardianProxy, [guardianImpl, "0x"]);
   // --- Verify HumanVerificationModule ---
-  const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"; // IMPORTANT
+  const identityHub = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"; // IMPORTANT
 
-  // if (humanModule) {
-  //   verify(humanModule, [identityHub]);
-  // }
+  if (humanModule) {
+    verify(humanModule, [identityHub]);
+  }
 
   if (selfModule) {
     verify(selfModule, [identityHub]);
   }
 
   console.log("\n✅ VerseModule verification complete.");
-  console.log(selfModule)
+  console.log(selfModule);
 }
 
 main().catch(console.error);

@@ -1,8 +1,15 @@
-export const PROFILE_CHAIN = 11142220;
+import { getDeployedContract } from "../utils/contract/deployedContracts";
+
+export const PROFILE_CHAIN = 42220;
 export const HIRECORE_CHAIN = 11142220;
 export const APPNAME = "Verse Profile";
 export const SCOPE = "proof-of-alpha";
 export const RECOVERY_SCOPE = "proof-of-owner";
-export const VERIFICATION_ENDPOINt =
-  "0xd2403f09416a5b14657ba1ed6dbe5de76fafa913";
-export const RECOVERY_ENDPOINT = "0x1f94a215121c72756e5ad12dcdb3ec89ba0ee769";
+export const VERIFICATION_ENDPOINt = getDeployedContract(
+  PROFILE_CHAIN,
+  "HumanVerificationModule"
+).address.toLowerCase();
+export const RECOVERY_ENDPOINT = getDeployedContract(
+  PROFILE_CHAIN,
+  "SelfRecoveryModule"
+).address.toLowerCase();

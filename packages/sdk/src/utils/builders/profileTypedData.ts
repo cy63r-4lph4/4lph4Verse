@@ -1,5 +1,5 @@
-import { PROFILE_CHAIN } from "../../config/constants";
-import { ChainId, getDeployedContract } from "../contract/deployedContracts";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
+import { type ChainId, getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
 
 export function buildProfileTypedData(chainId: ChainId) {
   const { address } = getDeployedContract(PROFILE_CHAIN, "VerseProfile");

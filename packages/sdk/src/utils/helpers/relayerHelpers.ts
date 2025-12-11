@@ -1,10 +1,9 @@
 import {
-  RelayableContract,
   RelayableTxTypes,
-} from "../contract/relayableTxTypes";
-import { getDeployedContract } from "../contract/deployedContracts";
+} from "@verse/sdk/utils/contract/relayableTxTypes";
+import { getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
 import { encodeFunctionData } from "viem";
-import { PROFILE_CHAIN } from "../../config/constants";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
 
 type CreateProfileOp = {
   owner: `0x${string}`;

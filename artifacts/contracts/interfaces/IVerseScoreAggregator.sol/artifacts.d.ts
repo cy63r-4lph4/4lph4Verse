@@ -15,7 +15,7 @@ export interface IVerseScoreAggregator$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/interfaces/IVerseScoreAggregator.sol";
-  readonly buildInfoId: "solc-0_8_28-33f46a5756196a3bb87901b81406d11b9b4cd3af";
+  readonly buildInfoId: "solc-0_8_28-d7b1564745b5d99d6e7de74c3364c7290d21ff44";
 };
 
 import "hardhat/types/artifacts";

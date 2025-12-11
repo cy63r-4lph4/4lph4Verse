@@ -31,7 +31,7 @@ export default function Verify({
       endpoint,
       logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png",
       userId: address,
-      endpointType: "staging_celo",
+      endpointType: "celo",
       userIdType: "hex",
       userDefinedData: userDefinedData,
       disclosures: {

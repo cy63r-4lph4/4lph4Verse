@@ -1,4 +1,4 @@
-export * from "./verseProfile";
+export * from "@verse/sdk/types/verseProfile";
 export interface Choice {
   text: string;
   nextNodeId: string;

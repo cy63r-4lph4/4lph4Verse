@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 /*
  ProofOfOwner.sol
 
- - Inherits SelfVerificationRoot from @selfxyz/contracts (your installed package)
+ - Inherits SelfVerificationRoot from @selfxyz/contracts 
  - On successful Self verification, recovers the profile of a user
    writes result back to a VerseProfile contract via a minimal interface.
 

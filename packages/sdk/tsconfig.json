@@ -3,15 +3,25 @@
   "compilerOptions": {
     "jsx": "preserve",
     "baseUrl": ".",
-    "composite": true,
+    "resolveJsonModule": true,
+
+    "module": "esnext",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": true,
+
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
     "outDir": "dist",
     "rootDir": "src",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    "paths": {
+      "@verse/sdk": ["src"],
+      "@verse/sdk/*": ["src/*"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../providers" }]
 }

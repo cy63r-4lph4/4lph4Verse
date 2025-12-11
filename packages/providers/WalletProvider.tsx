@@ -6,7 +6,7 @@ import {
   RainbowKitProvider,
   connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
-import { celoSepolia, baseSepolia, liskSepolia } from "wagmi/chains";
+import { celo, celoSepolia, baseSepolia, liskSepolia } from "wagmi/chains";
 import {
   coinbaseWallet,
   ledgerWallet,
@@ -37,9 +37,10 @@ const connectors = connectorsForWallets(
 );
 
 export const config: Config = createConfig({
-  chains: [celoSepolia, baseSepolia],
+  chains: [celo, celoSepolia, baseSepolia],
   connectors,
   transports: {
+    [celo.id]: http(),
     [celoSepolia.id]: http(),
     [baseSepolia.id]: http(),
   },

@@ -1,4 +1,4 @@
-import { redis } from "val/core/redis";
+import { redis } from "../../core/redis";
 
 export async function storeTransaction(txHash: string, payload: any) {
   await redis.set(`tx:${txHash}`, JSON.stringify(payload), { EX: 60 * 60 * 24 * 7 }); // 7 days

@@ -1,4 +1,4 @@
-import { uploadFileToPinata } from "./uploadFile";
+import { uploadFileToPinata } from "@verse/sdk/services/storage/uploadFile";
 
 /**
  * Uploads profile metadata (with avatar reference) to Pinata/IPFS.

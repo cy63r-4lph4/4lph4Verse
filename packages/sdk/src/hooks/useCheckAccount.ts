@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract } from "wagmi";
-import { getDeployedContract } from "../utils/contract/deployedContracts";
-import { PROFILE_CHAIN } from "../config/constants";
+import { getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
 
 type UseCheckProfileResult = {
   hasProfile: boolean;

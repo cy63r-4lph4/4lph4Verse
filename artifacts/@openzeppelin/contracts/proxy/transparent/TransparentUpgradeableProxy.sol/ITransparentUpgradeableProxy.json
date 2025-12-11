@@ -73,5 +73,5 @@
   "deployedLinkReferences": {},
   "immutableReferences": {},
   "inputSourceName": "npm/@openzeppelin/contracts@5.0.2/proxy/transparent/TransparentUpgradeableProxy.sol",
-  "buildInfoId": "solc-0_8_28-6fdcb3e8ed2969386ce1d71e4a747d06e969ab1c"
+  "buildInfoId": "solc-0_8_28-d7b1564745b5d99d6e7de74c3364c7290d21ff44"
 }

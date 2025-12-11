@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { VerseProfile } from "../types/verseProfile";
+import type { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
 import {
-  CHAIN_CONFIG,
   CHAIN_OBJECTS,
-  ChainId,
   getDeployedContract,
-} from "../index";
+  type ChainId,
+} from "@verse/sdk";
 import {
   loadDraft,
   saveDraft,
@@ -19,19 +18,19 @@ import {
   saveCids,
   clearCids,
   type ProfileCidCache,
-} from "../utils/profile/profileDraft";
+} from "@verse/sdk/utils/profile/profileDraft";
 import { PROFILE_CHAIN } from "../config/constants";
 import {
   buildCreateProfileCalldata,
   buildCreateProfileOp,
   buildTypedDataForCreateProfile,
-} from "../utils/helpers/relayerHelpers";
-import { makeFrontendPublicClient } from "../utils/helpers/makeFrontendClient";
+} from "@verse/sdk/utils/helpers/relayerHelpers";
+import { makeFrontendPublicClient } from "@verse/sdk/utils/helpers/makeFrontendClient";
 import {
   buildProfileMetadata,
   uploadFileToPinata,
   uploadProfileMetadata,
-} from "../services/storage";
+} from "@verse/sdk/services/storage";
 import { switchChain } from "viem/actions";
 
 type Progress =

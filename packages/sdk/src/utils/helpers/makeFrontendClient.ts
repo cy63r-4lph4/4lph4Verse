@@ -1,7 +1,7 @@
-import { CHAIN_OBJECTS } from "../../config/chainConfig";
-import { CHAIN_CONFIG } from "../../config/chainConfig";
+import { CHAIN_OBJECTS } from "@verse/sdk/config/chainConfig";
+import { CHAIN_CONFIG } from "@verse/sdk/config/chainConfig";
 import { createPublicClient, http } from "viem";
-import { ChainId } from "../contract/deployedContracts";
+import type { ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 
 export function makeFrontendPublicClient(chainId: ChainId) {
   return createPublicClient({

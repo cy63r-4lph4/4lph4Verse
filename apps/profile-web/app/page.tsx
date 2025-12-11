@@ -1,11 +1,41 @@
 "use client";
 
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import { RuneSVG } from "../components/runeSvg";
+import { useAccount } from "wagmi";
+import { useCheckProfile } from "@verse/sdk";
+import { Divide } from "lucide-react";
 
 export default function Page() {
+  const { address } = useAccount();
+  const { hasProfile, hasCache } = useCheckProfile();
+  const [pUrl, setPurl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!address || !hasProfile || !hasCache) {
+      setPurl(null);
+      return;
+    }
+
+    const cached = localStorage.getItem(
+      `verseProfile:${address.toLowerCase()}`
+    );
+
+    if (!cached) {
+      setPurl(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(cached);
+      setPurl(`/${parsed.handle}`);
+    } catch {
+      setPurl(null);
+    }
+  }, [address, hasProfile, hasCache]);
+
   return (
     <>
       {" "}
@@ -44,11 +74,19 @@ export default function Page() {
                 transition={{ delay: 0.45, duration: 0.7 }}
                 className="mt-10 flex items-center justify-center lg:justify-start gap-4"
               >
-                <Link href="/profile" className="inline-block">
-                  <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
-                    Enter Your Profile
-                  </button>
-                </Link>
+                {pUrl && (
+                  <Link href={pUrl} className="inline-block">
+                    <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
+                      Enter Your Profile
+                    </button>
+                  </Link>
+                )}
+                {!address &&(<div>connect your wallet to continue</div>)}
+                {address &&!hasProfile&&( <Link href="create-profile" className="inline-block">
+                    <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
+                      Get Profile
+                    </button>
+                  </Link>)}
               </motion.div>
             </motion.div>
           </div>

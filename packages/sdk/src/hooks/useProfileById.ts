@@ -1,9 +1,9 @@
 "use client";
 
 import { useReadContract } from "wagmi";
-import { getDeployedContract } from "../utils/contract/deployedContracts";
+import { getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
 import { useEffect, useState } from "react";
-import { PROFILE_CHAIN } from "../config/constants";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
 import { parseVerseProfile } from "../utils/profile/parseVerseProfile";
 
 /* --------------------------------------------------

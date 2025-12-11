@@ -1,4 +1,4 @@
-import { redis } from "val/core/redis";
+import { redis } from "../../core/redis";
 
 const NONCE_TTL = 60;
 

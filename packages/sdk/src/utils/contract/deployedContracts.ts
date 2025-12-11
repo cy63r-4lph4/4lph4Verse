@@ -10,6 +10,11 @@ import CoreTokenProxy_4202Abi from "./abis/4202/CoreTokenProxy.json";
 import CoreToken_4202Abi from "./abis/4202/CoreToken.json";
 import CoreFaucetProxy_4202Abi from "./abis/4202/CoreFaucetProxy.json";
 import CoreFaucet_4202Abi from "./abis/4202/CoreFaucet.json";
+import HumanVerificationModule_42220Abi from "./abis/42220/HumanVerificationModule.json";
+import SelfRecoveryModule_42220Abi from "./abis/42220/SelfRecoveryModule.json";
+import VerseProfileImpl_42220Abi from "./abis/42220/VerseProfileImpl.json";
+import VerseProfileProxy_42220Abi from "./abis/42220/VerseProfileProxy.json";
+import VerseProfile_42220Abi from "./abis/42220/VerseProfile.json";
 import CoreFaucetImpl_84532Abi from "./abis/84532/CoreFaucetImpl.json";
 import CoreTokenImpl_84532Abi from "./abis/84532/CoreTokenImpl.json";
 import CoreTokenProxy_84532Abi from "./abis/84532/CoreTokenProxy.json";
@@ -100,6 +105,41 @@ export const deployedContracts = {
     CoreFaucet: {
       address: "0xe869dA17cb35d6c2DAbdB7B7Bda8fD2169A7Ce6e",
       abi: CoreFaucet_4202Abi as ExtractAbi<typeof CoreFaucet_4202Abi>,
+      deployedOnBlock: 0,
+    },
+  },
+  42220: {
+    HumanVerificationModule: {
+      address: "0xE7575C6Ff2fE71783fD80280FE685CaCf38b0774",
+      abi: HumanVerificationModule_42220Abi as ExtractAbi<
+        typeof HumanVerificationModule_42220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    SelfRecoveryModule: {
+      address: "0xEe9ab2B8a636bc8a79dCe15bd8bbe17389aF36A7",
+      abi: SelfRecoveryModule_42220Abi as ExtractAbi<
+        typeof SelfRecoveryModule_42220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    VerseProfileImpl: {
+      address: "0xeDAF571966AF2299962e7930Ba707c05fA32aEae",
+      abi: VerseProfileImpl_42220Abi as ExtractAbi<
+        typeof VerseProfileImpl_42220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    VerseProfileProxy: {
+      address: "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e",
+      abi: VerseProfileProxy_42220Abi as ExtractAbi<
+        typeof VerseProfileProxy_42220Abi
+      >,
+      deployedOnBlock: 0,
+    },
+    VerseProfile: {
+      address: "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e",
+      abi: VerseProfile_42220Abi as ExtractAbi<typeof VerseProfile_42220Abi>,
       deployedOnBlock: 0,
     },
   },
@@ -377,7 +417,7 @@ export const deployedContracts = {
       deployedOnBlock: 0,
     },
     SelfRecoveryModule: {
-      address: "0x5136750D6A3576873D95BaB5e936fcdDDBEb139c",
+      address: "0x1f94A215121c72756E5ad12dCdb3EC89BA0Ee769",
       abi: SelfRecoveryModule_11142220Abi as ExtractAbi<
         typeof SelfRecoveryModule_11142220Abi
       >,

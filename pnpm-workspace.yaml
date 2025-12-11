@@ -5,4 +5,14 @@ packages:
   - services
   - services/*
 
-patchedDependencies:
+ignoredBuiltDependencies:
+  - blake-hash
+  - bufferutil
+  - esbuild
+  - keccak
+  - protobufjs
+  - sharp
+  - unrs-resolver
+  - utf-8-validate
+
+patchedDependencies: null

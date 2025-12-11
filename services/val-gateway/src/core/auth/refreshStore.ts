@@ -1,4 +1,4 @@
-import { redis } from "val/core/redis";
+import { redis } from "../../core/redis";
 
 // 30 days in seconds
 const REFRESH_TTL = 60 * 60 * 24 * 30;

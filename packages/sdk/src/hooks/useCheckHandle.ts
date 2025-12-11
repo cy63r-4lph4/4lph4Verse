@@ -3,9 +3,9 @@
 import { useReadContract } from "wagmi";
 import { useEffect, useState } from "react";
 import type { Abi } from "viem";
-import { getDeployedContract } from "../utils/contract/deployedContracts";
-import { PROFILE_CHAIN } from "../config/constants";
-import { validateHandle } from "../utils/handle/validateHandle";
+import { getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
+import { PROFILE_CHAIN } from "@verse/sdk/config/constants";
+import { validateHandle } from "@verse/sdk/utils/handle/validateHandle";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */

@@ -29,33 +29,33 @@ export default buildModule("VerseModule", (m) => {
   /* -------------------------------------------------------------------------- */
   /* 🛡️ GuardianRecoveryModule (UUPS)                                          */
   /* -------------------------------------------------------------------------- */
-  const guardianImpl = m.contract("GuardianRecoveryModule", [], {
-    id: "GuardianRecoveryImpl",
-  });
-  const guardianInit = m.encodeFunctionCall(guardianImpl, "initialize", [
-    admin,
-    verseProfile,
-  ]);
+  // const guardianImpl = m.contract("GuardianRecoveryModule", [], {
+  //   id: "GuardianRecoveryImpl",
+  // });
+  // const guardianInit = m.encodeFunctionCall(guardianImpl, "initialize", [
+  //   admin,
+  //   verseProfile,
+  // ]);
 
-  const guardianProxy = m.contract(
-    "ERC1967Proxy",
-    [guardianImpl, guardianInit],
-    { id: "GuardianRecoveryProxy" }
-  );
+  // const guardianProxy = m.contract(
+  //   "ERC1967Proxy",
+  //   [guardianImpl, guardianInit],
+  //   { id: "GuardianRecoveryProxy" }
+  // );
 
-  const guardian = m.contractAt("GuardianRecoveryModule", guardianProxy, {
-    id: "GuardianRecovery",
-  });
+  // const guardian = m.contractAt("GuardianRecoveryModule", guardianProxy, {
+  //   id: "GuardianRecovery",
+  // });
 
   /* -------------------------------------------------------------------------- */
   /* 🔗 Register Guardian inside VerseProfile                                   */
   /* -------------------------------------------------------------------------- */
-  m.call(verseProfile, "grantRecoveryModule", [guardian]);
+  // m.call(verseProfile, "grantRecoveryModule", [guardian]);
 
   /* -------------------------------------------------------------------------- */
   /* 🧪 HumanVerificationModule                                                  */
   /* -------------------------------------------------------------------------- */
-  const identityHub = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74";
+  const identityHub = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF";
   const humanModule = m.contract("HumanVerificationModule", [identityHub], {
     id: "HumanVerificationModule",
   });
@@ -85,5 +85,5 @@ export default buildModule("VerseModule", (m) => {
   /* -------------------------------------------------------------------------- */
   /* ✅ Return deployments                                                      */
   /* -------------------------------------------------------------------------- */
-  return { verseProfile, guardian, humanModule,selfModule };
+  return { verseProfile, humanModule,selfModule };
 });

@@ -15,7 +15,7 @@ export interface ScoreModelBase$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/core/ScoreModelBase.sol";
-  readonly buildInfoId: "solc-0_8_28-d540ebafa610c5c802dbef0cb47b055552750a1c";
+  readonly buildInfoId: "solc-0_8_28-d7b1564745b5d99d6e7de74c3364c7290d21ff44";
 };
 
 import "hardhat/types/artifacts";

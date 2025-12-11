@@ -65,6 +65,12 @@ export default function RootLayout({
                 >
                   Guardian Registry
                 </Link>
+                <Link
+                  href="/recover"
+                  className="text-sm text-slate-300 hover:text-cyan-300 transition"
+                >
+                  Recovery
+                </Link>
 
                 <ConnectWallet />
               </div>

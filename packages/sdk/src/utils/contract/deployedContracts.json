@@ -38,6 +38,33 @@
         "deployedOnBlock": 0
       }
     },
+    "42220": {
+      "HumanVerificationModule": {
+        "address": "0xE7575C6Ff2fE71783fD80280FE685CaCf38b0774",
+        "abi": "HumanVerificationModule_42220",
+        "deployedOnBlock": 0
+      },
+      "SelfRecoveryModule": {
+        "address": "0xEe9ab2B8a636bc8a79dCe15bd8bbe17389aF36A7",
+        "abi": "SelfRecoveryModule_42220",
+        "deployedOnBlock": 0
+      },
+      "VerseProfileImpl": {
+        "address": "0xeDAF571966AF2299962e7930Ba707c05fA32aEae",
+        "abi": "VerseProfileImpl_42220",
+        "deployedOnBlock": 0
+      },
+      "VerseProfileProxy": {
+        "address": "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e",
+        "abi": "VerseProfileProxy_42220",
+        "deployedOnBlock": 0
+      },
+      "VerseProfile": {
+        "address": "0x6806dC623f7b250D14fb78F17b417f2e9a8F228e",
+        "abi": "VerseProfile_42220",
+        "deployedOnBlock": 0
+      }
+    },
     "84532": {
       "CoreFaucetImpl": {
         "address": "0x2D12e51Ec5846e3F25524c8695f583AB482Fe4E0",
@@ -242,7 +269,7 @@
         "deployedOnBlock": 0
       },
       "SelfRecoveryModule": {
-        "address": "0x5136750D6A3576873D95BaB5e936fcdDDBEb139c",
+        "address": "0x1f94A215121c72756E5ad12dCdb3EC89BA0Ee769",
         "abi": "SelfRecoveryModule_11142220",
         "deployedOnBlock": 0
       }

@@ -9,6 +9,8 @@ import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import TxErrorCard from "@verse/ui/components/ErrorCard";
+import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { useRouter } from "next/navigation";
 
 export default function ProfileCreator() {
   const {
@@ -21,12 +23,17 @@ export default function ProfileCreator() {
     error,
     retrySubmit,
   } = useVerseProfileWizard();
+  const { refetch } = useVerseProfile();
   const { status } = useCheckHandle(profile.handle);
   const [ready, setReady] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit() {
     const success = await submitProfile();
-    if (success) console.log("successful");
+    const url = `/${profile.handle}`;
+    if (!success) return;
+    refetch();
+    router.push(url);
   }
   useEffect(() => {
     if (status == "available" && profile.displayName.length >= 3) {

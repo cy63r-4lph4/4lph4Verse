@@ -1,15 +1,15 @@
-import express from "express";
+import express, { Router } from "express";
 import { upload } from "../core/middleware/upload";
 import { PinataSDK } from "pinata";
 
-export const pinataRouter = express.Router();
+export const pinataRouter:Router = express.Router();
 
 /**
  * @route POST /v1/pinata/upload
  * @desc Upload a file to Pinata and return CID + gateway URL
  */
 
-pinataRouter.post("/upload", upload.single("file"), async (req, res) => {
+pinataRouter.post("/upload", upload.single("file") as any, async (req, res) => {
   try {
     const pinata = new PinataSDK({
       pinataJwt: `${process.env.PINATA_JWT}`,

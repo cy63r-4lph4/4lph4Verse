@@ -3,7 +3,7 @@
 import { Card } from "@verse/ui/components/ui/card";
 import { Button } from "@verse/ui/components/ui/button";
 import { Shield, Wallet, User, BadgeCheck, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ModalWrapper } from "@verse/ui/profile/components/ModalWrapper";
 import Verify from "@verse/profile-web/components/SelfQRCode";
 import {
@@ -47,8 +47,13 @@ export default function RecoverProfilePage() {
     title?: string;
     message?: string;
   } | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
 
-  const isOwner = address == profile?.owner;
+  useEffect(() => {
+    if (profile && address) {
+      setIsOwner(address == profile?.owner);
+    }
+  }, [address, profile]);
   const userdata = profile?.owner?.toLowerCase();
   if (isLoading) {
     return (
@@ -190,7 +195,7 @@ export default function RecoverProfilePage() {
           onSuccessAction={() => {
             setOpenVerify(false);
             setRecoverySuccess(true);
-            refetch;
+            refetch();
           }}
           onErrorAction={(err?: any) => {
             setOpenVerify(false);

@@ -1,19 +1,19 @@
 import { randomBytes } from "crypto";
-import express from "express";
+import express, { Router } from "express";
 import { deleteNonce, getNonce, saveNonce } from "../core/auth/nonceStore";
 import {
   removeRefreshToken,
   storeRefreshToken,
   verifyStoredRefreshToken,
-} from "val/core/auth/refreshStore";
+} from "../core/auth/refreshStore";
 import {
   createTokens,
   verifyRefreshToken,
-} from "val/core/sessions/sessionStore";
-import { logger } from "val/utils/logger";
-import { verifyVerseSignature } from "val/utils/verifyVerseSignature";
+} from "../core/sessions/sessionStore";
+import { logger } from "../utils/logger";
+import { verifyVerseSignature } from "../utils/verifyVerseSignature";
 
-export const authRouter = express.Router();
+export const authRouter:Router = express.Router();
 
 /**
  * @route POST /v1/auth/challenge
