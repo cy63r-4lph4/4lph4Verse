@@ -116,6 +116,15 @@ export default function HomeViewPage({
     >
       {/* ─────────────── Hero Section ─────────────── */}
       <div className="text-center mb-16">
+        <motion.p
+          className="text-sm uppercase tracking-[0.35em] text-pink-300/60 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1, duration: 1 }}
+        >
+          A living archive of human love
+        </motion.p>
+
         <motion.h1
           className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -162,6 +171,7 @@ export default function HomeViewPage({
           </div>
         </motion.div>
       </div>
+     
 
       {/* ─────────────── Search + Filter ─────────────── */}
       <motion.div
@@ -233,7 +243,7 @@ export default function HomeViewPage({
         >
           <Heart className="w-16 h-16 text-pink-400/50 mx-auto mb-4" />
           <p className="text-xl text-pink-300/70">
-            No stories found matching your search.
+            Some stories reveal themselves only when the heart is quiet.
           </p>
           <p className="text-pink-300/50 mt-2">
             Try adjusting your filters or search terms.
