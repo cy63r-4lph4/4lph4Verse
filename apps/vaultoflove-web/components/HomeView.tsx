@@ -13,6 +13,7 @@ import {
 } from "@verse/ui/components/ui/select";
 import { Input } from "@verse/ui/components/ui/input";
 import { Story } from "@verse/sdk/types";
+import { FeaturedStoryCard } from "@verse/vaultoflove-web/components/FeaturedStoryCard";
 
 /* ------------------------------------------------------------
  * Component
@@ -31,6 +32,24 @@ export default function HomeViewPage({
 }: HomeViewPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const featuredStory=   {
+        id: 2,
+        title: "Crimson Echoes",
+        author: "Aiden",
+        excerpt:
+          "Each note of the song reminded him of her laughter fading away.",
+        content: "Full story content goes here...",
+        category: "drama",
+        likes: 29,
+        views: 95,
+        tips: 2,
+        tags: ["music", "memory"],
+        isNftEligible: false,
+        isMinted: false,
+        onAuction: false,
+        isInteractive: false,
+        createdAt: new Date().toISOString(),
+      }
 
   // ✅ Fully typed demo data (matching the complete Story interface)
   // const stories: Story[] = [
@@ -51,24 +70,7 @@ export default function HomeViewPage({
   //     isInteractive: false,
   //     createdAt: new Date().toISOString(),
   //   },
-  //   {
-  //     id: 2,
-  //     title: "Crimson Echoes",
-  //     author: "Aiden",
-  //     excerpt:
-  //       "Each note of the song reminded him of her laughter fading away.",
-  //     content: "Full story content goes here...",
-  //     category: "drama",
-  //     likes: 29,
-  //     views: 95,
-  //     tips: 2,
-  //     tags: ["music", "memory"],
-  //     isNftEligible: false,
-  //     isMinted: false,
-  //     onAuction: false,
-  //     isInteractive: false,
-  //     createdAt: new Date().toISOString(),
-  //   },
+
   //   {
   //     id: 3,
   //     title: "Cosmic Threads",
@@ -126,7 +128,7 @@ export default function HomeViewPage({
         </motion.p>
 
         <motion.h1
-          className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent"
+          className="text-6xl md:text-8xl font-bold mb-6 bg-linear-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -151,19 +153,19 @@ export default function HomeViewPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="flex items-center space-x-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-full border border-pink-500/30">
+          <div className="flex items-center space-x-3 bg-linear-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-full border border-pink-500/30">
             <BookOpen className="w-6 h-6 text-pink-400" />
             <span className="text-pink-200 font-semibold">
               {stories.length} Stories
             </span>
           </div>
-          <div className="flex items-center space-x-3 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 px-6 py-3 rounded-full border border-purple-500/30">
+          <div className="flex items-center space-x-3 bg-linear-to-r from-purple-500/20 to-indigo-500/20 px-6 py-3 rounded-full border border-purple-500/30">
             <Trophy className="w-6 h-6 text-purple-400" />
             <span className="text-purple-200 font-semibold">
               {stories.filter((s) => s.isNftEligible).length} NFT Eligible
             </span>
           </div>
-          <div className="flex items-center space-x-3 bg-gradient-to-r from-indigo-500/20 to-pink-500/20 px-6 py-3 rounded-full border border-indigo-500/30">
+          <div className="flex items-center space-x-3 bg-linear-to-r from-indigo-500/20 to-pink-500/20 px-6 py-3 rounded-full border border-indigo-500/30">
             <Heart className="w-6 h-6 text-indigo-400" />
             <span className="text-indigo-200 font-semibold">
               {stories.reduce((sum, s) => sum + s.likes, 0)} Total Likes
@@ -171,7 +173,22 @@ export default function HomeViewPage({
           </div>
         </motion.div>
       </div>
-     
+      <section className="max-w-7xl mx-auto px-6 mb-24">
+  <motion.p className="text-sm uppercase tracking-[0.3em] text-pink-300/50 mb-4">
+    Featured Memory
+  </motion.p>
+
+  <motion.h2 className="text-3xl md:text-4xl font-semibold text-white mb-12">
+    A story held by the Vault
+  </motion.h2>
+
+  <FeaturedStoryCard story={featuredStory} onView={() => onView(featuredStory.id)} />
+
+  <div className="relative mt-24">
+    <div className="h-px bg-linear-to-r from-transparent via-pink-400/30 to-transparent" />
+  </div>
+</section>
+
 
       {/* ─────────────── Search + Filter ─────────────── */}
       <motion.div

@@ -18,14 +18,14 @@ export function FeaturedStoryCard({ story, onView }: FeaturedStoryCardProps) {
       transition={{ duration: 1.2, ease: "easeOut" }}
       className="
         relative overflow-hidden rounded-3xl
-        bg-gradient-to-br from-black/60 via-purple-900/30 to-black/60
+        bg-linear-to-br from-black/60 via-purple-900/30 to-black/60
         border border-pink-500/20
         p-10 md:p-14
         backdrop-blur-md
       "
     >
       {/* Soft Glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-transparent to-indigo-500/10 opacity-40" />
+      <div className="absolute inset-0 bg-linear-to-r from-pink-500/10 via-transparent to-indigo-500/10 opacity-40" />
 
       {/* Content */}
       <div className="relative z-10 max-w-3xl">
@@ -47,7 +47,7 @@ export function FeaturedStoryCard({ story, onView }: FeaturedStoryCardProps) {
           </div>
 
           <Button
-            onClick={onView}
+            onClick={()=>{onView()}}
             className="
               bg-linear-to-r from-pink-500 to-purple-500
               hover:from-pink-600 hover:to-purple-600
