@@ -47,7 +47,7 @@ export function IdentityPanel({ profile, onSave }: IdentityPanelProps) {
   }
 
   const avatarUrl = profile.avatar
-    ? (resolveAvatarUrl(profile.avatar) as string)
+    ? (resolveAvatarUrl(profile.avatar as string) as string)
     : null;
 
   return (
@@ -132,9 +132,7 @@ export function IdentityPanel({ profile, onSave }: IdentityPanelProps) {
             <input
               className="bg-black/30 rounded-lg px-3 py-2 text-sm"
               value={draft.location ?? ""}
-              onChange={(e) =>
-                setDraft({ ...draft, location: e.target.value })
-              }
+              onChange={(e) => setDraft({ ...draft, location: e.target.value })}
             />
           ) : (
             <p className="text-sm">{profile.location || "—"}</p>
@@ -152,17 +150,13 @@ export function IdentityPanel({ profile, onSave }: IdentityPanelProps) {
               onChange={(e) =>
                 setDraft({
                   ...draft,
-                  interests: e.target.value
-                    .split(",")
-                    .map((s) => s.trim()),
+                  interests: e.target.value.split(",").map((s) => s.trim()),
                 })
               }
             />
           ) : (
             <p className="text-sm">
-              {profile.interests?.length
-                ? profile.interests.join(", ")
-                : "—"}
+              {profile.interests?.length ? profile.interests.join(", ") : "—"}
             </p>
           )}
         </Card>
@@ -176,9 +170,7 @@ export function IdentityPanel({ profile, onSave }: IdentityPanelProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(profile.links).map(([key, value]) => (
             <div key={key} className="space-y-1">
-              <label className="text-xs text-slate-400 capitalize">
-                {key}
-              </label>
+              <label className="text-xs text-slate-400 capitalize">{key}</label>
               {editing ? (
                 <input
                   className="w-full bg-black/30 rounded-lg px-3 py-2 text-sm"
@@ -194,9 +186,7 @@ export function IdentityPanel({ profile, onSave }: IdentityPanelProps) {
                   }
                 />
               ) : (
-                <p className="text-sm truncate text-cyan-400">
-                  {value || "—"}
-                </p>
+                <p className="text-sm truncate text-cyan-400">{value || "—"}</p>
               )}
             </div>
           ))}

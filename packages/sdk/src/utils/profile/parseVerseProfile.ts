@@ -1,6 +1,5 @@
 import { fetchFromPinata } from "@verse/sdk/services/storage";
-import { VerseProfile } from "@verse/sdk";
-
+import { type VerseProfile } from "@verse/sdk";
 
 export async function parseVerseProfile(
   raw: any,
