@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CommandRail, OwnerPanel } from "@verse/profile-web/app/[handle]/componets/CommandRail";
+import {
+  CommandRail,
+  OwnerPanel,
+} from "@verse/profile-web/app/[handle]/componets/CommandRail";
+import { IdentityPanel } from "@verse/profile-web/app/[handle]/componets/IdentityPannel";
+import { useVerseProfileWizard, type VerseProfile } from "@verse/sdk";
+import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
 
 interface OwnerProfileRootProps {
   children?: never;
 }
 
-export function OwnerProfileRoot() {
+export function OwnerProfileRoot(profile: VerseProfile) {
   const [panel, setPanel] = useState<OwnerPanel>("identity");
 
   return (
@@ -18,7 +24,7 @@ export function OwnerProfileRoot() {
 
       {/* Main Content Stage */}
       <main className="relative z-10 md:pl-[96px] pb-24 md:pb-0">
-        <MainStage panel={panel} />
+        <MainStage panel={panel} profile={profile} />
       </main>
     </div>
   );
@@ -26,16 +32,33 @@ export function OwnerProfileRoot() {
 
 interface MainStageProps {
   panel: OwnerPanel;
+  profile: VerseProfile;
 }
 
-export function MainStage({ panel }: MainStageProps) {
+export function MainStage({ panel, profile }: MainStageProps) {
+  const { refetch } = useVerseProfile();
+  const {
+    updateProfile,
+    setAvatarFromFile,
+    submitProfile,
+    submitting,
+    progress,
+    error,
+    retrySubmit,
+  } = useVerseProfileWizard();
+
   return (
     <div className="relative mx-auto max-w-6xl px-4 py-24">
       <AnimatePresence mode="wait">
         {panel === "identity" && (
           <PanelWrapper key="identity">
-            {/* IdentityPanel goes here */}
-            <Placeholder title="Identity" />
+            <IdentityPanel
+              profile={profile}
+              onSave={async (draft) => {
+                await updateProfile(draft);
+                refetch();
+              }}
+            />
           </PanelWrapper>
         )}
 
