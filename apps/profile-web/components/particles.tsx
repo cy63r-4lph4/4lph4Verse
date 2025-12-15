@@ -46,7 +46,7 @@ export default function ParticleField() {
       }
     }
 
-    let mouse = { x: null, y: null };
+    let mouse = { x: null, y: null } as { x: number | null; y: number | null };
 
     function draw() {
       if (!ctx) return;
@@ -79,7 +79,7 @@ export default function ParticleField() {
       requestAnimationFrame(draw);
     }
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
     };

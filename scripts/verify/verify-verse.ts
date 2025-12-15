@@ -38,7 +38,7 @@ async function main() {
   // verify(guardianImpl);
   // verify(guardianProxy, [guardianImpl, "0x"]);
   // --- Verify HumanVerificationModule ---
-  const identityHub = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"; // IMPORTANT
+  const identityHub = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"; 
 
   if (humanModule) {
     verify(humanModule, [identityHub]);
@@ -49,7 +49,6 @@ async function main() {
   }
 
   console.log("\n✅ VerseModule verification complete.");
-  console.log(selfModule);
 }
 
 main().catch(console.error);

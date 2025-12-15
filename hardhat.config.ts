@@ -1,10 +1,9 @@
 import type { HardhatUserConfig } from "hardhat/config";
-import { configVariable } from "hardhat/config"; 
+import { configVariable } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
 import hardhatIgnitionViemPlugin from "@nomicfoundation/hardhat-ignition-viem";
-import "@nomicfoundation/hardhat-verify"; 
-
+import "@nomicfoundation/hardhat-verify";
 
 import fs from "fs";
 import path from "path";
@@ -77,7 +76,7 @@ const config: HardhatUserConfig = {
       ],
       chainId: 11142220,
     },
-    
+
     baseSepolia: {
       type: "http",
       url: configVariable("BASE_SEPOLIA_RPC")!,
@@ -105,65 +104,68 @@ const config: HardhatUserConfig = {
     },
     blockscout: {
       enabled: true,
-    }
+    },
   },
 
- chainDescriptors: {
-      11142220: {
-        name: "CeloSepolia",
-        blockExplorers: {
-          blockscout: {
-            name: "Celo Sepolia Blockscout",
-            url: "https://celo-sepolia.blockscout.com",
-            apiUrl: "https://celo-sepolia.blockscout.com/api",
-          },
-           etherscan: {
+  chainDescriptors: {
+    11142220: {
+      name: "CeloSepolia",
+      blockExplorers: {
+        blockscout: {
+          name: "Celo Sepolia Blockscout",
+          url: "https://celo-sepolia.blockscout.com",
+          apiUrl: "https://celo-sepolia.blockscout.com/api",
+        },
+        etherscan: {
           name: "Celo Sepolia Etherscan",
           url: "https://celo-sepolia.blockscout.com",
           apiUrl: "https://celo-sepolia.blockscout.com/api",
         },
-        },
-       
       },
+    },
 
-      42220: {
-        name: "Celo",
-        blockExplorers: {
-          blockscout: {
-            name: "Celo Blockscout",
-            url: "https://explorer.celo.org/mainnet",
-            apiUrl: "https://explorer.celo.org/mainnet/api",
-          },
-          
+    42220: {
+      name: "Celo",
+      blockExplorers: {
+        blockscout: {
+          name: "Celo Blockscout",
+          url: "https://explorer.celo.org/mainnet",
+          apiUrl: "https://explorer.celo.org/mainnet/api",
         },
-      },
-
-      4202: {
-        name: "LiskSepolia",
-        blockExplorers: {
-          blockscout: {
-            name: "Lisk Sepolia Blockscout",
-            url: "https://sepolia-blockscout.lisk.com",
-            apiUrl: "https://sepolia-blockscout.lisk.com/api",
-          },
-          etherscan: {
-            name: "Lisk Sepolia Etherscan",
-            url: "https://lisk-sepolia.blockscout.com",
-            apiUrl: "https://lisk-sepolia.blockscout.com/api",
-          },
-        },
-      },
-      84532: {
-        name: "BaseSepolia",
-        blockExplorers: {
-          etherscan: {
-            name: "Base Sepolia Etherscan",
-            url: "https://basescan.org",
-            apiUrl: "https://api.basescan.org/api",
-          },
+        etherscan: {
+          name: "Celo Scan",
+          url: "https://celoscan.io",
+          apiUrl: "https://api.celoscan.io/v2/api", // ✅ correct
         },
       },
     },
+
+    4202: {
+      name: "LiskSepolia",
+      blockExplorers: {
+        blockscout: {
+          name: "Lisk Sepolia Blockscout",
+          url: "https://sepolia-blockscout.lisk.com",
+          apiUrl: "https://sepolia-blockscout.lisk.com/api",
+        },
+        etherscan: {
+          name: "Lisk Sepolia Etherscan",
+          url: "https://lisk-sepolia.blockscout.com",
+          apiUrl: "https://lisk-sepolia.blockscout.com/api",
+        },
+      },
+    },
+    84532: {
+      name: "BaseSepolia",
+      blockExplorers: {
+        etherscan: {
+          name: "Base Sepolia Etherscan",
+          url: "https://basescan.org",
+          apiUrl: "https://api.basescan.org/api",
+        },
+      },
+    },
+  },
 };
 
 export default config;

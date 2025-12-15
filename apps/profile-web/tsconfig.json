@@ -18,14 +18,12 @@
   },
 
   "include": [
+    "src",
+    "app",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts",
-    "../../packages/ui/wallet/ConnectWalletButton.tsx",
-
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

@@ -3,9 +3,8 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Web3Provider } from "@verse/providers/index";
-import Link from "next/link";
 import ParticleField from "@verse/profile-web/components/particles";
-import ConnectWallet from "@verse/profile-web/components/ConnectWallet";
+import { Navbar } from "@verse/profile-web/components/NavBar";
 export const metadata: Metadata = {
   title: "Verse Profile",
   description: "The Identity Hub for the 4lph4Verse",
@@ -50,31 +49,8 @@ export default function RootLayout({
             />
 
             {/* Header */}
-            <header className="fixed top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-6">
-              <Link
-                href="/"
-                className="text-lg font-semibold text-cyan-200 hover:text-cyan-300"
-              >
-                4lph4Verse • Identity
-              </Link>
+            <Navbar />
 
-              <div className="flex items-center gap-6">
-                <Link
-                  href="/guardians"
-                  className="text-sm text-slate-300 hover:text-cyan-300 transition"
-                >
-                  Guardian Registry
-                </Link>
-                <Link
-                  href="/recover"
-                  className="text-sm text-slate-300 hover:text-cyan-300 transition"
-                >
-                  Recovery
-                </Link>
-
-                <ConnectWallet />
-              </div>
-            </header>
             {children}
           </main>
         </Web3Provider>
