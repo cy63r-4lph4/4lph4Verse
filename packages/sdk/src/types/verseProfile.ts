@@ -13,6 +13,7 @@ export interface VerseProfile {
   purpose?: string;
   verified?: boolean;
   owner: string; // Primary wallet
+  delegate:string;
   reputation?: number; // Verse-wide trust score (0–100)
   location?: string; // Optional location string
   joinedAt?: string; // ISO date

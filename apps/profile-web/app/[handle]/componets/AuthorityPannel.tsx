@@ -74,6 +74,11 @@ export function AuthorityPanel({
           <UserCog className="w-6 h-6 text-purple-400" />
           <div>
             <h2 className="font-semibold">Delegate Authority</h2>
+            <p className="text-xs text-red-400 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              Changes here affect who controls this profile
+            </p>
+
             <p className="text-sm text-slate-400">
               Allow another address to manage this profile
             </p>
@@ -84,7 +89,8 @@ export function AuthorityPanel({
           <div className="space-y-4">
             <div className="flex items-center justify-between bg-black/30 rounded-xl px-4 py-3">
               <div className="text-sm truncate">
-                Delegate: <span className="text-cyan-400">{profile.delegate}</span>
+                Delegate:{" "}
+                <span className="text-cyan-400">{profile.delegate}</span>
               </div>
               {isOwner && (
                 <Button

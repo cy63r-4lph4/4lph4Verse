@@ -171,18 +171,18 @@ export default function HomeViewPage({
         transition={{ duration: 0.6, delay: 0.8 }}
       >
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-pink-400" />
+          <Search className="z-2 absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-pink-400" />
           <Input
             type="text"
             placeholder="Search stories, authors, or themes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-black/30 border border-pink-500/30 rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            className="w-full h-12 pl-12 pr-4 py-3 bg-black/30 border border-pink-500/30 rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
           />
         </div>
 
         <div className="relative">
-          <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-400" />
+          <Filter className="absolute z-2 left-4 top-4.5 transform -translate-y-1/2 w-5 h-5 text-purple-400" />
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="pl-12 pr-8 py-3 bg-black/30 border border-purple-500/30 rounded-full text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 backdrop-blur-sm cursor-pointer">
               <SelectValue placeholder="Filter category" />

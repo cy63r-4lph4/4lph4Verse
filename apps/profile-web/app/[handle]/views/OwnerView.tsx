@@ -9,6 +9,7 @@ import {
 import { IdentityPanel } from "@verse/profile-web/app/[handle]/componets/IdentityPannel";
 import { useVerseProfileWizard, type VerseProfile } from "@verse/sdk";
 import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
+import { AuthorityPanel } from "@verse/profile-web/app/[handle]/componets/AuthorityPannel";
 
 interface OwnerProfileRootProps {
   children?: never;
@@ -62,12 +63,23 @@ export function MainStage({ panel, profile }: MainStageProps) {
           </PanelWrapper>
         )}
 
-        {panel === "authority" && (
-          <PanelWrapper key="authority" danger>
-            {/* AuthorityPanel goes here */}
-            <Placeholder title="Authority" />
-          </PanelWrapper>
-        )}
+{panel === "authority" && (
+  <PanelWrapper key="authority">
+    <AuthorityPanel
+      profile={profile}
+      isOwner={true}
+      onSetDelegate={async (delegate) => {
+        // await setProfileDelegate(profile.id, delegate);
+        refetch();
+      }}
+      onVerify={async () => {
+        // await verifyProfile(profile.id);
+        refetch();
+      }}
+    />
+  </PanelWrapper>
+)}
+
 
         {panel === "personas" && (
           <PanelWrapper key="personas">
