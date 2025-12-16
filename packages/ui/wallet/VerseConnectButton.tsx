@@ -15,6 +15,7 @@ import { VerseProfileWizardV2 } from "../profile/VerseProfileWizardV2";
 import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
 import { resolveAvatarUrl } from "@verse/sdk";
+import { BalanceDisplay } from "@verse/ui/wallet/BalanceDisplay";
 
 /* --------------------------- Types & Props --------------------------- */
 export type PersonaField = {
@@ -96,16 +97,7 @@ const VARIANT_MAP: Record<string, string> = {
 };
 
 /* -------------------------- Helper small components -------------------------- */
-function DefaultBalance({ balance }: { balance?: string | number }) {
-  return (
-    <div className="hidden md:flex items-center gap-2 bg-white/5 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-      <Coins className="w-5 h-5 text-yellow-400" />
-      <span className="text-sm font-medium">
-        {balance ?? "—"} <span className="font-bold">CØRE</span>
-      </span>
-    </div>
-  );
-}
+
 
 function DefaultAvatar({ profile }: { profile?: any }) {
   if (profile?.avatar) {
@@ -159,7 +151,7 @@ export default function VerseConnectButton({
   /* Wallet & Verse hooks */
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
-  const { balances,totalBalance:balance } = useBalance();
+  const { balances, totalBalance: balance } = useBalance();
 
   const {
     hasProfile,
@@ -189,6 +181,13 @@ export default function VerseConnectButton({
       return;
     }
   }, [address, checkingProfile, hasProfile, wizardDone, showWizard]);
+
+  const perChain = useMemo(() => {
+    return Object.entries(balances).map(([chainId, balance]) => ({
+      chainId: Number(chainId),
+      balance,
+    }));
+  }, [balances]);
 
   async function handleWizardComplete() {
     setWizardDone(true);
@@ -248,7 +247,11 @@ export default function VerseConnectButton({
                   {renderBalance ? (
                     renderBalance(ctx)
                   ) : (
-                    <DefaultBalance balance={balance} />
+                    <BalanceDisplay
+                      total={balance as string}
+                      perChain={perChain}
+                      activeChainId={ctx.chain?.id}
+                    />
                   )}
                 </>
               )}

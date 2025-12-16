@@ -14,22 +14,27 @@ export const CHAIN_OBJECTS: Record<ChainId, any> = {
 // -----------------------------
 // 2. RPC configuration
 // -----------------------------
-export const CHAIN_CONFIG: Record<ChainId, { name: string; rpcUrl: string }> = {
+type configType={ name: string; rpcUrl: string ,icon:string}
+export const CHAIN_CONFIG: Record<ChainId, configType> = {
   11142220: {
     name: "Celo Sepolia",
     rpcUrl: process.env.CELO_SEPOLIA_RPC!,
+    icon:"",
   },
   84532: {
     name: "Base Sepolia",
     rpcUrl: process.env.BASE_SEPOLIA_RPC!,
+    icon:""
   },
   4202: {
     name: "Lisk Sepolia",
     rpcUrl: process.env.LISK_SEPOLIA_RPC!,
+    icon:""
   },
   42220: {
     name: "Celo",
     rpcUrl: process.env.CELO_RPC!,
+    icon:""
   },
 };
 

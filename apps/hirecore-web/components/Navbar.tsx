@@ -100,7 +100,7 @@ export default function HireCoreNavbar() {
           <VerseConnectButton
             dapp="hirecore"
             personaFields={hirecorePersonaFields}
-            // variant="secondary"
+            variant="glass"
             rounded="lg"
             className="text-sm font-medium"
             showBalance={true}

@@ -134,7 +134,6 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
     setCacheLoaded(false);
     await refetch();
   };
-  // console.log(profile)
   return {
     verseID,
     profile,

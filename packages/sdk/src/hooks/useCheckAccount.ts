@@ -56,6 +56,7 @@ export function useCheckProfile(): UseCheckProfileResult {
   });
 
   const hasProfile = Boolean(data);
+  console.log(hasProfile,hasCache)
 
   return {
     hasProfile,
