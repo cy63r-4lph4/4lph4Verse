@@ -12,7 +12,7 @@ import HeatBidArenaPage from "@verse/vaultoflove-web/components/HeatBidArena";
 import HomeViewPage from "@verse/vaultoflove-web/components/HomeView";
 import { WriteStoryView } from "@verse/vaultoflove-web/components/WriteStoryModal";
 import { ViewWrapper } from "@verse/vaultoflove-web/components/layout/ViewWrapper";
-import { Story } from "@verse/sdk/types";
+import {type Story } from "@verse/sdk/types";
 
 export default function VaultOfLoveApp() {
   type View = "home" | "reader" | "profile" | "heartbid" | "heatbid" | "write";

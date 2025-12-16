@@ -1,4 +1,4 @@
-import type{ ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import type { ChainId } from "@verse/sdk/utils/contract/deployedContracts";
 import { celo, celoSepolia, baseSepolia, liskSepolia } from "viem/chains";
 
 // -----------------------------
@@ -33,3 +33,11 @@ export const CHAIN_CONFIG: Record<ChainId, { name: string; rpcUrl: string }> = {
   },
 };
 
+export function getChains() {
+  const test = process.env.TEST!;
+  if (test) {
+    return [11142220, 84532, 4202];
+  } else {
+    return [42220];
+  }
+}

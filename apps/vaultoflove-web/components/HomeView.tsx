@@ -32,24 +32,23 @@ export default function HomeViewPage({
 }: HomeViewPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const featuredStory=   {
-        id: 2,
-        title: "Crimson Echoes",
-        author: "Aiden",
-        excerpt:
-          "Each note of the song reminded him of her laughter fading away.",
-        content: "Full story content goes here...",
-        category: "drama",
-        likes: 29,
-        views: 95,
-        tips: 2,
-        tags: ["music", "memory"],
-        isNftEligible: false,
-        isMinted: false,
-        onAuction: false,
-        isInteractive: false,
-        createdAt: new Date().toISOString(),
-      }
+  const featuredStory = {
+    id: 2,
+    title: "Crimson Echoes",
+    author: "Aiden",
+    excerpt: "Each note of the song reminded him of her laughter fading away.",
+    content: "Full story content goes here...",
+    category: "drama",
+    likes: 29,
+    views: 95,
+    tips: 2,
+    tags: ["music", "memory"],
+    isNftEligible: false,
+    isMinted: false,
+    onAuction: false,
+    isInteractive: false,
+    createdAt: new Date().toISOString(),
+  };
 
   // ✅ Fully typed demo data (matching the complete Story interface)
   // const stories: Story[] = [
@@ -168,27 +167,33 @@ export default function HomeViewPage({
           <div className="flex items-center space-x-3 bg-linear-to-r from-indigo-500/20 to-pink-500/20 px-6 py-3 rounded-full border border-indigo-500/30">
             <Heart className="w-6 h-6 text-indigo-400" />
             <span className="text-indigo-200 font-semibold">
-              {stories.reduce((sum, s) => sum + s.likes, 0)} Total Likes
+              {stories.reduce(
+                (sum, s) => sum + (typeof s.likes === "number" ? s.likes : 0),
+                0
+              )}{" "}
+              Total Likes
             </span>
           </div>
         </motion.div>
       </div>
       <section className="max-w-7xl mx-auto px-6 mb-24">
-  <motion.p className="text-sm uppercase tracking-[0.3em] text-pink-300/50 mb-4">
-    Featured Memory
-  </motion.p>
+        <motion.p className="text-sm uppercase tracking-[0.3em] text-pink-300/50 mb-4">
+          Featured Memory
+        </motion.p>
 
-  <motion.h2 className="text-3xl md:text-4xl font-semibold text-white mb-12">
-    A story held by the Vault
-  </motion.h2>
+        <motion.h2 className="text-3xl md:text-4xl font-semibold text-white mb-12">
+          A story held by the Vault
+        </motion.h2>
 
-  <FeaturedStoryCard story={featuredStory} onView={() => onView(featuredStory.id)} />
+        <FeaturedStoryCard
+          story={featuredStory}
+          onView={() => onView(featuredStory.id)}
+        />
 
-  <div className="relative mt-24">
-    <div className="h-px bg-linear-to-r from-transparent via-pink-400/30 to-transparent" />
-  </div>
-</section>
-
+        <div className="relative mt-24">
+          <div className="h-px bg-linear-to-r from-transparent via-pink-400/30 to-transparent" />
+        </div>
+      </section>
 
       {/* ─────────────── Search + Filter ─────────────── */}
       <motion.div
@@ -242,9 +247,9 @@ export default function HomeViewPage({
           >
             <StoryCard
               story={story}
-              onLike={() => onLike(story.id)}
-              onTip={(amount) => onTip(story.id, amount)}
-              onView={() => onView(story.id)}
+              onLike={() => onLike(story.id!)}
+              onTip={(amount) => onTip(story.id!, amount)}
+              onView={() => onView(story.id!)}
             />
           </motion.div>
         ))}

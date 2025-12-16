@@ -1,6 +1,6 @@
 import { getDeployedContract } from "../utils/contract/deployedContracts";
 
-export const PROFILE_CHAIN = 42220;
+export const PROFILE_CHAIN = process.env.TEST ? 11142220 : 42220;
 export const HIRECORE_CHAIN = 11142220;
 export const APPNAME = "Verse Profile";
 export const SCOPE = "proof-of-alpha";

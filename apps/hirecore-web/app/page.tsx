@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { FEATURES, SERVICES } from "apps/hirecore-web/utils/Constants";
 import { Card, CardContent } from "@verse/ui/components/ui/card";
 import { InfiniteScroller } from "@verse/ui/components/ui/infinite-scroller";
-import {Button} from "@verse/ui/components/ui/button";
+import { Button } from "@verse/ui/components/ui/button";
 
 export default function Home() {
   return (
@@ -35,7 +35,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/find-tasks">
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-5 rounded-none">
+                <Button className="w-full sm:w-auto bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 crypto-glow text-lg px-8 py-5 rounded-none">
                   <Search className="w-5 h-5 mr-2" />
                   Find Tasks
                 </Button>
@@ -107,7 +107,7 @@ export default function Home() {
                 <motion.div
                   key={`${service.name}-${index}`}
                   whileHover={{ y: -5 }}
-                  className="group w-[180px] flex-shrink-0"
+                  className="group w-[180px] shrink-0"
                 >
                   <Card className="glass-effect border-white/20 hover:border-white/40 transition-all duration-300 cursor-pointer h-full rounded-none">
                     <CardContent className="p-6 text-center">

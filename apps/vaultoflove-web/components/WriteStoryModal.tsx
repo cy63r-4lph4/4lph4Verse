@@ -24,6 +24,7 @@ import {
 } from "@verse/ui/components/ui/select";
 import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@verse/vaultoflove-web/components/toast";
+import {type Story } from "@verse/sdk/types";
 
 /* ------------------------------------------------------------
  * Types
@@ -49,7 +50,7 @@ interface InteractiveEditorProps {
 
 interface WriteStoryViewProps {
   onBack: () => void;
-  onSubmit: (story: Record<string, any>) => void;
+  onSubmit: (story: Story) => void;
 }
 
 /* ------------------------------------------------------------
@@ -324,7 +325,7 @@ export const WriteStoryView: React.FC<WriteStoryViewProps> = ({
       .map((t) => t.trim())
       .filter(Boolean);
 
-    let storyData: Record<string, any> = {
+    let storyData: Story = {
       ...formData,
       tags,
       isInteractive,

@@ -11,20 +11,20 @@ export interface StoryNode {
 }
 
 export interface Story {
-  id: number;
+  id?: number;
   title: string;
   author: string;
   excerpt: string;
   content: string;
   category: string;
-  likes: number;
-  views: number;
-  tips: number;
+  likes?: number;
+  views?: number;
+  tips?: number;
   tags?: string[];
-  isNftEligible: boolean;
-  isMinted: boolean;
-  onAuction: boolean;
+  isNftEligible?: boolean;
+  isMinted?: boolean;
+  onAuction?: boolean;
   isInteractive?: boolean;
   interactiveContent?: Record<string|number, StoryNode>;
-  createdAt: string;
+  createdAt?: string;
 }
