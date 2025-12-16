@@ -34,7 +34,7 @@ export const CHAIN_CONFIG: Record<ChainId, { name: string; rpcUrl: string }> = {
 };
 
 export function getChains() {
-  const test = process.env.TEST!;
+  const test = process.env.NEXT_PUBLIC_TEST!;
   if (test) {
     return [11142220, 84532, 4202];
   } else {

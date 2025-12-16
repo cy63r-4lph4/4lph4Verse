@@ -1,49 +1,76 @@
 "use client";
 
-import { useAccount, useReadContract, useChainId } from "wagmi";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import type { Abi } from "viem";
 import { TokenUtils } from "@verse/sdk/utils/token/tokenUtils";
 import {
   getDeployedContract,
   type ChainId,
 } from "@verse/sdk/utils/contract/deployedContracts";
-/**
- * useBalance
- * Fetches the balance of a deployed contract token (ERC20).
- */
+import { getChains } from "@verse/sdk/config/chainConfig";
+
+type BalanceMap = Record<number, string>;
+type ReadContract = {
+  chainId: ChainId;
+  abi: Abi;
+  address: `0x${string}`;
+  functionName: "balanceOf";
+  args: readonly [`0x${string}`];
+};
+
 export function useBalance(): {
-  balance: string;
+  balances: BalanceMap;
+  totalBalance: string;
   isLoading: boolean;
   refetch: () => void;
 } {
   const { address } = useAccount();
-  const chainId = useChainId() as ChainId;
-  const contractName = "CoreToken";
-  if (chainId == 42220) {
-    return {
-      balance: "0",
-      isLoading: false,
-      refetch: () => {},
-    };
-  }
+  const currentChainId = useChainId() as ChainId;
+  const chains = getChains() as ChainId[];
 
-  const contract = getDeployedContract(chainId, contractName);
+  const contracts = chains
+    .filter((chainId) => chainId !== 42220)
+    .map((chainId): ReadContract | null => {
+      if (!address) return null;
 
-  const { data, isLoading, refetch } = useReadContract({
-    abi: contract?.abi as Abi,
-    address: contract?.address as `0x${string}`,
-    functionName: "balanceOf",
-    args: address ? [address] : undefined,
+      const contract = getDeployedContract(chainId, "CoreToken");
+      if (!contract) return null;
+
+      return {
+        chainId,
+        abi: contract.abi as Abi,
+        address: contract.address as `0x${string}`,
+        functionName: "balanceOf",
+        args: [address] as const,
+      };
+    })
+    .filter((c): c is ReadContract => c !== null);
+
+
+  const { data, isLoading, refetch } = useReadContracts({
+    contracts,
     query: {
-      enabled: Boolean(address && contract?.address),
+      enabled: Boolean(address && contracts.length),
     },
   });
 
-  const balance = data ? TokenUtils.compact(data as bigint, 18) : "0.00";
+  const balances: BalanceMap = {};
+  let total = 0n;
+  
+  
+  data?.forEach((result, index) => {
+    if (result?.status !== "success") return;
+
+    const chainId = contracts[index]!.chainId;
+    const value = result.result as bigint;
+    balances[chainId] = TokenUtils.compact(value, 18);
+    total += value;
+  });
 
   return {
-    balance,
+    balances,
+    totalBalance: TokenUtils.compact(total, 18),
     isLoading,
-    refetch: refetch as () => void,
+    refetch,
   };
 }

@@ -159,7 +159,7 @@ export default function VerseConnectButton({
   /* Wallet & Verse hooks */
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
-  const { balance } = useBalance();
+  const { balances,totalBalance:balance } = useBalance();
 
   const {
     hasProfile,

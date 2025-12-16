@@ -7,7 +7,7 @@ import type { NavbarItem } from "@verse/ui/Navbar/Navbar.types";
 import { workerNavItems, clientNavItems } from "./navItems";
 import { Settings, Briefcase, Users } from "lucide-react";
 import { useUserRole } from "@verse/hirecore-web/context/UserRoleContext";
-import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
+import VerseConnectButton from "@verse/ui/wallet/VerseConnectButton";
 import type { PersonaField } from "@verse/ui/profile/components/core/PersonalQuickStep";
 
 export default function HireCoreNavbar() {
@@ -97,13 +97,13 @@ export default function HireCoreNavbar() {
       rightControls={
         <>
           {/* ✅ Wallet Connect (handled by new VerseProfileWizardV2 system) */}
-          <ConnectWalletButton
+          <VerseConnectButton
             dapp="hirecore"
             personaFields={hirecorePersonaFields}
-            variant="secondary"
+            // variant="secondary"
             rounded="lg"
             className="text-sm font-medium"
-            showBalance
+            showBalance={true}
           />
 
           {/* ⚙️ Role Switcher (desktop only) */}

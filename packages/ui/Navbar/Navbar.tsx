@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOutsideClick } from "@verse/sdk";
 import type { NavbarItem, NavbarTheme } from "./Navbar.types";
-import ConnectWalletButton from "../wallet/ConnectWalletButton";
 import { PersonaField } from "../profile/components/core/PersonalQuickStep";
+import VerseConnectButton from "@verse/ui/wallet/VerseConnectButton";
 
 
 /* -------------------------------------------------------------------------- */
@@ -117,12 +117,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {rightControls ? (
             rightControls
           ) : (
-            <ConnectWalletButton
+            <VerseConnectButton
               dapp={dapp}
               personaFields={personaFields}
               showNetwork
               rounded="lg"
-              variant="primary"
+              variant="solid"
             />
           )}
         </div>
@@ -181,11 +181,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* 👇 mobileExtras now includes wallet connect if provided */}
               <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
                 {mobileExtras}
-                <ConnectWalletButton
+                <VerseConnectButton
                   dapp={dapp}
                   personaFields={personaFields}
                   rounded="lg"
-                  variant="secondary"
+                  variant="solid"
                   className="w-full justify-center"
                 />
               </div>
