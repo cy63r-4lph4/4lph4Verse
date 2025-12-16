@@ -34,12 +34,12 @@ export function useGetVerseID(): UseGetVerseIDResult {
     address: contract.address,
     functionName: "profileOf",
     args: address ? [address] : undefined,
+    chainId:PROFILE_CHAIN,
     query: {
       enabled,
       refetchOnWindowFocus: false,
     },
   });
-
   // Wrap refetch to remove TanStack types
   const refresh = async () => {
     await refetch();
@@ -72,6 +72,7 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
     address: contract.address,
     functionName: "getProfileSummary",
     args: verseID ? [verseID] : undefined,
+    chainId: PROFILE_CHAIN,
     query: {
       enabled,
       refetchOnWindowFocus: false,
@@ -105,7 +106,14 @@ export function useVerseProfile(skip = false): UseVerseProfileResult {
    * 2️⃣ Fetch on-chain only after cache is loaded and skip=false
    * ----------------------------------------------------------- */
   useEffect(() => {
-    if (!data || !verseID) return;
+    console.log(data)
+    if (!data || !verseID ) {
+      if (address) {
+        const cacheKey = `verseProfile:${address.toLowerCase()}`;
+        localStorage.removeItem(cacheKey);
+      }
+      return;
+    }
     (async () => {
       const parsed = await parseVerseProfile(data, verseID);
       setProfile(parsed);

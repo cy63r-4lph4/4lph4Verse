@@ -49,6 +49,7 @@ export function useCheckProfile(): UseCheckProfileResult {
     address: contract.address,
     functionName: "hasProfile",
     args: address ? [address] : undefined,
+    chainId: PROFILE_CHAIN,
     query: {
       enabled,
       refetchOnWindowFocus: false,
@@ -56,7 +57,6 @@ export function useCheckProfile(): UseCheckProfileResult {
   });
 
   const hasProfile = Boolean(data);
-  console.log(hasProfile,hasCache)
 
   return {
     hasProfile,
