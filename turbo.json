@@ -15,7 +15,10 @@
         "PINATA_API_KEY",
         "PINATA_API_SECRET",
         "PINATA_JWT",
-        "PINATA_SECRET_KEY"
+        "PINATA_SECRET_KEY",
+        "NEXT_PUBLIC_TEST",
+        "NEXT_PUBLIC_RELAYER_ENABLED",
+        "NEXT_PUBLIC_VAL_GATEWAY"
 
       ]
     },
