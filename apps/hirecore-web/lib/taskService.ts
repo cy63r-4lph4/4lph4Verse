@@ -7,6 +7,7 @@ import {fetchVerseProfile} from "@verse/sdk/utils/profile/fetchProfile";
 import { Task } from "@verse/hirecore-web/app/task/[id]/sections/types";
 import { Attachment, TaskMetadata } from "@verse/hirecore-web/utils/Interfaces";
 import { fetchFromPinata } from "@verse/sdk/services/storage";
+import { HIRECORE_CHAIN } from "@verse/sdk";
 
 
 
@@ -28,7 +29,7 @@ export async function fetchTaskById(id: number, chainId: ChainId = 11142220) {
     return cached.data;
   }
 
-  const jobBoard = getDeployedContract(chainId, "HireCoreJobBoard");
+  const jobBoard = getDeployedContract(HIRECORE_CHAIN, "HireCoreJobBoard");
   const client = createPublicClient({
     chain: celoSepolia,
     transport: http(celoSepolia.rpcUrls.default.http[0]),

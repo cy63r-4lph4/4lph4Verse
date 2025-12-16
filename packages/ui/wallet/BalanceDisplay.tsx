@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Coins, ChevronDown, ChevronUp } from "lucide-react";
-import { CHAIN_CONFIG, ChainId } from "@verse/sdk";
+import { CHAIN_CONFIG, ChainId, useOutsideClick } from "@verse/sdk";
 import clsx from "clsx";
 
 type ChainBalance = {
@@ -20,6 +20,10 @@ export function BalanceDisplay({
   activeChainId?: number;
 }) {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(menuRef, () => setOpen(false));
+
+
 
   return (
     <div className="relative hidden md:block">
@@ -35,7 +39,7 @@ export function BalanceDisplay({
         <Coins className="w-5 h-5 text-yellow-400" />
 
         <span className="text-sm font-medium text-white">
-          {total} <span className="font-bold">CØRE</span>
+          {total} <span className="font-bold text-yellow-400">CØRE</span>
         </span>
 
         {open ? (
@@ -47,7 +51,8 @@ export function BalanceDisplay({
 
       {/* Expanded inspector */}
       {open && (
-        <div className="absolute right-0 mt-2 w-72 rounded-xl border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl z-50">
+        <div ref={menuRef}
+        className="absolute right-0 mt-2 w-72 rounded-xl border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl z-50">
           <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-white/40">
             Balance by chain
           </div>

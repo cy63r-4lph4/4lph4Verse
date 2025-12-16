@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useOutsideClick } from "@verse/sdk/hooks/useOutsideClick";
+import { useOutsideClick } from "@verse/sdk";
 import { Coins, Copy, LogOut, User2 } from "lucide-react";
 import { AddressUtils } from "@verse/sdk";
 

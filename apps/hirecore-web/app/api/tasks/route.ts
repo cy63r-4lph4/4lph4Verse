@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     }
 
     const start = totalPosts - (page - 1) * limit;
-    const ids = Array.from({ dlength: limit }, (_, i) => start - i).filter((id) => id > 0);
+    const ids = Array.from({ length: limit }, (_, i) => start - i).filter((id) => id > 0);
 
     const posts = await Promise.all(ids.map((id) => fetchTaskById(id, chainId as ChainId).catch(() => null)));
     const filtered = posts

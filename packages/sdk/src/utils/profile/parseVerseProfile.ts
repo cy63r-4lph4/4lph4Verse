@@ -36,6 +36,7 @@ export async function parseVerseProfile(
       bio: json?.bio || "",
       purpose: purpose || json?.purpose || "",
       owner,
+      delegate,
       verified,
       reputation: json?.reputation || 0,
       location: json?.location || "",

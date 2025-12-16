@@ -8,7 +8,7 @@ import {
   getDeployedContract,
 } from "@verse/sdk/utils/contract/deployedContracts";
 import type { TaskPayload } from "@verse/hirecore-web/utils/Interfaces";
-import { TokenUtils } from "@verse/sdk";
+import { HIRECORE_CHAIN, TokenUtils } from "@verse/sdk";
 import { signTypedData, waitForTransactionReceipt } from "wagmi/actions";
 import { encodeFunctionData } from "viem";
 import { uploadFileToPinata, uploadJsonToPinata } from "@verse/sdk/services/storage";
@@ -35,8 +35,8 @@ export function useSubmitTask() {
   const [loading, setLoading] = useState(false);
 
   // Deployed contracts
-  const jobBoard = getDeployedContract(chainId, "HireCoreJobBoard");
-  const coreTokenContract = getDeployedContract(chainId, "CoreToken");
+  const jobBoard = getDeployedContract(HIRECORE_CHAIN, "HireCoreJobBoard");
+  const coreTokenContract = getDeployedContract(HIRECORE_CHAIN, "CoreToken");
 
   // On-chain reads
   const { data: minDepositData } = useReadContract({

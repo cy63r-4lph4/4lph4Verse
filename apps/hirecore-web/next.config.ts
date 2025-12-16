@@ -9,7 +9,15 @@ if (fs.existsSync(envPath)) {
 }
 
 const nextConfig: NextConfig = {
-  
+  serverExternalPackages: [
+    "pino",
+    "thread-stream",
+    "desm",
+    "fastbench",
+    "pino-elasticsearch",
+    "tap",
+    "tape",
+    "why-is-node-running",
+  ],
 };
-
 export default nextConfig;

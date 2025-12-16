@@ -5,11 +5,7 @@ import type { VerseProfile } from "@verse/sdk/types/verseProfile";
 
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useAccount, useChainId, useConfig, useWalletClient } from "wagmi";
-import {
-  CHAIN_OBJECTS,
-  getDeployedContract,
-  type ChainId,
-} from "@verse/sdk";
+import { CHAIN_OBJECTS, getDeployedContract, type ChainId } from "@verse/sdk";
 import {
   loadDraft,
   saveDraft,
@@ -56,6 +52,7 @@ export function useVerseProfileWizard() {
     avatar: "",
     banner: "",
     owner: address || "",
+    delegate: address || "",
     purpose: "",
     reputation: 0,
     location: "",
@@ -81,7 +78,7 @@ export function useVerseProfileWizard() {
     const doSwitch = async () => {
       if (chainId !== PROFILE_CHAIN) {
         try {
-          // @ts-expect-error pass config to switchChain, 
+          // @ts-expect-error pass config to switchChain,
           // depending on SDK type definitions you might need to adjust
           await switchChain(config, { chainId: PROFILE_CHAIN });
         } catch (err: any) {
@@ -193,6 +190,7 @@ export function useVerseProfileWizard() {
       avatar: "",
       banner: "",
       owner: address || "",
+      delegate: address || "",
       reputation: 0,
       location: "",
       joinedAt: new Date().toISOString(),

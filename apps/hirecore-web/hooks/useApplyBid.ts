@@ -5,6 +5,7 @@ import { useWriteContract, useConfig, useChainId } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { getDeployedContract } from "@verse/sdk/utils/contract/deployedContracts";
 import type { ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import { HIRECORE_CHAIN } from "@verse/sdk";
 
 export function useApplyBid(taskId: number) {
   const { writeContractAsync } = useWriteContract();
@@ -18,7 +19,7 @@ export function useApplyBid(taskId: number) {
   const applyToTask = async (message: string) => {
     try {
       setLoading(true);
-      const contract = getDeployedContract(chainId, "HireCoreJobBoard");
+      const contract = getDeployedContract(HIRECORE_CHAIN, "HireCoreJobBoard");
 
       const tx = await writeContractAsync({
         address: contract.address,
@@ -42,7 +43,7 @@ export function useApplyBid(taskId: number) {
   const placeBid = async (amount: number, message: string, estimatedTime: string) => {
     try {
       setLoading(true);
-      const contract = getDeployedContract(chainId, "HireCoreJobBoard");
+      const contract = getDeployedContract(HIRECORE_CHAIN, "HireCoreJobBoard");
 
       const tx = await writeContractAsync({
         address: contract.address,

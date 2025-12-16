@@ -83,7 +83,7 @@ export default function WorkerProfileCard({
         <CardHeader className="flex flex-col items-start gap-3">
           <div className="flex items-start justify-between w-full">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+              <div className="w-14 h-14 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
                 <User className="w-7 h-7 text-white" />
               </div>
               <div>

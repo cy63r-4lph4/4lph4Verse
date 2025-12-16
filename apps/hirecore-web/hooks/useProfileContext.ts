@@ -40,7 +40,7 @@ export function useProfileContext(
     }
 
     const isOwner =
-      !!address && profile.wallet?.toLowerCase() === address?.toLowerCase();
+      !!address && profile.owner?.toLowerCase() === address?.toLowerCase();
     const hasBothRoles = !!(
       profile.personas.hirecore?.roles.worker &&
       profile.personas.hirecore?.roles.hirer

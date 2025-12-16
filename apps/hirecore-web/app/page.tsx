@@ -41,7 +41,7 @@ export default function Home() {
                 </Button>
               </Link>
 
-              <Link href="/post-task">
+              <Link href="/tasks/new">
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto neon-border text-lg px-8 py-5 bg-transparent hover:bg-white/10  rounded-none"
