@@ -8,6 +8,7 @@ import { useConnect, useDisconnect, useAccount, Connector } from "wagmi";
 import { QRStyler } from "./QrStyler";
 import { ModalWrapper } from "../profile/components/ModalWrapper";
 import TxErrorCard from "../components/ErrorCard";
+import { Brave,Coinbase,Metamask,Walletconnect } from "@verse/ui/public";
 
 /* -------------------------------------------------------------------------- */
 /* Hook: Detect Mobile                                                        */
@@ -40,15 +41,15 @@ function getWalletName(connector: Connector) {
 
 function getWalletLogo(connector: Connector) {
   const logos: Record<string, string> = {
-    metamask: "/wallets/metamask.svg",
-    metaMaskSDK: "/wallets/metamask.svg",
-    "io.metamask": "/wallets/metamask.svg",
-    brave: "/wallets/brave.svg",
-    injected: "/wallets/brave.svg",
-    "com.brave.wallet": "/wallets/brave.svg",
-    coinbaseWallet: "/wallets/coinbase.svg",
-    coinbaseWalletSDK: "/wallets/coinbase.svg",
-    walletConnect: "/wallets/walletconnect.svg",
+    metamask: Metamask,
+    metaMaskSDK:Metamask,
+    "io.metamask": Metamask,
+    brave: Brave,
+    injected: Brave,
+    "com.brave.wallet": Brave,
+    coinbaseWallet:Coinbase,
+    coinbaseWalletSDK: Coinbase,
+    walletConnect: Walletconnect,
     ledger: "/wallets/ledger.svg",
     safe: "/wallets/safe.svg",
     rainbow: "/wallets/rainbow.svg",
