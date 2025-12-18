@@ -68,6 +68,11 @@ export function MainStage({ panel, profile }: MainStageProps) {
   const appName = APPNAME;
   const scope = SCOPE;
 
+  const startVerification = () => {
+    setOpenVerify(true);
+    setVerifyStep("info");
+  };
+
   return (
     <div className="relative mx-auto max-w-6xl px-4 py-24">
       <AnimatePresence mode="wait">
@@ -75,6 +80,10 @@ export function MainStage({ panel, profile }: MainStageProps) {
           <PanelWrapper key="identity">
             <IdentityPanel
               profile={profile}
+              onVerify={async () => {
+                startVerification();
+                refetch();
+              }}
               onSave={async (draft) => {
                 await updateProfile(draft);
                 refetch();
@@ -93,7 +102,7 @@ export function MainStage({ panel, profile }: MainStageProps) {
                 refetch();
               }}
               onVerify={async () => {
-                // await verifyProfile(profile.id);
+                startVerification();
                 refetch();
               }}
             />

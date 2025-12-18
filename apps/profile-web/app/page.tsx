@@ -1,20 +1,40 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
 import { RuneSVG } from "../components/runeSvg";
 import { useAccount } from "wagmi";
 import { useCheckProfile } from "@verse/sdk";
-import { Divide } from "lucide-react";
+import { Wallet, ArrowRight, Loader2 } from "lucide-react";
+
+type ViewState =
+  | "DISCONNECTED"
+  | "LOADING_PROFILE"
+  | "HAS_PROFILE"
+  | "NO_PROFILE";
 
 export default function Page() {
   const { address } = useAccount();
   const { hasProfile, hasCache } = useCheckProfile();
+
   const [pUrl, setPurl] = useState<string | null>(null);
+  const [view, setView] = useState<ViewState>("DISCONNECTED");
 
   useEffect(() => {
-    if (!address || !hasProfile || !hasCache) {
+    if (!address) {
+      setView("DISCONNECTED");
+      setPurl(null);
+      return;
+    }
+
+    if (hasProfile && !hasCache) {
+      setView("LOADING_PROFILE");
+      return;
+    }
+
+    if (!hasProfile) {
+      setView("NO_PROFILE");
       setPurl(null);
       return;
     }
@@ -24,24 +44,24 @@ export default function Page() {
     );
 
     if (!cached) {
-      setPurl(null);
+      setView("LOADING_PROFILE");
       return;
     }
 
     try {
       const parsed = JSON.parse(cached);
       setPurl(`/${parsed.handle}`);
+      setView("HAS_PROFILE");
     } catch {
-      setPurl(null);
+      setView("LOADING_PROFILE");
     }
   }, [address, hasProfile, hasCache]);
 
   return (
     <>
-      {" "}
       <div className="relative z-10 max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">
         <div className="w-full flex flex-col lg:flex-row items-center gap-14 py-12">
-          {/* left side */}
+          {/* LEFT */}
           <div className="flex-1 text-center lg:text-left">
             <motion.div
               initial={{ opacity: 0, y: 14 }}
@@ -57,89 +77,75 @@ export default function Page() {
                 </span>
               </h1>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.9 }}
-                className="mt-5 text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
-              >
+              <p className="mt-5 text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                 VerseProfile is your sovereign identity layer — verification,
                 wallets, guardians and recovery fused into a single universal
                 profile across the entire 4lph4Verse.
-              </motion.p>
+              </p>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.45, duration: 0.7 }}
-                className="mt-10 flex items-center justify-center lg:justify-start gap-4"
-              >
-                {pUrl && (
-                  <Link href={pUrl} className="inline-block">
-                    <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
+              {/* CTA ZONE */}
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                {view === "HAS_PROFILE" && pUrl && (
+                  <Link href={pUrl}>
+                    <button className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.06] transition">
                       Enter Your Profile
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </Link>
                 )}
-                {!address &&(<div>connect your wallet to continue</div>)}
-                {address &&!hasProfile&&( <Link href="create-profile" className="inline-block">
-                    <button className="relative inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 backdrop-blur-xl shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.05] active:scale-95 ring-1 ring-white/10 transition-all">
-                      Get Profile
+
+                {view === "NO_PROFILE" && (
+                  <Link href="/create-profile">
+                    <button className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold bg-linear-to-r from-cyan-400/70 via-blue-500/70 to-violet-500/70 shadow-[0_10px_45px_rgba(80,150,255,0.20)] hover:scale-[1.06] transition">
+                      Create Your Profile
+                      <ArrowRight className="w-4 h-4" />
                     </button>
-                  </Link>)}
-              </motion.div>
+                  </Link>
+                )}
+
+                {view === "LOADING_PROFILE" && (
+                  <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-black/40 border border-white/10">
+                    <Loader2 className="w-5 h-5 animate-spin text-cyan-300" />
+                    <span className="text-sm text-slate-300">
+                      Syncing your identity…
+                    </span>
+                  </div>
+                )}
+
+                {view === "DISCONNECTED" && (
+                  <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-black/40 border border-white/10">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-400/10 flex items-center justify-center">
+                      <Wallet className="w-5 h-5 text-cyan-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-200">
+                        Wallet not connected
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Connect your wallet to begin
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
 
-          {/* right side visual */}
+          {/* RIGHT */}
           <div className="shrink-0 flex items-center justify-center">
             <div className="relative w-[420px] h-[420px] hidden lg:block">
-              <div
-                className="absolute inset-0 rounded-3xl blur-3xl opacity-30"
-                style={{
-                  background:
-                    "radial-gradient(circle at 30% 30%, rgba(90,160,255,0.25), transparent 20%), radial-gradient(circle at 70% 70%, rgba(170,90,255,0.18), transparent 30%)",
-                }}
-              />
-
-              <div className="absolute inset-0 rounded-3xl border border-white/10 backdrop-blur-[7px] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-6 flex items-center justify-center">
-                <div className="relative w-[320px] h-[320px] flex items-center justify-center">
-                  <div
-                    className="absolute inset-0 animate-[pulse_3s_ease_infinite]"
-                    style={{
-                      filter: "blur(30px)",
-                      opacity: 0.15,
-                      background:
-                        "radial-gradient(circle at 50% 50%, rgba(100,170,255,0.25), transparent 40%)",
-                    }}
-                  />
-
-                  <RuneSVG size={320} />
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Rune */}
-            <div className="lg:hidden w-44 h-44 flex items-center justify-center">
-              <div className="w-44 h-44 rounded-2xl bg-linear-to-br from-cyan-400/10 to-violet-400/10 p-4 flex items-center justify-center">
-                <RuneSVG size={160} />
+              <div className="absolute inset-0 rounded-3xl blur-3xl opacity-30 bg-[radial-gradient(circle,rgba(90,160,255,0.25),transparent)]" />
+              <div className="absolute inset-0 rounded-3xl border border-white/10 backdrop-blur p-6 flex items-center justify-center">
+                <RuneSVG size={320} />
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* watermark */}
-      <div className="absolute bottom-6 left-6 text-xs text-slate-400 opacity-50 z-20">
+
+      <div className="absolute bottom-6 left-6 text-xs text-slate-400 opacity-50">
         Forged in the 4lph4Verse • Identity Layer by Self.xyz
       </div>
-      {/* animation keyframes */}
-      <style>{`
-        @keyframes pulse {
-          0% { opacity: 0.1; transform: scale(0.96); }
-          50% { opacity: 0.16; transform: scale(1.02); }
-          100% { opacity: 0.1; transform: scale(0.96); }
-        }
-      `}</style>
     </>
   );
 }
