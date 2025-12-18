@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import ParticleField from "../../components/particles";
-import ConnectWalletButton from "@verse/ui/wallet/ConnectWalletButton";
 
 export default function GuardiansPage() {
   return (
