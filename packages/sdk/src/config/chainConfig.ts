@@ -1,15 +1,38 @@
-import type { ChainId } from "@verse/sdk/utils/contract/deployedContracts";
+import type { ChainId } from "@verse/sdk";
 import { celo, celoSepolia, baseSepolia, liskSepolia } from "viem/chains";
+import type { Chain } from "viem";
+
 
 // -----------------------------
-// 1. Define your chain objects
+// 1.  chain objects
 // -----------------------------
-export const CHAIN_OBJECTS: Record<ChainId, any> = {
-  11142220: celoSepolia,
-  84532: baseSepolia,
-  4202: liskSepolia,
-  42220: celo,
+export type VerseChain = Chain & {
+  icon: string;
+  gradient: string;
 };
+
+export const CHAIN_OBJECTS = {
+  11142220: {
+    ...celoSepolia,
+    icon: "/chains/celo.svg",
+    gradient: "from-yellow-400 to-orange-500",
+  },
+  84532: {
+    ...baseSepolia,
+    icon: "/chains/base.svg",
+    gradient: "from-indigo-400 to-blue-500",
+  },
+  4202: {
+    ...liskSepolia,
+    icon: "/chains/lisk.svg",
+    gradient: "from-purple-400 to-pink-500",
+  },
+  42220: {
+    ...celo,
+    icon: "/chains/celo.svg",
+    gradient: "from-yellow-500 to-yellow-600",
+  },
+} satisfies Record<ChainId, VerseChain>;
 
 // -----------------------------
 // 2. RPC configuration

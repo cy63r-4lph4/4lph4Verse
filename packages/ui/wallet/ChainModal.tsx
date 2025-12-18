@@ -6,30 +6,16 @@ import Image from "next/image";
 import { X, Loader2 } from "lucide-react";
 import { ModalWrapper } from "../profile/components/ModalWrapper";
 import TxErrorCard from "../components/ErrorCard";
+import { Celo } from "@verse/ui/public";
+import { CHAIN_OBJECTS } from "@verse/sdk";
+import type { ChainId as VerseChainId } from "@verse/sdk";
 
 type Props = { open: boolean; onClose: () => void };
 
 /* ----------------------------------------
    Chain visuals mapping (editable per chain)
 ----------------------------------------- */
-const CHAIN_META: Record<number, { icon: string; gradient: string }> = {
-  84532: {
-    icon: "/chains/base.svg",
-    gradient: "from-blue-500/30 to-cyan-400/30",
-  },
-  11155111: {
-    icon: "/chains/ethereum.svg",
-    gradient: "from-gray-400/20 to-gray-200/20",
-  },
-  44787: {
-    icon: "/chains/celo.svg",
-    gradient: "from-yellow-500/30 to-lime-400/30",
-  },
-  4202: {
-    icon: "/chains/lisk.svg",
-    gradient: "from-indigo-500/30 to-purple-400/30",
-  },
-};
+
 
 export function VerseChainModal({ open, onClose }: Props) {
   const { chains, switchChainAsync, isPending, error } = useSwitchChain();
@@ -49,6 +35,10 @@ export function VerseChainModal({ open, onClose }: Props) {
   };
 
   if (!open) return null;
+  const verseChains = chains.filter(
+    (chain): chain is typeof chain & { id: VerseChainId } =>
+      chain.id in CHAIN_OBJECTS
+  );
 
   return (
     <ModalWrapper open={open} onClose={onClose}>
@@ -86,11 +76,8 @@ export function VerseChainModal({ open, onClose }: Props) {
 
         {/* Chain list */}
         <div className="space-y-3">
-          {chains.map((chain) => {
-            const meta = CHAIN_META[chain.id] || {
-              icon: "/chains/default.svg",
-              gradient: "from-zinc-700/30 to-zinc-600/30",
-            };
+          {verseChains.map((chain) => {
+           const meta=CHAIN_OBJECTS[chain.id]
             const isActive = chain.id === currentChainId;
             const isSwitching = pendingId === chain.id;
 

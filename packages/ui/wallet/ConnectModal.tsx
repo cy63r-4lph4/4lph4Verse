@@ -8,7 +8,7 @@ import { useConnect, useDisconnect, useAccount, Connector } from "wagmi";
 import { QRStyler } from "./QrStyler";
 import { ModalWrapper } from "../profile/components/ModalWrapper";
 import TxErrorCard from "../components/ErrorCard";
-import { Brave,Coinbase,Metamask,Walletconnect } from "@verse/ui/public";
+import { Brave,Coinbase,Metamask,Walletconnect,VerseLogo } from "@verse/ui/public";
 
 /* -------------------------------------------------------------------------- */
 /* Hook: Detect Mobile                                                        */
