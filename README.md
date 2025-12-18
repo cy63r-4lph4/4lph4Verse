@@ -61,8 +61,10 @@
 ### 🧩 **VerseProfile**
 
 - Onchain identity + reputation system
+- Human verification, Guardian recovery and self recovery with self protocol
 - Gasless creation and updates via VAL
 - Persona mapping, aura sync, cross-dApp profile linkage
+  🌐 **Live Demo:** [verseProfile Web Interface](https://verse-profile.vercel.app/)
 
 ### ⚙️ **Verse Abstraction Layer (VAL)**
 
@@ -95,6 +97,14 @@ A decentralized task & reputation protocol connecting skilled & unskilled labor.
 **SDK:** `packages/sdk/utils/contract/deployedContracts.ts`
 
 🌐 **Live Demo:** [hirecore.vercel.app](https://4lph4-verse-hirecore.vercel.app/)
+
+**VerseProfile** The Unified Identity layer of the 4lph4verse has a live demo web interface to allow performing mutation actions on the profile.
+
+**Frontend:** `apps/profile-web`
+**Contracts:** `contracts/core/VerseProfile.sol`,`contracts/core/HumanVerificationModule.sol`,`contracts/core/selfRecoveryModule.sol`
+
+🌐 **Live Demo:** [verseProfile Web Interface](https://verse-profile.vercel.app/)
+
 
 ---
 
@@ -137,6 +147,16 @@ pnpm export
 
 ---
 
+## 🌍 Current Deployments (Celo)
+
+| Contract                    | Address                                      | Explorer                                                                               |
+| --------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **VerseProfile**            | `0x6806dC623f7b250D14fb78F17b417f2e9a8F228e` | [View](https://celo.blockscout.com/address/0x6806dC623f7b250D14fb78F17b417f2e9a8F228e) |
+| **HumanVerificationModule** | `0xE7575C6Ff2fE71783fD80280FE685CaCf38b0774` | [View](https://celo.blockscout.com/address/0xE7575C6Ff2fE71783fD80280FE685CaCf38b0774) |
+| **selfRecoveryModule**      | `0xEe9ab2B8a636bc8a79dCe15bd8bbe17389aF36A7` | [View](https://celo.blockscout.com/address/0xEe9ab2B8a636bc8a79dCe15bd8bbe17389aF36A7) |
+
+---
+
 ## 🌍 Current Deployments (Celo Sepolia)
 
 | Contract               | Address                                      | Explorer                                                                                       |
@@ -153,7 +173,6 @@ pnpm export
 
 ## 🧭 Next Steps (Q4 2025 → Q1 2026)
 
-- [ ] Expand VAL Gateway for gasless onboarding
 - [ ] Deploy VerseWallet MVP
 - [ ] Enable multi-chain sync for Profile + CØRE (Base + Lisk)
 - [ ] Add paymaster for sponsored gas
