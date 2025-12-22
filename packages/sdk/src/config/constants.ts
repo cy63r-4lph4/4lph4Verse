@@ -13,3 +13,4 @@ export const RECOVERY_ENDPOINT = getDeployedContract(
   PROFILE_CHAIN,
   "SelfRecoveryModule"
 ).address.toLowerCase();
+

@@ -16,6 +16,7 @@ import { VerseConnectModal } from "../wallet/ConnectModal";
 import { VerseChainModal } from "../wallet/ChainModal";
 import { resolveAvatarUrl } from "@verse/sdk";
 import { BalanceDisplay } from "@verse/ui/wallet/BalanceDisplay";
+import { PlaceholderSoul, VerseLogo } from "@verse/ui/public";
 
 /* --------------------------- Types & Props --------------------------- */
 export type PersonaField = {
@@ -110,9 +111,9 @@ function DefaultAvatar({ profile }: { profile?: any }) {
     );
   }
   return (
-    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 border border-white/20">
-      <User2 className="w-5 h-5 text-white/80" />
-    </div>
+    <div className="bg-white rounded-full overflow-hidden w-8 h-8">
+    <img src={PlaceholderSoul.src} alt="avatar" className="w-8 h-8 object-cover" />
+  </div>
   );
 }
 

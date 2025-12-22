@@ -2,9 +2,9 @@
 
 import { useProfileById } from "@verse/sdk/hooks/useProfileById";
 import { useProfileContext } from "@verse/hirecore-web/hooks/useProfileContext";
-import DualProfileLayout from "../sections/DualProfileLayout";
-import ClientProfileLayout from "../sections/ClientProfileLayout";
-import WorkerProfileLayout from "../sections/WorkerProfileLayout";
+import DualProfileLayout from "@verse/hirecore-web/app/[handle]/sections/DualProfileLayout";
+import ClientProfileLayout from "@verse/hirecore-web/app/[handle]/sections/ClientProfileLayout";
+import WorkerProfileLayout from "@verse/hirecore-web/app/[handle]/sections/WorkerProfileLayout";
 import { Loader2 } from "lucide-react";
 import { consumeContext } from "@verse/hirecore-web/utils/ContextBridge";
 import { useState } from "react";
@@ -16,16 +16,16 @@ export default function ProfileRenderer({
   id: string;
   fallbackContext?: "worker" | "hirer";
 }) {
-    const [navContext] = useState<"worker" | "hirer" | undefined>(() => consumeContext());
+  const [navContext] = useState<"worker" | "hirer" | undefined>(() =>
+    consumeContext()
+  );
   const passedContext = navContext || fallbackContext;
 
   const { profile, isLoading, error } = useProfileById(id);
-  const {
-    context,
-    isOwner,
-    hasBothRoles,
-    targetProfile,
-  } = useProfileContext(profile, { context: passedContext });
+  const { context, isOwner, hasBothRoles, targetProfile } = useProfileContext(
+    profile,
+    { context: passedContext }
+  );
 
   if (isLoading)
     return (

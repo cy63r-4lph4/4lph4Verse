@@ -1,4 +1,5 @@
 export * from "@verse/sdk/types/verseProfile";
+import { type StaticImageData } from "next/image";
 export interface Choice {
   text: string;
   nextNodeId: string;
@@ -25,6 +26,14 @@ export interface Story {
   isMinted?: boolean;
   onAuction?: boolean;
   isInteractive?: boolean;
-  interactiveContent?: Record<string|number, StoryNode>;
+  interactiveContent?: Record<string | number, StoryNode>;
   createdAt?: string;
 }
+
+export type WalletLogo = StaticImageData | string;
+
+export type WalletMeta = {
+  name: string;
+  logo: WalletLogo;
+  priority: number;
+};
