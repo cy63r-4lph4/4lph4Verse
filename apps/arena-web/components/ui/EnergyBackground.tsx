@@ -6,75 +6,28 @@ interface EnergyBackgroundProps {
   children?: React.ReactNode;
 }
 
-export const EnergyBackground = ({ 
-  className, 
-  variant = "default",
-  children 
-}: EnergyBackgroundProps) => {
+export const EnergyBackground = ({ className, variant = "default", children }: EnergyBackgroundProps) => {
   return (
-    <div className={cn(
-      "relative min-h-screen overflow-hidden bg-arena-gradient",
-      className
-    )}>
-      {/* Grid pattern */}
-      <div className="absolute inset-0 energy-lines opacity-30" />
+    <div className={cn("relative min-h-screen overflow-hidden bg-[#050505] text-white", className)}>
+      {/* 1. Tactical Grid Overlay */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" 
+           style={{ backgroundImage: `linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
       
-      {/* Animated energy orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Top-left orb */}
-        <div 
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full energy-pulse"
-          style={{
-            background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 60%)",
-          }}
-        />
-        
-        {/* Bottom-right orb */}
-        <div 
-          className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full energy-pulse"
-          style={{
-            background: "radial-gradient(circle, hsl(var(--secondary) / 0.1) 0%, transparent 60%)",
-            animationDelay: "1.5s",
-          }}
-        />
+      {/* 2. Vignette (Dark Corners) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] z-[1]" />
+
+      {/* 3. Dynamic Energy Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none blur-[100px]">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10" style={{ animationDelay: '2s' }} />
         
         {variant === "battle" && (
-          <>
-            {/* Left red glow for battle */}
-            <div 
-              className="absolute top-1/3 -left-40 w-80 h-80 rounded-full energy-pulse"
-              style={{
-                background: "radial-gradient(circle, hsl(var(--destructive) / 0.1) 0%, transparent 60%)",
-                animationDelay: "0.5s",
-              }}
-            />
-            
-            {/* Right primary glow for battle */}
-            <div 
-              className="absolute top-1/3 -right-40 w-80 h-80 rounded-full energy-pulse"
-              style={{
-                background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 60%)",
-                animationDelay: "1s",
-              }}
-            />
-          </>
-        )}
-        
-        {variant === "intense" && (
-          <>
-            {/* Center intense glow */}
-            <div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full energy-pulse"
-              style={{
-                background: "radial-gradient(circle, hsl(var(--warning) / 0.1) 0%, transparent 70%)",
-              }}
-            />
-          </>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[30%] bg-destructive/10 skew-y-12" />
         )}
       </div>
-      
-      {/* Content */}
-      <div className="relative z-10">
+
+      {/* 4. Content */}
+      <div className="relative z-10  h-full">
         {children}
       </div>
     </div>
