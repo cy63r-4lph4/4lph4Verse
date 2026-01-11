@@ -29,7 +29,7 @@ export const ArenaLogo = ({ size = "lg", className, showTagline = false }: Arena
         {/* Main logo */}
         <h1 
           className={cn(
-            "font-display font-black tracking-[0.2em] text-primary relative z-10 text-glow",
+            "font-display font-black tracking-[0.2em] text-primary relative z-10 text-white",
             sizeClasses[size]
           )}
         >
