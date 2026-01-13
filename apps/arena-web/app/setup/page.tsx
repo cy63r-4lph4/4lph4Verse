@@ -45,7 +45,7 @@ export default function Setup() {
   };
 
   return (
-    <EnergyBackground className="flex flex-col h-[100dvh]">
+    <EnergyBackground className="flex flex-col h-dvh">
       {/* Scrollable Area */}
       <div className="flex-1 overflow-y-auto px-6 py-12 flex flex-col items-center">
         
@@ -54,7 +54,7 @@ export default function Setup() {
           <h1 className="font-display text-xl font-black text-white tracking-[0.3em] uppercase mb-2 text-glow">
             Identity Forge
           </h1>
-          <div className="h-[1px] w-12 bg-primary mx-auto mb-4" />
+          <div className="h-px w-12 bg-primary mx-auto mb-4" />
           <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-mono">
             Registering Unit in Global Network
           </p>
