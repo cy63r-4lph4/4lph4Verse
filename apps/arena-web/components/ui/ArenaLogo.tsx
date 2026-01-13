@@ -24,7 +24,7 @@ export const ArenaLogo = ({ size = "lg", className, showTagline = false }: Arena
         {/* The Text with Metallic Gradient */}
         <h1 className={cn(
     "font-display font-black tracking-[0.2em] md:tracking-[0.25em] relative z-10",
-    "bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50",
+    "bg-clip-text text-transparent bg-linear-to-b from-white to-white/50",
     sizeClasses[size]
 )}>
   ARENA
@@ -32,11 +32,11 @@ export const ArenaLogo = ({ size = "lg", className, showTagline = false }: Arena
         
         {/* DeskMate Badge - Styled like a tech seal */}
         <div className="flex items-center justify-center gap-2 mt-[-4px] relative z-20">
-          <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-primary/50" />
+          <div className="h-px w-8 bg-linear-to-r from-transparent to-primary/50" />
           <span className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase opacity-80">
             by DeskMate
           </span>
-          <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-primary/50" />
+          <div className="h-px w-8 bg-linear-to-l from-transparent to-primary/50" />
         </div>
       </div>
       

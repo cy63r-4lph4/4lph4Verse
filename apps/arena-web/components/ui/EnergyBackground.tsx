@@ -14,7 +14,7 @@ export const EnergyBackground = ({ className, variant = "default", children }: E
            style={{ backgroundImage: `linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
       
       {/* 2. Vignette (Dark Corners) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] z-[1]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] z-1" />
 
       {/* 3. Dynamic Energy Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none blur-[100px]">

@@ -43,7 +43,7 @@ export default function Home() {
 
         {/* Footer: Live Status - Bottom weighted for "App" feel */}
         <div className="w-full flex flex-col items-center gap-6 animate-fade-in" style={{ animationDelay: "0.8s" }}>
-          <div className="h-[1px] w-1/2 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          <div className="h-1px w-1/2 bg-linear-to-r from-transparent via-primary/30 to-transparent" />
           
           <div className="flex flex-col md:flex-row gap-4 md:gap-12 items-center text-[10px] text-muted-foreground/60 tracking-[0.2em] font-medium">
             <span className="flex items-center gap-2 uppercase">
