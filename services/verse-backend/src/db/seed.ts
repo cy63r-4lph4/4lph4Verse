@@ -1,14 +1,15 @@
 import "dotenv/config";
 
 import { db } from ".";
-import { arenaSchools, arenaUsers } from "./schema";
+import { arenaSchools } from "./schema/arena_universities";
+import { users } from "./schema/core/users";
 
 async function seed() {
   const [knust] = await db
     .insert(arenaSchools)
     .values({
       name: "Kwame Nkrumah University of Science and Technology",
-      shortName: "KNUST",
+      slug: "knust",
       country: "Ghana",
     })
     .returning();
