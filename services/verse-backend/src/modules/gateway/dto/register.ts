@@ -15,5 +15,5 @@ export class RegisterDto {
   password: string;
 
   @IsString()
-  schoolId: string;
+  sector: string;
 }

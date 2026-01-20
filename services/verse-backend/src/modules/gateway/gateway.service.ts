@@ -5,9 +5,14 @@ import { RegisterDto } from 'src/modules/gateway/dto/register';
 import * as schema from 'src/db/schema';
 import * as bcrypt from 'bcrypt';
 
+import { JwtService } from '@nestjs/jwt';
+
 @Injectable()
 export class GatewayService {
-  constructor(@Inject("DB") private db: NodePgDatabase<typeof schema>) {}
+  constructor(
+    @Inject("DB") private db: NodePgDatabase<typeof schema>,
+    private jwtService: JwtService
+  ) {}
 
   async registerUser(user: RegisterDto) {
     const cleanUsername = user.username.trim();
@@ -33,12 +38,12 @@ const cleanEmail =
 
       if (existingUser) {
         throw new BadRequestException(
-          'This fighter name or email is already taken!',
+          'This codename or email is already taken!',
         );
       }
 
       const school = await tx.query.arenaSchools.findFirst({
-        where: (arenaSchools, { eq }) => eq(arenaSchools.id, user.schoolId),
+        where: (arenaSchools, { eq }) => eq(arenaSchools.id, user.sector),
       });
 
       if (!school) {
@@ -64,18 +69,42 @@ const cleanEmail =
         .insert(schema.arenaUser)
         .values({
           userId: newUser.id,
-          schoolId: user.schoolId,
+          schoolId: user.sector,
         })
         .returning();
-
+const payload={sub:newUser.id,username:newUser.username};
+const token=await this.jwtService.signAsync(payload);
       return {
-        message: 'Fighter registered successfully',
+        access_token:token,
         user: {
-          id: newUser.id,
-          username: newUser.username,
-          schoolId: membership.schoolId,
+          id:newUser.id,
+          username:newUser.username,
         },
+        sectors:[]
       };
     });
   }
+
+  async checkExists(username: string): Promise<boolean> {
+      const cleanUsername = username.trim();
+
+  const user = await this.db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.username, cleanUsername),
+    columns: { id: true }, 
+  });
+
+  return !!user;
+}
+
+async getUniversities(): Promise<{ id: string; name: string; slug: string | null }[]> {
+  const universities = await this.db.query.arenaSchools.findMany({
+    columns: { 
+      id: true, 
+      name: true, 
+      slug: true 
+    },
+  });
+
+  return universities;
+}
 }

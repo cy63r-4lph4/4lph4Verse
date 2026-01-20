@@ -1,8 +1,7 @@
 import "dotenv/config";
 
 import { db } from ".";
-import { arenaSchools } from "./schema/arena_universities";
-import { users } from "./schema/core/users";
+import { arenaSchools } from "./schema";
 
 async function seed() {
   const [knust] = await db
@@ -14,11 +13,6 @@ async function seed() {
     })
     .returning();
 
-//   await db.insert(arenaUsers).values({
-//     username: "alpha",
-//     email: "alpha@arena.test",
-//     schoolId: knust.id,
-//   });
 
   console.log("Seed complete");
 }

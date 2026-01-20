@@ -3,8 +3,8 @@ import { varchar } from "drizzle-orm/pg-core";
 import { timestamp } from "drizzle-orm/pg-core";
 import { text } from "drizzle-orm/pg-core";
 import { pgTable,pgEnum } from "drizzle-orm/pg-core";
-import { arenaSchools } from "src/db/schema/arena_universities";
-import { users } from "src/db/schema/core/users";
+import { arenaSchools } from "./arena_universities";
+import { users } from "./core/users";
 
 
 export const arenaRole = pgEnum("arena_role", [
