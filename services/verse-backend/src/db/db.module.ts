@@ -11,4 +11,5 @@ import { db } from ".";
   ],
   exports: ["DB"],
 })
+
 export class DatabaseModule {}
