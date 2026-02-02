@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export default function useForge() {
     const router = useRouter();
 
-    const { mutateAsync: forge, isPending: isForging, error } = useMutation({
+    const { mutateAsync: forge, isPending: isForging, error: mutationError } = useMutation({
         mutationFn: async (data: RegisterData) => {
             const response = await api.post("/v1/gateway/register", data);
             return response.data;
@@ -25,6 +25,6 @@ export default function useForge() {
             else { router.push("/lobby") }
         },
     });
-    const errorMessage = (error as any)?.response?.data?.message || error?.message;
+    const errorMessage = (mutationError as any)?.response?.data?.message || mutationError?.message;
     return { forge, isForging, errorMessage };
 }

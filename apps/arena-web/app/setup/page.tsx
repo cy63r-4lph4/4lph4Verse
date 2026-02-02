@@ -37,6 +37,7 @@ export default function Setup() {
   // Phase 1: Identity
   const [username, setUsername] = useState("");
   const [sector, setSector] = useState("");
+  const [sectorId, setSectorId] = useState("");
   const [showUniSuggestions, setShowUniSuggestions] = useState(false);
   const { isAvailable, isChecking } = useCodenameAvailability(username);
 
@@ -68,7 +69,7 @@ export default function Setup() {
         username,
         email,
         password,
-        sector,
+        sector: sectorId,
       });
     } catch (error) {
     }
@@ -250,6 +251,7 @@ export default function Setup() {
                             className="w-full px-4 py-3 text-left text-[11px] font-semibold text-white/70 hover:bg-primary/10 hover:text-primary transition-all flex items-center justify-between group/item animate-in fade-in slide-in-from-left-2"
                             onClick={() => {
                               setSector(uni.name);
+                              setSectorId(uni.id);
                               setShowUniSuggestions(false);
                             }}
                           >

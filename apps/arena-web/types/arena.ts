@@ -10,3 +10,9 @@ export interface RegisterData {
   password: string;
   sector: string;
 }
+
+export interface LoginData {
+  username: string;
+  password: string;
+}
+
