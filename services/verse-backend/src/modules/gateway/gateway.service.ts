@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, Inject, ForbiddenException } from '@nestjs/common';
-import { or } from 'drizzle-orm';
+import { or, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { RegisterDto } from 'src/modules/gateway/dto/register';
-import * as schema from 'src/db/schema';
+import { RegisterDto } from './dto/register';
+import * as schema from '../../db/schema';
 import * as bcrypt from 'bcrypt';
 
 import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login';
 
 @Injectable()
 export class GatewayService {
@@ -108,47 +109,104 @@ export class GatewayService {
     return universities;
   }
 
+  /**
+     * FETCH JOINED SECTORS
+     * Uses the base userId to find the arenaProfile, then returns joined courses.
+     */
+  async mySectors(userId: string) {
+    return await this.db
+      .select({
+        id: schema.arenaCourses.id,
+        title: schema.arenaCourses.title,
+        code: schema.arenaCourses.code,
+        accessKey: schema.arenaCourses.accessKey,
+      })
+      .from(schema.arenaUserCourses)
+      .innerJoin(
+        schema.arenaCourses,
+        eq(schema.arenaUserCourses.courseId, schema.arenaCourses.id)
+      )
+      .innerJoin(
+        schema.arenaUser,
+        eq(schema.arenaUserCourses.userId, schema.arenaUser.id)
+      )
+      .where(eq(schema.arenaUser.userId, userId));
+  }
+
+  /**
+   * FETCH DISCOVERABLE SECTORS
+   * Only returns courses within the user's school that they haven't joined.
+   */
+  async getDiscoverableSectors(userId: string) {
+    const userProfile = await this.db.query.arenaUser.findFirst({
+      where: (au, { eq }) => eq(au.userId, userId),
+    });
+
+    if (!userProfile) return [];
+
+    const joinedCourses = await this.db
+      .select({ courseId: schema.arenaUserCourses.courseId })
+      .from(schema.arenaUserCourses)
+      .where(eq(schema.arenaUserCourses.userId, userProfile.id));
+
+    const joinedIds = joinedCourses.map((c) => c.courseId);
+
+    return await this.db.query.arenaCourses.findMany({
+      where: (courses, { eq, and, notInArray }) => {
+        const conditions = [eq(courses.schoolId, userProfile.schoolId)];
+        if (joinedIds.length > 0) {
+          conditions.push(notInArray(courses.id, joinedIds));
+        }
+        return and(...conditions);
+      },
+      columns: { id: true, title: true, code: true, accessKey: true }
+    });
+  }
+
+  /**
+   * JOIN SECTOR
+   * Authenticates the access key and links the arenaUser profile to the course.
+   */
   async joinSector(userId: string, accessKey: string) {
     const cleanKey = accessKey.trim().toUpperCase();
 
     return await this.db.transaction(async (tx) => {
+      // 1. Validate Course
       const course = await tx.query.arenaCourses.findFirst({
         where: (courses, { eq }) => eq(courses.accessKey, cleanKey),
       });
 
       if (!course) {
-        throw new BadRequestException('INVALID_ACCESS_KEY: Sector not found in the grid.');
+        throw new BadRequestException('INVALID_ACCESS_KEY: Sector not found.');
       }
 
-      const userMembership = await tx.query.arenaUser.findFirst({
+      // 2. Validate Arena Profile
+      const userProfile = await tx.query.arenaUser.findFirst({
         where: (au, { eq }) => eq(au.userId, userId),
       });
 
-      if (!userMembership) {
-        throw new ForbiddenException('USER_NOT_INITIALIZED: No school affiliation found.');
+      if (!userProfile) {
+        throw new ForbiddenException('USER_NOT_INITIALIZED: No school affiliation.');
       }
 
-      if (course.schoolId !== userMembership.schoolId) {
-        throw new ForbiddenException(
-          'INSTITUTIONAL_MISMATCH: This sector belongs to a different Hub.',
-        );
+      // 3. Institutional Check
+      if (course.schoolId !== userProfile.schoolId) {
+        throw new ForbiddenException('INSTITUTIONAL_MISMATCH: Unauthorized Hub.');
       }
 
+      // 4. Check Duplicate (using userProfile.id, not the base userId)
       const existingLink = await tx.query.arenaUserCourses.findFirst({
         where: (auc, { and, eq }) =>
-          and(eq(auc.userId, userId), eq(auc.courseId, course.id)),
+          and(eq(auc.userId, userProfile.id), eq(auc.courseId, course.id)),
       });
 
       if (existingLink) {
-        return {
-          message: 'Uplink already active',
-          courseId: course.id,
-          title: course.title
-        };
+        return { message: 'Uplink already active', courseId: course.id };
       }
 
+      // 5. Establish Link
       await tx.insert(schema.arenaUserCourses).values({
-        userId: userId,
+        userId: userProfile.id, // Linking internal Arena ID
         courseId: course.id,
       });
 
@@ -160,4 +218,85 @@ export class GatewayService {
       };
     });
   }
+
+  async login(credentials: LoginDto) {
+    const { identity, password } = credentials;
+    const cleanIdentity = identity.trim();
+
+    const user = await this.db.query.users.findFirst({
+      where: (users, { eq, or }) => or(
+        eq(users.username, cleanIdentity),
+        eq(users.email, cleanIdentity.toLowerCase())
+      ),
+      with:{arenaUser:true}
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid tactical credentials.');
+    }
+
+    // 2. Fetch the hashed password
+    const storedCreds = await this.db.query.userCredentials.findFirst({
+      where: (uc, { eq }) => eq(uc.userId, user.id),
+    });
+
+    if (!storedCreds) {
+      throw new BadRequestException('Invalid tactical credentials.');
+    }
+
+    // 3. Verify Password
+    const isMatch = await bcrypt.compare(password, storedCreds.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException('Invalid tactical credentials.');
+    }
+
+    // 4. Get active sectors (courses) for the redirection logic
+    const activeSectors = await this.mySectors(user.id);
+
+    // 5. Generate Payload & Token
+    const payload = { sub: user.id, username: user.username };
+    const token = await this.jwtService.signAsync(payload);
+
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.arenaUser?.role,
+      },
+      sectors: activeSectors
+    };
+  }
+
+  // inside GatewayService class
+  async createInstitution(data: { name: string; slug: string }) {
+    const [newSchool] = await this.db.insert(schema.arenaSchools).values({
+      name: data.name,
+      slug: data.slug.toLowerCase().trim(),
+    }).returning();
+    return newSchool;
+  }
+
+  async createCourse(data: { title: string; code: string; schoolId: string; accessKey: string }) {
+    const [newCourse] = await this.db.insert(schema.arenaCourses).values({
+      title: data.title,
+      code: data.code.toUpperCase(),
+      schoolId: data.schoolId,
+      accessKey: data.accessKey.toUpperCase().trim(),
+    }).returning();
+    return newCourse;
+  }
+
+  async getPlatformStats() {
+    const schools = await this.db.query.arenaSchools.findMany();
+    const courses = await this.db.query.arenaCourses.findMany();
+    const users = await this.db.query.users.findMany();
+
+    return {
+      schoolCount: schools.length,
+      courseCount: courses.length,
+      userCount: users.length
+    };
+  }
+
 }
