@@ -12,38 +12,35 @@ export default function useLogin() {
             return response.data;
         },
         onSuccess: (data) => {
-            // 1. Store the persistent uplink token
             if (data.access_token) {
                 localStorage.setItem("arena_token", data.access_token);
             }
-
-            // 2. Intelligent Redirection Logic
+            if (data.user?.role === "admin") {
+                router.push("/su");
+                return;
+            }
             const sectors = data.sectors || [];
 
             if (sectors.length === 0) {
-                // User has no active sectors, send to join screen
                 router.push("/join-course");
-            } 
+            }
             else if (sectors.length === 1) {
-                // Direct deployment to their only active sector
                 router.push(`/course/${sectors[0].id}`);
-            } 
-            else { 
-                // Multiple active sectors, send to tactical lobby
-                router.push("/lobby"); 
+            }
+            else {
+                router.push("/lobby");
             }
         },
     });
 
-    // Extracting the error message with support for NestJS arrays
-    const errorMessage = 
+    const errorMessage =
         Array.isArray((mutationError as any)?.response?.data?.message)
             ? (mutationError as any).response.data.message[0]
             : (mutationError as any)?.response?.data?.message || mutationError?.message;
 
-    return { 
-        login, 
-        isLoggingIn, 
-        errorMessage 
+    return {
+        login,
+        isLoggingIn,
+        errorMessage
     };
 }

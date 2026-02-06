@@ -1,60 +1,72 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Lock, 
   Terminal, 
   Cpu, 
-  ChevronRight, 
   AlertTriangle,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { cn } from "@verse/ui";
+import useLogin from "@verse/arena-web/hooks/useLogin"; 
 
 export default function SULogin() {
   const router = useRouter();
+  const { login, isLoggingIn, errorMessage } = useLogin();
+  
   const [accessCode, setAccessCode] = useState("");
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
   const [bootSequence, setBootSequence] = useState<string[]>([]);
-  const [error, setError] = useState(false);
 
   const handleOverride = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (accessCode !== "ARENA_OVR_99") {
-      setError(true);
-      setTimeout(() => setError(false), 2000);
-      return;
-    }
-
-    setIsAuthenticating(true);
     
-    const lines = [
-      "ESTABLISHING_SECURE_UPLINK...",
-      "AUTHORIZING_SUPER_USER_PERMISSIONS...",
-      "LOADING_ARCHITECT_RESOURCES...",
-      "HUB_REGISTRATION_MODULE_UNLOCKED.",
-      "SECTOR_INITIALIZATION_READY.",
-      "BYPASS_COMPLETE."
-    ];
-
-    for (let i = 0; i < lines.length; i++) {
-      await new Promise(r => setTimeout(r, 400));
-      setBootSequence(prev => [...prev, lines[i]]);
+    // 1. Initial Access Key Check (Front-gate)
+    if (accessCode !== "ARENA_OVR_99") {
+      return; 
     }
 
-    // Pass SU status via state or query to the dashboard
-    setTimeout(() => router.push("/su"), 500);
+    try {
+        // 2. Trigger Real Backend Authentication via Hook
+        // Using the fixed credentials created by your init-su script
+        await login({ 
+          identity: "ARCHITECT", 
+          password: "AlphaVerse" // Ensure this matches your init-su.ts script
+        });
+
+      // 3. If login succeeds, start the terminal "feel"
+      setShowTerminal(true);
+      
+      const lines = [
+        "ESTABLISHING_SECURE_UPLINK...",
+        "AUTHENTICITY_VERIFIED_BY_GATEWAY...",
+        "AUTHORIZING_SUPER_USER_PERMISSIONS...",
+        "LOADING_ARCHITECT_RESOURCES...",
+        "HUB_REGISTRATION_MODULE_UNLOCKED.",
+        "BYPASS_COMPLETE. REDIRECTING..."
+      ];
+
+      for (let i = 0; i < lines.length; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        setBootSequence(prev => [...prev, lines[i]]);
+      }
+
+      setTimeout(() => router.push("/su"), 800);
+
+    } catch (err) {
+      console.error("Tactical Bypass Failed", err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#020000] flex items-center justify-center p-6 font-mono relative overflow-hidden">
-      
       {/* Background Visuals */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,0,0,0),rgba(255,0,0,0.03))] z-0 pointer-events-none" />
       
       <div className="w-full max-w-lg relative z-10 space-y-6">
-        
         {/* TOP STATUS */}
         <div className="flex items-center justify-between border-b border-red-500/20 pb-4">
           <div className="flex items-center gap-3">
@@ -83,9 +95,9 @@ export default function SULogin() {
         {/* INPUT INTERFACE */}
         <div className={cn(
           "bg-black/90 border border-red-500/20 rounded-2xl p-8 backdrop-blur-2xl transition-all duration-300",
-          error ? "border-red-500 shadow-[0_0_40px_rgba(220,38,38,0.2)]" : "shadow-2xl"
+          errorMessage ? "border-red-500 shadow-[0_0_40px_rgba(220,38,38,0.2)]" : "shadow-2xl"
         )}>
-          {!isAuthenticating ? (
+          {!showTerminal ? (
             <form onSubmit={handleOverride} className="space-y-6">
               <div className="space-y-3">
                 <div className="flex justify-between items-center px-1">
@@ -107,19 +119,23 @@ export default function SULogin() {
 
               <NeonButton 
                 variant="danger" 
-                className="w-full py-8 text-[11px] tracking-[0.4em] font-black uppercase shadow-lg"
+                className="w-full py-8 text-[11px] tracking-[0.4em] font-black uppercase shadow-lg disabled:opacity-50"
                 type="submit"
+                disabled={isLoggingIn || accessCode.length < 5}
               >
-                Execute_Override
+                {isLoggingIn ? (
+                  <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={14} /> AUTHORIZING...</span>
+                ) : "Execute_Override"}
               </NeonButton>
 
-              {error && (
+              {errorMessage && (
                 <div className="flex items-center gap-2 text-red-500 text-[10px] uppercase font-bold justify-center mt-4 animate-in shake-2">
-                  <AlertTriangle size={14} /> Critical_Error: Invalid_Clearance_Hash
+                  <AlertTriangle size={14} /> {`System_Error: ${errorMessage}`}
                 </div>
               )}
             </form>
           ) : (
+            /* TERMINAL BOOT SEQUENCE */
             <div className="space-y-3 min-h-[140px] pt-2">
               {bootSequence.map((line, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-[10px] text-red-400 animate-in fade-in slide-in-from-left-4 duration-300">
@@ -145,7 +161,7 @@ export default function SULogin() {
              </div>
            </div>
            <button 
-             onClick={() => router.push("/admin/login")} 
+             onClick={() => router.push("/login")} 
              className="text-[9px] text-red-400/40 hover:text-red-400 transition-colors uppercase font-bold tracking-widest border-b border-transparent hover:border-red-400 pb-0.5"
            >
              Terminal_Exit
@@ -154,4 +170,4 @@ export default function SULogin() {
       </div>
     </div>
   );
-}
+} 

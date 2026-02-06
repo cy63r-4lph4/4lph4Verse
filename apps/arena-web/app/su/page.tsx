@@ -1,20 +1,41 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Shield, School, BookOpen, HelpCircle, LogOut, LayoutDashboard, Database, Activity
 } from "lucide-react";
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
-import { useRouter } from "next/navigation";
 
 // --- MODULE IMPORTS ---
 import OverviewModule from "./modules/OverviewModule";
 import InstitutionsModule from "./modules/InstitutionsModule";
 import CourseModule from "./modules/CourseModule";
 import QuestionsModule from "./modules/QuestionaModule";
+import useAuth from "@verse/arena-web/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState("overview");
+    const { user, isLoading, isAdmin, logout } = useAuth();
+    const router = useRouter();
+
+    // 1. Initial Protection Logic
+    useEffect(() => {
+        if (!isLoading && (!user || !isAdmin)) {
+            router.push("/login");
+        }
+    }, [user, isLoading, isAdmin, router]);
+
+    if (isLoading) {
+        return (
+            <div className="h-screen w-full bg-black flex items-center justify-center">
+                <Loader2 className="text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    if (!isAdmin) return null;
 
     // 1. Module Selector Logic
     const renderActiveModule = () => {

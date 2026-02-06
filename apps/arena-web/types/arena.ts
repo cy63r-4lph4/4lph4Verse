@@ -12,7 +12,7 @@ export interface RegisterData {
 }
 
 export interface LoginData {
-  username: string;
+  identity: string;
   password: string;
 }
 
@@ -23,17 +23,17 @@ export interface SchoolData {
   id: string; // Unique UUID or Nanoid
   name: string; // Formal name (e.g., "Stanford University")
   code: string; // Tactical short-code (e.g., "STAN")
-  
+
   // Stats for the Dashboard HUD
   studentCount: number; // Total "Fighters" enrolled
   courseCount: number; // Total "Sectors" active
-  
+
   // Metadata & System Info
   status: "Active" | "Maintenance" | "Decommissioned";
   domain?: string; // Optional: e.g., "stanford.edu" for auto-routing users
   createdAt: string; // ISO Date string
   updatedAt?: string; // Track system modifications
-  
+
   // Tactical Styling (Optional - for custom branding per school)
   brandColor?: string; // Hex code for primary theme overrides
 }

@@ -62,7 +62,7 @@ export default function QuestionsModule() {
 
           <div className="h-10 w-px bg-white/10 mx-2 hidden md:block" />
 
-          <NeonButton size="lg" className="bg-arena-warning hover:shadow-[0_0_20px_rgba(var(--warning-rgb),0.4)] text-black">
+          <NeonButton size="lg" variant="warning" className="bg-arena-warning hover:shadow-[0_0_20px_rgba(var(--warning-rgb),0.4)] text-black">
             <Plus size={18} className="mr-2" /> CREATE_ASSET
           </NeonButton>
         </div>

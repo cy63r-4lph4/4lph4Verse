@@ -22,7 +22,7 @@ export default function Login() {
     if (!cleanUsername || !password) return;
 
     try {
-      await login({ username: cleanUsername, password });
+      await login({ identity: cleanUsername, password });
     } catch (err) {
     }
   };
