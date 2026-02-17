@@ -7,13 +7,13 @@ import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { InputField } from "@verse/arena-web/components/ui/InputField";
-import useLogin from "@verse/arena-web/hooks/useLogin"; 
+import useLogin from "@verse/arena-web/hooks/useLogin";
 
 export default function Login() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const { login, isLoggingIn, errorMessage } = useLogin();
 
   const handleLogin = async (e?: React.FormEvent) => {
@@ -31,7 +31,7 @@ export default function Login() {
 
   return (
     <EnergyBackground className="flex flex-col h-dvh overflow-hidden">
-      
+
       {/* Top Nav: Tactical Breadcrumb */}
       <div className="px-6 pt-8 flex items-center justify-between z-50">
         <button
@@ -43,15 +43,15 @@ export default function Login() {
         </button>
 
         <div className="flex items-center gap-2">
-           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]" />
-           <span className="text-primary font-mono text-[9px] tracking-[0.4em] uppercase">
-             Auth_Protocol
-           </span>
+          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]" />
+          <span className="text-primary font-mono text-[9px] tracking-[0.4em] uppercase">
+            Auth_Protocol
+          </span>
         </div>
       </div>
 
       <div className="flex-1 px-6 py-8 flex flex-col items-center justify-center">
-        
+
         {/* Header HUD */}
         <div className="text-center mb-10 animate-fade-scale-in">
           <div className="relative inline-block mb-4">
@@ -68,7 +68,7 @@ export default function Login() {
           </p>
         </div>
 
-        <form 
+        <form
           onSubmit={handleLogin}
           className="w-full max-w-sm space-y-6 animate-slide-up"
         >
@@ -80,9 +80,9 @@ export default function Login() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="E.G. SHADOWHAWK"
               autoComplete="username"
-              className="uppercase" // Match your input style across the app
+              className="uppercase"
             />
-            
+
             <div className="relative group">
               <InputField
                 label="Security Key"
@@ -92,7 +92,7 @@ export default function Login() {
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
-              <button 
+              <button
                 type="button"
                 className="absolute right-4 bottom-3 text-[8px] font-mono text-primary/40 hover:text-primary uppercase tracking-tighter"
               >
@@ -110,7 +110,7 @@ export default function Login() {
                   Uplink_Intercepted
                 </p>
                 <p className="text-[9px] font-mono text-destructive/80 leading-tight uppercase">
-                  {`> ${errorMessage}`}
+                  {`> ${errorMessage}. Please try again.`}
                 </p>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function Login() {
       <div className="p-8 mt-auto flex flex-col items-center gap-3 opacity-30 shrink-0">
         <ShieldCheck size={20} />
         <p className="text-[7px] font-mono text-white tracking-[0.4em] uppercase text-center">
-          Encrypted_Connection_Active // DeskMate_v2.0
+          Encrypted_Connection_Active // DeskMate_v1.0
         </p>
       </div>
     </EnergyBackground>

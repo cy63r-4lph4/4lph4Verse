@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import ArenaAvatar from "./ArenaAvatar";
+import { cn } from "@verse/ui";
 
 interface Fighter {
   id: string;

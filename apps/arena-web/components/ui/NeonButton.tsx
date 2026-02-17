@@ -2,7 +2,7 @@ import { cn } from "@verse/ui";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 interface NeonButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "warning";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "warning" | "success";
   size?: "sm" | "md" | "lg" | "xl" | "responsive";
   glow?: boolean;
 }
@@ -11,6 +11,7 @@ const variantClasses = {
   primary: "bg-primary text-primary-foreground btn-neon",
   secondary: "bg-secondary text-secondary-foreground btn-neon-secondary",
   danger: "bg-destructive text-destructive-foreground border-destructive/50 shadow-[0_0_20px_hsl(var(--glow-destructive)/0.3)] hover:shadow-[0_0_30px_hsl(var(--glow-destructive)/0.5)]",
+  success: "bg-arena-success text-black shadow-[0_0_20px_hsl(var(--success)/0.3)] hover:shadow-[0_0_30px_hsl(var(--success)/0.5)]",
   warning: "bg-arena-warning text-black shadow-[0_0_20px_hsl(var(--warning)/0.3)] hover:shadow-[0_0_30px_hsl(var(--warning)/0.5)]", ghost: "bg-transparent text-foreground hover:bg-muted",
   outline: "bg-transparent border-2 border-primary text-primary hover:bg-primary/10",
 };

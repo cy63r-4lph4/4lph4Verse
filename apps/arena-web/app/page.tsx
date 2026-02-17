@@ -6,15 +6,12 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-  
+
   return (
-    <EnergyBackground className="flex flex-col items-center justify-center">
-      {/* Using dynamic viewport height (dvh) ensures mobile browsers 
-         don't hide the bottom content behind the address bar. 
-      */}
-      <div className="flex flex-col items-center justify-between h-dvh  max-w-7xl px-6 py-10 md:py-16">
-        
-        {/* Header: System Status - Pushed to top safe area */}
+    <EnergyBackground className="flex flex-col items-center justify-center fixed inset-0 h-screen pt-4 pb-12 w-full">
+
+      <div className="flex flex-col items-center justify-between h-full  max-w-7xl px-6 py-10 md:py-16">
+
         <div className="w-full flex justify-between items-center opacity-40">
           <div className="flex items-center gap-2">
             <div className="w-1 h-1 bg-primary animate-pulse rounded-full" />
@@ -33,8 +30,8 @@ export default function Home() {
           <div className="mt-12 md:mt-20 animate-slide-up w-full max-w-sm px-4" style={{ animationDelay: "0.4s" }}>
             <NeonButton
               size="responsive"
-              onClick={() => router.push("/setup")}
-              className="w-full" 
+              onClick={() => router.push("/login")}
+              className="w-full"
             >
               Enter the Arena
             </NeonButton>
@@ -44,7 +41,7 @@ export default function Home() {
         {/* Footer: Live Status - Bottom weighted for "App" feel */}
         <div className="w-full flex flex-col items-center gap-6 animate-fade-in" style={{ animationDelay: "0.8s" }}>
           <div className="h-1px w-1/2 bg-linear-to-r from-transparent via-primary/30 to-transparent" />
-          
+
           <div className="flex flex-col md:flex-row gap-4 md:gap-12 items-center text-[10px] text-muted-foreground/60 tracking-[0.2em] font-medium">
             <span className="flex items-center gap-2 uppercase">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]" />

@@ -1,6 +1,9 @@
 "use client";
-import { useState, useMemo } from "react";
-import { Link2, Plus, ShieldCheck, Target, Lock, AlertTriangle, Loader2, Search, Check } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { 
+  Link2, Plus, ShieldCheck, Target, Lock, 
+  AlertTriangle, Loader2, Search, Check 
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import { InputField } from "@verse/arena-web/components/ui/InputField";
@@ -14,35 +17,65 @@ interface ArenaCourse {
   title: string;
   accessKey: string;
   schoolId: string;
+  code: string;
 }
 
 const JoinCourse = () => {
   const router = useRouter();
-  const [accessKey, setAccessKey] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const { join, isVerifying, errorMessage } = useJoinSector();
   
+  // 1. Fetching available sectors with proper fallback
   const { data: availableSectors = [], isLoading: sectorsLoading } = useFetch<ArenaCourse[]>(
     "/v1/gateway/available-sectors",
     "available-sectors"
   );
 
-  const suggestedSectors = useMemo(() => {
-    if (accessKey.length < 2) return [];
-    const term = accessKey.toUpperCase();
-    return availableSectors.filter(s =>
-      s.accessKey.includes(term) || s.title.toUpperCase().includes(term)
-    ).slice(0, 6);
-  }, [accessKey, availableSectors]);
-
-  const handleJoin = async () => {
-    if (accessKey.trim()) {
-      try {
-        await join(accessKey.trim().toUpperCase());
-      } catch (e) {
-        console.error("Uplink failed");
+  // 2. Click Outside Handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
       }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 3. Search Logic (Title or Key)
+  const suggestedSectors = useMemo(() => {
+    if (query.length < 2) return [];
+    const term = query.toUpperCase();
+    return availableSectors.filter(s =>
+      s.accessKey.toUpperCase().includes(term) || 
+      s.title.toUpperCase().includes(term) ||s.code.toUpperCase().includes(term)
+    ).slice(0, 5);
+  }, [query, availableSectors]);
+
+  const handleJoin = async (targetKey: string) => {
+    if (!targetKey.trim()) return;
+    try {
+      await join(targetKey.trim().toUpperCase());
+    } catch (e) {
+      console.error("Uplink failed", e);
+    }
+  };
+
+  const handleClipboardUplink = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      // Match either a full URL or a likely access key format
+      if (text.includes("arena/join/")) {
+        const key = text.split("/").pop();
+        if (key) setQuery(key.toUpperCase());
+      } else if (text.length > 3 && text.length < 20) {
+        setQuery(text.toUpperCase());
+      }
+    } catch (err) {
+      console.error("Clipboard access denied");
     }
   };
 
@@ -51,178 +84,149 @@ const JoinCourse = () => {
       <div className="flex-1 flex flex-col px-6 py-12 max-w-lg mx-auto w-full overflow-y-auto no-scrollbar">
 
         {/* Step Header */}
-        <div className="text-center mb-12 animate-fade-scale-in">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4 animate-in fade-in zoom-in duration-500">
             <Target size={12} className="text-primary animate-pulse" />
-            <span className="text-[10px] font-mono text-primary tracking-[0.2em] uppercase">Sector Selection</span>
+            <span className="text-[10px] font-mono text-primary tracking-[0.2em] uppercase">Neural Link</span>
           </div>
-          <h1 className="font-display text-2xl font-black text-white tracking-widest uppercase mb-2 text-glow">
-            Enter Course
+          <h1 className="font-display text-3xl font-black text-white tracking-tighter uppercase mb-2 text-glow-primary">
+            Initialize_Sync
           </h1>
-          <p className="text-muted-foreground text-[10px] font-mono uppercase tracking-widest">
+          <p className="text-muted-foreground text-[10px] font-mono uppercase tracking-[0.3em] opacity-70">
             Acquiring Battleground Access
           </p>
         </div>
 
         {/* Input Area */}
-        <div className="flex-1 flex flex-col justify-center animate-slide-up" style={{ animationDelay: "0.2s" }}>
-          <div className="w-full space-y-8">
-            <div className="relative group">
-              <InputField
-                label="Sector Access Key"
-                prefixText="ARENA_ID"
-                value={accessKey}
-                onFocus={() => setShowSuggestions(true)}
-                onChange={(e) => {
-                    setAccessKey(e.target.value.toUpperCase());
-                    setShowSuggestions(true);
-                }}
-                placeholder="E.G. CS50-CAMBRIDGE"
-                autoComplete="off"
-                className={cn(
-                  "text-center text-lg md:text-xl font-display tracking-[0.2em] uppercase py-6 transition-all",
-                  errorMessage && "border-destructive/50 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
-                )}
-              />
-
-              {/* Input Icon: Location Ping */}
-              <div className="absolute right-4 top-[48px] pointer-events-none">
-                <div className="relative flex items-center justify-center">
-                  <div className={cn(
-                    "absolute h-2 w-2 rounded-full bg-primary transition-all duration-500",
-                    isVerifying || sectorsLoading ? "animate-ping" : "opacity-40"
-                  )} />
-                  <Search size={14} className={cn(
-                    "relative transition-colors duration-300",
-                    isVerifying || sectorsLoading ? "text-primary" : "text-muted-foreground/30"
-                  )} />
-                </div>
-              </div>
-
-              {/* TACTICAL DROPDOWN (Mirrored from Setup) */}
-              {showSuggestions && (accessKey.length >= 2 || sectorsLoading) && (
-                <div className="absolute z-100 w-full mt-2 bg-arena-dark/95 border border-primary/30 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300">
-                  
-                  {/* HUD Header */}
-                  <div className="p-2 border-b border-white/5 bg-white/5 flex items-center justify-between">
-                    <p className="text-[8px] font-mono text-primary tracking-[0.2em] px-2 flex items-center gap-2">
-                      {sectorsLoading ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 size={10} className="animate-spin" /> SCANNING_GRID...
-                        </span>
-                      ) : (
-                        <>AVAILABLE_UPLINKS [{suggestedSectors.length}]</>
-                      )}
-                    </p>
-                    <div className="flex gap-1 pr-2">
-                      <div className="w-1 h-1 bg-primary/40 rounded-full" />
-                      <div className="w-1 h-1 bg-primary/20 rounded-full" />
-                    </div>
-                  </div>
-
-                  {/* Scrollable Results */}
-                  <div className="max-h-[220px] overflow-y-auto custom-scrollbar">
-                    {suggestedSectors.length > 0 ? (
-                      suggestedSectors.map((s, index) => (
-                        <button
-                          key={s.id}
-                          style={{ animationDelay: `${index * 40}ms` }}
-                          className="w-full px-4 py-3 text-left hover:bg-primary/10 transition-all flex items-center justify-between group/item animate-in fade-in slide-in-from-left-2"
-                          onClick={() => {
-                            setAccessKey(s.accessKey);
-                            setShowSuggestions(false);
-                          }}
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-[11px] font-display tracking-wider uppercase text-white/80 group-hover/item:text-primary transition-colors">
-                                {s.title}
-                            </span>
-                            <span className="text-[7px] text-muted-foreground/50 font-mono tracking-tighter">
-                              KEY_AUTH_{s.accessKey}
-                            </span>
-                          </div>
-                          <Check size={14} className="opacity-0 group-hover/item:opacity-100 text-primary transition-all -translate-x-2 group-hover/item:translate-x-0" />
-                        </button>
-                      ))
-                    ) : !sectorsLoading && (
-                      <div className="px-4 py-8 text-center">
-                        <p className="text-[10px] font-mono text-destructive uppercase tracking-widest animate-pulse">
-                          [ NO_SECTOR_IDENTIFIED ]
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+        <div className="flex-1 flex flex-col justify-center gap-8">
+          <div className="relative group" ref={dropdownRef}>
+            <InputField
+              label="Sector Radar"
+              prefixText="SCAN_SIG"
+              value={query}
+              onFocus={() => setShowSuggestions(true)}
+              onChange={(e) => {
+                setQuery(e.target.value.toUpperCase());
+                setShowSuggestions(true);
+              }}
+              placeholder="ENTER TITLE OR KEY..."
+              className={cn(
+                "text-center text-lg font-display tracking-[0.1em] uppercase py-6",
+                errorMessage && "border-destructive/50"
               )}
+            />
 
-              {/* Error HUD Overlay */}
-              {errorMessage && !showSuggestions && (
-                <div className="absolute -bottom-10 left-0 right-0 flex items-center justify-center gap-2 text-destructive animate-in fade-in slide-in-from-top-1">
-                  <AlertTriangle size={12} />
-                  <span className="text-[9px] font-mono uppercase tracking-tighter italic font-bold">
-                    {`> ERR: ${errorMessage}`}
+            {/* Scanning Status Icon */}
+            <div className="absolute right-4 top-[48px] flex items-center gap-2">
+              {(sectorsLoading || isVerifying) && <Loader2 size={14} className="text-primary animate-spin" />}
+              <Search size={16} className={cn(
+                "transition-colors",
+                query.length > 0 ? "text-primary" : "text-white/10"
+              )} />
+            </div>
+
+            {/* Suggestions Dropdown */}
+            {showSuggestions && (query.length >= 2 || sectorsLoading) && (
+              <div className="absolute z-50 w-full mt-2 bg-black/90 border border-primary/30 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl animate-in slide-in-from-top-2">
+                <div className="p-2 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                  <span className="text-[8px] font-mono text-primary/60 tracking-widest uppercase px-2">
+                    {sectorsLoading ? "Scanning_Grid..." : `Detected_Signals [${suggestedSectors.length}]`}
                   </span>
                 </div>
-              )}
-            </div>
 
-            <div className="pt-4">
-                <NeonButton
-                size="responsive"
-                onClick={handleJoin}
-                disabled={!accessKey.trim() || isVerifying}
-                className="w-full shadow-glow-primary"
-                >
-                {isVerifying ? "ESTABLISHING UPLINK..." : "INITIALIZE SYNC"}
-                </NeonButton>
-            </div>
-
-            {/* Tactical Divider */}
-            <div className="flex items-center gap-4 py-2">
-              <div className="flex-1 h-px bg-linear-to-r from-transparent to-arena-border" />
-              <span className="text-muted-foreground/40 font-mono text-[9px] tracking-widest">OR</span>
-              <div className="flex-1 h-px bg-linear-to-l from-transparent to-arena-border" />
-            </div>
-
-            {/* Alternative Tactical Options */}
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-arena-card border border-arena-border hover:border-primary/40 transition-all group">
-                <Link2 size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground group-hover:text-white">Uplink</span>
-              </button>
-
-              <button
-                disabled
-                className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/40 border border-white/5 cursor-not-allowed group overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-linear-to-tr from-destructive/10 to-transparent opacity-50" />
-                <Lock size={16} className="text-muted-foreground/40 relative z-10" />
-                <span className="text-[8px] font-bold tracking-widest uppercase text-muted-foreground/40 relative z-10">LOCKED</span>
-                <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity bg-black/90 flex items-center justify-center p-2 text-center">
-                  <p className="text-[7px] text-destructive leading-tight font-mono uppercase tracking-tighter">Requires Level 1 Clearance</p>
+                <div className="max-h-48 overflow-y-auto">
+                  {suggestedSectors.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setQuery(s.accessKey);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-primary/10 flex items-center justify-between group transition-colors"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white group-hover:text-primary uppercase">{s.title}</span>
+                        <span className="text-[8px] font-mono text-white/40">{s.accessKey}</span>
+                      </div>
+                      <Check size={14} className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
+                  
+                  {!sectorsLoading && suggestedSectors.length === 0 && (
+                    <div className="p-6 text-center">
+                      <AlertTriangle size={16} className="mx-auto text-destructive mb-2 opacity-50" />
+                      <p className="text-[9px] font-mono text-destructive/70 uppercase">No Matches Identified</p>
+                    </div>
+                  )}
                 </div>
-              </button>
-            </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="absolute -bottom-8 left-0 right-0 flex items-center justify-center gap-2 text-destructive animate-bounce">
+                <AlertTriangle size={12} />
+                <span className="text-[9px] font-mono uppercase font-bold tracking-tighter">
+                  Error: {errorMessage}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <NeonButton
+            size="xl"
+            onClick={() => handleJoin(query)}
+            disabled={!query.trim() || isVerifying}
+            className="w-full shadow-glow-primary py-8"
+          >
+            {isVerifying ? (
+              <span className="flex items-center gap-3">
+                <Loader2 size={20} className="animate-spin" /> UPLINKING...
+              </span>
+            ) : "ENGAGE_SECTOR"}
+          </NeonButton>
+
+          {/* Tactical UI Divider */}
+          <div className="flex items-center gap-4 py-2 opacity-30">
+            <div className="flex-1 h-px bg-linear-to-r from-transparent to-white" />
+            <span className="text-[9px] font-mono text-white uppercase tracking-widest">Alt_Input</span>
+            <div className="flex-1 h-px bg-linear-to-l from-transparent to-white" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={handleClipboardUplink}
+              className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/10 bg-white/5 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+            >
+              <Link2 size={18} className="text-white/40 group-hover:text-primary group-hover:scale-110 transition-all" />
+              <span className="text-[10px] font-mono text-white/60 uppercase">Paste_Key</span>
+            </button>
+
+            <button className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/5 bg-white/[0.02] cursor-not-allowed opacity-50 relative group">
+              <Lock size={18} className="text-white/20" />
+              <span className="text-[10px] font-mono text-white/20 uppercase">Request</span>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Plus size={14} className="text-destructive" />
+              </div>
+            </button>
           </div>
         </div>
 
         {/* Tactical Footer */}
-        <div className="mt-auto pt-8 text-center space-y-6 shrink-0">
-          <div className="flex flex-col items-center opacity-30">
-            <ShieldCheck size={24} className="mb-2" />
-            <p className="text-[8px] font-mono uppercase tracking-[0.3em]">
-              Verified Secure by DeskMate Infrastructure
+        <div className="mt-auto pt-12 flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-2 opacity-20">
+            <ShieldCheck size={28} className="text-white" />
+            <p className="text-[8px] font-mono text-white uppercase tracking-[0.4em]">
+              Authorized Access Only // DeskMate_v1.0
             </p>
           </div>
 
           <button
             onClick={() => router.push("/lobby")}
-            className="group inline-flex flex-col items-center gap-1"
+            className="text-[10px] font-mono text-white/40 hover:text-primary transition-colors uppercase tracking-[0.2em] relative group"
           >
-            <span className="text-muted-foreground/60 text-[10px] uppercase tracking-[0.2em] group-hover:text-primary transition-colors">
-              Skip for Test-Deployment
-            </span>
-            <div className="h-0.5 w-0 group-hover:w-full bg-primary transition-all duration-300" />
+            Skip_To_Lobby
+            <div className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all group-hover:w-full" />
           </button>
         </div>
       </div>

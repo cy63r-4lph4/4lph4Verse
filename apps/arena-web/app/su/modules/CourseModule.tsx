@@ -1,132 +1,169 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
-  BookOpen, 
-  Search, 
-  Plus, 
-  MoreVertical, 
-  Users, 
-  Zap, 
-  Pencil, 
-  School, 
-  LayoutGrid, 
-  List,
-  ChevronDown,
-  ShieldAlert,
-  Trash2
+  BookOpen, Search, Plus, X, Zap, Pencil, School, 
+  LayoutGrid, List, ChevronDown, ShieldAlert, Trash2, Loader2, Info, 
+  Users
 } from "lucide-react";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { cn } from "@verse/ui";
-
-// Mock Data for Institutions
-const mockHubs = [
-  { id: "1", name: "Stanford University", code: "STAN" },
-  { id: "2", name: "MIT", code: "MIT" },
-  { id: "3", name: "Harvard University", code: "HARV" },
-];
+import { useHubs } from "@verse/arena-web/hooks/useHubs";
+import { useSectors } from "@verse/arena-web/hooks/useSectors";
 
 export default function CoursesModule() {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { hubs } = useHubs();
   const [selectedHubId, setSelectedHubId] = useState<string>("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [formData, setFormData] = useState({ name: "", code: "" });
+  
+  // Prevent hydration mismatch for viewMode or random states
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  const activeHub = mockHubs.find(h => h.id === selectedHubId);
+  const { sectors, isLoading, createSector, isCreating, deleteSector, isDeleting } = useSectors(selectedHubId);
+
+  const activeHub = hubs.find(h => h.id === selectedHubId);
+
+  const filteredSectors = useMemo(() => {
+    return sectors.filter(s => 
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      s.code.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [sectors, searchQuery]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.code) return;
+    try {
+      await createSector(formData);
+      setFormData({ name: "", code: "" });
+      setIsFormOpen(false);
+    } catch (err) { console.error("Initialization Failed", err); }
+  };
+
+  if (!mounted) return null;
 
   return (
-    <div className="p-6 md:p-10 w-full min-h-[calc(100vh-80px)] space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col">
-      
-      {/* SECTOR HEADER */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 border-b border-white/5 pb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className={cn("h-1 w-8 transition-all duration-500", selectedHubId ? "bg-arena-success shadow-[0_0_10px_rgba(var(--success-rgb),0.5)]" : "bg-white/20")} />
-            <span className="text-[10px] font-mono text-arena-success tracking-[0.4em] uppercase">
-              {selectedHubId ? `Sectors_Deployed // ${activeHub?.code}` : "Awaiting_Hub_Selection"}
-            </span>
+    <div className="relative min-h-full">
+      <div className={cn(
+        "p-6 md:p-10 w-full space-y-10 transition-all duration-500",
+        isFormOpen ? "blur-xl opacity-50 scale-[0.98]" : "blur-0 opacity-100"
+      )}>
+        
+        {/* SECTOR HEADER */}
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 border-b border-white/5 pb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className={cn("h-1 w-8 transition-all duration-500", selectedHubId ? "bg-arena-success shadow-[0_0_10px_rgba(var(--success-rgb),0.5)]" : "bg-white/20")} />
+              <span className="text-[10px] font-mono text-arena-success tracking-[0.4em] uppercase font-bold">
+                {selectedHubId ? `Sectors_Deployed // ${activeHub?.slug || 'ARCHIVIST'}` : "Awaiting_Hub_Selection"}
+              </span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-display font-black text-white uppercase tracking-tighter">
+              Battle_Sectors
+            </h1>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-display font-black text-white uppercase tracking-tighter">
-            Battle_Sectors
-          </h1>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          {/* INSTITUTION SELECTOR */}
-          <div className="relative group">
-            <School className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-arena-success transition-colors pointer-events-none" size={14} />
-            <select 
-              value={selectedHubId}
-              onChange={(e) => setSelectedHubId(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-[11px] font-mono text-white focus:border-arena-success/50 outline-none w-64 transition-all appearance-none cursor-pointer"
-            >
-              <option value="" className="bg-[#0a0a0a]">SELECT_INSTITUTION</option>
-              {mockHubs.map(hub => (
-                <option key={hub.id} value={hub.id} className="bg-[#0a0a0a]">
-                  {hub.name.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={14} />
-          </div>
-          
-          {selectedHubId && (
-            <>
-              <div className="h-10 w-px bg-white/10 mx-2 hidden md:block" />
-              
-              <div className="hidden md:flex bg-white/5 p-1 rounded-lg border border-white/10">
-                <button 
-                  onClick={() => setViewMode("grid")}
-                  className={cn("p-2 rounded-md transition-all", viewMode === 'grid' ? 'bg-white/10 text-arena-success' : 'text-muted-foreground')}
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button 
-                  onClick={() => setViewMode("list")}
-                  className={cn("p-2 rounded-md transition-all", viewMode === 'list' ? 'bg-white/10 text-arena-success' : 'text-muted-foreground')}
-                >
-                  <List size={16} />
-                </button>
-              </div>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* View Mode Toggle */}
+            <div className="flex bg-white/5 p-1 rounded-lg border border-white/10 mr-2">
+              <button onClick={() => setViewMode("grid")} className={cn("p-2 rounded-md transition-all", viewMode === 'grid' ? 'bg-white/10 text-arena-success' : 'text-muted-foreground')}>
+                <LayoutGrid size={16} />
+              </button>
+              <button onClick={() => setViewMode("list")} className={cn("p-2 rounded-md transition-all", viewMode === 'list' ? 'bg-white/10 text-arena-success' : 'text-muted-foreground')}>
+                <List size={16} />
+              </button>
+            </div>
 
-              <NeonButton size="lg" className="bg-arena-success hover:shadow-[0_0_20px_rgba(var(--success-rgb),0.4)]">
+            <div className="relative group">
+              <School className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-arena-success pointer-events-none" size={14} />
+              <select 
+                value={selectedHubId}
+                onChange={(e) => setSelectedHubId(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-[11px] font-mono text-white focus:border-arena-success/50 outline-none w-64 transition-all appearance-none cursor-pointer"
+              >
+                <option value="" className="bg-black text-white/40">SELECT_HUB</option>
+                {hubs.map(hub => <option key={hub.id} value={hub.id} className="bg-black">{hub.name.toUpperCase()}</option>)}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+            </div>
+            
+            {selectedHubId && (
+              <NeonButton variant="success" size="lg" onClick={() => setIsFormOpen(true)}>
                 <Plus size={18} className="mr-2" /> INITIALIZE_SECTOR
               </NeonButton>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* CONTENT LOGIC */}
-      {!selectedHubId ? (
-        /* EMPTY STATE: NO INSTITUTION SELECTED */
-        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl bg-white/[0.01] animate-in fade-in zoom-in-95 duration-1000">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-arena-success/10 blur-3xl rounded-full animate-pulse" />
-            <div className="relative p-8 bg-black/40 border border-white/10 rounded-3xl backdrop-blur-xl">
-              <ShieldAlert size={48} className="text-white/20" />
+        {/* CONTENT AREA */}
+        {!selectedHubId ? (
+          <EmptyHubState />
+        ) : isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => <div key={i} className="h-64 bg-white/5 rounded-2xl animate-pulse" />)}
+          </div>
+        ) : (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+              <input 
+                type="text" 
+                placeholder="Filter active signatures..."
+                className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-[11px] font-mono text-white focus:border-arena-success/50 outline-none w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <div className={cn(
+              viewMode === "grid" 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+              : "flex flex-col gap-4"
+            )}>
+              {filteredSectors.map((sector) => (
+                <SectorCard 
+                  key={sector.id} 
+                  sector={sector} 
+                  hubName={activeHub?.name || ""} 
+                  onDelete={deleteSector}
+                  isDeleting={isDeleting}
+                  viewMode={viewMode}
+                />
+              ))}
             </div>
           </div>
-          <h2 className="text-xl font-display font-bold text-white uppercase tracking-widest mb-2">Neural_Link_Offline</h2>
-          <p className="text-muted-foreground font-mono text-[10px] uppercase tracking-[0.2em] max-w-xs text-center leading-relaxed opacity-60">
-            Select an institutional hub from the command console to scan for active battle sectors.
-          </p>
-        </div>
-      ) : (
-        /* SECTOR LISTING */
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          <div className="flex items-center gap-4">
-             <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={14} />
-                <input 
-                  type="text" 
-                  placeholder="Filter active signatures..."
-                  className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-[11px] font-mono text-white focus:border-arena-success/50 outline-none w-full max-w-md transition-all"
-                />
-             </div>
-          </div>
+        )}
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <SectorCard key={i} hubName={activeHub?.name || "Unknown"} />
-            ))}
+      {/* DRAWER REMAINS THE SAME... */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-100 flex justify-end bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-arena-card border-l border-arena-success/20 p-10 flex flex-col shadow-2xl animate-in slide-in-from-right">
+             {/* ... (Existing Form Code) */}
+             <div className="flex justify-between items-center mb-12">
+                <h2 className="text-2xl font-display font-black text-white uppercase italic">Init_Sector</h2>
+                <button onClick={() => setIsFormOpen(false)} className="text-white/40 hover:text-white"><X size={24} /></button>
+             </div>
+             <form onSubmit={handleSubmit} className="space-y-8 flex-1">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-mono font-bold text-arena-success uppercase tracking-widest">Sector_Name</label>
+                 <input autoFocus required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white font-display uppercase" placeholder="e.g. Data Structures" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-mono font-bold text-arena-success uppercase tracking-widest">Sector_Code</label>
+                 <input required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white font-mono" placeholder="e.g. CS101" value={formData.code} onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})} />
+               </div>
+               <div className="flex gap-4 p-4 bg-arena-success/5 border border-arena-success/20 rounded-xl">
+                 <Info size={16} className="text-arena-success shrink-0" />
+                 <p className="text-[9px] font-mono text-arena-success/80 leading-relaxed uppercase">Initialization grants full fighter deployment rights.</p>
+               </div>
+               <NeonButton type="submit" variant="success" className="w-full py-8 mt-auto" size="xl" disabled={isCreating}>
+                 {isCreating ? <Loader2 className="animate-spin" /> : "DEPLOY_SECTOR"}
+               </NeonButton>
+             </form>
           </div>
         </div>
       )}
@@ -134,60 +171,84 @@ export default function CoursesModule() {
   );
 }
 
-function SectorCard({ hubName }: { hubName: string }) {
+function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
+  const [localDeleting, setLocalDeleting] = useState(false);
+  const handleDelete = async () => {
+    setLocalDeleting(true);
+    await onDelete(sector.id);
+    setLocalDeleting(false);
+  };
+
+  if (viewMode === "list") {
+    return (
+      <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:border-arena-success/40 transition-all group">
+        <div className="flex items-center gap-4">
+          <BookOpen size={18} className="text-arena-success" />
+          <span className="font-display font-bold text-white uppercase">{sector.name}</span>
+          <span className="text-[10px] font-mono text-white/40">#{sector.code}</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="hidden md:block w-32 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-arena-success" style={{ width: '85%' }} />
+          </div>
+          <button onClick={handleDelete} className="text-white/20 hover:text-destructive"><Trash2 size={16} /></button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="group relative bg-arena-card/30 border border-white/5 rounded-2xl p-6 hover:border-arena-success/40 transition-all hover:bg-arena-success/[0.02]">
-      <div className="absolute top-0 right-10 h-px w-20 bg-gradient-to-r from-transparent via-arena-success/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      
+    <div className="group relative bg-arena-card/30 border border-white/5 rounded-2xl p-6 hover:border-arena-success/40 transition-all">
       <div className="flex justify-between items-start mb-6">
-        <div className="p-3 bg-white/5 border border-white/10 rounded-xl group-hover:bg-arena-success/20 group-hover:border-arena-success/30 transition-all">
+        <div className="p-3 bg-white/5 border border-white/10 rounded-xl group-hover:bg-arena-success/20 transition-all">
           <BookOpen size={20} className="text-muted-foreground group-hover:text-arena-success" />
         </div>
-        <div className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-arena-success border border-arena-success/30 px-2 py-0.5 rounded uppercase">Active</span>
-            <button className="text-muted-foreground hover:text-white transition-colors"><MoreVertical size={16}/></button>
+        <div className="flex gap-2">
+           <button className="p-2 text-white/20 hover:text-white transition-colors"><Pencil size={14} /></button>
+           <button onClick={handleDelete} disabled={isDeleting} className="p-2 text-white/20 hover:text-destructive">
+             {localDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+           </button>
         </div>
       </div>
 
       <div className="mb-6">
-        <h3 className="text-xl font-display font-bold text-white uppercase group-hover:text-glow-success transition-all">Data_Structures</h3>
-        <p className="text-[10px] font-mono text-arena-success/60 mt-1 uppercase tracking-widest leading-none">Code: #CS101 // Hub: {hubName}</p>
+        <h3 className="text-xl font-display font-bold text-white uppercase group-hover:text-glow-success">{sector.name}</h3>
+        <p className="text-[10px] font-mono text-arena-success/60 mt-1 uppercase">Code: #{sector.code} // Hub: {hubName}</p>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-center text-[9px] font-mono uppercase">
-            <span className="text-muted-foreground">Sector_Integrity</span>
-            <span className="text-arena-success">88%</span>
-          </div>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-arena-success shadow-[0_0_8px_rgba(var(--success-rgb),0.5)] w-[88%]" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="bg-white/5 rounded-lg p-3 border border-white/5">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Users size={12} />
-              <span className="text-[8px] font-mono uppercase">Fighters</span>
-            </div>
-            <span className="text-sm font-display font-bold text-white tracking-wide">420</span>
-          </div>
-          <div className="bg-white/5 rounded-lg p-3 border border-white/5">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Zap size={12} />
-              <span className="text-[8px] font-mono uppercase">Intel_Assets</span>
-            </div>
-            <span className="text-sm font-display font-bold text-white tracking-wide">156</span>
-          </div>
-        </div>
+      {/* Tactical Integrity Bar */}
+      <div className="space-y-1 mb-6">
+         <div className="flex justify-between text-[8px] font-mono text-white/40 uppercase">
+           <span>Sector_Integrity</span>
+           <span>85%</span>
+         </div>
+         <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+           <div className="h-full bg-arena-success shadow-[0_0_10px_rgba(var(--success-rgb),0.5)]" style={{ width: '85%' }} />
+         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-white/5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button className="flex-1 bg-white/5 hover:bg-white/10 text-[10px] font-mono py-2 rounded-lg text-white uppercase transition-all">Manage_Sector</button>
-        <button className="px-3 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all"><Pencil size={14} /></button>
-        <button className="px-3 bg-white/5 hover:bg-destructive/10 text-destructive rounded-lg transition-all hover:border hover:border-destructive/20"><Trash2 size={14} /></button>
+      <div className="grid grid-cols-2 gap-4">
+        <StatBox label="Fighters" value={sector.fighterCount || 0} icon={<Users size={12} />} />
+        <StatBox label="Intel_Assets" value={sector.intelAssets || 0} icon={<Zap size={12} />} />
       </div>
     </div>
   );
 }
+
+const EmptyHubState = () => (
+  <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl bg-white/[0.01] py-20">
+    <ShieldAlert size={48} className="text-white/10 mb-4" />
+    <h2 className="text-xl font-display font-bold text-white uppercase tracking-widest">Neural_Link_Offline</h2>
+    <p className="text-muted-foreground font-mono text-[10px] uppercase opacity-60">Select a hub to scan battle sectors.</p>
+  </div>
+);
+
+const StatBox = ({ label, value, icon }: any) => (
+  <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+    <div className="flex items-center gap-2 mb-1 opacity-40">
+      {icon}
+      <span className="text-[8px] font-mono uppercase text-muted-foreground">{label}</span>
+    </div>
+    <span className="text-sm font-display font-bold text-white tracking-wide">{value}</span>
+  </div>
+);

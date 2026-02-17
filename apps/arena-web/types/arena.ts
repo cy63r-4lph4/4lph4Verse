@@ -22,7 +22,7 @@ export interface LoginData {
 export interface SchoolData {
   id: string; // Unique UUID or Nanoid
   name: string; // Formal name (e.g., "Stanford University")
-  code: string; // Tactical short-code (e.g., "STAN")
+  slug: string; // Tactical short-code (e.g., "STAN")
 
   // Stats for the Dashboard HUD
   studentCount: number; // Total "Fighters" enrolled

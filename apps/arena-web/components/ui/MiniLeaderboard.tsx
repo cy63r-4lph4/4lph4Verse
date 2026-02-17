@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@verse/ui";
 import ArenaAvatar from "./ArenaAvatar";
 import { Trophy, ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
 
@@ -10,7 +10,7 @@ interface Player {
   trend?: "up" | "down" | "same";
 }
 
-interface MiniLeaderboardProps {
+interface MiniLeaderboardProps {  
   players: Player[];
   currentUserRank?: number;
   currentUserProgress?: number;

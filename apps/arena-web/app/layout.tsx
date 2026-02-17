@@ -5,6 +5,7 @@ import { QueryProvider } from "@verse/arena-web/components/QueryProvider";
 
 export const viewport: Viewport = {
   width: "device-width",
+  height: "device-height",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -21,11 +22,12 @@ export const metadata: Metadata = {
 };
 
 
+// app/layout.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-arena-darker selection:bg-primary/30 no-overscroll">
-        <main className="relative min-h-dvh flex flex-col overflow-x-hidden">
+    <html lang="en" className="dark selection:bg-primary/30">
+      <body className="bg-arena-darker text-foreground antialiased min-h-screen overflow-x-hidden">
+        <main className="relative flex flex-col min-h-screen">
           <QueryProvider>{children}</QueryProvider>
         </main>
       </body>
