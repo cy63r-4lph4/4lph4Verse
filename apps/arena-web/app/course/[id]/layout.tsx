@@ -9,13 +9,28 @@ const currentUser = { name: "SHADOW_OPERATOR", level: 14, avatar: "https://api.d
 export default function CourseLayout({ children }: { children: React.ReactNode }) {
   return (
     <EnergyBackground className="h-dvh w-full flex flex-col overflow-hidden">
-      <CourseHeader currentCourse={currentCourse} courses={allCourses} currentUser={currentUser} />
-      
-      <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
-        {children}
-      </div>    
+    
+      <div className="z-50 w-full  fixed">
+        <CourseHeader
+          currentCourse={currentCourse}
+          courses={allCourses}
+          currentUser={currentUser}
+        />
+      </div>
 
-      <CourseBottomNav />
+     
+      <main className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-4 pb-32 pt-2">
+        <div className="max-w-md mx-auto w-full"> {/* Keeps content readable on tablets */}
+          {children}
+        </div>
+      </main>
+
+      {/* Bottom Nav: Use a blur effect so the 
+         background energy orbs are visible through it 
+      */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-linear-to-t from-black to-transparent">
+        <CourseBottomNav />
+      </div>
     </EnergyBackground>
   );
 }
