@@ -1,0 +1,161 @@
+// mockFighters.ts
+
+import { Fighter } from "@verse/arena-web/app/course/[id]/modules/ActiveFighters";
+import { FeedItemType } from "@verse/arena-web/app/course/[id]/modules/FeedCard";
+
+export const mockFighters: Fighter[] = [
+    { id: "1", name: "NIGHT_HAWK", isOnline: true, level: 18, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
+    { id: "2", name: "CYBER_QUEEN", isOnline: true, level: 14, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
+    { id: "3", name: "MORPH_ZERO", isOnline: false, level: 9, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morph" },
+    { id: "4", name: "NEO_X", isOnline: false, level: 16, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo" },
+    { id: "5", name: "BLAZE_RUN", isOnline: true, level: 11, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze" },
+    { id: "6", name: "SHADOW_SIX", isOnline: false, level: 7, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=six" },
+    { id: "7", name: "TRIN_03", isOnline: true, level: 12, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trin" },
+];
+
+// mockFeed.ts
+
+export const mockFeed: FeedItemType[] = [
+  {
+    id: "feed-001",
+    type: "challenge",
+    time: "JUST_NOW",
+    challenger: { name: "CYBER_QUEEN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
+    expiresIn: "04:32",
+    isForYou: true,
+    reactions: { respect: 3 },
+  },
+  {
+    id: "feed-002",
+    type: "battle",
+    time: "2M_AGO",
+    winner: { name: "NIGHT_HAWK",  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk",  score: 98 },
+    loser:  { name: "BLAZE_RUN",   avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze", score: 74 },
+    quizName: "BINARY_SEARCH_TREES",
+    reactions: { respect: 12, fire: 5 },
+    comments: [
+      { id: "c1", user: "MORPH_ZERO", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morph", text: "Bro that 98 is insane 😭", time: "1M_AGO" },
+      { id: "c2", user: "NEO_X",      avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo",   text: "BLAZE_RUN needs to grind more lol", time: "30S_AGO" },
+    ],
+  },
+  {
+    id: "feed-003",
+    type: "announcement",
+    time: "10M_AGO",
+    instructor: { name: "Dr. Mensah", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=prof" },
+    title: "Quiz 3 drops Friday 8AM — Trees & Graphs",
+    content: "Make sure you've reviewed week 5 slides. Top 3 scorers earn bonus XP and a permanent leaderboard badge. No extensions — the arena closes at midnight.",
+    pinned: true,
+    reactions: { respect: 41 },
+  },
+  {
+    id: "feed-004",
+    type: "rank",
+    time: "15M_AGO",
+    user: { name: "CYBER_QUEEN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
+    newRank: "PLATINUM III",
+    direction: "up",
+    reactions: { respect: 24, fire: 9 },
+  },
+  {
+    id: "feed-005",
+    type: "battle",
+    time: "18M_AGO",
+    winner: { name: "MORPH_ZERO", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morph", score: 91 },
+    loser:  { name: "TRIN_03",    avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trin",  score: 88 },
+    quizName: "LINKED_LIST_REVERSAL",
+    reactions: { respect: 7, fire: 3 },
+    comments: [
+      { id: "c3", user: "CYBER_QUEEN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen", text: "88 vs 91 that was close fr 🔥", time: "12M_AGO" },
+    ],
+  },
+  {
+    id: "feed-006",
+    type: "post",
+    time: "22M_AGO",
+    author: { name: "TRIN_03", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trin" },
+    postType: "question",
+    content: "Can someone explain the difference between BFS and DFS for traversal? I keep picking the wrong one in duels and it's costing me matches 😭",
+    reactions: { respect: 7, fire: 2 },
+    comments: [
+      { id: "c4", user: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk", text: "BFS uses a queue, DFS uses a stack. BFS = level by level, DFS = deep first. That's it.", time: "18M_AGO" },
+      { id: "c5", user: "MORPH_ZERO", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morph", text: "Think of BFS as spreading out like water, DFS like digging a hole.", time: "15M_AGO" },
+    ],
+  },
+  {
+    id: "feed-007",
+    type: "quiz",
+    time: "30M_AGO",
+    quizName: "HASH TABLES & COLLISIONS",
+    difficulty: "hard",
+    instructor: { name: "Dr. Mensah", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=prof" },
+    reactions: { respect: 18 },
+  },
+  {
+    id: "feed-008",
+    type: "challenge",
+    time: "35M_AGO",
+    challenger: { name: "GHOST_SIX", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=six" },
+    expiresIn: "01:15",
+    isForYou: false,
+    reactions: { respect: 1 },
+  },
+  {
+    id: "feed-009",
+    type: "rank",
+    time: "42M_AGO",
+    user: { name: "BLAZE_RUN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze" },
+    newRank: "SILVER II",
+    direction: "down",
+    reactions: { respect: 2 },
+    comments: [
+      { id: "c6", user: "NEO_X", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo", text: "Come back stronger 💪", time: "40M_AGO" },
+    ],
+  },
+  {
+    id: "feed-010",
+    type: "post",
+    time: "1H_AGO",
+    author: { name: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
+    postType: "thought",
+    content: "Stack overflow errors hit different when you're 30 seconds from winning a duel. Always check your base case first. That's the lesson.",
+    reactions: { respect: 33, fire: 14 },
+    comments: [
+      { id: "c7", user: "CYBER_QUEEN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen", text: "Speaking from experience I see 😂", time: "55M_AGO" },
+      { id: "c8", user: "TRIN_03",     avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trin",  text: "This just saved me in practice mode lmao", time: "50M_AGO" },
+    ],
+  },
+  {
+    id: "feed-011",
+    type: "battle",
+    time: "1H_AGO",
+    winner: { name: "NEO_X",      avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo",   score: 100 },
+    loser:  { name: "GHOST_SIX",  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=six",   score: 45  },
+    quizName: "RECURSION & BASE CASES",
+    reactions: { respect: 20, fire: 11 },
+    comments: [
+      { id: "c9",  user: "MORPH_ZERO",  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morph", text: "100 points?! NEO_X is built different 🐐", time: "58M_AGO" },
+      { id: "c10", user: "NIGHT_HAWK",  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk",  text: "GHOST_SIX you good bro? 45 is rough 💀", time: "52M_AGO" },
+      { id: "c11", user: "GHOST_SIX",   avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=six",   text: "I blanked on every recursion question. Rematch incoming.", time: "48M_AGO" },
+    ],
+  },
+  {
+    id: "feed-012",
+    type: "quiz",
+    time: "2H_AGO",
+    quizName: "SORTING ALGORITHMS",
+    difficulty: "medium",
+    instructor: { name: "Dr. Mensah", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=prof" },
+    reactions: { respect: 29 },
+  },
+  {
+    id: "feed-013",
+    type: "announcement",
+    time: "3H_AGO",
+    instructor: { name: "Dr. Mensah", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=prof" },
+    title: "New resource uploaded — Week 6 notes",
+    content: "Graph traversal notes are now in the course folder. Read before Friday. I've also added 3 new practice questions — contribute your own for credibility points.",
+    pinned: false,
+    reactions: { respect: 15 },
+  },
+];

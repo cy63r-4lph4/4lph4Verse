@@ -1,154 +1,279 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Zap, Activity, ShieldAlert } from "lucide-react";
-import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
+import { useState, useEffect, useCallback } from "react";
+import { Activity, ShieldAlert, Swords, Trophy, Zap } from "lucide-react";
 import { cn } from "@verse/ui";
-import ActiveFighters from "@verse/arena-web/components/ui/ActiveFighters";
+
 import MiniLeaderboard from "@verse/arena-web/components/ui/MiniLeaderboard";
-import { CourseBottomNav } from "@verse/arena-web/app/course/[id]/modules/BottomNav";
-import { CourseHeader } from "@verse/arena-web/app/course/[id]/modules/SectorSwitcher";
-import FeedCard, { FeedItemType } from "@verse/arena-web/components/ui/FeedCard";
 import { CreatePostSheet } from "@verse/arena-web/app/course/[id]/modules/CreatePostSheet";
 import { ChallengeHero } from "@verse/arena-web/app/course/[id]/modules/ChallengeHero";
+import { useArena } from "@verse/arena-web/app/course/[id]/ArenaContext";
+import { mockFeed, mockFighters } from "@verse/arena-web/app/course/[id]/modules/MockFighters";
+import ActiveFighters from "@verse/arena-web/app/course/[id]/modules/ActiveFighters";
+import FeedCard, { FeedItemType } from "@verse/arena-web/app/course/[id]/modules/FeedCard";
 
-// Tactical Components
+// ─── Types ────────────────────────────────────────────────────────────────────
 
+interface Fighter {
+    id: string;
+    name: string;
+    isOnline: boolean;
+    avatar: string;
+}
 
-// --- MOCK DATA ---
-const currentCourse = { id: "sector-7g", code: "CS_101", name: "DATA_STRUCTURES", members: 124 };
-const allCourses = [currentCourse, { id: "sector-42", code: "MATH_201", name: "CALCULUS_II", members: 89 }];
-const currentUser = { name: "SHADOW_OPERATOR", level: 14, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=shadow" };
+interface LeaderboardPlayer {
+    rank: number;
+    name: string;
+    score: number;
+    avatar: string;
+}
 
+// ─── Mock data ────────────────────────────────────────────────────────────────
+// Separated from component so it's easy to swap for real API calls later.
 
-const mockFeed: FeedItemType[] = [
-    {
-        id: "log-001",
-        type: "battle",
-        time: "2M_AGO",
-        winner: { name: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk", score: 98 },
-        loser: { name: "BLAZE_RUNNER", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze", score: 74 },
-        quizName: "BINARY_SEARCH_TREES",
-        reactions: { respect: 5 }
-    },
-    {
-        id: "log-002",
-        type: "rank",
-        time: "15M_AGO",
-        user: { name: "CYBER_QUEEN", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
-        newRank: "PLATINUM_III",
-        direction: "up"
-    },
-    {
-        id: "log-003",
-        type: "battle",
-        time: "2M_AGO",
-        winner: { name: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk", score: 98 },
-        loser: { name: "BLAZE_RUNNER", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze", score: 74 },
-        quizName: "BINARY_SEARCH_TREES",
-        reactions: { respect: 5 }
-    },
-    {
-        id: "log-004",
-        type: "battle",
-        time: "2M_AGO",
-        winner: { name: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk", score: 98 },
-        loser: { name: "BLAZE_RUNNER", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze", score: 74 },
-        quizName: "BINARY_SEARCH_TREES",
-        reactions: { respect: 5 }
-    },
+// const MOCK_FIGHTERS: Fighter[] = [
+//   { id: "1", name: "HAWK", isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=1" },
+//   { id: "2", name: "NEO",  isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=2" },
+//   { id: "3", name: "TRIN", isOnline: false, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=3" },
+//   { id: "4", name: "MORPH",isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=4" },
+//   { id: "5", name: "GHOST",isOnline: false, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=5" },
+// ];
+
+const MOCK_LEADERBOARD: LeaderboardPlayer[] = [
+    { rank: 1, name: "NIGHT_HAWK", score: 12500, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
+    { rank: 2, name: "CYBER_QUEEN", score: 11200, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
+    { rank: 3, name: "BLAZE_RUN", score: 9800, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze" },
 ];
 
+
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+/** Countdown alert banner — purely presentational, timer logic lives here */
+function TournamentAlert({ startsIn }: { startsIn: string }) {
+    return (
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/20">
+            <ShieldAlert size={15} className="text-red-500 shrink-0 animate-pulse" />
+            <p className="text-[10px] font-mono text-red-400 uppercase tracking-tighter">
+                Warning: Sector tournament starts in{" "}
+                <span className="text-red-300 font-bold">{startsIn}</span>
+            </p>
+        </div>
+    );
+}
+
+/** Section header with a decorative trailing line */
+function SectionHeading({
+    icon,
+    label,
+    iconClass,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    iconClass?: string;
+}) {
+    return (
+        <div className="flex items-center gap-2 px-1">
+            <span className={cn("shrink-0", iconClass)}>{icon}</span>
+            <h2 className="font-display text-[10px] font-black text-white/50 uppercase tracking-[0.3em] whitespace-nowrap">
+                {label}
+            </h2>
+            <div className="h-px flex-1 bg-linear-to-r from-primary/20 to-transparent" />
+        </div>
+    );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function CourseHome() {
+    // Pull user from context — no prop drilling needed
+    const { currentUser } = useArena();
+
     const [isBooting, setIsBooting] = useState(true);
     const [feedItems, setFeedItems] = useState<FeedItemType[]>(mockFeed);
+    const [countdown, setCountdown] = useState("02:45:12");
 
+    // ── Boot animation: one short delay, then reveal everything at once
+    // Using a single flag keeps the stagger logic simple and avoids
+    // a cascade of individual opacity states.
     useEffect(() => {
-        // Simulate UI Calibration
-        const timer = setTimeout(() => setIsBooting(false), 800);
-        return () => clearTimeout(timer);
+        const t = setTimeout(() => setIsBooting(false), 600);
+        return () => clearTimeout(t);
     }, []);
 
-    const handleCreatePost = (post: any) => {
-        const newEntry: FeedItemType = {
-            id: `log-${Date.now()}`,
-            type: "battle", // Or custom post type
-            time: "NOW",
-            winner: { name: "NIGHT_HAWK", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk", score: 98 },
-            loser: { name: "BLAZE_RUNNER", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze", score: 74 },
-            quizName: "BINARY_SEARCH_TREES",
-            reactions: { respect: 5 }
-        };
-        setFeedItems([newEntry, ...feedItems]);
-    };
+    // ── Countdown timer
+    useEffect(() => {
+        const tick = setInterval(() => {
+            setCountdown((prev) => {
+                const [h, m, s] = prev.split(":").map(Number);
+                const total = h * 3600 + m * 60 + s - 1;
+                if (total <= 0) { clearInterval(tick); return "00:00:00"; }
+                const nh = Math.floor(total / 3600);
+                const nm = Math.floor((total % 3600) / 60);
+                const ns = total % 60;
+                return [nh, nm, ns].map((n) => String(n).padStart(2, "0")).join(":");
+            });
+        }, 1000);
+        return () => clearInterval(tick);
+    }, []);
+
+   // ─── Types ────────────────────────────────────────────────────────────────────
+
+// The payload coming FROM CreatePostSheet
+interface CreatePostPayload {
+  type: "thought" | "question" | "announcement";
+  content: string;
+}
+
+// ─── Factory ──────────────────────────────────────────────────────────────────
+// Builds a correctly-typed FeedItemType from a CreatePostSheet payload.
+// When you add a real API, replace this with the response shape from your backend.
+//
+// Pattern:
+//   1. Call your API  → const saved = await api.posts.create(payload)
+//   2. Return saved   → return saved as FeedItemType
+//   3. Prepend to feed
+//
+function buildFeedItem(
+  payload: CreatePostPayload,
+  author: { name: string; avatar: string }
+): FeedItemType {
+  const base = {
+    id: `local-${Date.now()}`, // replace with server-generated id after API call
+    time: "NOW",
+    reactions: { respect: 0 },
+    comments: [],
+  };
+
+  // Map the sheet's postType to the FeedCard's UserPostItem shape
+  return {
+    ...base,
+    type: "post",
+    author,
+    postType: payload.type,   // "thought" | "question" | "announcement"
+    content: payload.content,
+  };
+}
+
+// ─── Handler ──────────────────────────────────────────────────────────────────
+
+const handleCreatePost = useCallback(
+  async (payload: CreatePostPayload) => {
+    const author = { name: currentUser.name, avatar: currentUser.avatar };
+
+    // ── Optimistic update ──────────────────────────────────────────────
+    // Prepend immediately so the feed feels instant.
+    // The temp id starts with "local-" so you can identify and replace it
+    // once the server responds.
+    const optimistic = buildFeedItem(payload, author);
+    setFeedItems((prev) => [optimistic, ...prev]);
+
+    // ── Backend integration point ──────────────────────────────────────
+    // Uncomment and adapt when your API is ready:
+    //
+    // try {
+    //   const saved = await api.posts.create({
+    //     courseId: currentCourse.id,
+    //     type: payload.type,
+    //     content: payload.content,
+    //   });
+    //
+    //   // Swap the optimistic entry for the real one (has server id, timestamp etc.)
+    //   setFeedItems((prev) =>
+    //     prev.map((item) => (item.id === optimistic.id ? saved : item))
+    //   );
+    // } catch (err) {
+    //   // Roll back the optimistic entry and show a toast
+    //   setFeedItems((prev) => prev.filter((item) => item.id !== optimistic.id));
+    //   toast.error("Failed to broadcast. Try again.");
+    // }
+  },
+  [currentUser]
+);
+
+    // ── Stagger helpers
+    const reveal = (delayMs: number) =>
+        cn(
+            "transition-all duration-700",
+            isBooting ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        );
+
+    const revealStyle = (delayMs: number): React.CSSProperties =>
+        isBooting ? {} : { transitionDelay: `${delayMs}ms` };
 
     return (
-        
-            <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide overflow-x-hidden">
-                <main className="max-w-md mx-auto px-4 pt-6 space-y-8 h-full ">
+        <div className="w-full space-y-8 py-6">
 
-                    {/* 2. COMBAT TERMINAL (HERO) */}
-                    <section className={cn("transition-all duration-1000 delay-300 transform", isBooting ? "scale-95 opacity-0" : "scale-100 opacity-100")}>
-                        <ChallengeHero onSelectMode={(mode) => console.log(`Initializing ${mode}`)} />
-                    </section>
+            {/* ── 1. CHALLENGE HERO ──────────────────────────────────────────────── */}
+            <section
+                className={cn(
+                    "transition-all duration-700",
+                    isBooting ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                )}
+                style={{ transitionDelay: "100ms" }}
+            >
+                <ChallengeHero
+                    onSelectMode={(mode) => console.log(`Initializing ${mode}`)}
+                />
+            </section>
 
-                    {/* 3. RADAR STRIP */}
-                    <section className={cn("transition-all duration-1000 delay-500", isBooting ? "opacity-0" : "opacity-100")}>
-                        <ActiveFighters fighters={[
-                            { id: '1', name: 'Hawk', isOnline: true, avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=1' },
-                            { id: '2', name: 'Neo', isOnline: true, avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=2' },
-                            { id: '3', name: 'Trinity', isOnline: false, avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=3' },
-                        ]} />
-                    </section>
+            {/* ── 2. ACTIVE FIGHTERS RADAR ───────────────────────────────────────── */}
+            <section className={reveal(200)} style={revealStyle(200)}>
+                <div className="space-y-3">
+                    <SectionHeading
+                        icon={<Zap size={14} className="text-primary animate-pulse" />}
+                        label="Fighters_Online"
+                        iconClass="text-primary"
+                    />
+                    <ActiveFighters fighters={mockFighters} />
+                </div>
+            </section>
 
-                    {/* 4. LIVE LOGS (FEED) */}
-                    <section className="space-y-4">
-                        <div className="flex items-center justify-between px-1">
-                            <div className="flex items-center gap-2">
-                                <Activity size={14} className="text-primary animate-pulse" />
-                                <h2 className="font-display text-[10px] font-black text-white/50 uppercase tracking-[0.3em]">
-                                    Live_Tactical_Logs
-                                </h2>
+            {/* ── 3. LIVE TACTICAL FEED ──────────────────────────────────────────── */}
+            <section className={reveal(300)} style={revealStyle(300)}>
+                <div className="space-y-4">
+                    <SectionHeading
+                        icon={<Activity size={14} className="text-primary animate-pulse" />}
+                        label="Live_Tactical_Logs"
+                    />
+
+                    {/* Tournament alert with live countdown */}
+                    <TournamentAlert startsIn={countdown} />
+
+                    {/* Feed cards with per-item stagger */}
+                    <div className="space-y-3">
+                        {feedItems.map((item, idx) => (
+                            <div
+                                key={item.id}
+                                className={cn(
+                                    "transition-all duration-500",
+                                    isBooting
+                                        ? "opacity-0 translate-y-6"
+                                        : "opacity-100 translate-y-0"
+                                )}
+                                style={{ transitionDelay: `${400 + idx * 80}ms` }}
+                            >
+                                <FeedCard item={item} />
                             </div>
-                            <div className="h-[1px] flex-1 mx-4 bg-gradient-to-r from-primary/20 to-transparent" />
-                        </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                        <div className="space-y-4">
-                            {/* High Priority Alerts (Optional Placeholder) */}
-                            <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/20 flex items-center gap-3 animate-pulse">
-                                <ShieldAlert size={16} className="text-red-500" />
-                                <p className="text-[10px] font-mono text-red-500 uppercase tracking-tighter">
-                                    Warning: Sector tournament starts in 02:45:12
-                                </p>
-                            </div>
+            {/* ── 4. LEADERBOARD ─────────────────────────────────────────────────── */}
+            <section className={reveal(500)} style={revealStyle(500)}>
+                <div className="space-y-3">
+                    <SectionHeading
+                        icon={<Trophy size={14} className="text-yellow-400" />}
+                        label="Sector_Rankings"
+                    />
+                    <MiniLeaderboard players={MOCK_LEADERBOARD} />
+                </div>
+            </section>
 
-                            {/* Feed Cards */}
-                            {feedItems.map((item, idx) => (
-                                <div
-                                    key={item.id}
-                                    className={cn("transition-all duration-700", isBooting ? "translate-y-10 opacity-0" : "translate-y-0 opacity-100")}
-                                    style={{ transitionDelay: `${700 + (idx * 100)}ms` }}
-                                >
-                                    <FeedCard item={item} />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* 5. SIDEBAR WIDGET (Leaderboard) */}
-                    <section className={cn("pb-10 transition-all duration-1000 delay-1000", isBooting ? "opacity-0" : "opacity-100")}>
-                        <MiniLeaderboard
-                            players={[
-                                { rank: 1, name: "NIGHT_HAWK", score: 12500, avatar: "..." },
-                                { rank: 2, name: "CYBER_QUEEN", score: 11200, avatar: "..." },
-                            ]}
-                        />
-                    </section>
-                </main>
-
-                {/* 6. UPLINK TRIGGER (FAB) */}
-                <CreatePostSheet currentUser={currentUser} onCreatePost={handleCreatePost} />
-            </div>
+            {/* ── 5. CREATE POST FAB ─────────────────────────────────────────────── */}
+            {/* Rendered outside the space-y flow so it can be fixed/floating */}
+            <CreatePostSheet currentUser={currentUser} onCreatePost={handleCreatePost} />
+        </div>
     );
 }
