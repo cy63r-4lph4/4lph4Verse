@@ -3,9 +3,11 @@ import { useState } from "react";
 import { ChevronDown, Globe, Bell, Zap, Menu } from "lucide-react";
 import { cn } from "@verse/ui";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
+import { useRouter } from "next/navigation";
 
 export const CourseHeader = ({ currentCourse, courses, currentUser }: any) => {
   const [isOpen, setIsOpen] = useState(false);
+  const router=useRouter()
 
   return (
     <header className="sticky top-0 z-50 w-full px-4 pt-4 pb-2">
@@ -58,21 +60,19 @@ export const CourseHeader = ({ currentCourse, courses, currentUser }: any) => {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full border-2 border-black" />
           </button>
           
-          <div className="h-8 w-[1px] bg-white/10 mx-1 hidden xs:block" />
+          <div className="h-8 w-px bg-white/10 mx-1 hidden xs:block" />
           
-          <button className="flex items-center gap-2 pl-1 group">
-             <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-bold text-white leading-none">@{currentUser.name}</p>
-                <p className="text-[8px] font-mono text-primary uppercase">Rank #{currentUser.rank}</p>
-             </div>
-             <ArenaAvatar 
-                src={currentUser.avatar} 
-                size="sm" 
-                glow 
-                glowColor="primary" 
-                className="border-white/10"
-             />
-          </button>
+          <button
+  onClick={() => router.push("/profile")}
+  className="group active:scale-95 transition-all outline-none"
+>
+  <ArenaAvatar
+    src={currentUser.avatar}
+    size="sm"
+    glow
+    glowColor="primary"
+  />
+</button>
         </div>
       </div>
 
