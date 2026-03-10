@@ -62,7 +62,7 @@ function XpBar({ xp, level }: { xp: number; level: number }) {
       </div>
       <div className="h-[4px] rounded-full bg-white/[0.07] overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-1000"
+          className="h-full rounded-full bg-linear-to-r from-primary to-primary/60 transition-all duration-1000"
           style={{
             width: filled ? `${xp}%` : "0%",
             boxShadow: "0 0 8px hsl(var(--primary) / .5)",
@@ -98,7 +98,7 @@ function StatCard({
     <div
       className={cn(
         "flex flex-col items-center p-4 rounded-2xl border transition-all duration-500",
-        "bg-white/[0.025] border-white/[0.06]",
+        "bg-white/2.5 border-white/6",
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
       )}
     >
@@ -127,8 +127,8 @@ function AchievementCard({ achievement, index }: { achievement: typeof ACHIEVEME
         "relative p-3 rounded-2xl border transition-all duration-500 flex flex-col items-center text-center gap-1",
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
         achievement.unlocked
-          ? "bg-primary/[0.06] border-primary/20"
-          : "bg-white/[0.02] border-white/[0.05]"
+          ? "bg-primary/6 border-primary/20"
+          : "bg-white/2 border-white/5"
       )}
       style={achievement.unlocked ? { boxShadow: "0 0 16px hsl(var(--primary) / .07)" } : undefined}
     >
@@ -176,14 +176,14 @@ export default function Profile() {
     <EnergyBackground className="flex flex-col min-h-dvh">
 
       {/* ── HEADER ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 h-14 px-4 flex items-center justify-between bg-black/70 backdrop-blur-xl border-b border-white/[0.05]">
+      <header className="sticky top-0 z-50 h-14 px-4 flex items-center justify-between bg-black/70 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2">
           <ShieldCheck size={13} className="text-primary" style={{ filter: "drop-shadow(0 0 6px hsl(var(--primary) / .6))" }} />
           <span className="font-display text-[11px] font-black text-white/40 uppercase tracking-[.25em]">
             Identity Confirmed
           </span>
         </div>
-        <button className="w-9 h-9 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] transition-all active:scale-90">
+        <button className="w-9 h-9 rounded-xl border border-white/10 bg-white/4 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/8 transition-all active:scale-90">
           <Settings size={15} />
         </button>
       </header>
@@ -193,11 +193,11 @@ export default function Profile() {
 
           {/* ── OPERATOR CARD ───────────────────────────────────────────────── */}
           <section
-            className="relative rounded-2xl border border-white/[0.08] overflow-hidden p-5"
+            className="relative rounded-2xl border border-white/8 overflow-hidden p-5"
             style={{ background: "linear-gradient(135deg, hsl(var(--primary) / .06) 0%, rgba(0,0,0,.45) 100%)" }}
           >
             {/* Top accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/60 via-primary/30 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary/60 via-primary/30 to-transparent" />
 
             <div className="flex items-start gap-4">
               {/* Avatar */}
@@ -234,7 +234,7 @@ export default function Profile() {
                       Rank #{PROFILE.rank}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08]">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/8">
                     <Zap size={10} className="text-primary" />
                     <span className="font-display text-[10px] font-black text-white/70 uppercase tracking-wide">
                       {PROFILE.totalPoints.toLocaleString()} pts
@@ -254,7 +254,7 @@ export default function Profile() {
               <span className="font-display text-[10px] font-bold text-white/25 uppercase tracking-[.3em] whitespace-nowrap">
                 Combat Stats
               </span>
-              <div className="h-px flex-1 bg-gradient-to-r from-white/[0.08] to-transparent" />
+              <div className="h-px flex-1 bg-linear-to-r from-white/8 to-transparent" />
             </div>
             <div className="grid grid-cols-3 gap-2.5">
               <StatCard icon={Swords}     label="Wins"        value={PROFILE.wins}           subValue={`${PROFILE.losses} losses`} color="text-primary"    index={0} />
@@ -270,7 +270,7 @@ export default function Profile() {
                 <span className="font-display text-[10px] font-bold text-white/25 uppercase tracking-[.3em]">
                   Medals
                 </span>
-                <div className="h-px w-16 bg-gradient-to-r from-white/[0.08] to-transparent" />
+                <div className="h-px w-16 bg-linear-to-r from-white/[0.08] to-transparent" />
               </div>
               <div className="flex items-center gap-1.5">
                 <Star size={10} className="text-amber-400" />

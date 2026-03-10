@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   ArrowLeft, Shuffle, Users, Clock, Hammer,
   Flame, Skull, FileText, Target, Zap
@@ -11,7 +11,6 @@ import { cn } from "@verse/ui";
 // Tactical Components
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
-import { CourseBottomNav } from "@verse/arena-web/app/course/[id]/modules/BottomNav";
 
 // --- VALIDATED DATA STRUCTURES ---
 const quizzes = [
@@ -30,11 +29,14 @@ const hazardStyles = {
 
 export default function QuizSelection() {
   const router = useRouter();
+  const pathname = usePathname();
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredQuizzes = quizzes.filter(q =>
     activeFilter === "All" || q.difficulty.toLowerCase() === activeFilter.toLowerCase()
   );
+  const segments = pathname.split("/").filter(Boolean);
+  const courseBasePath = "/" + segments.slice(0, 2).join("/");
 
   const handleRandomBattle = () => {
     const randomIdx = Math.floor(Math.random() * quizzes.length);
@@ -83,7 +85,7 @@ export default function QuizSelection() {
 
         {/* 3. SUPPORT WINGS */}
         <section className="grid grid-cols-2 gap-3">
-          <button onClick={() => router.push('/forge')} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+          <button onClick={() => router.push(`${courseBasePath}/forge`)} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <div className="relative">
               <Hammer size={20} className="text-arena-warning" />
               <Flame size={10} className="absolute -top-1 -right-1 text-orange-500 animate-pulse" />
@@ -91,7 +93,7 @@ export default function QuizSelection() {
             <span className="text-[9px] font-black uppercase tracking-widest text-white/70">The_Forge</span>
           </button>
 
-          <button onClick={() => router.push('/contributions')} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+          <button onClick={() => router.push(`${courseBasePath}/contributions`)} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <FileText size={20} className="text-primary" />
             <span className="text-[9px] font-black uppercase tracking-widest text-white/70">My_Intel</span>
           </button>
@@ -99,7 +101,7 @@ export default function QuizSelection() {
 
         {/* 4. PRACTICE DUNGEON */}
         <section>
-          <button onClick={() => router.push('/practice')} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all group">
+          <button onClick={() => router.push(`${courseBasePath}/practice`)} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all group">
             <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:rotate-12 transition-transform">
               <Skull size={20} className="text-red-500" />
             </div>
