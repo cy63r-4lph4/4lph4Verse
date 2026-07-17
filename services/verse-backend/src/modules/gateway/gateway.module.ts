@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { GatewayController, AdminController } from './gateway.controller'; // Don't forget AdminController
+import { GatewayController } from './gateway.controller'; // Don't forget AdminController
 import { GatewayService } from './gateway.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -16,8 +16,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  controllers: [GatewayController, AdminController],
+  controllers: [GatewayController],
   providers: [GatewayService, JwtStrategy],
-  exports: [GatewayService],
+  exports: [GatewayService,JwtModule],
 })
 export class GatewayModule { }

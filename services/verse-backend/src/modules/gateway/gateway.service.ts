@@ -97,13 +97,19 @@ export class GatewayService {
     return !!user;
   }
 
-  async getUniversities(): Promise<{ id: string; name: string; slug: string | null }[]> {
+  async getUniversities(includeSystem:boolean=false): Promise<{ id: string; name: string; slug: string | null }[]> {
     const universities = await this.db.query.arenaSchools.findMany({
-      columns: {
-        id: true,
-        name: true,
-        slug: true
-      },
+      where: (schools, { ne, and }) => {
+            if (!includeSystem) {
+                return ne(schools.slug, 'arena-core'); 
+            }
+            return undefined;
+        },
+        columns: {
+            id: true,
+            name: true,
+            slug: true
+        },
     });
 
     return universities;
@@ -141,7 +147,6 @@ export class GatewayService {
     const userProfile = await this.db.query.arenaUser.findFirst({
       where: (au, { eq }) => eq(au.userId, userId),
     });
-
     if (!userProfile) return [];
 
     const joinedCourses = await this.db
@@ -268,35 +273,6 @@ export class GatewayService {
     };
   }
 
-  // inside GatewayService class
-  async createInstitution(data: { name: string; slug: string }) {
-    const [newSchool] = await this.db.insert(schema.arenaSchools).values({
-      name: data.name,
-      slug: data.slug.toLowerCase().trim(),
-    }).returning();
-    return newSchool;
-  }
-
-  async createCourse(data: { title: string; code: string; schoolId: string; accessKey: string }) {
-    const [newCourse] = await this.db.insert(schema.arenaCourses).values({
-      title: data.title,
-      code: data.code.toUpperCase(),
-      schoolId: data.schoolId,
-      accessKey: data.accessKey.toUpperCase().trim(),
-    }).returning();
-    return newCourse;
-  }
-
-  async getPlatformStats() {
-    const schools = await this.db.query.arenaSchools.findMany();
-    const courses = await this.db.query.arenaCourses.findMany();
-    const users = await this.db.query.users.findMany();
-
-    return {
-      schoolCount: schools.length,
-      courseCount: courses.length,
-      userCount: users.length
-    };
-  }
+ 
 
 }
