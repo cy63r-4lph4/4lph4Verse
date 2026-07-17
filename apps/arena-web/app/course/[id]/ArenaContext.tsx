@@ -1,19 +1,8 @@
 "use client";
 
+import { Course, CurrentUser } from "@verse/arena-web/lib/course/types";
 import { createContext, use, useContext } from "react";
 
-export interface Course {
-  id: string;
-  code: string;
-  name: string;
-  members: number;
-}
-
-export interface CurrentUser {
-  name: string;
-  level: number;
-  avatar: string;
-}
 
 export interface ArenaContextValue {
   currentUser: CurrentUser;

@@ -1,59 +1,83 @@
-import { cn } from "@/lib/utils";
-import { MessageSquare, Swords, Trophy } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+"use client";
 
-interface NavItem {
-  icon: React.ReactNode;
-  label: string;
-  path: string;
-}
+import { cn } from "@verse/ui";
+import { MessageSquare, Swords, Trophy, BookOpen, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import useAuth from "@verse/arena-web/hooks/useAuth";
 
-const navItems: NavItem[] = [
-  { icon: <MessageSquare size={22} />, label: "Feed", path: "/course" },
-  { icon: <Swords size={22} />, label: "Quizzes", path: "/quizzes" },
-  { icon: <Trophy size={22} />, label: "Ranks", path: "/leaderboard" },
-];
+const STUDENT_NAV_ITEMS = [
+  { icon: MessageSquare, label: "Feed", segment: "home", href: "", activeIcon: "text-sky-400", activeGlow: "bg-sky-500", activeBorder: "border-sky-500/40" },
+  { icon: Swords, label: "Battle", segment: "duels", href: "/duels", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
+  { icon: Trophy, label: "Ranks", segment: "leaderboard", href: "/leaderboard", activeIcon: "text-amber-400", activeGlow: "bg-amber-500", activeBorder: "border-amber-500/40" },
+  { icon: BookOpen, label: "Resources", segment: "materials", href: "/materials", activeIcon: "text-violet-400", activeGlow: "bg-violet-500", activeBorder: "border-violet-500/40" },
+] as const;
 
-interface CourseBottomNavProps {
-  onBackToLobby?: () => void;
-}
+// Instructors get Feed + Battle (they can still spectate/run tournaments and
+// duel students for demos) plus one Console entry instead of Ranks/Resources,
+// which don't serve a managing instructor.
+const INSTRUCTOR_NAV_ITEMS = [
+  { icon: MessageSquare, label: "Feed", segment: "home", href: "", activeIcon: "text-sky-400", activeGlow: "bg-sky-500", activeBorder: "border-sky-500/40" },
+  { icon: Swords, label: "Battle", segment: "duels", href: "/duels", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
+  { icon: ShieldCheck, label: "Console", segment: "console", href: "/console", activeIcon: "text-primary", activeGlow: "bg-primary", activeBorder: "border-primary/40" },
+] as const;
 
-export const CourseBottomNav = ({ onBackToLobby }: CourseBottomNavProps) => {
-  const location = useLocation();
-  
+export function CourseBottomNav() {
+  const pathname = usePathname();
+  const { user } = useAuth();
+  const isInstructor = user?.role === "instructor" || user?.role === "admin";
+  const items = isInstructor ? INSTRUCTOR_NAV_ITEMS : STUDENT_NAV_ITEMS;
+
+  const segments = pathname.split("/").filter(Boolean);
+  const subSegments = segments.slice(2); // everything after /course/[id]
+  const namedSegments = items.map((i) => i.segment).filter((s) => s !== "home");
+  const activeSegment = subSegments.length === 0
+    ? "home"
+    : namedSegments.find((s) => subSegments.includes(s)) ?? "home";
+
+  const courseBasePath = "/" + segments.slice(0, 2).join("/");
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-arena-darker/95 backdrop-blur-lg border-t border-arena-border">
-      <div className="flex items-center justify-around py-2 max-w-md mx-auto">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          
+    <div className="max-w-md mx-auto relative">
+      <div className="absolute inset-0 bg-black/85 backdrop-blur-2xl rounded-2xl border border-white/[0.08] shadow-[0_-8px_32px_rgba(0,0,0,0.5)]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+      <div className="relative flex items-center justify-around py-2 px-1">
+        {items.map((item) => {
+          const isActive = item.segment === activeSegment;
+          const Icon = item.icon;
+
           return (
             <Link
-              key={item.path}
-              to={item.path}
+              key={item.segment}
+              href={`${courseBasePath}${item.href}`}
               className={cn(
-                "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all duration-200",
-                isActive 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                "relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl outline-none transition-all duration-200",
+                isActive ? "scale-105" : "opacity-40 hover:opacity-70 hover:bg-white/[0.04] active:scale-95",
               )}
             >
-              <div className={cn(
-                "relative",
-                isActive && "text-glow"
-              )}>
-                {item.icon}
-                {isActive && (
-                  <div className="absolute -inset-2 bg-primary/10 rounded-xl -z-10" />
-                )}
+              {isActive && (
+                <div className={cn("absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-6 blur-xl opacity-30 rounded-full pointer-events-none", item.activeGlow)} />
+              )}
+              <div className="relative">
+                <Icon size={isActive ? 21 : 19} strokeWidth={isActive ? 2.2 : 1.8} className={cn("transition-all duration-200", isActive ? item.activeIcon : "text-white")} />
+                {isActive && <span className={cn("absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full", item.activeGlow)} />}
               </div>
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className={cn("font-display text-[9px] font-bold uppercase tracking-wider leading-none transition-colors duration-200", isActive ? "text-white" : "text-white/40")}>
+                {item.label}
+              </span>
+              {isActive && (
+                <>
+                  <div className={cn("absolute top-0 left-0 w-2 h-2 border-t border-l rounded-tl-lg", item.activeBorder)} />
+                  <div className={cn("absolute bottom-0 right-0 w-2 h-2 border-b border-r rounded-br-lg", item.activeBorder)} />
+                </>
+              )}
             </Link>
           );
         })}
       </div>
-    </nav>
+    </div>
   );
-};
+}
 
 export default CourseBottomNav;

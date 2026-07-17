@@ -1,55 +1,31 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Activity, ShieldAlert, Swords, Trophy, Zap } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { Activity, ShieldAlert, Trophy, Zap } from "lucide-react";
 import { cn } from "@verse/ui";
 
 import MiniLeaderboard from "@verse/arena-web/components/ui/MiniLeaderboard";
 import { CreatePostSheet } from "@verse/arena-web/app/course/[id]/modules/CreatePostSheet";
 import { ChallengeHero } from "@verse/arena-web/app/course/[id]/modules/ChallengeHero";
 import { useArena } from "@verse/arena-web/app/course/[id]/ArenaContext";
-import { mockFeed, mockFighters } from "@verse/arena-web/app/course/[id]/modules/MockFighters";
 import ActiveFighters from "@verse/arena-web/app/course/[id]/modules/ActiveFighters";
-import FeedCard, { FeedItemType } from "@verse/arena-web/app/course/[id]/modules/FeedCard";
+import FeedCard from "@verse/arena-web/components/ui/FeedCard";
+import { useFeed } from "@verse/arena-web/hooks/useFeed";
+import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import { getShowdownSocket } from "@verse/arena-web/lib/showdown/socket";
+import useAuth from "@verse/arena-web/hooks/useAuth";
+import { useForgePending } from "@verse/arena-web/hooks/useForgeSubmissions";
+import { InstructorToolsPanel } from "@verse/arena-web/components/ui/InstructorToolsPanel";
+import { useCoursePresence } from "@verse/arena-web/hooks/useCoursePresence";
+import { useCreateDuelChallenge } from "@verse/arena-web/hooks/useDuelChallengeActions";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Fighter {
-    id: string;
-    name: string;
-    isOnline: boolean;
-    avatar: string;
-}
-
-interface LeaderboardPlayer {
-    rank: number;
-    name: string;
-    score: number;
-    avatar: string;
-}
-
-// ─── Mock data ────────────────────────────────────────────────────────────────
-// Separated from component so it's easy to swap for real API calls later.
-
-// const MOCK_FIGHTERS: Fighter[] = [
-//   { id: "1", name: "HAWK", isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=1" },
-//   { id: "2", name: "NEO",  isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=2" },
-//   { id: "3", name: "TRIN", isOnline: false, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=3" },
-//   { id: "4", name: "MORPH",isOnline: true,  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=4" },
-//   { id: "5", name: "GHOST",isOnline: false, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=5" },
-// ];
-
-const MOCK_LEADERBOARD: LeaderboardPlayer[] = [
+const MOCK_LEADERBOARD = [
     { rank: 1, name: "NIGHT_HAWK", score: 12500, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
     { rank: 2, name: "CYBER_QUEEN", score: 11200, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
     { rank: 3, name: "BLAZE_RUN", score: 9800, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze" },
 ];
 
-
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-/** Countdown alert banner — purely presentational, timer logic lives here */
 function TournamentAlert({ startsIn }: { startsIn: string }) {
     return (
         <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/20">
@@ -62,7 +38,6 @@ function TournamentAlert({ startsIn }: { startsIn: string }) {
     );
 }
 
-/** Section header with a decorative trailing line */
 function SectionHeading({
     icon,
     label,
@@ -83,25 +58,31 @@ function SectionHeading({
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function CourseHome() {
-    // Pull user from context — no prop drilling needed
+    const params = useParams<{ id: string }>();
+    const courseId = params.id;
+    const router = useRouter();
+    const token = useArenaToken();
+
     const { currentUser } = useArena();
+    const { user } = useAuth();
+
+    const canManage = !!user && (user.role === "instructor" || user.role === "admin");
+    const { data: pendingForge = [] } = useForgePending(courseId, canManage);
+    const createChallenge = useCreateDuelChallenge(courseId);
+
+
 
     const [isBooting, setIsBooting] = useState(true);
-    const [feedItems, setFeedItems] = useState<FeedItemType[]>(mockFeed);
     const [countdown, setCountdown] = useState("02:45:12");
 
-    // ── Boot animation: one short delay, then reveal everything at once
-    // Using a single flag keeps the stagger logic simple and avoids
-    // a cascade of individual opacity states.
+    const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment } = useFeed(courseId);
+
     useEffect(() => {
         const t = setTimeout(() => setIsBooting(false), 600);
         return () => clearTimeout(t);
     }, []);
 
-    // ── Countdown timer
     useEffect(() => {
         const tick = setInterval(() => {
             setCountdown((prev) => {
@@ -117,162 +98,128 @@ export default function CourseHome() {
         return () => clearInterval(tick);
     }, []);
 
-   // ─── Types ────────────────────────────────────────────────────────────────────
+    const handleCreatePost = useCallback(
+        (payload: { type: "thought" | "question" | "announcement"; content: string }) => {
+            createPost.mutate(payload);
+        },
+        [createPost],
+    );
 
-// The payload coming FROM CreatePostSheet
-interface CreatePostPayload {
-  type: "thought" | "question" | "announcement";
-  content: string;
-}
+    function handleAcceptChallenge(showdownId: string) {
+        if (!token) return;
+        getShowdownSocket(token).emit("duel:accept", { showdownId });
+        router.push(`/course/${courseId}/duels/challenge/${showdownId}`);
+    }
 
-// ─── Factory ──────────────────────────────────────────────────────────────────
-// Builds a correctly-typed FeedItemType from a CreatePostSheet payload.
-// When you add a real API, replace this with the response shape from your backend.
-//
-// Pattern:
-//   1. Call your API  → const saved = await api.posts.create(payload)
-//   2. Return saved   → return saved as FeedItemType
-//   3. Prepend to feed
-//
-function buildFeedItem(
-  payload: CreatePostPayload,
-  author: { name: string; avatar: string }
-): FeedItemType {
-  const base = {
-    id: `local-${Date.now()}`, // replace with server-generated id after API call
-    time: "NOW",
-    reactions: { respect: 0 },
-    comments: [],
-  };
+    function handleDeclineChallenge(showdownId: string) {
+        if (!token) return;
+        getShowdownSocket(token).emit("duel:decline", { showdownId });
+    }
+    function handleChallengeFighter(fighter: { id: string }) {
+        createChallenge.mutate(fighter.id, {
+            onSuccess: (showdown) => {
+                router.push(`/course/${courseId}/duels/challenge/${showdown.id}`);
+            },
+        });
+    }
+    function dicebearUrl(name: string) {
+        return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
+    }
 
-  // Map the sheet's postType to the FeedCard's UserPostItem shape
-  return {
-    ...base,
-    type: "post",
-    author,
-    postType: payload.type,   // "thought" | "question" | "announcement"
-    content: payload.content,
-  };
-}
-
-// ─── Handler ──────────────────────────────────────────────────────────────────
-
-const handleCreatePost = useCallback(
-  async (payload: CreatePostPayload) => {
-    const author = { name: currentUser.name, avatar: currentUser.avatar };
-
-    // ── Optimistic update ──────────────────────────────────────────────
-    // Prepend immediately so the feed feels instant.
-    // The temp id starts with "local-" so you can identify and replace it
-    // once the server responds.
-    const optimistic = buildFeedItem(payload, author);
-    setFeedItems((prev) => [optimistic, ...prev]);
-
-    // ── Backend integration point ──────────────────────────────────────
-    // Uncomment and adapt when your API is ready:
-    //
-    // try {
-    //   const saved = await api.posts.create({
-    //     courseId: currentCourse.id,
-    //     type: payload.type,
-    //     content: payload.content,
-    //   });
-    //
-    //   // Swap the optimistic entry for the real one (has server id, timestamp etc.)
-    //   setFeedItems((prev) =>
-    //     prev.map((item) => (item.id === optimistic.id ? saved : item))
-    //   );
-    // } catch (err) {
-    //   // Roll back the optimistic entry and show a toast
-    //   setFeedItems((prev) => prev.filter((item) => item.id !== optimistic.id));
-    //   toast.error("Failed to broadcast. Try again.");
-    // }
-  },
-  [currentUser]
-);
-
-    // ── Stagger helpers
-    const reveal = (delayMs: number) =>
-        cn(
-            "transition-all duration-700",
-            isBooting ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-        );
+    const reveal = () =>
+        cn("transition-all duration-700", isBooting ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0");
 
     const revealStyle = (delayMs: number): React.CSSProperties =>
         isBooting ? {} : { transitionDelay: `${delayMs}ms` };
 
+    const presence = useCoursePresence(courseId);
+    const liveFighters = presence
+        .filter((f) => f.arenaUserId !== user?.arenaUserId)
+        .map((f) => ({
+            id: f.arenaUserId,
+            name: f.username,
+            isOnline: f.status === "online",
+            avatar: dicebearUrl(f.username),
+        }));
     return (
         <div className="w-full space-y-8 py-6">
 
             {/* ── 1. CHALLENGE HERO ──────────────────────────────────────────────── */}
             <section
-                className={cn(
-                    "transition-all duration-700",
-                    isBooting ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                )}
+                className={cn("transition-all duration-700", isBooting ? "opacity-0 scale-95" : "opacity-100 scale-100")}
                 style={{ transitionDelay: "100ms" }}
             >
                 <ChallengeHero
-                    onSelectMode={(mode) => console.log(`Initializing ${mode}`)}
-                />
-            </section>
+                    onSelectMode={(mode) => {
+                        if (mode === "duel") {
+                            document.getElementById("fighter-radar")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+                    }}
+                />            </section>
 
-            {/* ── 2. ACTIVE FIGHTERS RADAR ───────────────────────────────────────── */}
-            <section className={reveal(200)} style={revealStyle(200)}>
+            {/* ── 2. ACTIVE FIGHTERS — now real presence ──────────────────────────── */}
+            <section id="fighter-radar" className={reveal()} style={revealStyle(200)}>
                 <div className="space-y-3">
-                    <SectionHeading
-                        icon={<Zap size={14} className="text-primary animate-pulse" />}
-                        label="Fighters_Online"
-                        iconClass="text-primary"
-                    />
-                    <ActiveFighters fighters={mockFighters} />
+                    <SectionHeading icon={<Zap size={14} className="text-primary animate-pulse" />} label={`Fighters_Online · ${liveFighters.length}`} iconClass="text-primary" />
+                    {liveFighters.length > 0 ? (
+                        <ActiveFighters fighters={liveFighters} onChallenge={handleChallengeFighter} />
+                    ) : (
+                        <p className="font-display text-[10px] text-white/20 uppercase tracking-widest text-center py-4">
+                            No one else is online right now
+                        </p>
+                    )}
                 </div>
             </section>
 
             {/* ── 3. LIVE TACTICAL FEED ──────────────────────────────────────────── */}
-            <section className={reveal(300)} style={revealStyle(300)}>
+            <section className={reveal()} style={revealStyle(300)}>
                 <div className="space-y-4">
-                    <SectionHeading
-                        icon={<Activity size={14} className="text-primary animate-pulse" />}
-                        label="Live_Tactical_Logs"
-                    />
-
-                    {/* Tournament alert with live countdown */}
+                    <SectionHeading icon={<Activity size={14} className="text-primary animate-pulse" />} label="Live_Tactical_Logs" />
                     <TournamentAlert startsIn={countdown} />
 
-                    {/* Feed cards with per-item stagger */}
                     <div className="space-y-3">
-                        {feedItems.map((item, idx) => (
-                            <div
-                                key={item.id}
-                                className={cn(
-                                    "transition-all duration-500",
-                                    isBooting
-                                        ? "opacity-0 translate-y-6"
-                                        : "opacity-100 translate-y-0"
-                                )}
-                                style={{ transitionDelay: `${400 + idx * 80}ms` }}
-                            >
-                                <FeedCard item={item} />
-                            </div>
-                        ))}
+                        {feedLoading && (
+                            <p className="font-display text-[10px] text-white/25 uppercase tracking-widest text-center py-6">
+                                Syncing feed…
+                            </p>
+                        )}
+                        {!feedLoading && feedItems.length === 0 && (
+                            <p className="font-display text-[10px] text-white/25 uppercase tracking-widest text-center py-6">
+                                No activity yet — be the first to broadcast.
+                            </p>
+                        )}
+                        {feedItems.map((item, idx) => {
+                            const showdownId = (item as any)._showdownId as string | undefined;
+                            const postId = (item as any)._postId as string | undefined;
+                            return (
+                                <div
+                                    key={item.id}
+                                    className={cn("transition-all duration-500", isBooting ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0")}
+                                    style={{ transitionDelay: `${400 + idx * 80}ms` }}
+                                >
+                                    <FeedCard
+                                        item={item}
+                                        onAcceptChallenge={showdownId ? () => handleAcceptChallenge(showdownId) : undefined}
+                                        onDeclineChallenge={showdownId ? () => handleDeclineChallenge(showdownId) : undefined}
+                                        onReact={postId ? (type) => react.mutate({ postId, type }) : undefined}
+                                        onAddComment={postId ? (content) => comment.mutate({ postId, content }) : undefined}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
 
-            {/* ── 4. LEADERBOARD ─────────────────────────────────────────────────── */}
-            <section className={reveal(500)} style={revealStyle(500)}>
+            {/* ── 4. LEADERBOARD (mock — real backend later) ──────────────────────── */}
+            <section className={reveal()} style={revealStyle(500)}>
                 <div className="space-y-3">
-                    <SectionHeading
-                        icon={<Trophy size={14} className="text-yellow-400" />}
-                        label="Sector_Rankings"
-                    />
+                    <SectionHeading icon={<Trophy size={14} className="text-yellow-400" />} label="Sector_Rankings" />
                     <MiniLeaderboard players={MOCK_LEADERBOARD} />
                 </div>
             </section>
 
             {/* ── 5. CREATE POST FAB ─────────────────────────────────────────────── */}
-            {/* Rendered outside the space-y flow so it can be fixed/floating */}
             <CreatePostSheet currentUser={currentUser} onCreatePost={handleCreatePost} />
         </div>
     );

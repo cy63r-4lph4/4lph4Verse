@@ -184,7 +184,7 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
       <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:border-arena-success/40 transition-all group">
         <div className="flex items-center gap-4">
           <BookOpen size={18} className="text-arena-success" />
-          <span className="font-display font-bold text-white uppercase">{sector.name}</span>
+          <span className="font-display font-bold text-white uppercase">{sector.title}</span>
           <span className="text-[10px] font-mono text-white/40">#{sector.code}</span>
         </div>
         <div className="flex items-center gap-6">
@@ -212,7 +212,7 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-xl font-display font-bold text-white uppercase group-hover:text-glow-success">{sector.name}</h3>
+        <h3 className="text-xl font-display font-bold text-white uppercase group-hover:text-glow-success">{sector.title}</h3>
         <p className="text-[10px] font-mono text-arena-success/60 mt-1 uppercase">Code: #{sector.code} // Hub: {hubName}</p>
       </div>
 
@@ -229,7 +229,7 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
 
       <div className="grid grid-cols-2 gap-4">
         <StatBox label="Fighters" value={sector.fighterCount || 0} icon={<Users size={12} />} />
-        <StatBox label="Intel_Assets" value={sector.intelAssets || 0} icon={<Zap size={12} />} />
+        <StatBox label="Intel_Assets" value={sector.questionCount || 0} icon={<Zap size={12} />} />
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ interface FeedCommentsProps {
   onAddComment?: (text: string) => void;
 }
 
-export const FeedComments = ({ comments, onAddComment }: FeedCommentsProps) => {
+export const FeedComments = ({ comments = [], onAddComment }: FeedCommentsProps) => {
   const [expanded, setExpanded] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [showInput, setShowInput] = useState(false);
@@ -60,7 +60,7 @@ export const FeedComments = ({ comments, onAddComment }: FeedCommentsProps) => {
               </div>
             </div>
           ))}
-          
+
           {hasMore && !expanded && (
             <button
               onClick={() => setExpanded(true)}

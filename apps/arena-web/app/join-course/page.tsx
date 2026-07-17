@@ -33,7 +33,6 @@ const JoinCourse = () => {
     "/v1/gateway/available-sectors",
     "available-sectors"
   );
-
   // 2. Click Outside Handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
