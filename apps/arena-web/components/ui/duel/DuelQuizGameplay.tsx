@@ -134,7 +134,7 @@ export function DuelQuizGameplay({
     const progress = (activeQ.questionNumber - 1) / match.questions.length;
 
     return (
-        <EnergyBackground variant="duel" className="h-full flex flex-col">
+        <>
             <header className="shrink-0 px-4 pt-8 pb-3">
                 <div className="flex items-center gap-3 mb-4">
                     <CombatantStrip name={myName} score={match.scores[myParticipantId] ?? 0} side="left" />
@@ -191,6 +191,6 @@ export function DuelQuizGameplay({
                     </p>
                 )}
             </div>
-        </EnergyBackground>
+        </>
     );
 }

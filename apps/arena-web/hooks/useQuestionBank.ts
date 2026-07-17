@@ -15,7 +15,7 @@ export interface Question {
 export function useQuestionBank(courseId: string, enabled: boolean = true) {
   return useQuery({
     queryKey: ["question-bank", courseId],
-    queryFn: async () => (await api.get(`/v1/questions?courseId=${courseId}`)).data,
+    queryFn: async (): Promise<Question[]> => (await api.get(`/v1/questions?courseId=${courseId}`)).data,
     enabled: !!courseId && enabled,
   });
 }

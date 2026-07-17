@@ -14,7 +14,7 @@ export function useCodenameAvailability(codename: string) {
       setIsChecking(true);
       try {
         // Replace with your actual API endpoint
-        const response = await fetch(`http://127.0.0.1:4000/v1/gateway/check-username/${codename}`);
+        const response = await fetch(`http://192.168.100.77:4000/v1/gateway/check-username/${codename}`);
         const data = await response.json();
         
         // Assuming backend returns { available: true/false }
