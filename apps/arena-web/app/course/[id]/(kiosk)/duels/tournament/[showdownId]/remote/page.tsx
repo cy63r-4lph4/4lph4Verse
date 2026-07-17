@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { cn } from "@verse/ui";
-import { Swords, Play, SkipForward, ChevronRight, Trophy, RotateCcw } from "lucide-react";
+import { Swords, Play, SkipForward, ChevronRight, Trophy } from "lucide-react";
 import { useShowdownState } from "@verse/arena-web/lib/showdown/useShowdownState";
 import { useQuestionTimer } from "@verse/arena-web/lib/showdown/useQuestionTimer";
 import {
@@ -13,38 +14,42 @@ import {
 } from "@verse/arena-web/lib/showdown/types";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
-import { api } from "@verse/arena-web/lib/api";
-import { useQuery } from "@tanstack/react-query";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
-import { useParams } from "next/navigation";
 import { useCourseMembers } from "@verse/arena-web/hooks/useCourseMembers";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
 }
 
-export default function TournamentRemotePage({ params }: { params: { showdownId: string; id: string } }) {
+export default function TournamentRemotePage() {
+  const params = useParams<{ id: string; showdownId: string }>();
   const token = useArenaToken();
   const { state, emit } = useShowdownState(params.showdownId, token);
 
+  return (
+    <RemoteBody state={state} courseId={params.id} emit={emit} />
+  );
+}
+
+function RemoteBody({ state, courseId, emit }: { state: any; courseId: string; emit: any }) {
   if (!state) {
     return (
-      <EnergyBackground className="grid place-items-center" variant="duel">
+      <div className="h-full grid place-items-center">
         <p className="font-display text-white/30 uppercase tracking-[.3em] text-xs">Establishing uplink…</p>
-      </EnergyBackground>
+      </div>
     );
   }
 
-  const { showdown, participants, matches } = state;
+  const { showdown, participants } = state;
 
   if (showdown.status === "draft" || showdown.status === "lobby") {
-    return <LobbyPanel showdownId={showdown.id} emit={emit} />;
+    return <LobbyPanel courseId={courseId} emit={emit} />;
   }
 
   if (showdown.status === "complete") {
-    const champion = participants.find((p) => p.id === showdown.championId);
+    const champion = participants.find((p: any) => p.id === showdown.championId);
     return (
-      <EnergyBackground className="grid place-items-center px-6" variant="duel">
+      <div className="grid place-items-center px-6 min-h-[60dvh]">
         <div className="text-center">
           <Trophy size={36} className="mx-auto mb-4 text-amber-400" />
           <p className="font-display text-2xl font-black text-white uppercase">
@@ -54,48 +59,42 @@ export default function TournamentRemotePage({ params }: { params: { showdownId:
             Champion
           </p>
         </div>
-      </EnergyBackground>
+      </div>
     );
   }
 
   const maxRound = getMaxRound(state);
   const currentRound = getRoundMatches(state, maxRound);
-  const pendingMatch = currentRound.find((m) => m.status === "pending");
-  const activeMatch = currentRound.find((m) => m.status === "active");
+  const pendingMatch = currentRound.find((m: any) => m.status === "pending");
+  const activeMatch = currentRound.find((m: any) => m.status === "active");
 
   return (
-    <EnergyBackground className="px-4 py-6" variant="duel">
-      <div className="max-w-md mx-auto space-y-4">
-        <header className="flex items-center gap-2 border-b border-white/10 pb-3">
-          <Swords size={14} className="text-primary" />
-          <p className="font-display text-[10px] font-black text-primary uppercase tracking-[.25em]">
-            {showdown.title} · Round {maxRound + 1}
-          </p>
-        </header>
+    <div className="max-w-md mx-auto space-y-4">
+      <header className="flex items-center gap-2 border-b border-white/10 pb-3">
+        <Swords size={14} className="text-primary" />
+        <p className="font-display text-[10px] font-black text-primary uppercase tracking-[.25em]">
+          {showdown.title} · Round {maxRound + 1}
+        </p>
+      </header>
 
-        {activeMatch && (
-          <ActiveMatchPanel
-            match={activeMatch}
-            participants={participants}
-            emit={emit}
-          />
-        )}
+      {activeMatch && (
+        <ActiveMatchPanel match={activeMatch} emit={emit} />
+      )}
 
-        {!activeMatch && pendingMatch && (
-          <PendingMatchPanel match={pendingMatch} participants={participants} emit={emit} />
-        )}
+      {!activeMatch && pendingMatch && (
+        <PendingMatchPanel match={pendingMatch} participants={participants} emit={emit} />
+      )}
 
-        {!activeMatch && !pendingMatch && isRoundComplete(state) && (
-          <button
-            onClick={() => emit("showdown:advance", {})}
-            className="w-full py-3.5 rounded-2xl bg-primary text-black font-display text-[11px] font-black uppercase tracking-[.2em] flex items-center justify-center gap-2"
-          >
-            <ChevronRight size={14} />
-            Advance Round
-          </button>
-        )}
-      </div>
-    </EnergyBackground>
+      {!activeMatch && !pendingMatch && isRoundComplete(state) && (
+        <button
+          onClick={() => emit("showdown:advance", {})}
+          className="w-full py-3.5 rounded-2xl bg-primary text-black font-display text-[11px] font-black uppercase tracking-[.2em] flex items-center justify-center gap-2"
+        >
+          <ChevronRight size={14} />
+          Advance Round
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -127,7 +126,7 @@ function PendingMatchPanel({ match, participants, emit }: any) {
   );
 }
 
-function ActiveMatchPanel({ match, participants, emit }: any) {
+function ActiveMatchPanel({ match, emit }: any) {
   const activeQ = getActiveMatchQuestion(match);
   const { isCountingDown, secondsLeft } = useQuestionTimer(activeQ);
   const answeredCount = activeQ?.answers.length ?? 0;
@@ -181,59 +180,54 @@ function ActiveMatchPanel({ match, participants, emit }: any) {
   );
 }
 
-function LobbyPanel({ showdownId, emit }: { showdownId: string; emit: (event: string, payload: any) => void }) {
-  const params = useParams<{ id: string }>();
-  const courseId = params.id;
+function LobbyPanel({ courseId, emit }: { courseId: string; emit: (event: string, payload: any) => void }) {
   const [selected, setSelected] = useState<string[]>([]);
-
   const { data: members = [], isLoading } = useCourseMembers(courseId);
-  const students = members.filter((m) => m.role === "student");
+  const students = members.filter((m: any) => m.role === "student");
 
   function toggle(id: string) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   return (
-    <EnergyBackground className="px-4 py-6" variant="duel">
-      <div className="max-w-md mx-auto space-y-4">
-        <p className="font-display text-[10px] font-black text-primary uppercase tracking-[.25em]">
-          Select Contestants ({students.length} enrolled)
-        </p>
+    <div className="max-w-md mx-auto space-y-4">
+      <p className="font-display text-[10px] font-black text-primary uppercase tracking-[.25em]">
+        Select Contestants ({students.length} enrolled)
+      </p>
 
-        <div className="space-y-1.5 max-h-64 overflow-y-auto">
-          {isLoading && (
-            <p className="font-display text-[10px] text-white/30 uppercase tracking-wider text-center py-6">
-              Loading roster…
-            </p>
-          )}
-          {!isLoading && students.length === 0 && (
-            <p className="font-display text-[10px] text-white/30 uppercase tracking-wider text-center py-6">
-              No students enrolled in this course yet.
-            </p>
-          )}
-          {students.map((m) => (
-            <button
-              key={m.arenaUserId}
-              onClick={() => toggle(m.arenaUserId)}
-              className={cn(
-                "w-full flex items-center gap-2 rounded-xl border px-3 py-2 text-left",
-                selected.includes(m.arenaUserId) ? "border-primary/40 bg-primary/10" : "border-white/10 bg-white/[0.02]",
-              )}
-            >
-              <ArenaAvatar src={dicebearUrl(m.username)} size="sm" />
-              <span className="font-display text-xs font-bold text-white">{m.username}</span>
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={() => emit("showdown:build-bracket", { arenaUserIds: selected })}
-          disabled={selected.length < 2}
-          className="w-full py-3.5 rounded-2xl bg-primary text-black font-display text-[11px] font-black uppercase tracking-[.2em] disabled:opacity-30"
-        >
-          Draw Bracket ({selected.length})
-        </button>
+      <div className="space-y-1.5 max-h-64 overflow-y-auto">
+        {isLoading && (
+          <p className="font-display text-[10px] text-white/30 uppercase tracking-wider text-center py-6">
+            Loading roster…
+          </p>
+        )}
+        {!isLoading && students.length === 0 && (
+          <p className="font-display text-[10px] text-white/30 uppercase tracking-wider text-center py-6">
+            No students enrolled in this course yet.
+          </p>
+        )}
+        {students.map((m: any) => (
+          <button
+            key={m.arenaUserId}
+            onClick={() => toggle(m.arenaUserId)}
+            className={cn(
+              "w-full flex items-center gap-2 rounded-xl border px-3 py-2 text-left",
+              selected.includes(m.arenaUserId) ? "border-primary/40 bg-primary/10" : "border-white/10 bg-white/[0.02]",
+            )}
+          >
+            <ArenaAvatar src={dicebearUrl(m.username)} size="sm" />
+            <span className="font-display text-xs font-bold text-white">{m.username}</span>
+          </button>
+        ))}
       </div>
-    </EnergyBackground>
+
+      <button
+        onClick={() => emit("showdown:build-bracket", { arenaUserIds: selected })}
+        disabled={selected.length < 2}
+        className="w-full py-3.5 rounded-2xl bg-primary text-black font-display text-[11px] font-black uppercase tracking-[.2em] disabled:opacity-30"
+      >
+        Draw Bracket ({selected.length})
+      </button>
+    </div>
   );
 }

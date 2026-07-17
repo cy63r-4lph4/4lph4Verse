@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import { CourseBottomNav } from "@verse/arena-web/app/course/[id]/modules/BottomNav";
 import { CourseHeader } from "@verse/arena-web/app/course/[id]/modules/SectorSwitcher";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import useAuth from "@verse/arena-web/hooks/useAuth";
@@ -11,6 +10,7 @@ import { api } from "@verse/arena-web/lib/api";
 import { useMySectors } from "@verse/arena-web/hooks/useMySectors";
 import { ArenaContext } from "@verse/arena-web/app/course/[id]/ArenaContext";
 import { Course, CurrentUser } from "@verse/arena-web/lib/course/types";
+import CourseBottomNav from "@verse/arena-web/components/ui/CourseBottomNav";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;

@@ -12,6 +12,7 @@ import {
   useUpdateQuestion,
   useDeleteQuestion,
   useImportQuestionsCsv,
+  type Question,
 } from "@verse/arena-web/hooks/useQuestionBank";
 import { QuestionCard } from "@verse/arena-web/components/ui/questions/QuestionCard";
 import { QuestionFormSheet, type QuestionFormValue } from "@verse/arena-web/components/ui/questions/QuestionFormSheet";
@@ -139,7 +140,7 @@ export default function QuestionBankPage() {
                 No questions yet — add one manually or import a CSV.
               </p>
             )}
-            {questions.map((q) => (
+            {questions.map((q: Question) => (
               <QuestionCard
                 key={q.id}
                 question={q}

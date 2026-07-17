@@ -6,6 +6,7 @@ import { ChevronDown, Globe, Bell, CheckCircle2 } from "lucide-react";
 import { cn } from "@verse/ui";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
 import { Course, CurrentUser } from "@verse/arena-web/lib/course/types";
+import { useNotifications } from "@verse/arena-web/hooks/useNotifications";
 
 interface CourseHeaderProps {
   currentCourse: Course;
@@ -16,6 +17,8 @@ interface CourseHeaderProps {
 export function CourseHeader({ currentCourse, courses, currentUser }: CourseHeaderProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { incoming } = useNotifications(currentCourse.id);
+
 
   return (
     <div className="relative px-4 pt-4 pb-2">
@@ -90,8 +93,9 @@ export function CourseHeader({ currentCourse, courses, currentUser }: CourseHead
             className="relative w-9 h-9 flex items-center justify-center text-white/40 hover:text-white transition-colors active:scale-90"
           >
             <Bell size={18} />
-            {/* Unread dot — conditionally render when you have real notification data */}
-            <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-red-500 border-[1.5px] border-black" />
+            {incoming.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-red-500 border-[1.5px] border-black" />
+            )}
           </button>
 
           <div className="w-px h-6 bg-white/[0.08]" />

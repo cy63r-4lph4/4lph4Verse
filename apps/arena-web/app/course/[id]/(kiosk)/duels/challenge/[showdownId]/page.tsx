@@ -7,11 +7,12 @@ import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import { useShowdownState } from "@verse/arena-web/lib/showdown/useShowdownState";
 import { useQuestionTimer } from "@verse/arena-web/lib/showdown/useQuestionTimer";
 import { getActiveMatchQuestion } from "@verse/arena-web/lib/showdown/types";
-import { DuelBattleStart } from "@verse/arena-web/components/ui/showdown/duel/DuelBattleStart";
-import { DuelCountdown } from "@verse/arena-web/components/ui/showdown/duel/DuelCountdown";
-import { DuelQuizGameplay } from "@verse/arena-web/components/ui/showdown/duel/DuelQuizGameplay";
-import { DuelResult } from "@verse/arena-web/components/ui/showdown/duel/DuelResult";
+
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
+import { DuelBattleStart } from "@verse/arena-web/components/ui/duel/DuelBattleStart";
+import { DuelCountdown } from "@verse/arena-web/components/ui/duel/DuelCountdown";
+import { DuelQuizGameplay } from "@verse/arena-web/components/ui/duel/DuelQuizGameplay";
+import { DuelResult } from "@verse/arena-web/components/ui/duel/DuelResult";
 
 export default function DuelChallengePage() {
   const params = useParams<{ id: string; showdownId: string }>();
@@ -68,9 +69,7 @@ export default function DuelChallengePage() {
         {showdown.status === "complete" && (
           <motion.div key="complete" initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="h-full">
             {!showdown.championId ? (
-              <EnergyBackground variant="battle" className="h-full grid place-items-center">
-                <p className="font-display text-white/40 uppercase tracking-[.3em] text-sm">Challenge declined</p>
-              </EnergyBackground>
+              <p className="font-display text-white/40 uppercase tracking-[.3em] text-sm">Challenge declined</p>
             ) : (
               (() => {
                 const myScore = match ? match.scores[myParticipant.id] ?? 0 : 0;
@@ -108,9 +107,7 @@ function LiveDuel({ match, myParticipant, opponent, questionsPerMatch, emit }: a
   if (!activeQ) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
-        <EnergyBackground variant="duel" className="h-full grid place-items-center">
           <p className="font-display text-white/30 uppercase tracking-[.3em] text-xs">Preparing next question…</p>
-        </EnergyBackground>
       </motion.div>
     );
   }
