@@ -38,27 +38,27 @@ contract HireCoreJobBoard is
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // ---------- Config ----------
-    IERC20 public coreToken; // anti-spam deposit token
+    IERC20 public coreToken; // protocol token
     address public treasury; // slashed deposits go here
     uint256 public minDeposit; // minimum deposit per post
     IJobManager public jobManager; // JobManager contract (spawn jobs)
+    uint32 public maxApplications;
+    bool public paused;
 
     // ---------- Types ----------
     struct JobPost {
         address hirer;
-        address paymentToken;
         uint256 budgetMax;
-        uint64 expiry;
         uint256 deposit;
-        string metadataURI;
+        uint64 createdAt;
+        uint64 expiry;
         bool open;
+        string metadataURI;
     }
 
     struct AcceptParams {
         uint256 postId;
         uint256 appIndex;
-        address worker;
-        address paymentToken;
         uint64 deadline;
         string metadataURI;
         IJobManager.JobType jobType;

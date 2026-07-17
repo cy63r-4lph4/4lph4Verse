@@ -8,9 +8,9 @@
     { "path": "./packages/sdk" },
     { "path": "./packages/ui" },
     { "path": "./packages/providers" },
-    { "path": "./services/relayer" },
     { "path": "./services/val-gateway" },
     { "path": "./apps/versewallet-web" },
-    { "path": "./apps/profile-web" }
+    { "path": "./apps/profile-web" },
+    { "path": "./apps/arena-web" }
   ]
 }

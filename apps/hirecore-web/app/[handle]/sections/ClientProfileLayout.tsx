@@ -51,7 +51,7 @@ export default function ClientProfileLayout({
       className="min-h-screen  text-gray-200 overflow-hidden mt-26"
     >
       {/* ───────────────── Banner ───────────────── */}
-      <div className="relative w-full h-[20rem] overflow-hidden rounded-b-[3rem]">
+      <div className="relative w-full h-80 overflow-hidden rounded-b-[3rem]">
         {/* Indigo Aura */}
         <motion.div
           className="absolute inset-0"

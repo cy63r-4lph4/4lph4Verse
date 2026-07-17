@@ -40,6 +40,9 @@
       "@verse/profile-web": ["apps/profile-web"],
       "@verse/profile-web/*": ["apps/profile-web/*"],
 
+      "@verse/arena-web": ["apps/arena-web"],
+      "@verse/arena-web/*": ["apps/arena-web/*"],
+
       "@verse-core": ["apps/verse-core/app"],
       "@verse-core/*": ["apps/verse-core/app/*"],
 

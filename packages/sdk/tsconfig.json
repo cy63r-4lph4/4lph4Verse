@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "baseUrl": ".",
+    "composite": true,
     "resolveJsonModule": true,
 
     "module": "esnext",

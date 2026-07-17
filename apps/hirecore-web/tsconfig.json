@@ -40,6 +40,6 @@
     "../../packages/ui/textarea.tsx",
     "../../packages/ui/switch.tsx",
     "../../packages/ui/label.tsx"
-  ],
+, "../arena-web/lib/api.ts"  ],
   "exclude": ["node_modules"]
 }
