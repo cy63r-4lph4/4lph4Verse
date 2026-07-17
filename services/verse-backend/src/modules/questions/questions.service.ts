@@ -2,20 +2,26 @@ import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenEx
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import * as schema from '../../db/schema';
+type DbOrTx = NodePgDatabase<typeof schema>;
 
 @Injectable()
 export class QuestionsService {
-  constructor(@Inject('DB') private readonly db: NodePgDatabase<typeof schema>) {}
+  constructor(@Inject('DB') private readonly db: DbOrTx) { }
 
-  async create(data: {
-    courseId: string; prompt: string; options: string[]; correctIndex: number;
-    difficulty?: 'easy' | 'medium' | 'hard'; category?: string;
-  }) {
+  async create(
+    data: {
+      courseId: string; prompt: string; options: string[]; correctIndex: number;
+      difficulty?: 'easy' | 'medium' | 'hard'; category?: string;
+    },
+    tx?: DbOrTx,
+  ) {
     if (data.correctIndex >= data.options.length) {
       throw new BadRequestException('correctIndex out of range for supplied options.');
     }
 
-    const [question] = await this.db.insert(schema.arenaQuestions).values({
+    const executor = tx ?? this.db;
+
+    const [question] = await executor.insert(schema.arenaQuestions).values({
       courseId: data.courseId,
       prompt: data.prompt,
       options: data.options,

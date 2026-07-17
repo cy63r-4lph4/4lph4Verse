@@ -550,6 +550,33 @@ export class ShowdownService {
         return { showdown, participants, matches: matchesWithScores };
     }
 
+    async listTournamentsForCourse(courseId: string) {
+        const rows = await this.db.query.showdowns.findMany({
+            where: (s, { eq, and }) => and(eq(s.courseId, courseId), eq(s.mode, 'tournament')),
+            orderBy: (s, { desc }) => [desc(s.createdAt)],
+            with: {
+                participants: true,
+                matches: true,
+            },
+        });
+
+        return rows.map((s) => {
+            const maxRound = s.matches.length > 0 ? Math.max(...s.matches.map((m) => m.round)) : 0;
+            const activeMatch = s.matches.find((m) => m.status === 'active');
+            return {
+                id: s.id,
+                title: s.title,
+                status: s.status,
+                participantCount: s.participants.length,
+                totalRounds: s.totalRounds,
+                currentRound: s.matches.length > 0 ? maxRound + 1 : 0,
+                hasActiveMatch: !!activeMatch,
+                createdAt: s.createdAt,
+                championId: s.championId,
+            };
+        });
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private async computeMatchScores(matchId: string): Promise<Record<string, number>> {

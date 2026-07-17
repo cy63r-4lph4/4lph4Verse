@@ -24,8 +24,8 @@ export class GatewayController {
         if (!user) throw new NotFoundException('User profile not found');
 
         return {
-            id: user.userId,         
-            arenaUserId: user.id,    
+            id: user.userId,
+            arenaUserId: user.id,
             username: user.user.username,
             role: user.role,
         };
@@ -60,6 +60,12 @@ export class GatewayController {
         const sectors = await this.gatewayService.getDiscoverableSectors(req.user.id);
         return sectors;
     }
+    @Get('my-sectors')
+    @UseGuards(JwtAuthGuard)
+    async getMySectors(@Request() req) {
+        return this.gatewayService.mySectors(req.user.id);
+    }
+
     @Post("join-sector")
     @UseGuards(JwtAuthGuard)
 

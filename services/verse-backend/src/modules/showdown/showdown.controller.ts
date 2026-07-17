@@ -11,6 +11,7 @@ import {
     ValidationPipe,
     ForbiddenException,
     Inject,
+    BadRequestException,
 } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
@@ -52,6 +53,11 @@ export class ShowdownController {
         const arenaUser = await this.identity.resolve(req.user.id);
         return this.showdownService.getFeed(courseId, arenaUser.id);
     }
+    @Get('tournaments')
+    async listTournaments(@Query('courseId') courseId: string) {
+        if (!courseId) throw new BadRequestException('courseId is required.');
+        return this.showdownService.listTournamentsForCourse(courseId);
+    }
 
     @Get(':id')
     async getState(@Param('id') id: string) {
@@ -65,6 +71,8 @@ export class ShowdownController {
             orderBy: (s, { desc }) => [desc(s.createdAt)],
         });
     }
+
+   
 
     @Post(':id/lobby')
     async openLobby(@Param('id') id: string, @Request() req) {

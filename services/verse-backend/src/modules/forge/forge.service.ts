@@ -52,26 +52,31 @@ export class ForgeService {
       throw new BadRequestException('This submission has already been reviewed.');
     }
 
-    const question = await this.questionsService.create({
-      courseId: submission.courseId,
-      prompt: submission.prompt,
-      options: submission.options as string[],
-      correctIndex: submission.correctIndex,
-      difficulty: submission.difficulty,
-      category: submission.category ?? undefined,
+    return this.db.transaction(async (tx) => {
+      const question = await this.questionsService.create(
+        {
+          courseId: submission.courseId,
+          prompt: submission.prompt,
+          options: submission.options as string[],
+          correctIndex: submission.correctIndex,
+          difficulty: submission.difficulty,
+          category: submission.category ?? undefined,
+        },
+        tx, // same transaction — question insert and submission update now commit or roll back together
+      );
+
+      const [updated] = await tx.update(schema.forgeSubmissions)
+        .set({
+          status: 'approved',
+          reviewedByArenaUserId: reviewerArenaUserId,
+          reviewNote: note,
+          approvedQuestionId: question.id,
+        })
+        .where(eq(schema.forgeSubmissions.id, submissionId))
+        .returning();
+
+      return updated;
     });
-
-    const [updated] = await this.db.update(schema.forgeSubmissions)
-      .set({
-        status: 'approved',
-        reviewedByArenaUserId: reviewerArenaUserId,
-        reviewNote: note,
-        approvedQuestionId: question.id,
-      })
-      .where(eq(schema.forgeSubmissions.id, submissionId))
-      .returning();
-
-    return updated;
   }
 
 
