@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { cn } from "@verse/ui";
-import { ArrowLeft, Swords, Play, SkipForward, ChevronRight, Trophy, AlertTriangle, Settings } from "lucide-react";
+import { ArrowLeft, Swords, Play, SkipForward, ChevronRight, Trophy, AlertTriangle, Settings, QrCode } from "lucide-react";
 import { useShowdownState } from "@verse/arena-web/lib/showdown/useShowdownState";
 import { useQuestionTimer } from "@verse/arena-web/lib/showdown/useQuestionTimer";
 import {
