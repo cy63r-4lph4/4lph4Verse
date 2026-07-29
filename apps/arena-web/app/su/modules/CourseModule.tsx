@@ -24,10 +24,10 @@ export default function CoursesModule() {
 
   const { sectors, isLoading, createSector, isCreating, deleteSector, isDeleting } = useSectors(selectedHubId);
 
-  const activeHub = hubs.find(h => h.id === selectedHubId);
+  const activeHub = hubs.find((h: { id: string; name: string; slug?: string }) => h.id === selectedHubId);
 
   const filteredSectors = useMemo(() => {
-    return sectors.filter(s => 
+    return sectors.filter((s: any) => 
       s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       s.code.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -85,7 +85,7 @@ export default function CoursesModule() {
                 className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-[11px] font-mono text-white focus:border-arena-success/50 outline-none w-64 transition-all appearance-none cursor-pointer"
               >
                 <option value="" className="bg-black text-white/40">SELECT_HUB</option>
-                {hubs.map(hub => <option key={hub.id} value={hub.id} className="bg-black">{hub.name.toUpperCase()}</option>)}
+                {hubs.map((hub: { id: string; name: string }) => <option key={hub.id} value={hub.id} className="bg-black">{hub.name.toUpperCase()}</option>)}
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20" size={14} />
             </div>
@@ -123,7 +123,7 @@ export default function CoursesModule() {
               ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
               : "flex flex-col gap-4"
             )}>
-              {filteredSectors.map((sector) => (
+              {filteredSectors.map((sector: any) => (
                 <SectorCard 
                   key={sector.id} 
                   sector={sector} 

@@ -17,7 +17,7 @@ export default function InstitutionsModule() {
 
   // Filter hubs based on search query
   const filteredHubs = useMemo(() => {
-    return hubs.filter(hub => 
+    return hubs.filter((hub: any) => 
       hub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       hub.slug.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -99,7 +99,7 @@ export default function InstitutionsModule() {
               ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
               : "flex flex-col gap-4"
           )}>
-            {filteredHubs.map((hub) => (
+            {filteredHubs.map((hub: any) => (
               <HubCard 
                 key={hub.id} 
                 hub={hub} 
