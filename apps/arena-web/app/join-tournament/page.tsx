@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Swords, Loader2, ShieldCheck } from "lucide-react";
 import { api } from "@verse/arena-web/lib/api";
 
-export default function JoinTournamentPage() {
+function JoinTournamentContent() {
   const params = useSearchParams();
   const router = useRouter();
   const courseId = params.get("courseId") ?? "";
@@ -159,5 +159,17 @@ export default function JoinTournamentPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function JoinTournamentPage() {
+  return (
+    <Suspense fallback={
+      <main className="h-dvh w-full bg-black flex flex-col items-center justify-center gap-4 text-white">
+        <Loader2 size={28} className="text-primary animate-spin" />
+      </main>
+    }>
+      <JoinTournamentContent />
+    </Suspense>
   );
 }
