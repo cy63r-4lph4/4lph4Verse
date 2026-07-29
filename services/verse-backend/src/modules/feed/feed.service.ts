@@ -11,7 +11,7 @@ export class FeedService {
     @Inject('DB') private db: NodePgDatabase<typeof schema>,
     private readonly showdownService: ShowdownService,
     private readonly identity: ArenaIdentityService,
-  ) {}
+  ) { }
 
   // ── Posts ────────────────────────────────────────────────────────────
 
@@ -38,6 +38,19 @@ export class FeedService {
     }).returning();
 
     return this.hydratePost(post.id, authorArenaUserId);
+  }
+
+  async editPost(postId: string, requesterArenaUserId: string, content: string) {
+    const post = await this.getPostOrThrow(postId);
+    if (post.authorArenaUserId !== requesterArenaUserId) {
+      throw new ForbiddenException('Only the author can edit this post.');
+    }
+    const [updated] = await this.db
+      .update(schema.feedPosts)
+      .set({ content })
+      .where(eq(schema.feedPosts.id, postId))
+      .returning();
+    return updated;
   }
 
   async deletePost(postId: string, requesterArenaUserId: string) {

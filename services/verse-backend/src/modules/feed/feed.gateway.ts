@@ -98,4 +98,7 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyReaction(postId: string, payload: { arenaUserId: string; type: string; active: boolean }) {
     this.server.emit('feed:reaction', { postId, ...payload });
   }
+  notifyTournamentLive(courseId: string, payload: { showdownId: string; title: string }) {
+    this.server.to(`feed:${courseId}`).emit('tournament:live', payload);
+  }
 }

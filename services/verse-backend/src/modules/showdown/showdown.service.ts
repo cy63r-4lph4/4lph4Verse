@@ -24,7 +24,7 @@ export class ShowdownService {
 
     async create(instructorArenaUserId: string, dto: {
         courseId: string; title: string;
-        questionsPerMatch?: number; timeLimitSeconds?: number;
+        questionsPerMatch?: number; timeLimitSeconds?: number; scheduledAt?: string;
     }) {
         const [showdown] = await this.db.insert(schema.showdowns).values({
             courseId: dto.courseId,
@@ -34,10 +34,10 @@ export class ShowdownService {
             questionsPerMatch: dto.questionsPerMatch ?? 3,
             timeLimitSeconds: dto.timeLimitSeconds ?? 20,
             matchCountdownMs: COUNTDOWN_MS,
+            scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
         }).returning();
         return showdown;
     }
-
     async openLobby(showdownId: string, requesterArenaUserId: string) {
         const showdown = await this.assertOwner(showdownId, requesterArenaUserId);
         if (showdown.status !== 'draft') return showdown;
@@ -147,13 +147,39 @@ export class ShowdownService {
         const showdown = await this.assertOwner(showdownId, requesterArenaUserId);
         const match = await this.getMatchOrThrow(matchId, showdownId);
 
+        // Already fully resolved (e.g. a duplicate call arrived after the match
+        // was already completed) — treat as a harmless no-op, not an error.
+        if (match.status === 'complete') {
+            return match;
+        }
+
         const currentMq = await this.db.query.showdownMatchQuestions.findFirst({
             where: (q, { eq, and }) => and(
                 eq(q.matchId, matchId),
                 eq(q.questionNumber, match.questionsCompleted + 1),
             ),
         });
-        if (!currentMq) throw new BadRequestException('No active question for this match.');
+
+        if (!currentMq) {
+            // No question at questionsCompleted+1 — check whether this is actually
+            // a duplicate resolve of the question we JUST scored (questionsCompleted
+            // itself), which happens when a fast double-click or a network retry
+            // sends the same resolve twice. If so, this is a no-op, not a real error.
+            const justResolved = match.questionsCompleted > 0
+                ? await this.db.query.showdownMatchQuestions.findFirst({
+                    where: (q, { eq, and }) => and(
+                        eq(q.matchId, matchId),
+                        eq(q.questionNumber, match.questionsCompleted),
+                    ),
+                })
+                : null;
+
+            if (justResolved) {
+                return match; // duplicate resolve — silently succeed
+            }
+
+            throw new BadRequestException('No active question for this match.');
+        }
 
         const isLastQuestion = match.questionsCompleted + 1 >= showdown.questionsPerMatch;
 
@@ -337,7 +363,7 @@ export class ShowdownService {
         });
     }
 
-    /** Only the challenged participant may accept. Kicks off the self-driving match. */
+    /** Only the challenged participant may accept. Moves to ready_check — does NOT start the match yet. */
     async acceptDuelChallenge(showdownId: string, requesterArenaUserId: string) {
         const showdown = await this.getShowdownOrThrow(showdownId);
         if (showdown.mode !== 'duel' || showdown.status !== 'challenge_pending') {
@@ -345,14 +371,23 @@ export class ShowdownService {
         }
 
         const participant = await this.db.query.showdownParticipants.findFirst({
-            where: (p, { eq, and }) => and(
-                eq(p.showdownId, showdownId),
-                eq(p.arenaUserId, requesterArenaUserId),
-            ),
+            where: (p, { eq, and }) => and(eq(p.showdownId, showdownId), eq(p.arenaUserId, requesterArenaUserId)),
         });
         if (!participant || participant.arenaUserId === showdown.createdBy) {
             throw new ForbiddenException('Only the challenged opponent can accept.');
         }
+
+        await this.db.update(schema.showdowns)
+            .set({ status: 'ready_check' })
+            .where(eq(schema.showdowns.id, showdownId));
+
+        return this.getFullState(showdownId);
+    }
+
+    /** Called by the gateway once both duel participants are confirmed connected to the showdown room. Idempotent. */
+    async activateReadyDuel(showdownId: string) {
+        const showdown = await this.getShowdownOrThrow(showdownId);
+        if (showdown.status !== 'ready_check') return; // already activated or in a different state — no-op
 
         await this.db.update(schema.showdowns)
             .set({ status: 'live' })
@@ -361,10 +396,9 @@ export class ShowdownService {
         const match = await this.db.query.showdownMatches.findFirst({
             where: (m, { eq }) => eq(m.showdownId, showdownId),
         });
-        if (!match) throw new NotFoundException('Duel match not found.');
+        if (!match) return;
 
         await this.startDuelQuestion(showdownId, match.id);
-        return this.getFullState(showdownId);
     }
 
     async declineDuelChallenge(showdownId: string, requesterArenaUserId: string) {
@@ -550,23 +584,21 @@ export class ShowdownService {
         return { showdown, participants, matches: matchesWithScores };
     }
 
-    async listTournamentsForCourse(courseId: string) {
+    async listTournamentsForCourse(courseId: string, statusFilter?: string) {
         const rows = await this.db.query.showdowns.findMany({
             where: (s, { eq, and }) => and(eq(s.courseId, courseId), eq(s.mode, 'tournament')),
             orderBy: (s, { desc }) => [desc(s.createdAt)],
-            with: {
-                participants: true,
-                matches: true,
-            },
+            with: { participants: true, matches: true },
         });
 
-        return rows.map((s) => {
+        const mapped = rows.map((s) => {
             const maxRound = s.matches.length > 0 ? Math.max(...s.matches.map((m) => m.round)) : 0;
             const activeMatch = s.matches.find((m) => m.status === 'active');
             return {
                 id: s.id,
                 title: s.title,
                 status: s.status,
+                scheduledAt: s.scheduledAt,
                 participantCount: s.participants.length,
                 totalRounds: s.totalRounds,
                 currentRound: s.matches.length > 0 ? maxRound + 1 : 0,
@@ -575,8 +607,46 @@ export class ShowdownService {
                 championId: s.championId,
             };
         });
+
+        if (!statusFilter) return mapped;
+        return mapped.filter((t) => t.status === statusFilter);
+    }
+    async cancelTournament(showdownId: string, requesterArenaUserId: string) {
+        const showdown = await this.assertOwner(showdownId, requesterArenaUserId);
+        if (showdown.status === 'complete') {
+            throw new BadRequestException('Tournament has already ended.');
+        }
+        const [updated] = await this.db.update(schema.showdowns)
+            .set({ status: 'complete', championId: null }) // null championId = cancelled, not won
+            .where(eq(schema.showdowns.id, showdownId))
+            .returning();
+        return updated;
     }
 
+    async deleteTournament(showdownId: string, requesterArenaUserId: string) {
+        await this.assertOwner(showdownId, requesterArenaUserId);
+        await this.db.delete(schema.showdowns).where(eq(schema.showdowns.id, showdownId));
+        return { deleted: true };
+    }
+
+    /** Wipes the bracket back to an empty lobby — same showdown row, fresh start. */
+    async resetTournament(showdownId: string, requesterArenaUserId: string) {
+        await this.assertOwner(showdownId, requesterArenaUserId);
+
+        return this.db.transaction(async (tx) => {
+            // Deleting participants cascades to matches (playerAId/playerBId both
+            // reference showdown_participants with onDelete: 'cascade'), which in
+            // turn cascades to match_questions and answers. One delete clears the
+            // whole bracket tree.
+            await tx.delete(schema.showdownParticipants).where(eq(schema.showdownParticipants.showdownId, showdownId));
+
+            const [updated] = await tx.update(schema.showdowns)
+                .set({ status: 'lobby', totalRounds: null, championId: null })
+                .where(eq(schema.showdowns.id, showdownId))
+                .returning();
+            return updated;
+        });
+    }
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private async computeMatchScores(matchId: string): Promise<Record<string, number>> {

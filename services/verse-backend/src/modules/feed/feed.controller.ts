@@ -78,4 +78,14 @@ export class FeedController {
         this.gateway.notifyReaction(postId, { arenaUserId: arenaUser.id, type: body.type, active: result.active });
         return result;
     }
+    @Patch(':postId')
+    @UsePipes(new ValidationPipe({ transform: true }))
+    async editPost(
+        @Param('postId') postId: string,
+        @Body('content') content: string,
+        @Request() req,
+    ) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.feedService.editPost(postId, arenaUser.id, content);
+    }
 }

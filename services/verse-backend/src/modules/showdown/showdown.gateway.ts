@@ -27,13 +27,19 @@ function userRoomFor(arenaUserId: string) {
 export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(ShowdownGateway.name);
+  /** One timer handle per live duel — prevents duplicate tick loops from concurrent joins. */
+  private readonly duelTimers = new Map<string, NodeJS.Timeout>();
+  /** showdownId -> set of arenaUserIds currently connected to that showdown's room. Only meaningfully used for duel challenge_pending/ready_check gating. */
+  private readonly duelPresence = new Map<string, Set<string>>();
+  /** client.id -> last showdownId it joined, so we can clean up on disconnect. */
+  private readonly clientShowdown = new Map<string, string>();
 
   constructor(
     private readonly showdownService: ShowdownService,
     private readonly identity: ArenaIdentityService,
     private readonly jwtService: JwtService,
     @Inject('DB') private db: NodePgDatabase<typeof schema>,
-  ) {}
+  ) { }
 
   async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -58,6 +64,12 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    const showdownId = this.clientShowdown.get(client.id);
+    const arenaUserId = (client.data as any)?.arenaUserId;
+    if (showdownId && arenaUserId) {
+      this.duelPresence.get(showdownId)?.delete(arenaUserId);
+    }
+    this.clientShowdown.delete(client.id);
   }
 
   // ── Join / resync ────────────────────────────────────────────────────
@@ -70,7 +82,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     try {
       await client.join(roomFor(payload.showdownId));
+      this.clientShowdown.set(client.id, payload.showdownId);
       await this.healStaleDuelQuestion(payload.showdownId);
+      await this.trackDuelPresence(payload.showdownId, this.arenaUserId(client));
       const state = await this.showdownService.getFullState(payload.showdownId);
       client.emit('showdown:state', state);
     } catch (err: any) {
@@ -87,7 +101,7 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('showdown:build-bracket')
   async handleBuildBracket(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { showdownId: string; arenaUserIds: string[] },
+    @MessageBody() payload: { showdownId: string; arenaUserIds: string[]; courseId?: string; title?: string },
   ) {
     await this.runControlAction(client, payload.showdownId, () =>
       this.showdownService.buildBracket(
@@ -96,6 +110,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
         payload.arenaUserIds,
       ),
     );
+    if (payload.courseId && payload.title) {
+      this.notifyCourseTournamentLive(payload.courseId, payload.showdownId, payload.title);
+    }
   }
 
   @UseGuards(WsJwtGuard)
@@ -156,6 +173,31 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     );
   }
 
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('showdown:reset')
+  async handleReset(@ConnectedSocket() client: Socket, @MessageBody() payload: { showdownId: string }) {
+    await this.runControlAction(client, payload.showdownId, () =>
+      this.showdownService.resetTournament(payload.showdownId, this.arenaUserId(client)),
+    );
+  }
+
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('showdown:cancel')
+  async handleCancel(@ConnectedSocket() client: Socket, @MessageBody() payload: { showdownId: string }) {
+    await this.runControlAction(client, payload.showdownId, () =>
+      this.showdownService.cancelTournament(payload.showdownId, this.arenaUserId(client)),
+    );
+  }
+
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('showdown:toggle-qr')
+  async handleToggleQr(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { showdownId: string; show: boolean },
+  ) {
+    this.server.to(roomFor(payload.showdownId)).emit('showdown:qr-toggle', { show: payload.show });
+  }
+
   // ── Duel control events (peer-initiated) ──────────────────────────────
 
   @UseGuards(WsJwtGuard)
@@ -171,7 +213,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       return;
     }
     await this.broadcastState(payload.showdownId);
-    await this.scheduleDuelTick(payload.showdownId);
+    // Do not start the tick loop here — activation happens once both
+    // participants are confirmed present, via trackDuelPresence below.
+    await this.trackDuelPresence(payload.showdownId, this.arenaUserId(client));
   }
 
   @UseGuards(WsJwtGuard)
@@ -228,13 +272,11 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       return;
     }
 
-    // Answers don't need a full state broadcast — just tell the room
-    // someone answered, so Remote/Display can show "X of 2 answered"
-    // without leaking who picked what before it's resolved.
-    this.server.to(roomFor(payload.showdownId)).emit('showdown:answer-received', {
-      matchId: payload.matchQuestionId,
-      participantId: payload.participantId,
-    });
+    // Broadcast full state immediately so the answering client's alreadyAnswered
+    // flag updates without waiting for the auto-resolve timer — but redact
+    // optionIndex/isCorrect on the still-active question so the opponent
+    // cannot see what was picked before the question is resolved.
+    await this.broadcastAnswerState(payload.showdownId);
   }
 
   // ── Outbound push (called from ShowdownController, not a socket event) ──
@@ -242,6 +284,7 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   /** Pushes a live "you've been challenged" event to the opponent if they're connected. Durable fallback (unread challenges list) is the GET /v1/showdown/duel/pending endpoint. */
   notifyChallenge(opponentArenaUserId: string, payload: {
     showdownId: string;
+    courseId: string;
     fromArenaUserId: string;
     fromUsername: string;
   }) {
@@ -263,24 +306,66 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     }, Math.max(0, delay));
   }
 
-  /** Duel: reads the currently-active match question and schedules its auto-resolve. Self-reschedules on every subsequent question until the duel completes. */
+
+  // showdown.gateway.ts — add, called from buildBracket's runControlAction success path
+  private notifyCourseTournamentLive(courseId: string, showdownId: string, title: string) {
+    this.server.to(`feed:${courseId}`).emit('tournament:live', { showdownId, title });
+  }
+
+  /** Duel: reads the currently-active match question and schedules its auto-resolve.
+   * Always cancels any existing timer for the showdown first — guarantees exactly
+   * one tick loop per duel regardless of how many clients join/rejoin. */
   private async scheduleDuelTick(showdownId: string) {
     const state = await this.showdownService.getFullState(showdownId);
-    if (state.showdown.mode !== 'duel' || state.showdown.status !== 'live') return;
+    if (state.showdown.mode !== 'duel' || state.showdown.status !== 'live') {
+      this.duelTimers.delete(showdownId);
+      return;
+    }
 
     const match = state.matches[0];
     const activeQ = match?.questions.at(-1);
     if (!activeQ?.endsAt) return;
 
+    // Cancel any previous timer before scheduling a new one.
+    const existing = this.duelTimers.get(showdownId);
+    if (existing) clearTimeout(existing);
+
     const delay = new Date(activeQ.endsAt).getTime() - Date.now();
-    setTimeout(async () => {
+    const handle = setTimeout(async () => {
+      this.duelTimers.delete(showdownId);
       await this.showdownService.autoResolveDuelQuestion(showdownId, match.id);
       await this.broadcastState(showdownId);
-      await this.scheduleDuelTick(showdownId); // recurse until finalizeDuel stops producing a new question
+      await this.scheduleDuelTick(showdownId);
     }, Math.max(0, delay));
+    this.duelTimers.set(showdownId, handle);
   }
 
-  /** Called on every showdown:join. If a duel's active question's endsAt has already passed (server restarted, timer lost), resolve it immediately and pick the loop back up. */
+
+  /** Records that this arenaUserId is connected to this duel's room. Once both
+ * participants of a duel in ready_check are present, activates the match. */
+  private async trackDuelPresence(showdownId: string, arenaUserId: string) {
+    const state = await this.showdownService.getFullState(showdownId);
+    if (state.showdown.mode !== 'duel') return;
+    if (!['challenge_pending', 'ready_check'].includes(state.showdown.status)) return;
+
+    if (!this.duelPresence.has(showdownId)) this.duelPresence.set(showdownId, new Set());
+    this.duelPresence.get(showdownId)!.add(arenaUserId);
+
+    if (state.showdown.status !== 'ready_check') return;
+
+    const participantArenaIds = state.participants.map((p) => p.arenaUserId);
+    const present = this.duelPresence.get(showdownId)!;
+    const bothPresent = participantArenaIds.every((id) => present.has(id));
+    if (!bothPresent) return;
+
+    await this.showdownService.activateReadyDuel(showdownId);
+    this.duelPresence.delete(showdownId); // no longer needed once live
+    await this.broadcastState(showdownId);
+    await this.scheduleDuelTick(showdownId);
+  }
+  /** Called on every showdown:join. Heals a stale (expired) question when the
+   * server restarted and lost its timer. If a tick loop is already running for
+   * this showdown we leave it alone to prevent duplicate loops. */
   private async healStaleDuelQuestion(showdownId: string) {
     const state = await this.showdownService.getFullState(showdownId);
     if (state.showdown.mode !== 'duel' || state.showdown.status !== 'live') return;
@@ -290,16 +375,47 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     if (!activeQ?.endsAt) return;
 
     if (new Date(activeQ.endsAt).getTime() <= Date.now()) {
+      // Question already expired (server restart lost the timer) — resolve now
+      // and restart the loop. scheduleDuelTick cancels any duplicate internally.
       await this.showdownService.autoResolveDuelQuestion(showdownId, match.id);
-      this.scheduleDuelTick(showdownId); // resume ticking for whatever question comes next
-    } else {
-      this.scheduleDuelTick(showdownId); // still within window — just make sure a tick is scheduled
+      await this.scheduleDuelTick(showdownId);
+    } else if (!this.duelTimers.has(showdownId)) {
+      // No timer running yet (fresh server boot) — safe to start one.
+      await this.scheduleDuelTick(showdownId);
     }
+    // If a timer already exists, do nothing — avoids creating a second loop.
   }
 
   private async broadcastState(showdownId: string) {
     const state = await this.showdownService.getFullState(showdownId);
     this.server.to(roomFor(showdownId)).emit('showdown:state', state);
+  }
+
+  /**
+   * Like broadcastState but strips optionIndex / isCorrect / pointsAwarded
+   * from answers on questions that are not yet resolved (questionNumber >
+   * match.questionsCompleted). Used after answer submission so that:
+   *   - The answering client's `alreadyAnswered` flag updates immediately.
+   *   - The opponent cannot see which option was chosen before resolution.
+   */
+  private async broadcastAnswerState(showdownId: string) {
+    const state = await this.showdownService.getFullState(showdownId);
+    const redacted = {
+      ...state,
+      matches: state.matches.map((m) => ({
+        ...m,
+        questions: m.questions.map((q) => {
+          // Active question = not yet counted in questionsCompleted
+          const isActive = q.questionNumber > m.questionsCompleted;
+          if (!isActive) return q;
+          return {
+            ...q,
+            answers: q.answers.map(({ optionIndex: _o, isCorrect: _c, pointsAwarded: _p, ...rest }) => rest),
+          };
+        }),
+      })),
+    };
+    this.server.to(roomFor(showdownId)).emit('showdown:state', redacted);
   }
 
   // ── Shared helpers ───────────────────────────────────────────────────

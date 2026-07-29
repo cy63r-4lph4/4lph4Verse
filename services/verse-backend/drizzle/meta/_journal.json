@@ -43,6 +43,20 @@
       "when": 1784043668524,
       "tag": "0005_fast_cammi",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784414745605,
+      "tag": "0006_neat_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784563197140,
+      "tag": "0007_spotty_venus",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
+import { and, eq, notInArray, sql } from 'drizzle-orm';
 import * as schema from '../../db/schema';
 type DbOrTx = NodePgDatabase<typeof schema>;
 
@@ -82,12 +82,19 @@ export class QuestionsService {
 
   /** Consumed by ShowdownService — picks a random unused question for a showdown, scoped to its course. */
   async pickUnused(courseId: string, excludeIds: string[]) {
-    return this.db.query.arenaQuestions.findFirst({
-      where: (q, { eq, notInArray, and }) => and(
-        eq(q.courseId, courseId),
-        excludeIds.length > 0 ? notInArray(q.id, excludeIds) : undefined,
-      ),
-    });
+    const conditions = [eq(schema.arenaQuestions.courseId, courseId)];
+    if (excludeIds.length > 0) {
+      conditions.push(notInArray(schema.arenaQuestions.id, excludeIds));
+    }
+
+    const [question] = await this.db
+      .select()
+      .from(schema.arenaQuestions)
+      .where(and(...conditions))
+      .orderBy(sql`RANDOM()`)
+      .limit(1);
+
+    return question;
   }
 
   async importCsv(courseId: string, csvText: string) {

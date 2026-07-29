@@ -1,0 +1,1 @@
+ALTER TYPE "public"."showdown_status" ADD VALUE 'ready_check' BEFORE 'live';

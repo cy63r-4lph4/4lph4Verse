@@ -12,6 +12,7 @@ import {
     ForbiddenException,
     Inject,
     BadRequestException,
+    Delete,
 } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
@@ -54,16 +55,23 @@ export class ShowdownController {
         return this.showdownService.getFeed(courseId, arenaUser.id);
     }
     @Get('tournaments')
-    async listTournaments(@Query('courseId') courseId: string) {
+    async listTournaments(
+        @Query('courseId') courseId: string,
+        @Query('status') status?: string,
+    ) {
         if (!courseId) throw new BadRequestException('courseId is required.');
-        return this.showdownService.listTournamentsForCourse(courseId);
+        return this.showdownService.listTournamentsForCourse(courseId, status);
     }
 
     @Get(':id')
     async getState(@Param('id') id: string) {
         return this.showdownService.getFullState(id);
     }
-
+    @Delete(':id')
+    async deleteTournament(@Param('id') id: string, @Request() req) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.showdownService.deleteTournament(id, arenaUser.id);
+    }
     @Get()
     async listForCourse(@Query('courseId') courseId: string) {
         return this.db.query.showdowns.findMany({
@@ -72,7 +80,7 @@ export class ShowdownController {
         });
     }
 
-   
+
 
     @Post(':id/lobby')
     async openLobby(@Param('id') id: string, @Request() req) {
@@ -138,6 +146,7 @@ export class ShowdownController {
 
         this.gateway.notifyChallenge(body.opponentArenaUserId, {
             showdownId: showdown.id,
+            courseId: showdown.courseId,
             fromArenaUserId: arenaUser.id,
             fromUsername: req.user.username,
         });
