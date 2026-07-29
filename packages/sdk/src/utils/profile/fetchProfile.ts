@@ -39,7 +39,7 @@ export async function fetchVerseProfile(
     /* ---------------------------------------------------------------------- */
     /* 🧩 Step 1: Resolve to verseId                                           */
     /* ---------------------------------------------------------------------- */
-    let verseId: bigint = 0n;
+    let verseId: bigint = BigInt(0);
 
     if (key.startsWith("@")) {
       // handle → id
@@ -61,7 +61,7 @@ export async function fetchVerseProfile(
       verseId = BigInt(key);
     }
 
-    if (!verseId || verseId === 0n) {
+    if (!verseId || verseId === BigInt(0)) {
       console.warn("⚠️ fetchVerseProfile: No verseId found for", key);
       return null;
     }

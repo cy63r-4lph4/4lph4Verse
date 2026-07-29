@@ -55,7 +55,7 @@ export function useBalance(): {
   });
 
   const balances: BalanceMap = {};
-  let total = 0n;
+  let total = BigInt(0);
   
   
   data?.forEach((result, index) => {

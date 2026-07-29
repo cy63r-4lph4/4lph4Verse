@@ -68,7 +68,7 @@ export function useCheckHandle(handle: string) {
     if (error) return setStatus("error");
 
     if (data === undefined) return setStatus("idle");
-    if (data === 0n) setStatus("available");
+    if (data === BigInt(0)) setStatus("available");
     else setStatus("taken");
   }, [debouncedHandle, isValid, data, isLoading, error]);
 
