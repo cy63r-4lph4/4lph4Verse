@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./sheet";
-import { Textarea } from "./textarea";
 import NeonButton from "./NeonButton";
 import ArenaAvatar from "./ArenaAvatar";
 import { MessageSquarePlus, Lightbulb, HelpCircle, Megaphone, Send } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@verse/ui";
+import { Textarea } from "@verse/arena-web/components/ui/textArea";
 
 type PostType = "thought" | "question" | "announcement";
 
