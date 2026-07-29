@@ -5,6 +5,7 @@ import { Trophy, Skull, Minus, Target, CheckCircle2, RotateCcw, Home } from "luc
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
+import { useKioskVariant } from "@verse/arena-web/app/course/[id]/(kiosk)/layout";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -35,6 +36,7 @@ export function DuelResult({
 }: DuelResultProps) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVisible(true), 80); return () => clearTimeout(t); }, []);
+  useKioskVariant(verdict === "win" ? "duel" : "battle");
 
   const cfg = VERDICT_CFG[verdict];
   const Icon = cfg.icon;
@@ -44,7 +46,7 @@ export function DuelResult({
   const isWin = verdict === "win";
 
   return (
-    <EnergyBackground variant={isWin ? "duel" : "battle"} className="h-full flex flex-col">
+    <div className="h-full flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-md mx-auto flex flex-col gap-4">
           <div className={cn("flex flex-col items-center gap-2 pt-10 pb-6 transition-all duration-700", visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
@@ -119,6 +121,6 @@ export function DuelResult({
           </div>
         </div>
       </div>
-    </EnergyBackground>
+    </div>
   );
 }

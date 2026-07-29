@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@verse/ui";
 import React from "react";
 import { motion } from "framer-motion";

@@ -9,6 +9,7 @@ export function useCreateTournament(courseId: string) {
       title: string;
       questionsPerMatch: number;
       timeLimitSeconds: number;
+      scheduledAt?: string;
     }) => {
       const { data: showdown } = await api.post("/v1/showdown", { courseId, ...payload });
       const { data: opened } = await api.post(`/v1/showdown/${showdown.id}/lobby`);

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Swords, Users, Skull, Shuffle, X } from "lucide-react";
-import NeonButton from "./NeonButton";
+import { cn } from "@verse/ui";
 
 interface ChallengeHeroProps {
   onSelectMode?: (mode: string) => void;
@@ -24,7 +23,7 @@ export const ChallengeHero = ({ onSelectMode }: ChallengeHeroProps) => {
         onClick={() => setExpanded(!expanded)}
         className={cn(
           "w-full relative overflow-hidden rounded-2xl p-6 transition-all duration-500",
-          "bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/20",
+          "bg-linear-to-br from-primary/20 via-primary/10 to-secondary/20",
           "border border-primary/30 hover:border-primary/50",
           "group",
           expanded && "rounded-b-none border-b-0"

@@ -15,10 +15,12 @@ import { useFeed } from "@verse/arena-web/hooks/useFeed";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import { getShowdownSocket } from "@verse/arena-web/lib/showdown/socket";
 import useAuth from "@verse/arena-web/hooks/useAuth";
-import { useForgePending } from "@verse/arena-web/hooks/useForgeSubmissions";
-import { InstructorToolsPanel } from "@verse/arena-web/components/ui/InstructorToolsPanel";
 import { useCoursePresence } from "@verse/arena-web/hooks/useCoursePresence";
 import { useCreateDuelChallenge } from "@verse/arena-web/hooks/useDuelChallengeActions";
+import { useLiveTournamentPush } from "@verse/arena-web/hooks/useLiveTournamentAlert";
+import { useScheduledTournament } from "@verse/arena-web/hooks/useScheduledTournament";
+import { LiveTournamentBanner, ScheduledTournamentBanner } from "@verse/arena-web/components/ui/TournamentBanners";
+import { useActiveTournament } from "@verse/arena-web/hooks/useActiveTournament";
 
 const MOCK_LEADERBOARD = [
     { rank: 1, name: "NIGHT_HAWK", score: 12500, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
@@ -67,36 +69,19 @@ export default function CourseHome() {
     const { currentUser } = useArena();
     const { user } = useAuth();
 
-    const canManage = !!user && (user.role === "instructor" || user.role === "admin");
-    const { data: pendingForge = [] } = useForgePending(courseId, canManage);
     const createChallenge = useCreateDuelChallenge(courseId);
 
 
 
     const [isBooting, setIsBooting] = useState(true);
-    const [countdown, setCountdown] = useState("02:45:12");
 
-    const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment } = useFeed(courseId);
+    const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment, deletePost, editPost } = useFeed(courseId);
 
     useEffect(() => {
         const t = setTimeout(() => setIsBooting(false), 600);
         return () => clearTimeout(t);
     }, []);
 
-    useEffect(() => {
-        const tick = setInterval(() => {
-            setCountdown((prev) => {
-                const [h, m, s] = prev.split(":").map(Number);
-                const total = h * 3600 + m * 60 + s - 1;
-                if (total <= 0) { clearInterval(tick); return "00:00:00"; }
-                const nh = Math.floor(total / 3600);
-                const nm = Math.floor((total % 3600) / 60);
-                const ns = total % 60;
-                return [nh, nm, ns].map((n) => String(n).padStart(2, "0")).join(":");
-            });
-        }, 1000);
-        return () => clearInterval(tick);
-    }, []);
 
     const handleCreatePost = useCallback(
         (payload: { type: "thought" | "question" | "announcement"; content: string }) => {
@@ -141,6 +126,10 @@ export default function CourseHome() {
             isOnline: f.status === "online",
             avatar: dicebearUrl(f.username),
         }));
+    useLiveTournamentPush(courseId); // side-effect only, no return value needed
+    const activeTournament = useActiveTournament(courseId);
+    const scheduledTournament = useScheduledTournament(courseId);
+
     return (
         <div className="w-full space-y-8 py-6">
 
@@ -175,8 +164,22 @@ export default function CourseHome() {
             <section className={reveal()} style={revealStyle(300)}>
                 <div className="space-y-4">
                     <SectionHeading icon={<Activity size={14} className="text-primary animate-pulse" />} label="Live_Tactical_Logs" />
-                    <TournamentAlert startsIn={countdown} />
-
+                    {/* <TournamentAlert startsIn={countdown} /> */}
+                    {activeTournament && (
+                        <LiveTournamentBanner
+                            title={activeTournament.title}
+                            courseId={courseId}
+                            showdownId={activeTournament.id}
+                            onClick={() => router.push(`/course/${courseId}/duels/tournament/${activeTournament.id}/play`)}
+                        />
+                    )}
+                    {scheduledTournament && (
+                        <ScheduledTournamentBanner
+                            title={scheduledTournament.title}
+                            scheduledAt={scheduledTournament.scheduledAt}
+                            isOverdue={scheduledTournament.isOverdue}
+                        />
+                    )}
                     <div className="space-y-3">
                         {feedLoading && (
                             <p className="font-display text-[10px] text-white/25 uppercase tracking-widest text-center py-6">
@@ -203,6 +206,8 @@ export default function CourseHome() {
                                         onDeclineChallenge={showdownId ? () => handleDeclineChallenge(showdownId) : undefined}
                                         onReact={postId ? (type) => react.mutate({ postId, type }) : undefined}
                                         onAddComment={postId ? (content) => comment.mutate({ postId, content }) : undefined}
+                                        onDelete={postId ? () => deletePost.mutate(postId) : undefined}
+                                        onEdit={postId ? (content) => editPost.mutate({ postId, content }) : undefined}
                                     />
                                 </div>
                             );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import { cn } from "@verse/ui";
 
 const BEAT_CONFIG: Record<number, { color: string; shadow: string; label: string | null }> = {
@@ -27,7 +26,7 @@ export function DuelCountdown({ secondsLeft }: { secondsLeft: number }) {
   const cfg = BEAT_CONFIG[clamped] ?? { color: "text-amber-400", shadow: "rgba(251,191,36,.9)", label: null };
 
   return (
-    <EnergyBackground variant="duel" className="h-full flex items-center justify-center">
+    <div className="relative h-full w-full select-none">
       <div className={cn("fixed inset-0 pointer-events-none z-20 transition-opacity duration-75", flash ? "opacity-100 bg-white/[0.08]" : "opacity-0")} />
 
       <div className="relative flex flex-col items-center">
@@ -60,6 +59,6 @@ export function DuelCountdown({ secondsLeft }: { secondsLeft: number }) {
           </div>
         )}
       </div>
-    </EnergyBackground>
+    </div>
   );
 }

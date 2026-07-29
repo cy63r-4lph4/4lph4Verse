@@ -2,7 +2,6 @@
 
 import { Swords, Shield, Hourglass } from "lucide-react";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
-import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import { cn } from "@verse/ui";
 
 function dicebearUrl(name: string) {
@@ -58,7 +57,7 @@ interface DuelBattleStartProps {
 
 export function DuelBattleStart({ me, opponent, iAmChallenger, questionsPerMatch, onAccept, onDecline }: DuelBattleStartProps) {
   return (
-    <EnergyBackground variant="duel" className="h-full flex flex-col">
+    <div className="relative h-full w-full select-none">
       <div className="shrink-0 pt-10 pb-6 px-6 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top duration-700">
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08]">
           <Shield size={9} className="text-primary" />
@@ -110,6 +109,6 @@ export function DuelBattleStart({ me, opponent, iAmChallenger, questionsPerMatch
           {questionsPerMatch} questions · First to answer wins each round
         </p>
       </div>
-    </EnergyBackground>
+    </div>
   );
 }

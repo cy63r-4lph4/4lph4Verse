@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Swords, Users, Skull, Shuffle, Lock, ChevronDown, Zap } from "lucide-react";
+import { Swords, Users, Skull, Shuffle, Lock, ChevronDown, Zap, X } from "lucide-react";
 import { cn } from "@verse/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -12,16 +12,16 @@ interface BattleMode {
   label: string;
   desc: string;
   locked: boolean;
-  accent: string;         // tailwind text color
-  glow: string;           // box-shadow color (inline style)
-  gradient: string;       // card bg gradient
+  accent: string;   // Tailwind text color
+  glow: string;   // inline box-shadow color
+  gradient: string;   // card bg gradient classes
 }
 
 interface ChallengeHeroProps {
   onSelectMode?: (id: string) => void;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Mode definitions ─────────────────────────────────────────────────────────
 
 const MODES: BattleMode[] = [
   {
@@ -30,19 +30,19 @@ const MODES: BattleMode[] = [
     label: "1v1 Duel",
     desc: "Challenge a rival",
     locked: false,
-    accent: "text-orange-400",
-    glow: "rgba(251,146,60,0.5)",
-    gradient: "from-orange-500/20 via-red-500/10 to-transparent",
+    accent: "text-primary",
+    glow: "rgba(99,102,241,0.4)",
+    gradient: "from-primary/15 via-primary/5 to-transparent",
   },
   {
     id: "royale",
     icon: Users,
-    label: "Battle Royale",
+    label: "Royale",
     desc: "5 fighters, 1 winner",
     locked: true,
-    accent: "text-yellow-400",
-    glow: "rgba(250,204,21,0.4)",
-    gradient: "from-yellow-500/20 via-amber-500/10 to-transparent",
+    accent: "text-amber-400",
+    glow: "rgba(245,158,11,0.4)",
+    gradient: "from-amber-500/15 via-amber-400/5 to-transparent",
   },
   {
     id: "elimination",
@@ -50,23 +50,23 @@ const MODES: BattleMode[] = [
     label: "Elimination",
     desc: "Survive the rounds",
     locked: true,
-    accent: "text-purple-400",
-    glow: "rgba(192,132,252,0.4)",
-    gradient: "from-purple-500/20 via-violet-500/10 to-transparent",
+    accent: "text-violet-400",
+    glow: "rgba(167,139,250,0.4)",
+    gradient: "from-violet-500/15 via-violet-400/5 to-transparent",
   },
   {
     id: "random",
     icon: Shuffle,
-    label: "Random Match",
+    label: "Random",
     desc: "Fight anyone, anytime",
     locked: true,
     accent: "text-sky-400",
     glow: "rgba(56,189,248,0.4)",
-    gradient: "from-sky-500/20 via-cyan-500/10 to-transparent",
+    gradient: "from-sky-500/15 via-sky-400/5 to-transparent",
   },
 ];
 
-// ─── Sub-component: Mode Card ─────────────────────────────────────────────────
+// ─── Mode card ────────────────────────────────────────────────────────────────
 
 function ModeCard({
   mode,
@@ -75,212 +75,176 @@ function ModeCard({
   mode: BattleMode;
   onSelect: (id: string) => void;
 }) {
-  const [pressed, setPressed] = useState(false);
-
-  const handleClick = () => {
-    if (mode.locked) return;
-    setPressed(true);
-    setTimeout(() => setPressed(false), 180);
-    onSelect(mode.id);
-  };
-
   return (
     <button
-      onClick={handleClick}
+      onClick={() => !mode.locked && onSelect(mode.id)}
       disabled={mode.locked}
       className={cn(
-        "relative w-full flex flex-col items-center gap-2.5 p-4 rounded-2xl",
-        "border transition-all duration-200 select-none outline-none",
-        "bg-gradient-to-b",
+        "relative flex flex-col items-center gap-2 p-3 rounded-2xl",
+        "border bg-gradient-to-b transition-all duration-200 outline-none select-none",
         mode.gradient,
         mode.locked
-          ? "border-white/5 opacity-50 cursor-not-allowed grayscale"
-          : "border-white/15 active:scale-95 active:brightness-110",
-        pressed && "scale-95"
+          ? "border-white/[0.05] opacity-40 cursor-not-allowed grayscale"
+          : "border-white/[0.12] active:scale-[0.96] active:brightness-110"
       )}
-      style={
-        !mode.locked
-          ? {
-              boxShadow: `0 0 0 0 ${mode.glow}`,
-            }
-          : undefined
-      }
     >
-      {/* Icon bubble */}
+      {/* Icon */}
       <div
         className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center",
-          "bg-black/30 border border-white/10",
-          !mode.locked && "group-active:scale-110"
+          "w-10 h-10 rounded-xl flex items-center justify-center",
+          "bg-black/30 border border-white/[0.08] shrink-0",
         )}
+        style={!mode.locked ? { boxShadow: `0 0 14px ${mode.glow}` } : undefined}
       >
         <mode.icon
-          size={22}
-          className={cn(mode.locked ? "text-white/30" : mode.accent)}
+          size={18}
+          className={mode.locked ? "text-white/25" : mode.accent}
         />
       </div>
 
       {/* Text */}
       <div className="text-center">
-        <p
-          className={cn(
-            "font-bold text-[13px] leading-tight tracking-wide",
-            mode.locked ? "text-white/30" : "text-white"
-          )}
-        >
+        <p className={cn(
+          "font-display text-[11px] font-black uppercase tracking-wide leading-tight",
+          mode.locked ? "text-white/25" : "text-white"
+        )}>
           {mode.label}
         </p>
-        <p className="text-[10px] text-white/40 mt-0.5 leading-tight">
+        <p className="font-display text-[8px] font-bold text-white/30 uppercase tracking-wider mt-0.5 leading-tight">
           {mode.desc}
         </p>
       </div>
 
       {/* Lock badge */}
       {mode.locked && (
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/60 border border-white/10 rounded-full px-1.5 py-0.5">
-          <Lock size={8} className="text-white/40" />
-          <span className="text-[8px] font-bold text-white/30 uppercase tracking-wider">
+        <div className="absolute top-2 right-2 flex items-center gap-0.5 bg-black/50 border border-white/[0.08] rounded-full px-1.5 py-0.5">
+          <Lock size={7} className="text-white/30" />
+          <span className="font-display text-[7px] font-black text-white/25 uppercase tracking-wider">
             Soon
           </span>
         </div>
       )}
 
-      {/* Unlocked: subtle animated border glow on hover */}
+      {/* Hover glow overlay */}
       {!mode.locked && (
         <div
           className="absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-          style={{
-            boxShadow: `inset 0 0 20px ${mode.glow}`,
-          }}
+          style={{ boxShadow: `inset 0 0 16px ${mode.glow}` }}
         />
       )}
     </button>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function ChallengeHero({ onSelectMode }: ChallengeHeroProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="w-full select-none">
-      {/* ── BIG TAP BUTTON ──────────────────────────────────────────────── */}
+
+      {/* ── TRIGGER BUTTON ──────────────────────────────────────────────── */}
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(o => !o)}
         className={cn(
-          "relative w-full overflow-hidden rounded-2xl transition-all duration-300",
-          "active:scale-[0.98] outline-none",
-          open ? "rounded-b-none" : ""
+          "relative w-full overflow-hidden transition-all duration-300 outline-none",
+          "active:scale-[.98]",
+          open ? "rounded-t-2xl rounded-b-none" : "rounded-2xl"
         )}
         style={{
-          background:
-            "linear-gradient(135deg, #ff6b00 0%, #ff3c00 40%, #c0392b 100%)",
+          background: "linear-gradient(135deg, hsl(var(--primary)) 0%, color-mix(in srgb, hsl(var(--primary)) 70%, black) 100%)",
           boxShadow: open
-            ? "0 0 40px rgba(255,80,0,0.5), 0 8px 32px rgba(0,0,0,0.6)"
-            : "0 0 24px rgba(255,80,0,0.35), 0 8px 24px rgba(0,0,0,0.5)",
+            ? "0 0 40px hsl(var(--primary) / .45), 0 8px 32px rgba(0,0,0,.6)"
+            : "0 0 24px hsl(var(--primary) / .3), 0 8px 24px rgba(0,0,0,.5)",
         }}
       >
-        {/* Diagonal shine stripe */}
+        {/* Diagonal shine */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%)",
-          }}
+          style={{ background: "linear-gradient(115deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)" }}
         />
 
-        {/* Subtle inner pattern */}
+        {/* Diagonal stripe texture */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-10"
+          className="absolute inset-0 pointer-events-none opacity-[0.07]"
           style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 8px,
-              rgba(0,0,0,0.3) 8px,
-              rgba(0,0,0,0.3) 9px
-            )`,
+            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,.4) 8px, rgba(0,0,0,.4) 9px)",
           }}
         />
 
-        {/* Content row */}
-        <div className="relative z-10 flex items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-4">
-            {/* Icon with pulse ring */}
-            <div className="relative">
-              <div className="w-14 h-14 rounded-xl bg-black/20 border border-white/20 flex items-center justify-center">
+        {/* Content */}
+        <div className="relative z-10 flex items-center justify-between px-4 py-4">
+
+          {/* Left: icon + text */}
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Icon */}
+            <div className="relative shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-black/20 border border-white/20 flex items-center justify-center">
                 <Swords
-                  size={28}
-                  className={cn(
-                    "text-white transition-transform duration-300",
-                    open ? "rotate-45" : "rotate-0"
-                  )}
+                  size={22}
+                  className={cn("text-white transition-transform duration-300", open && "rotate-45")}
                 />
               </div>
-              {/* Ping ring — only when closed to draw the eye */}
               {!open && (
-                <div className="absolute -inset-1 rounded-xl border border-white/30 animate-ping opacity-40" />
+                <div className="absolute -inset-1 rounded-xl border border-white/25 animate-ping opacity-40" />
               )}
             </div>
 
-            <div className="text-left">
-              <p className="text-[11px] font-semibold text-white/60 uppercase tracking-[0.2em] mb-0.5">
+            {/* Text — min-w-0 + truncate so it never overflows on small screens */}
+            <div className="min-w-0">
+              <p className="font-display text-[9px] font-black text-white/50 uppercase tracking-[.25em] leading-none mb-1">
                 Ready to fight?
               </p>
-              <h2
-                className="text-3xl font-black text-white uppercase leading-none"
-                style={{ textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}
-              >
+              <h2 className="font-display text-[22px] font-black text-white uppercase leading-none tracking-wide">
                 Challenge
               </h2>
             </div>
           </div>
 
-          {/* XP chip + chevron */}
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1 bg-black/25 border border-white/15 rounded-full px-2.5 py-1">
-              <Zap size={10} className="text-yellow-300 fill-yellow-300" />
-              <span className="text-[10px] font-bold text-yellow-200 tracking-wide">
+          {/* Right: XP chip + chevron — shrink-0 so it never gets squeezed */}
+          <div className="flex flex-col items-end gap-2 shrink-0 ml-3">
+            <div className="flex items-center gap-1 bg-black/25 border border-white/15 rounded-full px-2 py-1">
+              <Zap size={9} className="text-yellow-300 fill-yellow-300 shrink-0" />
+              <span className="font-display text-[9px] font-black text-yellow-200 tracking-wide">
                 +50 XP
               </span>
             </div>
             <ChevronDown
-              size={18}
-              className={cn(
-                "text-white/60 transition-transform duration-300",
-                open && "rotate-180"
-              )}
+              size={16}
+              className={cn("text-white/50 transition-transform duration-300", open && "rotate-180")}
             />
           </div>
         </div>
 
-        {/* Bottom edge highlight */}
+        {/* Bottom edge shimmer — only when closed */}
         {!open && (
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/25 to-transparent" />
         )}
       </button>
 
-      {/* ── MODE GRID (CSS grid-rows expand trick — no JS height) ───────── */}
+      {/* ── MODE GRID (grid-rows expand trick) ───────────────────────────── */}
       <div
         className={cn(
-          "grid transition-all duration-400 ease-out overflow-hidden",
-          "bg-[#0e0e0e] border border-t-0 rounded-b-2xl",
+          "grid transition-all duration-300 ease-out overflow-hidden",
+          "border border-t-0 rounded-b-2xl",
           open
-            ? "grid-rows-[1fr] opacity-100 border-white/10"
+            ? "grid-rows-[1fr] opacity-100 border-white/[0.08]"
             : "grid-rows-[0fr] opacity-0 border-transparent"
         )}
+        style={{ background: "#0a0a0a" }}
       >
         <div className="min-h-0">
-          <div className="p-3 pt-4">
-            {/* Section label */}
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.25em] text-center mb-3">
+          <div className="p-3 pt-4 space-y-3">
+
+            {/* Label */}
+            <p className="font-display text-[9px] font-black text-white/25 uppercase tracking-[.3em] text-center">
               Select Battle Mode
             </p>
 
-            {/* 2×2 grid */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {MODES.map((mode) => (
+            {/* 2×2 grid — gap-2 instead of gap-2.5 for tighter fit on small screens */}
+            <div className="grid grid-cols-2 gap-2">
+              {MODES.map(mode => (
                 <ModeCard
                   key={mode.id}
                   mode={mode}
@@ -292,12 +256,13 @@ export function ChallengeHero({ onSelectMode }: ChallengeHeroProps) {
               ))}
             </div>
 
-            {/* Dismiss hint */}
+            {/* Dismiss */}
             <button
               onClick={() => setOpen(false)}
-              className="w-full mt-3 py-2 text-[10px] font-semibold text-white/20 hover:text-white/40 uppercase tracking-[0.3em] transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] font-display text-[9px] font-black text-white/25 uppercase tracking-[.3em] hover:bg-white/[0.05] hover:text-white/40 transition-all active:scale-[.98]"
             >
-              ✕ Close
+              <X size={10} />
+              Close
             </button>
           </div>
         </div>

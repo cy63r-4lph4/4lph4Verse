@@ -1,10 +1,5 @@
 export type ShowdownStatus =
-  | "draft"
-  | "lobby"
-  | "seeding"
-  | "challenge_pending"
-  | "live"
-  | "complete";
+  | "draft" | "lobby" | "seeding" | "challenge_pending" | "ready_check" | "live" | "complete";
 
 export type ShowdownMode = "tournament" | "duel";
 
@@ -103,6 +98,9 @@ export function getMatchById(state: ShowdownFullState, matchId: string): Match |
 
 export function getActiveMatchQuestion(match: Match): MatchQuestion | null {
   if (match.questionsCompleted >= match.questions.length) return null;
+  return match.questions[match.questions.length - 1] ?? null;
+}
+export function getLastMatchQuestion(match: Match): MatchQuestion | null {
   return match.questions[match.questions.length - 1] ?? null;
 }
 

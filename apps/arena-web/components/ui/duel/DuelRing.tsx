@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@verse/ui";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface DuelRingProps {

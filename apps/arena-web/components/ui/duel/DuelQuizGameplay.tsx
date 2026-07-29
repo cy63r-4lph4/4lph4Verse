@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, XCircle, Zap } from "lucide-react";
 import { cn } from "@verse/ui";
-import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
 import type { Match, MatchQuestion } from "@verse/arena-web/lib/showdown/types";
 
@@ -71,18 +70,26 @@ function AnswerButton({ label, text, state, disabled, onClick }: {
             disabled={disabled}
             className={cn(
                 "relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border text-left transition-all duration-200",
-                state === "selected" ? "bg-primary/10 border-primary/50" :
-                    state === "dimmed" ? "bg-white/[0.01] border-white/[0.04] opacity-30" :
+                state === "selected" ? "bg-primary/10 border-primary/50 scale-[1.01]" :
+                    state === "dimmed" ? "bg-white/1 border-white/[0.04] opacity-30" :
                         "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/20 active:scale-[.98]",
             )}
         >
             <span className={cn(
-                "w-7 h-7 rounded-lg flex items-center justify-center font-display text-[11px] font-black shrink-0",
+                "w-7 h-7 rounded-lg flex items-center justify-center font-display text-[11px] font-black shrink-0 transition-all duration-200",
                 state === "selected" ? "bg-primary/20 text-primary" : "bg-white/[0.07] text-white/30",
             )}>
                 {label}
             </span>
             <span className="font-display text-[13px] font-bold leading-tight flex-1 text-white/80">{text}</span>
+
+            {state === "selected" && (
+                <span
+                    className="shrink-0 w-6 h-6 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center animate-in zoom-in-50 duration-300"
+                >
+                    <CheckCircle2 size={14} className="text-green-500" />
+                </span>
+            )}
         </button>
     );
 }
@@ -110,8 +117,6 @@ export function DuelQuizGameplay({
     const alreadyAnswered = activeQ.answers.some((a) => a.participantId === myParticipantId);
     const opponentAnswered = activeQ.answers.some((a) => a.participantId === opponentId);
 
-    // Reset local vote when a new question arrives; show a brief flash for
-    // the previous question's outcome using the just-completed history entry.
     useEffect(() => {
         if (prevQuestionId.current && prevQuestionId.current !== activeQ.id) {
             const prevQ = match.questions.find((q) => q.id === prevQuestionId.current);
@@ -178,17 +183,20 @@ export function DuelQuizGameplay({
                             key={i}
                             label={String.fromCharCode(65 + i)}
                             text={opt}
-                            state={alreadyAnswered ? (myVote === i ? "selected" : "dimmed") : "idle"}
-                            disabled={alreadyAnswered}
+                            state={(alreadyAnswered || myVote !== null) ? (myVote === i ? "selected" : "dimmed") : "idle"}
+                            disabled={myVote !== null || alreadyAnswered}
                             onClick={() => submit(i)}
                         />
                     ))}
                 </div>
 
                 {alreadyAnswered && (
-                    <p className="text-center font-display text-[10px] font-bold text-primary uppercase tracking-[.2em]">
-                        Locked in — awaiting result
-                    </p>
+                    <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <p className="font-display text-[10px] font-bold text-primary uppercase tracking-[.2em]">
+                            Locked in — awaiting result
+                        </p>
+                    </div>
                 )}
             </div>
         </>

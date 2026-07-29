@@ -40,6 +40,18 @@ export function useFeed(courseId: string) {
         };
     }, [token, courseId, qc]);
 
+    useEffect(() => {
+        if (!token) return;
+        const socket = getShowdownSocket(token);
+        const invalidate = () => qc.invalidateQueries({ queryKey });
+        socket.on("duel:challenge-received", invalidate);
+        socket.on("showdown:state", invalidate); // catches accept/decline clearing the card too
+        return () => {
+            socket.off("duel:challenge-received", invalidate);
+            socket.off("showdown:state", invalidate);
+        };
+    }, [token, qc]);
+
     const createPost = useMutation({
         mutationFn: async (payload: { type: string; content: string }) => {
             const { data } = await api.post("/v1/feed", { courseId, ...payload });
@@ -63,6 +75,20 @@ export function useFeed(courseId: string) {
         },
         onSuccess: () => qc.invalidateQueries({ queryKey }),
     });
+    const deletePost = useMutation({
+        mutationFn: async (postId: string) => {
+            await api.delete(`/v1/feed/${postId}`);
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey }),
+    });
 
-    return { ...query, createPost, react, comment };
+    const editPost = useMutation({
+        mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
+            const { data } = await api.patch(`/v1/feed/${postId}`, { content });
+            return data;
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey }),
+    });
+
+    return { ...query, createPost, react, comment, deletePost, editPost };
 }

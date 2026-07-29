@@ -1,4 +1,4 @@
-import type { FeedItemType } from "@verse/arena-web/components/ui/FeedCard";
+import type { FeedItemType } from "@verse/arena-web/components/ui/FeedCard.bak";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -62,16 +62,16 @@ export function mapFeedResponse(raw: any[]): FeedItemType[] {
       _authorArenaUserId: item.author?.arenaUserId,
       ...(item.postType === "announcement"
         ? {
-            instructor: { name: item.author.name, avatar: dicebearUrl(item.author.name) },
-            title: item.content.slice(0, 60),
-            content: item.content,
-            pinned: item.pinned,
-          }
+          instructor: { name: item.author.name, avatar: dicebearUrl(item.author.name) },
+          title: item.content.slice(0, 60),
+          content: item.content,
+          pinned: item.pinned,
+        }
         : {
-            author: { name: item.author.name, avatar: dicebearUrl(item.author.name) },
-            postType: item.postType,
-            content: item.content,
-          }),
+          author: { name: item.author.name, avatar: dicebearUrl(item.author.name) },
+          postType: item.postType,
+          content: item.content,
+        }),
     };
 
     return base as unknown as FeedItemType;

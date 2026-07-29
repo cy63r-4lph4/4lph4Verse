@@ -51,12 +51,11 @@
 
   --border: 240 10% 15%;
   --input: 240 10% 12%;
-  --ring: 187 100% 50%;
-
+  --ring: 239 84% 67%;
   --radius: 0.75rem;
 
   /* Glow effects */
-  --glow-primary: 187 100% 50%;
+  --glow-primary: 239 84% 67%;
   --glow-secondary: 263 70% 58%;
   --glow-destructive: 0 72% 51%;
   --glow-success: 142 71% 45%;
@@ -428,6 +427,24 @@ h6,
   50% {
     opacity: 0.8;
   }
+}
+
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-progress-slide {
+  animation: progress-slide 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
 }
 
 /* Gradient backgrounds */

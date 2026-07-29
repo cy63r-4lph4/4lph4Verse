@@ -13,6 +13,11 @@ import { DuelBattleStart } from "@verse/arena-web/components/ui/duel/DuelBattleS
 import { DuelCountdown } from "@verse/arena-web/components/ui/duel/DuelCountdown";
 import { DuelQuizGameplay } from "@verse/arena-web/components/ui/duel/DuelQuizGameplay";
 import { DuelResult } from "@verse/arena-web/components/ui/duel/DuelResult";
+import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
+
+function dicebearUrl(name: string) {
+  return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
+}
 
 export default function DuelChallengePage() {
   const params = useParams<{ id: string; showdownId: string }>();
@@ -23,9 +28,7 @@ export default function DuelChallengePage() {
 
   if (!state || !user) {
     return (
-      <EnergyBackground className="grid place-items-center" variant="duel">
-        <p className="font-display text-white/30 uppercase tracking-[.3em] text-xs">Establishing uplink…</p>
-      </EnergyBackground>
+      <p className="font-display text-white/30 uppercase tracking-[.3em] text-xs">Establishing uplink…</p>
     );
   }
 
@@ -52,6 +55,21 @@ export default function DuelChallengePage() {
               onAccept={() => emit("duel:accept", {})}
               onDecline={() => emit("duel:decline", {})}
             />
+          </motion.div>
+        )}
+
+        {showdown.status === "ready_check" && (
+          <motion.div key="ready_check" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full grid place-items-center px-6 min-h-[60dvh] text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse" />
+                <ArenaAvatar src={dicebearUrl(opponent?.arenaUser.user.username ?? "?")} size="xl" glow className="relative z-10" />
+              </div>
+              <p className="font-display text-lg font-black text-white uppercase tracking-wide">Synchronizing Combatants</p>
+              <p className="font-display text-[10px] font-bold text-white/30 uppercase tracking-[.2em] max-w-xs">
+                Waiting for both fighters to enter the arena…
+              </p>
+            </div>
           </motion.div>
         )}
 

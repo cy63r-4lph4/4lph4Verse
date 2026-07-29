@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { QueryProvider } from "@verse/arena-web/components/QueryProvider";
+import { ChallengeToast } from "@verse/arena-web/components/ui/ChallengeToast";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-arena-darker text-foreground antialiased min-h-screen overflow-x-hidden">
         <main className="relative flex flex-col min-h-screen">
           <QueryProvider>{children}</QueryProvider>
+          <ChallengeToast />
         </main>
       </body>
     </html>
