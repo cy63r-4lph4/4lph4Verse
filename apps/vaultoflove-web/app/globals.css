@@ -9,13 +9,17 @@
 
 /* ────────────── Tailwind Base Layer Extension ────────────── */
 @layer base {
-  html, body {
+
+  html,
+  body {
     font-family: 'Inter', sans-serif;
     @apply min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white overflow-x-hidden;
   }
 
   /* Keep box sizing consistent but let Tailwind’s preflight handle base resets */
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     box-sizing: border-box;
   }
 
@@ -27,12 +31,15 @@
   ::-webkit-scrollbar {
     width: 8px;
   }
+
   ::-webkit-scrollbar-track {
     @apply bg-black/20;
   }
+
   ::-webkit-scrollbar-thumb {
     @apply bg-gradient-to-b from-pink-500 to-purple-500 rounded-full;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     @apply from-pink-400 to-purple-400;
   }
@@ -59,26 +66,42 @@
   .prose {
     @apply text-pink-100/90;
   }
+
   .prose p {
     @apply mb-6 leading-relaxed;
   }
-  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
     @apply text-white font-bold mb-4;
   }
-  .prose h1 { @apply text-3xl; }
-  .prose h2 { @apply text-2xl; }
-  .prose h3 { @apply text-xl; }
+
+  .prose h1 {
+    @apply text-3xl;
+  }
+
+  .prose h2 {
+    @apply text-2xl;
+  }
+
+  .prose h3 {
+    @apply text-xl;
+  }
 }
 
 /* ────────────── Tailwind Utility Layer ────────────── */
 @layer utilities {
   .bg-love-gradient {
     background: linear-gradient(135deg,
-      rgba(236, 72, 153, 0.1) 0%,
-      rgba(147, 51, 234, 0.1) 25%,
-      rgba(79, 70, 229, 0.1) 50%,
-      rgba(236, 72, 153, 0.1) 75%,
-      rgba(147, 51, 234, 0.1) 100%);
+        rgba(236, 72, 153, 0.1) 0%,
+        rgba(147, 51, 234, 0.1) 25%,
+        rgba(79, 70, 229, 0.1) 50%,
+        rgba(236, 72, 153, 0.1) 75%,
+        rgba(147, 51, 234, 0.1) 100%);
   }
 
   .glass {
@@ -95,35 +118,96 @@
   }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
   }
-  .animate-float { animation: float 6s ease-in-out infinite; }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
 
   @keyframes glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(236, 72, 153, 0.6); }
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+    }
   }
-  .animate-glow { animation: glow 3s ease-in-out infinite; }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
 
   @keyframes pulse-love {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.05); }
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
   }
-  .animate-pulse-love { animation: pulse-love 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+  .animate-pulse-love {
+    animation: pulse-love 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 
   @keyframes heartbeat {
-    0% { transform: scale(1); }
-    14% { transform: scale(1.1); }
-    28% { transform: scale(1); }
-    42% { transform: scale(1.1); }
-    70% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+
+    14% {
+      transform: scale(1.1);
+    }
+
+    28% {
+      transform: scale(1);
+    }
+
+    42% {
+      transform: scale(1.1);
+    }
+
+    70% {
+      transform: scale(1);
+    }
   }
-  .animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
 
   @keyframes sparkle {
-    0%, 100% { opacity: 0; transform: scale(0); }
-    50% { opacity: 1; transform: scale(1); }
+
+    0%,
+    100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-  .animate-sparkle { animation: sparkle 1.5s ease-in-out infinite; }
+
+  .animate-sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
 }

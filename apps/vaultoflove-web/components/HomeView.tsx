@@ -15,15 +15,13 @@ import { Input } from "@verse/ui/components/ui/input";
 import { Story } from "@verse/sdk/types";
 import { FeaturedStoryCard } from "@verse/vaultoflove-web/components/FeaturedStoryCard";
 
-/* ------------------------------------------------------------
- * Component
- * ------------------------------------------------------------ */
 interface HomeViewPageProps {
   stories: Story[];
   onLike: (storyId: string | number) => void;
   onTip: (storyId: string | number, amount: number) => void;
   onView: (id: string | number) => void;
 }
+
 export default function HomeViewPage({
   stories,
   onLike,
@@ -32,6 +30,7 @@ export default function HomeViewPage({
 }: HomeViewPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+
   const featuredStory = {
     id: 2,
     title: "Crimson Echoes",
@@ -50,49 +49,6 @@ export default function HomeViewPage({
     createdAt: new Date().toISOString(),
   };
 
-  // ✅ Fully typed demo data (matching the complete Story interface)
-  // const stories: Story[] = [
-  //   {
-  //     id: 1,
-  //     title: "Eternal Ember",
-  //     author: "Lyra",
-  //     excerpt: "In the ashes of heartbreak, she found the spark of rebirth...",
-  //     content: "Full story content goes here...",
-  //     category: "romance",
-  //     likes: 42,
-  //     views: 180,
-  //     tips: 3,
-  //     tags: ["hope", "rebirth"],
-  //     isNftEligible: true,
-  //     isMinted: false,
-  //     onAuction: false,
-  //     isInteractive: false,
-  //     createdAt: new Date().toISOString(),
-  //   },
-
-  //   {
-  //     id: 3,
-  //     title: "Cosmic Threads",
-  //     author: "Nova",
-  //     excerpt: "Two souls collided across galaxies, rewriting destiny itself.",
-  //     content: "Full story content goes here...",
-  //     category: "sci-fi",
-  //     likes: 51,
-  //     views: 320,
-  //     tips: 5,
-  //     tags: ["galaxy", "destiny"],
-  //     isNftEligible: true,
-  //     isMinted: true,
-  //     onAuction: true,
-  //     isInteractive: true,
-  //     interactiveContent: { scene1: document.createElement("div") },
-  //     createdAt: new Date().toISOString(),
-  //   },
-  // ];
-
-  /* ------------------------------------------------------------
-   * Logic
-   * ------------------------------------------------------------ */
   const filteredStories = stories.filter((story) => {
     const matchesSearch =
       story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,9 +59,6 @@ export default function HomeViewPage({
     return matchesSearch && matchesCategory;
   });
 
-  /* ------------------------------------------------------------
-   * UI
-   * ------------------------------------------------------------ */
   return (
     <motion.div
       key="home"
@@ -118,55 +71,55 @@ export default function HomeViewPage({
       {/* ─────────────── Hero Section ─────────────── */}
       <div className="text-center mb-16">
         <motion.p
-          className="text-sm uppercase tracking-[0.35em] text-pink-300/60 mb-6"
+          className="text-xs uppercase tracking-[0.35em] text-text-muted mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.1, duration: 1 }}
+          transition={{ delay: 0.1, duration: 0.8 }}
         >
           A living archive of human love
         </motion.p>
 
+        {/* Reserved gradient moment: the hero title, and only the hero title */}
         <motion.h1
-          className="text-6xl md:text-8xl font-bold mb-6 bg-linear-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          className="font-display text-6xl md:text-7xl font-semibold mb-6 text-love-gradient"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
         >
           Stories of Love
         </motion.h1>
 
         <motion.p
-          className="text-xl md:text-2xl text-pink-200 max-w-4xl mx-auto leading-relaxed"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.7, delay: 0.25 }}
         >
           Where every heartbreak becomes wisdom, every loss becomes strength,
-          and every story becomes a legacy. In the Vault of Love, pain
-          transforms into the most beautiful kind of love.
+          and every story becomes a legacy.
         </motion.p>
 
         <motion.div
-          className="flex flex-wrap justify-center gap-8 mt-12"
-          initial={{ opacity: 0, y: 30 }}
+          className="flex flex-wrap justify-center gap-3 mt-10"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.7, delay: 0.35 }}
         >
-          <div className="flex items-center space-x-3 bg-linear-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-full border border-pink-500/30">
-            <BookOpen className="w-6 h-6 text-pink-400" />
-            <span className="text-pink-200 font-semibold">
+          <div className="flex items-center gap-2 rounded-full border border-accent-violet/25 bg-accent-violet/10 px-4 py-2">
+            <BookOpen className="w-4 h-4 text-accent-violet" />
+            <span className="text-sm font-medium text-accent-violet">
               {stories.length} Stories
             </span>
           </div>
-          <div className="flex items-center space-x-3 bg-linear-to-r from-purple-500/20 to-indigo-500/20 px-6 py-3 rounded-full border border-purple-500/30">
-            <Trophy className="w-6 h-6 text-purple-400" />
-            <span className="text-purple-200 font-semibold">
+          <div className="flex items-center gap-2 rounded-full border border-accent-gold/25 bg-accent-gold/10 px-4 py-2">
+            <Trophy className="w-4 h-4 text-accent-gold" />
+            <span className="text-sm font-medium text-accent-gold">
               {stories.filter((s) => s.isNftEligible).length} NFT Eligible
             </span>
           </div>
-          <div className="flex items-center space-x-3 bg-linear-to-r from-indigo-500/20 to-pink-500/20 px-6 py-3 rounded-full border border-indigo-500/30">
-            <Heart className="w-6 h-6 text-indigo-400" />
-            <span className="text-indigo-200 font-semibold">
+          <div className="flex items-center gap-2 rounded-full border border-accent-rose/25 bg-accent-rose/10 px-4 py-2">
+            <Heart className="w-4 h-4 text-accent-rose" />
+            <span className="text-sm font-medium text-accent-rose">
               {stories.reduce(
                 (sum, s) => sum + (typeof s.likes === "number" ? s.likes : 0),
                 0
@@ -176,47 +129,46 @@ export default function HomeViewPage({
           </div>
         </motion.div>
       </div>
-      <section className="max-w-7xl mx-auto px-6 mb-24">
-        <motion.p className="text-sm uppercase tracking-[0.3em] text-pink-300/50 mb-4">
-          Featured Memory
-        </motion.p>
 
-        <motion.h2 className="text-3xl md:text-4xl font-semibold text-white mb-12">
+      {/* ─────────────── Featured ─────────────── */}
+      <section className="mb-20">
+        <p className="text-xs uppercase tracking-[0.3em] text-accent-gold/80 mb-3">
+          Featured Memory
+        </p>
+        <h2 className="font-display text-2xl md:text-3xl font-semibold text-text-primary mb-8">
           A story held by the Vault
-        </motion.h2>
+        </h2>
 
         <FeaturedStoryCard
           story={featuredStory}
           onView={() => onView(featuredStory.id)}
         />
 
-        <div className="relative mt-24">
-          <div className="h-px bg-linear-to-r from-transparent via-pink-400/30 to-transparent" />
-        </div>
+        <div className="h-px bg-white/5 mt-20" />
       </section>
 
       {/* ─────────────── Search + Filter ─────────────── */}
       <motion.div
-        className="flex flex-col md:flex-row gap-4 mb-12"
-        initial={{ opacity: 0, y: 20 }}
+        className="flex flex-col md:flex-row gap-3 mb-10"
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.8 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
       >
         <div className="relative flex-1">
-          <Search className="z-2 absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-pink-400" />
+          <Search className="absolute z-10 left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <Input
             type="text"
             placeholder="Search stories, authors, or themes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-4 py-3 bg-black/30 border border-pink-500/30 rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            className="w-full h-11 pl-11 pr-4 bg-vault-surface border border-white/10 rounded-xl text-text-primary placeholder-text-muted focus-love"
           />
         </div>
 
         <div className="relative">
-          <Filter className="absolute z-2 left-4 top-4.5 transform -translate-y-1/2 w-5 h-5 text-purple-400" />
+          <Filter className="absolute z-10 left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="pl-12 pr-8 py-3 bg-black/30 border border-purple-500/30 rounded-full text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 backdrop-blur-sm cursor-pointer">
+            <SelectTrigger className="pl-11 pr-8 h-11 bg-vault-surface border border-white/10 rounded-xl text-text-primary focus-love cursor-pointer">
               <SelectValue placeholder="Filter category" />
             </SelectTrigger>
             <SelectContent>
@@ -233,17 +185,17 @@ export default function HomeViewPage({
 
       {/* ─────────────── Stories Grid ─────────────── */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
       >
         {filteredStories.map((story, index) => (
           <motion.div
             key={story.id}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1 + index * 0.1 }}
+            transition={{ duration: 0.5, delay: 0.5 + index * 0.06 }}
           >
             <StoryCard
               story={story}
@@ -261,13 +213,13 @@ export default function HomeViewPage({
           className="text-center py-16"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1 }}
+          transition={{ duration: 0.6 }}
         >
-          <Heart className="w-16 h-16 text-pink-400/50 mx-auto mb-4" />
-          <p className="text-xl text-pink-300/70">
+          <Heart className="w-12 h-12 text-text-muted mx-auto mb-4" />
+          <p className="text-lg text-text-secondary">
             Some stories reveal themselves only when the heart is quiet.
           </p>
-          <p className="text-pink-300/50 mt-2">
+          <p className="text-text-muted mt-1 text-sm">
             Try adjusting your filters or search terms.
           </p>
         </motion.div>

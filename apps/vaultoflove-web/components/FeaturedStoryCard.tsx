@@ -13,47 +13,30 @@ interface FeaturedStoryCardProps {
 export function FeaturedStoryCard({ story, onView }: FeaturedStoryCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-      className="
-        relative overflow-hidden rounded-3xl
-        bg-linear-to-br from-black/60 via-purple-900/30 to-black/60
-        border border-pink-500/20
-        p-10 md:p-14
-        backdrop-blur-md
-      "
+      transition={{ duration: 0.7, ease: "easeOut" }}
+      className="card-precious relative overflow-hidden p-10 md:p-14"
     >
-      {/* Soft Glow */}
-      <div className="absolute inset-0 bg-linear-to-r from-pink-500/10 via-transparent to-indigo-500/10 opacity-40" />
-
-      {/* Content */}
       <div className="relative z-10 max-w-3xl">
-        <p className="text-xs uppercase tracking-[0.3em] text-pink-300/60 mb-4">
-          {story.category} • {new Date(story.createdAt!).getFullYear()}
+        <p className="text-xs uppercase tracking-[0.3em] text-accent-gold/80 mb-4">
+          {story.category} · {new Date(story.createdAt!).getFullYear()}
         </p>
 
-        <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 leading-tight">
+        <h3 className="font-voice text-3xl md:text-4xl font-semibold text-text-primary mb-5 leading-tight">
           {story.title}
         </h3>
 
-        <p className="text-pink-200/80 text-lg mb-8 leading-relaxed">
+        <p className="text-text-secondary text-base md:text-lg mb-8 leading-relaxed">
           {story.excerpt}
         </p>
 
         <div className="flex items-center justify-between">
-          <div className="text-sm text-pink-300/70">
-            Written by <span className="text-pink-200">{story.author}</span>
+          <div className="text-sm text-text-muted">
+            Written by <span className="text-text-primary">{story.author}</span>
           </div>
 
-          <Button
-            onClick={()=>{onView()}}
-            className="
-              bg-linear-to-r from-pink-500 to-purple-500
-              hover:from-pink-600 hover:to-purple-600
-              text-white font-medium px-6
-            "
-          >
+          <Button onClick={onView} className="btn-gold rounded-lg px-6">
             Enter Story
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

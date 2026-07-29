@@ -112,7 +112,7 @@ export default function VaultOfLoveApp() {
       <Navbar userTokens={vault.userTokens} onNavigate={setCurrentView} />
       <main className="relative z-10">
         <AnimatePresence mode="wait">
-          <ViewWrapper>{renderView()}</ViewWrapper>
+          <ViewWrapper viewKey={currentView}>{renderView()}</ViewWrapper>
         </AnimatePresence>
       </main>
     </div>
