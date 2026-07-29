@@ -1,4 +1,4 @@
-import type { FeedItemType } from "@verse/arena-web/components/ui/FeedCard.bak";
+import type { FeedItemType } from "@verse/arena-web/components/ui/FeedCard";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;

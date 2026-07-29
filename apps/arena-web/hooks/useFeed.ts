@@ -6,6 +6,7 @@ import { api } from "@verse/arena-web/lib/api";
 import { getFeedSocket } from "@verse/arena-web/lib/feed/socket";
 import { mapFeedResponse } from "@verse/arena-web/lib/feed/mapFeedResponse";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import { getShowdownSocket } from "@verse/arena-web/lib/showdown/socket";
 
 export function useFeed(courseId: string) {
     const token = useArenaToken();

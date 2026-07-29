@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { FeedItemType } from "@verse/arena-web/components/ui/FeedCard";
 import { api } from "@verse/arena-web/lib/api";
-import type { FeedItemType } from "@verse/arena-web/app/course/[id]/modules/FeedCard";
 
 export function useShowdownFeed(courseId: string) {
   return useQuery({
