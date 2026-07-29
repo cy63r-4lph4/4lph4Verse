@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { ChevronDown, Users, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@verse/ui";
 
 interface Course {
   id: string;
@@ -17,7 +17,7 @@ interface CourseSwitcherProps {
 
 const CourseSwitcher = ({ currentCourse, courses }: CourseSwitcherProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSelect = (course: Course) => {
     setIsOpen(false);
@@ -93,7 +93,7 @@ const CourseSwitcher = ({ currentCourse, courses }: CourseSwitcherProps) => {
               <button
                 onClick={() => {
                   setIsOpen(false);
-                  navigate("/lobby");
+                  router.push("/lobby");
                 }}
                 className="w-full px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors text-left"
               >
