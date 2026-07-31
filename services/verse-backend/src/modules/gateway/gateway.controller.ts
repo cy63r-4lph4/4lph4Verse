@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Request, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Request, UseGuards, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { GatewayService } from './gateway.service';
 import { RegisterDto } from './dto/register';
 import { JwtAuthGuard } from '../../shared/gurds/jwt-auth.guard';
@@ -35,6 +35,11 @@ export class GatewayController {
     @UsePipes(new ValidationPipe({ transform: true }))
     async register(@Body() body: RegisterDto) {
         return await this.gatewayService.registerUser(body);
+    }
+
+    @Get("verify-email")
+    async verifyEmail(@Query('token') token: string) {
+        return await this.gatewayService.verifyEmail(token);
     }
 
     @Post("login")
@@ -78,7 +83,7 @@ export class GatewayController {
         @Body() body: JoinSectorDto,
         @Request() req
     ) {
-        return await this.gatewayService.joinSector(req.user.id, body.accessKey);
+        return await this.gatewayService.joinSectorWrapper(req.user.id, body.accessKey);
     }
 }
 

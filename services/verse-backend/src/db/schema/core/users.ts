@@ -4,6 +4,7 @@ import {
   timestamp,
   varchar,
   foreignKey,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -19,8 +20,10 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 })
     .unique(), // Optional for V1 pilot
 
-  avatar: varchar("avatar", { length: 512 }),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerifyToken: text("email_verify_token"),
 
+  avatar: varchar("avatar", { length: 512 }),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

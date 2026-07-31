@@ -9,9 +9,11 @@ import { FeedModule } from 'src/modules/feed/feed.module';
 import { ForgeModule } from 'src/modules/forge/forge.module';
 import { ShowdownModule } from 'src/modules/showdown/showdown.module';
 import { QuestionsModule } from './modules/questions/questions.module';
+import { MailModule } from './modules/mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [ArenaModule, GatewayModule, HealthModule, DatabaseModule, FeedModule, ForgeModule, ShowdownModule, QuestionsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), ArenaModule, GatewayModule, HealthModule, DatabaseModule, FeedModule, ForgeModule, ShowdownModule, QuestionsModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })

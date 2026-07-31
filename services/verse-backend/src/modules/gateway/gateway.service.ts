@@ -4,15 +4,18 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { RegisterDto } from './dto/register';
 import * as schema from '../../db/schema';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class GatewayService {
   constructor(
     @Inject("DB") private db: NodePgDatabase<typeof schema>,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private mailService: MailService
   ) { }
 
   async registerUser(user: RegisterDto) {
@@ -22,7 +25,7 @@ export class GatewayService {
         ? user.email.toLowerCase().trim()
         : null;
 
-    return await this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       const existingUser = await tx.query.users.findFirst({
         where: (users, { eq }) => {
           if (cleanEmail) {
@@ -52,12 +55,14 @@ export class GatewayService {
       }
 
       const hashedPass = await bcrypt.hash(user.password.trim(), 10);
+      const verifyToken = crypto.randomBytes(32).toString('hex');
 
       const [newUser] = await tx
         .insert(schema.users)
         .values({
           username: cleanUsername,
           email: cleanEmail,
+          emailVerifyToken: verifyToken,
         })
         .returning();
 
@@ -75,14 +80,61 @@ export class GatewayService {
         .returning();
       const payload = { sub: newUser.id, username: newUser.username };
       const token = await this.jwtService.signAsync(payload);
+      
       return {
         access_token: token,
         user: {
           id: newUser.id,
           username: newUser.username,
+          email: newUser.email,
         },
+        verifyToken,
         sectors: []
       };
+    });
+
+    if (result.user.email) {
+      this.mailService.sendWelcomeVerification(result.user.email, result.user.username, result.verifyToken).catch(console.error);
+    }
+
+    return {
+        access_token: result.access_token,
+        user: {
+            id: result.user.id,
+            username: result.user.username,
+        },
+        sectors: result.sectors
+    };
+  }
+
+  async verifyEmail(token: string) {
+    if (!token) {
+        throw new BadRequestException('Invalid verification token.');
+    }
+
+    const cleanToken = token.trim();
+
+    return await this.db.transaction(async (tx) => {
+        const user = await tx.query.users.findFirst({
+            where: (users, { eq }) => eq(users.emailVerifyToken, cleanToken),
+        });
+
+        if (!user) {
+            throw new BadRequestException('Invalid or expired verification token.');
+        }
+
+        if (user.emailVerified) {
+            return { message: 'Email already verified.' };
+        }
+
+        await tx.update(schema.users)
+            .set({
+                emailVerified: true,
+                emailVerifyToken: null,
+            })
+            .where(eq(schema.users.id, user.id));
+
+        return { message: 'Email verified successfully.' };
     });
   }
 
@@ -256,9 +308,32 @@ export class GatewayService {
         message: 'Uplink established successfully',
         courseId: course.id,
         title: course.title,
-        code: course.code
+        code: course.code,
+        userId: userProfile.userId, // Include userId for email fetching
       };
     });
+  }
+
+  async joinSectorWrapper(userId: string, accessKey: string) {
+    const result = await this.joinSector(userId, accessKey);
+    
+    if (result.userId && result.title && result.code) {
+        try {
+            const user = await this.db.query.users.findFirst({
+                where: (u, { eq }) => eq(u.id, result.userId)
+            });
+            if (user && user.email) {
+                this.mailService.sendCourseJoined(user.email, user.username, result.code).catch(console.error);
+            }
+        } catch (err) {
+            console.error("Failed to send course joined email:", err);
+        }
+    }
+    
+    // Clean up internal fields
+    delete (result as any).userId;
+    
+    return result;
   }
 
   async login(credentials: LoginDto) {
