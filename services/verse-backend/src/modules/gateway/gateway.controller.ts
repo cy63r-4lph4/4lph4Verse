@@ -54,6 +54,11 @@ export class GatewayController {
         const universities = await this.gatewayService.getUniversities();
         return universities;
     }
+
+    @Get("sector-info/:accessKey")
+    async getSectorInfo(@Param('accessKey') accessKey: string) {
+        return await this.gatewayService.getSectorInfoByAccessKey(accessKey);
+    }
     @Get("available-sectors")
     @UseGuards(JwtAuthGuard)
     async getSectors(@Request() req) {

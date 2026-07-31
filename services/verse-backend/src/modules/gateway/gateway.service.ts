@@ -168,6 +168,30 @@ export class GatewayService {
     });
   }
 
+  async getSectorInfoByAccessKey(accessKey: string) {
+    const cleanKey = accessKey.trim().toUpperCase();
+
+    const course = await this.db.query.arenaCourses.findFirst({
+      where: (courses, { eq }) => eq(courses.accessKey, cleanKey),
+      with: {
+        school: true,
+      },
+    });
+
+    if (!course) {
+      throw new BadRequestException('INVALID_ACCESS_KEY: Sector not found.');
+    }
+
+    return {
+      id: course.id,
+      title: course.title,
+      code: course.code,
+      accessKey: course.accessKey,
+      schoolId: course.schoolId,
+      schoolName: course.school?.name ?? null,
+    };
+  }
+
   /**
    * JOIN SECTOR
    * Authenticates the access key and links the arenaUser profile to the course.
@@ -194,9 +218,22 @@ export class GatewayService {
         throw new ForbiddenException('USER_NOT_INITIALIZED: No school affiliation.');
       }
 
-      // 3. Institutional Check
+      // 3. Institutional Check with Auto-Alignment
       if (course.schoolId !== userProfile.schoolId) {
-        throw new ForbiddenException('INSTITUTIONAL_MISMATCH: Unauthorized Hub.');
+        const userCourses = await tx.query.arenaUserCourses.findMany({
+          where: (auc, { eq }) => eq(auc.userId, userProfile.id),
+        });
+
+        if (userCourses.length === 0) {
+          await tx
+            .update(schema.arenaUser)
+            .set({ schoolId: course.schoolId })
+            .where(eq(schema.arenaUser.id, userProfile.id));
+
+          userProfile.schoolId = course.schoolId;
+        } else {
+          throw new ForbiddenException('INSTITUTIONAL_MISMATCH: Unauthorized Hub.');
+        }
       }
 
       // 4. Check Duplicate (using userProfile.id, not the base userId)
