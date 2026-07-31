@@ -10,39 +10,26 @@ import {
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
+import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import useAuth from "@verse/arena-web/hooks/useAuth";
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const PROFILE = {
-  name:           "SHADOW_OPERATOR",
-  avatar:         "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=shadow",
-  university:     "University of Ghana",
-  rank:           10,
-  totalPoints:    2210,
-  wins:           47,
-  losses:         23,
-  winRate:        67,
-  streakCurrent:  3,
-  streakBest:     8,
-  level:          12,
-  xp:             85,           // percent to next level
-  globalRank:     482,
-};
-
-const COURSES = [
-  { id: "phy101",  code: "PHY-101",  name: "Introduction to Physics",  rank: 4  },
-  { id: "math201", code: "MATH-201", name: "Calculus II",               rank: 11 },
-  { id: "chem150", code: "CHEM-150", name: "Organic Chemistry",         rank: 7  },
-];
-
-const ACHIEVEMENTS = [
-  { icon: "🔥", name: "Hot Streak",    description: "Win 5 in a row",      unlocked: true  },
-  { icon: "⚡", name: "Overclock",     description: "Answer under 3s",      unlocked: true  },
-  { icon: "🎯", name: "Deadshot",      description: "100% accuracy",        unlocked: false },
-  { icon: "👑", name: "Top Tier",      description: "Reach top 3",          unlocked: false },
-  { icon: "🛡️", name: "Unbreakable",  description: "10 win streak",         unlocked: false },
-  { icon: "💀", name: "Executioner",   description: "50 battle wins",        unlocked: true  },
-];
+interface ProfileData {
+  name: string;
+  avatar: string;
+  university: string;
+  totalPoints: number;
+  level: number;
+  xp: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  streakCurrent: number;
+  streakBest: number;
+  sectors: { id: string; code: string; name: string; score: number; rank: number }[];
+  achievements: { icon: string; name: string; description: string; unlocked: boolean }[];
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -114,7 +101,7 @@ function StatCard({
   );
 }
 
-function AchievementCard({ achievement, index }: { achievement: typeof ACHIEVEMENTS[number]; index: number }) {
+function AchievementCard({ achievement, index }: { achievement: { icon: string; name: string; description: string; unlocked: boolean }; index: number }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100 + index * 60);
@@ -170,7 +157,36 @@ function AchievementCard({ achievement, index }: { achievement: typeof ACHIEVEME
 
 export default function Profile() {
   const router = useRouter();
-  const unlockedCount = ACHIEVEMENTS.filter((a) => a.unlocked).length;
+  const token = useArenaToken();
+  const { logout } = useAuth();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/gateway/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setProfile(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [token]);
+
+  const unlockedCount = profile?.achievements.filter((a) => a.unlocked).length ?? 0;
+
+  if (loading) {
+    return (
+      <EnergyBackground className="flex flex-col min-h-dvh items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+          <p className="font-display text-[10px] font-black text-white/30 uppercase tracking-[.3em]">Loading profile...</p>
+        </div>
+      </EnergyBackground>
+    );
+  }
 
   return (
     <EnergyBackground className="flex flex-col min-h-dvh">
@@ -203,7 +219,7 @@ export default function Profile() {
               {/* Avatar */}
               <div className="relative shrink-0">
                 <ArenaAvatar
-                  src={PROFILE.avatar}
+                  src={profile?.avatar ?? ''}
                   size="xl"
                   glow
                   glowColor="primary"
@@ -213,37 +229,39 @@ export default function Profile() {
                   className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl flex items-center justify-center border-2 border-black font-display text-[10px] font-black text-black"
                   style={{ background: "hsl(var(--primary))" }}
                 >
-                  {PROFILE.level}
+                  {profile?.level ?? 1}
                 </div>
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0 pt-1">
                 <p className="font-display text-[18px] font-black text-white uppercase tracking-wide leading-none truncate">
-                  {PROFILE.name}
+                  {profile?.name ?? '—'}
                 </p>
                 <p className="font-display text-[10px] font-bold text-primary/50 uppercase tracking-[.2em] mt-1 mb-3">
-                  {PROFILE.university}
+                  {profile?.university ?? '—'}
                 </p>
 
                 {/* Rank + Points row */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25">
-                    <Trophy size={10} className="text-amber-400" />
-                    <span className="font-display text-[10px] font-black text-amber-400 uppercase tracking-wide">
-                      Rank #{PROFILE.rank}
-                    </span>
-                  </div>
+                  {profile?.sectors && profile.sectors.length > 0 && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25">
+                      <Trophy size={10} className="text-amber-400" />
+                      <span className="font-display text-[10px] font-black text-amber-400 uppercase tracking-wide">
+                        Best Rank #{Math.min(...profile.sectors.map((s) => s.rank))}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/8">
                     <Zap size={10} className="text-primary" />
                     <span className="font-display text-[10px] font-black text-white/70 uppercase tracking-wide">
-                      {PROFILE.totalPoints.toLocaleString()} pts
+                      {(profile?.totalPoints ?? 0).toLocaleString()} pts
                     </span>
                   </div>
                 </div>
 
                 {/* XP bar */}
-                <XpBar xp={PROFILE.xp} level={PROFILE.level} />
+                <XpBar xp={profile?.xp ?? 0} level={profile?.level ?? 1} />
               </div>
             </div>
           </section>
@@ -257,9 +275,9 @@ export default function Profile() {
               <div className="h-px flex-1 bg-linear-to-r from-white/8 to-transparent" />
             </div>
             <div className="grid grid-cols-3 gap-2.5">
-              <StatCard icon={Swords}     label="Wins"        value={PROFILE.wins}           subValue={`${PROFILE.losses} losses`} color="text-primary"    index={0} />
-              <StatCard icon={Target}     label="Win Rate"    value={`${PROFILE.winRate}%`}  subValue="67 of 70"                   color="text-secondary"  index={1} />
-              <StatCard icon={TrendingUp} label="Best Streak" value={PROFILE.streakBest}     subValue={`Now: ${PROFILE.streakCurrent}`} color="text-amber-400" index={2} />
+              <StatCard icon={Swords}     label="Wins"        value={profile?.wins ?? 0}             subValue={`${profile?.losses ?? 0} losses`}               color="text-primary"    index={0} />
+              <StatCard icon={Target}     label="Win Rate"    value={`${profile?.winRate ?? 0}%`}    subValue={`${profile?.wins ?? 0} of ${(profile?.wins ?? 0) + (profile?.losses ?? 0)}`} color="text-secondary"  index={1} />
+              <StatCard icon={TrendingUp} label="Best Streak" value={profile?.streakBest ?? 0}        subValue={`Now: ${profile?.streakCurrent ?? 0}`}           color="text-amber-400" index={2} />
             </div>
           </section>
 
@@ -275,12 +293,12 @@ export default function Profile() {
               <div className="flex items-center gap-1.5">
                 <Star size={10} className="text-amber-400" />
                 <span className="font-display text-[9px] font-bold text-white/30 uppercase tracking-wider">
-                  {unlockedCount}/{ACHIEVEMENTS.length} Unlocked
+                  {unlockedCount}/{profile?.achievements.length ?? 6} Unlocked
                 </span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {ACHIEVEMENTS.map((a, i) => (
+              {(profile?.achievements ?? []).map((a, i) => (
                 <AchievementCard key={i} achievement={a} index={i} />
               ))}
             </div>
@@ -295,7 +313,7 @@ export default function Profile() {
               <div className="h-px flex-1 bg-gradient-to-r from-white/[0.08] to-transparent" />
             </div>
             <div className="space-y-2">
-              {COURSES.map((course) => (
+              {(profile?.sectors ?? []).map((course) => (
                 <button
                   key={course.id}
                   onClick={() => router.push(`/course/${course.id}`)}
@@ -328,7 +346,7 @@ export default function Profile() {
           {/* ── SIGN OUT ────────────────────────────────────────────────────── */}
           <section className="pt-2">
             <button
-              onClick={() => router.push("/")}
+              onClick={() => logout()}
               className="w-full py-3.5 rounded-2xl border border-red-500/20 bg-red-500/[0.05] text-red-400 font-display text-[11px] font-black uppercase tracking-[.2em] flex items-center justify-center gap-2.5 hover:bg-red-500/[0.10] hover:border-red-500/35 transition-all active:scale-[.98]"
             >
               <LogOut size={13} />
