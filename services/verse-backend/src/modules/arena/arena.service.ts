@@ -204,6 +204,46 @@ export class ArenaService {
             }));
     }
 
+    async getCourseLeaderboard(courseId: string) {
+        const memberships = await this.db.query.arenaUserCourses.findMany({
+            where: (uc: any, { eq }: any) => eq(uc.courseId, courseId),
+            with: {
+                user: { with: { user: true } },
+            },
+            orderBy: (uc: any, { desc, asc }: any) => [desc(uc.score), asc(uc.joinedAt)], // Fallback to joinedAt if score is tied
+        });
+
+        return memberships
+            .filter((m: any) => m.user?.user)
+            .map((m: any, index: number) => {
+                const rank = index + 1;
+                const prevRank = m.previousRank;
+                
+                let trend: 'up' | 'down' | 'same' = 'same';
+                let change = 0;
+                
+                if (prevRank) {
+                    if (prevRank > rank) {
+                        trend = 'up';
+                        change = prevRank - rank;
+                    } else if (prevRank < rank) {
+                        trend = 'down';
+                        change = rank - prevRank;
+                    }
+                }
+
+                return {
+                    arenaUserId: m.user.id,
+                    name: m.user.user.username,
+                    avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${m.user.user.username}`,
+                    score: m.score,
+                    rank,
+                    trend,
+                    change,
+                };
+            });
+    }
+
     // ── Platform stats ───────────────────────────────────────────────────
 
     async getPlatformStats() {

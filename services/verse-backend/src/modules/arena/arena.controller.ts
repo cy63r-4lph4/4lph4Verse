@@ -36,6 +36,16 @@ export class ArenaController {
     return this.arenaService.getCourseMembers(courseId);
   }
 
+  @Get('courses/:id/leaderboard')
+  async getCourseLeaderboard(@Param('id') courseId: string) {
+    const course = await this.db.query.arenaCourses.findFirst({
+      where: (c, { eq }) => eq(c.id, courseId),
+    });
+    if (!course) {
+      throw new (require('@nestjs/common').NotFoundException)('Course not found.');
+    }
+    return this.arenaService.getCourseLeaderboard(courseId);
+  }
 
 }
 
