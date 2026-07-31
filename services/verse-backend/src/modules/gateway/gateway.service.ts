@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Inject, ForbiddenException } from '@nestjs/common';
-import { or, eq } from 'drizzle-orm';
+import { or, eq, sql, inArray, isNotNull, and } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { RegisterDto } from './dto/register';
 import * as schema from '../../db/schema';
@@ -385,6 +385,171 @@ export class GatewayService {
     };
   }
 
- 
+
+  // ── Profile ──────────────────────────────────────────────────────────
+
+  async getProfile(userId: string) {
+    // 1. Core user record + arena profile + school
+    const arenaProfile = await this.db.query.arenaUser.findFirst({
+      where: (au, { eq }) => eq(au.userId, userId),
+      with: { user: true, school: true },
+    });
+    if (!arenaProfile) throw new (require('@nestjs/common').NotFoundException)('Profile not found.');
+
+    const user = arenaProfile.user;
+    const avatarUrl = user.avatar ?? `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(user.username)}`;
+
+    // 2. Joined courses (with score + rank per sector)
+    const memberships = await this.db.query.arenaUserCourses.findMany({
+      where: (uc, { eq }) => eq(uc.userId, arenaProfile.id),
+      with: { course: true },
+    });
+
+    // For each course, compute the user's rank by counting members with higher score
+    const sectorsWithRank = await Promise.all(
+      memberships.map(async (m) => {
+        const higherScoreCount = await this.db
+          .select({ count: sql<number>`count(*)` })
+          .from(schema.arenaUserCourses)
+          .where(
+            sql`${schema.arenaUserCourses.courseId} = ${m.courseId} AND ${schema.arenaUserCourses.score} > ${m.score}`
+          );
+        const rank = Number(higherScoreCount[0]?.count ?? 0) + 1;
+        return {
+          id: m.courseId,
+          code: m.course.code,
+          name: m.course.title,
+          score: m.score,
+          rank,
+        };
+      })
+    );
+
+    // 3. Total points
+    const totalPoints = memberships.reduce((sum, m) => sum + (m.score ?? 0), 0);
+
+    // 4. Level & XP (500 pts per level)
+    const POINTS_PER_LEVEL = 500;
+    const level = Math.floor(totalPoints / POINTS_PER_LEVEL) + 1;
+    const xp = Math.round(((totalPoints % POINTS_PER_LEVEL) / POINTS_PER_LEVEL) * 100);
+
+    // 5. Combat stats from showdown_matches
+    //    We need all matches the user participated in, with a decided winner.
+    const participantRows = await this.db.query.showdownParticipants.findMany({
+      where: (sp, { eq }) => eq(sp.arenaUserId, arenaProfile.id),
+      columns: { id: true },
+    });
+    const participantIds = participantRows.map((p) => p.id);
+
+    let wins = 0;
+    let losses = 0;
+    let streakCurrent = 0;
+    let streakBest = 0;
+
+    if (participantIds.length > 0) {
+      // Fetch all decided matches involving this user (ordered newest first for streak calc)
+      const decidedMatches = await this.db
+        .select({
+          winnerId: schema.showdownMatches.winnerId,
+          playerAId: schema.showdownMatches.playerAId,
+          playerBId: schema.showdownMatches.playerBId,
+          completedAt: schema.showdownMatches.completedAt,
+        })
+        .from(schema.showdownMatches)
+        .where(
+          and(
+            or(
+              inArray(schema.showdownMatches.playerAId, participantIds),
+              inArray(schema.showdownMatches.playerBId, participantIds),
+            ),
+            isNotNull(schema.showdownMatches.winnerId),
+          )
+        )
+        .orderBy(sql`${schema.showdownMatches.completedAt} DESC`);
+
+      // Compute wins/losses and streaks
+      let currentRun = 0;
+      for (const match of decidedMatches) {
+        const userWon = participantIds.includes(match.winnerId ?? '');
+        if (userWon) {
+          wins++;
+          currentRun++;
+          if (currentRun > streakBest) streakBest = currentRun;
+        } else {
+          losses++;
+          currentRun = 0;
+        }
+      }
+      // streakCurrent = consecutive wins from the top (newest) until a loss
+      let streak = 0;
+      for (const match of decidedMatches) {
+        if (participantIds.includes(match.winnerId ?? '')) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      streakCurrent = streak;
+    }
+
+    const totalMatches = wins + losses;
+    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+    // 6. Achievements (computed from stats)
+    const ACHIEVEMENTS = [
+      {
+        icon: '🔥',
+        name: 'Hot Streak',
+        description: 'Win 5 in a row',
+        unlocked: streakBest >= 5,
+      },
+      {
+        icon: '⚡',
+        name: 'Overclock',
+        description: 'Play 10 matches',
+        unlocked: totalMatches >= 10,
+      },
+      {
+        icon: '🎯',
+        name: 'Deadshot',
+        description: '100% win rate',
+        unlocked: totalMatches >= 5 && winRate === 100,
+      },
+      {
+        icon: '👑',
+        name: 'Top Tier',
+        description: 'Reach top 3 in a sector',
+        unlocked: sectorsWithRank.some((s) => s.rank <= 3),
+      },
+      {
+        icon: '🛡️',
+        name: 'Unbreakable',
+        description: '10 win streak',
+        unlocked: streakBest >= 10,
+      },
+      {
+        icon: '💀',
+        name: 'Executioner',
+        description: '50 battle wins',
+        unlocked: wins >= 50,
+      },
+    ];
+
+    return {
+      name: user.username,
+      avatar: avatarUrl,
+      university: arenaProfile.school?.name ?? 'Unknown Institution',
+      totalPoints,
+      level,
+      xp,
+      wins,
+      losses,
+      winRate,
+      streakCurrent,
+      streakBest,
+      sectors: sectorsWithRank,
+      achievements: ACHIEVEMENTS,
+    };
+  }
 
 }

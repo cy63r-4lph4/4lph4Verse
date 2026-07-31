@@ -31,6 +31,12 @@ export class GatewayController {
         };
     }
 
+    @Get('profile')
+    @UseGuards(JwtAuthGuard)
+    async getProfile(@Request() req) {
+        return this.gatewayService.getProfile(req.user.id);
+    }
+
     @Post("register")
     @UsePipes(new ValidationPipe({ transform: true }))
     async register(@Body() body: RegisterDto) {
