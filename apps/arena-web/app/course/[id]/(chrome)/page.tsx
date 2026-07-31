@@ -22,11 +22,7 @@ import { useScheduledTournament } from "@verse/arena-web/hooks/useScheduledTourn
 import { LiveTournamentBanner, ScheduledTournamentBanner } from "@verse/arena-web/components/ui/TournamentBanners";
 import { useActiveTournament } from "@verse/arena-web/hooks/useActiveTournament";
 
-const MOCK_LEADERBOARD = [
-    { rank: 1, name: "NIGHT_HAWK", score: 12500, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=hawk" },
-    { rank: 2, name: "CYBER_QUEEN", score: 11200, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=queen" },
-    { rank: 3, name: "BLAZE_RUN", score: 9800, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze" },
-];
+// Mock leaderboard removed
 
 function TournamentAlert({ startsIn }: { startsIn: string }) {
     return (
@@ -77,11 +73,26 @@ export default function CourseHome() {
 
     const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment, deletePost, editPost } = useFeed(courseId);
 
+    const [leaderboard, setLeaderboard] = useState<any[]>([]);
+
     useEffect(() => {
         const t = setTimeout(() => setIsBooting(false), 600);
         return () => clearTimeout(t);
     }, []);
 
+    useEffect(() => {
+        if (!token || !courseId) return;
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/arena/courses/${courseId}/leaderboard`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (Array.isArray(data)) {
+                    setLeaderboard(data.slice(0, 3));
+                }
+            })
+            .catch(console.error);
+    }, [token, courseId]);
 
     const handleCreatePost = useCallback(
         (payload: { type: "thought" | "question" | "announcement"; content: string }) => {
@@ -216,11 +227,11 @@ export default function CourseHome() {
                 </div>
             </section>
 
-            {/* ── 4. LEADERBOARD (mock — real backend later) ──────────────────────── */}
+            {/* ── 4. LEADERBOARD ──────────────────────── */}
             <section className={reveal()} style={revealStyle(500)}>
                 <div className="space-y-3">
                     <SectionHeading icon={<Trophy size={14} className="text-yellow-400" />} label="Sector_Rankings" />
-                    <MiniLeaderboard players={MOCK_LEADERBOARD} />
+                    <MiniLeaderboard players={leaderboard} />
                 </div>
             </section>
 

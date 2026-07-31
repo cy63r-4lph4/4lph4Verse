@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import useAuth from "@verse/arena-web/hooks/useAuth";
 import { ArrowLeft, Clock, Target, Trophy } from "lucide-react";
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
@@ -21,18 +23,7 @@ interface Player {
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
-const LEADERBOARD: Player[] = [
-  { rank: 1,  name: "NIGHT_HAWK",       score: 2840, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=nighthawk", trend: "up",   change: 2 },
-  { rank: 2,  name: "BLAZE_MASTER",     score: 2720, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=blaze",     trend: "down", change: 1 },
-  { rank: 3,  name: "STORM_ACE",        score: 2650, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=storm",     trend: "up",   change: 3 },
-  { rank: 4,  name: "CYBER_QUEEN",      score: 2580, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=cyber",     trend: "same", change: 0 },
-  { rank: 5,  name: "PHANTOM_S",        score: 2510, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=phantom",   trend: "up",   change: 1 },
-  { rank: 6,  name: "NOVA_KING",        score: 2480, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=nova",      trend: "down", change: 2 },
-  { rank: 7,  name: "FROST_ELITE",      score: 2420, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=frost",     trend: "up",   change: 4 },
-  { rank: 8,  name: "THUNDER_PRO",      score: 2350, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=thunder",   trend: "same", change: 0 },
-  { rank: 9,  name: "VENOM_WOLF",       score: 2280, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=venom",     trend: "down", change: 3 },
-  { rank: 10, name: "SHADOW_OPERATOR",  score: 2210, avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=shadow",    trend: "up",   change: 2, isCurrentUser: true },
-];
+// ─── Mock data removed, fetching from backend instead ───
 
 // ─── Trend indicator ──────────────────────────────────────────────────────────
 
@@ -215,15 +206,38 @@ function PlayerRow({ player, maxScore, index }: { player: Player; maxScore: numb
 
 export default function Leaderboard() {
   const router = useRouter();
+  const params = useParams();
+  const courseId = params.id as string;
+  const { user } = useAuth();
+  const token = useArenaToken();
+  const [leaderboard, setLeaderboard] = useState<Player[]>([]);
 
-  const topThree   = LEADERBOARD.slice(0, 3);
-  const restOfList = LEADERBOARD.slice(3);
-  const maxScore   = LEADERBOARD[0].score;
+  useEffect(() => {
+    if (!token || !courseId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/arena/courses/${courseId}/leaderboard`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const players = data.map(d => ({
+            ...d,
+            isCurrentUser: user?.id === d.arenaUserId || user?.username === d.name
+          }));
+          setLeaderboard(players);
+        }
+      })
+      .catch(console.error);
+  }, [token, courseId, user]);
 
-  const currentUser = LEADERBOARD.find((p) => p.isCurrentUser);
-  const nextRank    = currentUser ? LEADERBOARD.find((p) => p.rank === currentUser.rank - 1) : undefined;
+  const topThree   = leaderboard.slice(0, 3);
+  const restOfList = leaderboard.slice(3);
+  const maxScore   = leaderboard.length > 0 ? leaderboard[0].score : 0;
+
+  const currentUser = leaderboard.find((p) => p.isCurrentUser);
+  const nextRank    = currentUser ? leaderboard.find((p) => p.rank === currentUser.rank - 1) : undefined;
   const pointsGap   = nextRank ? nextRank.score - (currentUser?.score ?? 0) : 0;
-  const progressPct = nextRank ? Math.round(((currentUser?.score ?? 0) / nextRank.score) * 100) : 100;
+  const progressPct = nextRank ? Math.round(((currentUser?.score ?? 0) / (nextRank.score || 1)) * 100) : 100;
 
   return (
     <>
