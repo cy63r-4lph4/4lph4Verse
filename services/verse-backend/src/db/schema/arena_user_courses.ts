@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
 import { arenaCourses } from "src/db/schema/arena_courses";
 import { arenaUser } from "src/db/schema/arena_users";
 
@@ -13,5 +13,7 @@ export const arenaUserCourses = pgTable("arena_user_courses", {
     courseId: text("course_id")
         .notNull()
         .references(() => arenaCourses.id, { onDelete: "cascade" }),
+    score: integer("score").default(0).notNull(),
+    previousRank: integer("previous_rank"),
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
 })
