@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { 
   BookOpen, Search, Plus, X, Zap, Pencil, School, 
   LayoutGrid, List, ChevronDown, ShieldAlert, Trash2, Loader2, Info, 
-  Users
+  Users, Share2, QrCode, Copy, Check, Link2
 } from "lucide-react";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { cn } from "@verse/ui";
@@ -173,10 +173,54 @@ export default function CoursesModule() {
 
 function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
   const [localDeleting, setLocalDeleting] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [qrSvg, setQrSvg] = useState("");
+
+  const inviteUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/join-course?accessKey=${sector.accessKey}`
+    : "";
+
   const handleDelete = async () => {
     setLocalDeleting(true);
     await onDelete(sector.id);
     setLocalDeleting(false);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* fallback: select-all on input */ }
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${sector.title} on Arena`,
+          text: `Use this link to join the ${sector.title} (${sector.code}) course on Arena by DeskMate.`,
+          url: inviteUrl,
+        });
+      } catch { /* user cancelled */ }
+    } else {
+      handleCopy();
+    }
+  };
+
+  const handleShowQR = async () => {
+    setShowInvite(true);
+    if (!qrSvg && inviteUrl) {
+      try {
+        const QRCode = (await import("qrcode")).default;
+        const svg = await QRCode.toString(inviteUrl, {
+          type: "svg", margin: 1, width: 180,
+          color: { dark: "#020617", light: "#ffffff" },
+        });
+        setQrSvg(svg);
+      } catch { setQrSvg(""); }
+    }
   };
 
   if (viewMode === "list") {
@@ -187,7 +231,14 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
           <span className="font-display font-bold text-white uppercase">{sector.title}</span>
           <span className="text-[10px] font-mono text-white/40">#{sector.code}</span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleNativeShare}
+            title="Share invite link"
+            className="p-2 text-white/20 hover:text-arena-success transition-colors"
+          >
+            <Share2 size={16} />
+          </button>
           <div className="hidden md:block w-32 h-1 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-arena-success" style={{ width: '85%' }} />
           </div>
@@ -204,6 +255,13 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
           <BookOpen size={20} className="text-muted-foreground group-hover:text-arena-success" />
         </div>
         <div className="flex gap-2">
+           <button
+             onClick={handleShowQR}
+             title="Share invite link"
+             className={cn("p-2 transition-colors", showInvite ? "text-arena-success" : "text-white/20 hover:text-arena-success")}
+           >
+             <Share2 size={14} />
+           </button>
            <button className="p-2 text-white/20 hover:text-white transition-colors"><Pencil size={14} /></button>
            <button onClick={handleDelete} disabled={isDeleting} className="p-2 text-white/20 hover:text-destructive">
              {localDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -215,6 +273,83 @@ function SectorCard({ sector, hubName, onDelete, isDeleting, viewMode }: any) {
         <h3 className="text-xl font-display font-bold text-white uppercase group-hover:text-glow-success">{sector.title}</h3>
         <p className="text-[10px] font-mono text-arena-success/60 mt-1 uppercase">Code: #{sector.code} // Hub: {hubName}</p>
       </div>
+
+      {/* ── Invite Share Panel ────────────────────────────────────────── */}
+      {showInvite && (
+        <div className="mb-6 p-4 rounded-xl border border-arena-success/20 bg-arena-success/[0.04] space-y-4 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Link2 size={12} className="text-arena-success" />
+              <span className="text-[9px] font-mono font-bold text-arena-success uppercase tracking-[.2em]">
+                Invite_Link
+              </span>
+            </div>
+            <button onClick={() => setShowInvite(false)} className="text-white/30 hover:text-white transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+
+          {/* Copyable URL */}
+          <div className="flex items-stretch gap-2">
+            <input
+              readOnly
+              value={inviteUrl}
+              className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-white/70 truncate outline-none focus:border-arena-success/40"
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <button
+              onClick={handleCopy}
+              className={cn(
+                "px-3 rounded-lg border text-[10px] font-mono font-bold uppercase tracking-wider transition-all flex items-center gap-1.5",
+                copied
+                  ? "bg-arena-success/20 border-arena-success/40 text-arena-success"
+                  : "bg-white/5 border-white/10 text-white/60 hover:border-arena-success/30 hover:text-arena-success"
+              )}
+            >
+              {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+            </button>
+          </div>
+
+          {/* Access Key display */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] rounded-lg border border-white/5">
+            <span className="text-[8px] font-mono text-white/30 uppercase tracking-wider">Access Key:</span>
+            <span className="text-[11px] font-mono font-bold text-arena-success tracking-widest">{sector.accessKey}</span>
+          </div>
+
+          {/* Action buttons row */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleNativeShare}
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-arena-success/10 border border-arena-success/20 text-arena-success hover:bg-arena-success/20 transition-all text-[10px] font-mono font-bold uppercase tracking-wider"
+            >
+              <Share2 size={12} /> Share
+            </button>
+            <button
+              onClick={handleShowQR}
+              className={cn(
+                "flex items-center justify-center gap-2 py-2.5 rounded-lg border text-[10px] font-mono font-bold uppercase tracking-wider transition-all",
+                qrSvg
+                  ? "bg-white/10 border-white/20 text-white"
+                  : "bg-white/5 border-white/10 text-white/50 hover:text-white"
+              )}
+            >
+              <QrCode size={12} /> QR Code
+            </button>
+          </div>
+
+          {/* QR Code display */}
+          {qrSvg && (
+            <div className="flex flex-col items-center gap-3 pt-2 animate-in fade-in zoom-in-95 duration-300">
+              <div className="p-4 bg-white rounded-xl shadow-[0_0_30px_rgba(var(--success-rgb),.15)]">
+                <div className="w-[160px] h-[160px]" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+              </div>
+              <p className="text-[8px] font-mono text-white/30 uppercase tracking-[.2em]">
+                Scan to join {sector.title}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tactical Integrity Bar */}
       <div className="space-y-1 mb-6">
