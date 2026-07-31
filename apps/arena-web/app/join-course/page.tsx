@@ -1,15 +1,16 @@
 "use client";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import { 
   Link2, Plus, ShieldCheck, Target, Lock, 
-  AlertTriangle, Loader2, Search, Check 
+  AlertTriangle, Loader2, Search, Check, Swords, UserPlus, LogIn 
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import { InputField } from "@verse/arena-web/components/ui/InputField";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import useJoinSector from "@verse/arena-web/hooks/useJoinSector";
 import useFetch from "@verse/arena-web/hooks/useFetch";
+import { api } from "@verse/arena-web/lib/api";
 import { cn } from "@verse/ui";
 
 interface ArenaCourse {
@@ -20,20 +21,126 @@ interface ArenaCourse {
   code: string;
 }
 
-const JoinCourse = () => {
+interface SectorInfo {
+  id: string;
+  title: string;
+  code: string;
+  accessKey: string;
+  schoolId: string;
+  schoolName: string | null;
+}
+
+function JoinCourseContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const urlAccessKey = searchParams.get("accessKey") || searchParams.get("key") || searchParams.get("code") || "";
+  
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [mode, setMode] = useState<"checking" | "direct-auth" | "radar">("checking");
+  const [sectorInfo, setSectorInfo] = useState<SectorInfo | null>(null);
+  const [authTab, setAuthTab] = useState<"register" | "login">("register");
+  const [form, setForm] = useState({ username: "", password: "", email: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const { join, isVerifying, errorMessage } = useJoinSector();
   
-  // 1. Fetching available sectors with proper fallback
+  // 1. Fetching available sectors for radar search
   const { data: availableSectors = [], isLoading: sectorsLoading } = useFetch<ArenaCourse[]>(
     "/v1/gateway/available-sectors",
     "available-sectors"
   );
-  // 2. Click Outside Handler
+
+  // 2. Direct link processing logic
+  useEffect(() => {
+    if (!urlAccessKey) {
+      setMode("radar");
+      return;
+    }
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("arena_token") : null;
+
+    if (token) {
+      executeDirectJoin(urlAccessKey);
+    } else {
+      // Fetch course information publicly for display
+      api.get(`/v1/gateway/sector-info/${urlAccessKey.toUpperCase()}`)
+        .then((res) => {
+          setSectorInfo(res.data);
+          setMode("direct-auth");
+        })
+        .catch(() => {
+          // Fall back to radar search if key is invalid
+          setQuery(urlAccessKey.toUpperCase());
+          setMode("radar");
+        });
+    }
+  }, [urlAccessKey]);
+
+  async function executeDirectJoin(keyToJoin: string) {
+    setBusy(true);
+    try {
+      const res = await api.post("/v1/gateway/join-sector", { accessKey: keyToJoin.toUpperCase() });
+      const targetCourseId = res.data?.courseId;
+      if (targetCourseId) {
+        router.replace(`/course/${targetCourseId}`);
+      } else {
+        router.replace("/lobby");
+      }
+    } catch (err: any) {
+      // If already joined or joined successfully
+      if (err?.response?.data?.courseId) {
+        router.replace(`/course/${err.response.data.courseId}`);
+      } else {
+        router.replace("/lobby");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sectorInfo) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { data } = await api.post("/v1/gateway/register", {
+        username: form.username,
+        password: form.password,
+        email: form.email || undefined,
+        sector: sectorInfo.schoolId,
+      });
+      localStorage.setItem("arena_token", data.access_token);
+      await executeDirectJoin(sectorInfo.accessKey);
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Registration failed.");
+      setBusy(false);
+    }
+  }
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sectorInfo) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { data } = await api.post("/v1/gateway/login", {
+        identity: form.username,
+        password: form.password,
+      });
+      localStorage.setItem("arena_token", data.access_token);
+      await executeDirectJoin(sectorInfo.accessKey);
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Login failed.");
+      setBusy(false);
+    }
+  }
+
+  // Click outside handler for radar search
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -44,17 +151,18 @@ const JoinCourse = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 3. Search Logic (Title or Key)
+  // Search logic (Title or Key)
   const suggestedSectors = useMemo(() => {
     if (query.length < 2) return [];
     const term = query.toUpperCase();
     return availableSectors.filter(s =>
       s.accessKey.toUpperCase().includes(term) || 
-      s.title.toUpperCase().includes(term) ||s.code.toUpperCase().includes(term)
+      s.title.toUpperCase().includes(term) || 
+      s.code.toUpperCase().includes(term)
     ).slice(0, 5);
   }, [query, availableSectors]);
 
-  const handleJoin = async (targetKey: string) => {
+  const handleJoinRadar = async (targetKey: string) => {
     if (!targetKey.trim()) return;
     try {
       await join(targetKey.trim().toUpperCase());
@@ -66,18 +174,109 @@ const JoinCourse = () => {
   const handleClipboardUplink = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      // Match either a full URL or a likely access key format
-      if (text.includes("arena/join/")) {
-        const key = text.split("/").pop();
+      if (text.includes("accessKey=") || text.includes("key=") || text.includes("code=")) {
+        const key = new URL(text).searchParams.get("accessKey") || new URL(text).searchParams.get("key") || new URL(text).searchParams.get("code");
         if (key) setQuery(key.toUpperCase());
-      } else if (text.length > 3 && text.length < 20) {
-        setQuery(text.toUpperCase());
+      } else if (text.length > 3 && text.length < 25) {
+        setQuery(text.trim().toUpperCase());
       }
     } catch (err) {
       console.error("Clipboard access denied");
     }
   };
 
+  // 1. Loading State
+  if (mode === "checking") {
+    return (
+      <main className="h-dvh w-full bg-black flex flex-col items-center justify-center gap-4 text-white">
+        <Loader2 size={28} className="text-primary animate-spin" />
+        <p className="font-display text-[10px] font-bold text-white/30 uppercase tracking-[.3em]">
+          Verifying Sector Link…
+        </p>
+      </main>
+    );
+  }
+
+  // 2. Direct Auth Invite Mode (when user visits via link/QR code without an active session)
+  if (mode === "direct-auth" && sectorInfo) {
+    return (
+      <main className="h-dvh w-full bg-black flex flex-col items-center justify-center px-6 text-white overflow-y-auto no-scrollbar">
+        <div className="w-full max-w-sm space-y-6 my-auto py-8 animate-in fade-in zoom-in-95 duration-300">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/25 shadow-[0_0_30px_rgba(var(--primary-rgb),.2)]">
+              <Swords size={24} className="text-primary" />
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 mt-2">
+              <ShieldCheck size={12} className="text-primary" />
+              <span className="text-[9px] font-mono text-white/70 uppercase tracking-widest">
+                {sectorInfo.schoolName ?? "Academic Sector"}
+              </span>
+            </div>
+            <h1 className="font-display text-2xl font-black uppercase tracking-wide text-white">
+              {sectorInfo.title}
+            </h1>
+            <p className="font-display text-[10px] font-bold text-primary/70 uppercase tracking-[.2em]">
+              CODE: {sectorInfo.code} // KEY: {sectorInfo.accessKey}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-1">
+            <button
+              onClick={() => setAuthTab("register")}
+              className={`py-2.5 rounded-xl font-display text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${authTab === "register" ? "bg-white text-black" : "text-white/40 hover:text-white"}`}
+            >
+              <UserPlus size={12} /> New Combatant
+            </button>
+            <button
+              onClick={() => setAuthTab("login")}
+              className={`py-2.5 rounded-xl font-display text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${authTab === "login" ? "bg-white text-black" : "text-white/40 hover:text-white"}`}
+            >
+              <LogIn size={12} /> I Have an Account
+            </button>
+          </div>
+
+          <form onSubmit={authTab === "register" ? handleRegister : handleLogin} className="space-y-3">
+            <input
+              required
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="Codename / Username"
+              className="w-full rounded-2xl border border-white/[0.08] bg-black/40 px-4 py-3.5 text-sm text-white outline-none focus:border-primary/40 transition-colors"
+            />
+            {authTab === "register" && (
+              <input
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="Email (optional)"
+                className="w-full rounded-2xl border border-white/[0.08] bg-black/40 px-4 py-3.5 text-sm text-white outline-none focus:border-primary/40 transition-colors"
+              />
+            )}
+            <input
+              required
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder="Password"
+              className="w-full rounded-2xl border border-white/[0.08] bg-black/40 px-4 py-3.5 text-sm text-white outline-none focus:border-primary/40 transition-colors"
+            />
+
+            {error && <p className="text-center font-display text-[10px] text-red-400 uppercase tracking-wide">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full py-4 rounded-2xl bg-primary text-black font-display text-xs font-black uppercase tracking-[.2em] disabled:opacity-40 flex items-center justify-center gap-2 shadow-glow-primary transition-all active:scale-[0.98]"
+            >
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+              {authTab === "register" ? "Create Account & Join" : "Sign In & Join"}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  // 3. Radar Search Mode (default manual entry/browse)
   return (
     <EnergyBackground className="flex flex-col h-dvh overflow-hidden">
       <div className="flex-1 flex flex-col px-6 py-12 max-w-lg mx-auto w-full overflow-y-auto no-scrollbar">
@@ -174,7 +373,7 @@ const JoinCourse = () => {
 
           <NeonButton
             size="xl"
-            onClick={() => handleJoin(query)}
+            onClick={() => handleJoinRadar(query)}
             disabled={!query.trim() || isVerifying}
             className="w-full shadow-glow-primary py-8"
           >
@@ -231,6 +430,16 @@ const JoinCourse = () => {
       </div>
     </EnergyBackground>
   );
-};
+}
 
-export default JoinCourse;
+export default function JoinCoursePage() {
+  return (
+    <Suspense fallback={
+      <main className="h-dvh w-full bg-black flex flex-col items-center justify-center gap-4 text-white">
+        <Loader2 size={28} className="text-primary animate-spin" />
+      </main>
+    }>
+      <JoinCourseContent />
+    </Suspense>
+  );
+}
