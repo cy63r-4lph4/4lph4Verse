@@ -82,7 +82,7 @@ export default function CourseHome() {
 
     useEffect(() => {
         if (!token || !courseId) return;
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/arena/courses/${courseId}/leaderboard`, {
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/arena/courses/${courseId}/leaderboard`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then((res) => res.json())

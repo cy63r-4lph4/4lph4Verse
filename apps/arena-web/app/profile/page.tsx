@@ -164,7 +164,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/gateway/profile`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/gateway/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
