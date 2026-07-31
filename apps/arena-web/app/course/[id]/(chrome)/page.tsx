@@ -12,6 +12,7 @@ import { useArena } from "@verse/arena-web/app/course/[id]/ArenaContext";
 import ActiveFighters from "@verse/arena-web/app/course/[id]/modules/ActiveFighters";
 import FeedCard from "@verse/arena-web/components/ui/FeedCard";
 import { useFeed } from "@verse/arena-web/hooks/useFeed";
+import useFetch from "@verse/arena-web/hooks/useFetch";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import { getShowdownSocket } from "@verse/arena-web/lib/showdown/socket";
 import useAuth from "@verse/arena-web/hooks/useAuth";
@@ -61,7 +62,6 @@ export default function CourseHome() {
     const courseId = params.id;
     const router = useRouter();
     const token = useArenaToken();
-
     const { currentUser } = useArena();
     const { user } = useAuth();
 
@@ -73,26 +73,13 @@ export default function CourseHome() {
 
     const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment, deletePost, editPost } = useFeed(courseId);
 
-    const [leaderboard, setLeaderboard] = useState<any[]>([]);
+    const { data: rawLeaderboard } = useFetch<any[]>(`/v1/arena/courses/${courseId}/leaderboard`, `leaderboard-${courseId}`);
+    const leaderboard = Array.isArray(rawLeaderboard) ? rawLeaderboard.slice(0, 3) : [];
 
     useEffect(() => {
         const t = setTimeout(() => setIsBooting(false), 600);
         return () => clearTimeout(t);
     }, []);
-
-    useEffect(() => {
-        if (!token || !courseId) return;
-        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/arena/courses/${courseId}/leaderboard`, {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (Array.isArray(data)) {
-                    setLeaderboard(data.slice(0, 3));
-                }
-            })
-            .catch(console.error);
-    }, [token, courseId]);
 
     const handleCreatePost = useCallback(
         (payload: { type: "thought" | "question" | "announcement"; content: string }) => {

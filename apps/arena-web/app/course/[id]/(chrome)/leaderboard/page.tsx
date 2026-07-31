@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import useFetch from "@verse/arena-web/hooks/useFetch";
 import useAuth from "@verse/arena-web/hooks/useAuth";
 import { ArrowLeft, Clock, Target, Trophy } from "lucide-react";
 import { cn } from "@verse/ui";
@@ -211,31 +211,19 @@ export default function Leaderboard() {
   const params = useParams();
   const courseId = params.id as string;
   const { user } = useAuth();
-  const token = useArenaToken();
-  const [leaderboard, setLeaderboard] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const { data: rawLeaderboard, isLoading: loading } = useFetch<any[]>(
+    courseId ? `/v1/arena/courses/${courseId}/leaderboard` : null, 
+    `leaderboard-${courseId}`
+  );
 
-  useEffect(() => {
-    if (!token || !courseId) return;
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/arena/courses/${courseId}/leaderboard`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const players = data.map(d => ({
-            ...d,
-            isCurrentUser: user?.arenaUserId === d.arenaUserId || user?.username === d.name
-          }));
-          setLeaderboard(players);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [token, courseId, user]);
+  const leaderboard = useMemo(() => {
+    if (!Array.isArray(rawLeaderboard)) return [];
+    return rawLeaderboard.map(d => ({
+      ...d,
+      isCurrentUser: user?.arenaUserId === d.arenaUserId || user?.username === d.name
+    })) as Player[];
+  }, [rawLeaderboard, user]);
 
   const topThree   = leaderboard.slice(0, 3);
   const restOfList = leaderboard.slice(3);

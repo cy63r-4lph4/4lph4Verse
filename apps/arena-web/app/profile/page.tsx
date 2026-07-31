@@ -10,7 +10,7 @@ import {
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
-import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
+import useFetch from "@verse/arena-web/hooks/useFetch";
 import useAuth from "@verse/arena-web/hooks/useAuth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -157,23 +157,9 @@ function AchievementCard({ achievement, index }: { achievement: { icon: string; 
 
 export default function Profile() {
   const router = useRouter();
-  const token = useArenaToken();
   const { logout } = useAuth();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/gateway/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setProfile(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [token]);
+  
+  const { data: profile, isLoading: loading } = useFetch<ProfileData>("/v1/gateway/profile", "profile");
 
   const unlockedCount = profile?.achievements.filter((a) => a.unlocked).length ?? 0;
 
