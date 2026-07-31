@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common'; // TS Server refresh
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { welcomeTemplate } from './templates/welcome';
@@ -13,7 +13,7 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com',
       port: this.configService.get<number>('SMTP_PORT') || 587,
-      secure: false, // true for 465, false for other ports
+      secure: false, 
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASS'),
@@ -29,7 +29,7 @@ export class MailService {
       const html = welcomeTemplate(username, verifyLink);
       
       await this.transporter.sendMail({
-        from: `"Arena DeskMate" <${this.configService.get<string>('SMTP_USER')}>`,
+        from: `Arena by DeskMate`,
         to: email,
         subject: '⚔️ WELCOME TO THE ARENA - Verify Your Entry',
         html: html,

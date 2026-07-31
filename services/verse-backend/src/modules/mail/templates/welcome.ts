@@ -111,7 +111,7 @@ export const welcomeTemplate = (username: string, verifyLink: string) => `
     
     <h3>🔐 Prove that you actually intend to stay.</h3>
     
-    <p>Use the verification code/link below to confirm your entry into the Arena.</p>
+    <p>Use the verification link below to confirm your entry into the Arena.</p>
 
     <div class="btn-container">
       <a href="${verifyLink}" class="btn">[ VERIFY MY ENTRY ]</a>
