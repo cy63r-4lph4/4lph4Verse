@@ -75,6 +75,8 @@ function PodiumSlot({ player, position }: { player: Player; position: "first" | 
     },
   }[position];
 
+  if (!player) return <div className={cn("flex flex-col items-center gap-1.5 flex-1", cfg.slot)} />;
+
   return (
     <div className={cn("flex flex-col items-center gap-1.5 flex-1", cfg.slot)}>
       {position === "first" && (
@@ -211,6 +213,7 @@ export default function Leaderboard() {
   const { user } = useAuth();
   const token = useArenaToken();
   const [leaderboard, setLeaderboard] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token || !courseId) return;
@@ -222,12 +225,16 @@ export default function Leaderboard() {
         if (Array.isArray(data)) {
           const players = data.map(d => ({
             ...d,
-            isCurrentUser: user?.id === d.arenaUserId || user?.username === d.name
+            isCurrentUser: user?.arenaUserId === d.arenaUserId || user?.username === d.name
           }));
           setLeaderboard(players);
         }
+        setLoading(false);
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [token, courseId, user]);
 
   const topThree   = leaderboard.slice(0, 3);
@@ -272,9 +279,15 @@ export default function Leaderboard() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-md mx-auto px-4 pb-8">
-
-            {/* ── PODIUM ────────────────────────────────────────────────── */}
-            <section className="relative pt-8 pb-0">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <div className="w-8 h-8 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+                <p className="font-display text-[10px] font-black text-white/30 uppercase tracking-[.3em]">Loading Rankings...</p>
+              </div>
+            ) : (
+              <>
+                {/* ── PODIUM ────────────────────────────────────────────────── */}
+                <section className="relative pt-8 pb-0">
               <div
                 className="absolute top-4 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full pointer-events-none"
                 style={{ background: "radial-gradient(circle, rgba(245,158,11,.08) 0%, transparent 70%)" }}
@@ -337,7 +350,10 @@ export default function Leaderboard() {
               {restOfList.map((player, idx) => (
                 <PlayerRow key={player.rank} player={player} maxScore={maxScore} index={idx} />
               ))}
-            </section>
+              </section>
+            
+            </>
+            )}
 
           </div>
         </div>
