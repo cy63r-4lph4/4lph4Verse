@@ -23,7 +23,7 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
 
   const { data: courseDetail, isLoading: courseLoading } = useQuery({
     queryKey: ["course-detail", params.id],
-    queryFn: async () => (await api.get(`/arena/courses/${params.id}`)).data,
+    queryFn: async () => (await api.get(`v1/arena/courses/${params.id}`)).data,
     enabled: !!params.id,
   });
 

@@ -10,7 +10,7 @@ export function useActiveTournament(courseId: string) {
   return useMemo(() => {
     const active = tournaments
       .filter((t: any) => ACTIVE_STATUSES.includes(t.status))
-      .sort((a: any, b: any) => (a.status === "live" ? -1 : 1)); // prefer a truly-live match over one still seeding
+      .sort((a: any, b: any) => (a.status === "live" ? -1 : 1)); 
     return active[0] ?? null;
   }, [tournaments]);
 }
