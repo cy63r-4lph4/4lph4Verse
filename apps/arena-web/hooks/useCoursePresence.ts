@@ -21,7 +21,17 @@ export function useCoursePresence(courseId: string) {
 
     const onPresence = (list: PresenceEntry[]) => setPresence(list);
     socket.on("feed:presence", onPresence);
-    return () => { socket.off("feed:presence", onPresence); };
+
+    // Belt-and-suspenders: request a fresh broadcast every 25 s in case the
+    // server-side 20 s tick misfires (e.g. after a transient Redis hiccup).
+    const refreshInterval = setInterval(() => {
+      socket.emit("presence:refresh");
+    }, 25_000);
+
+    return () => {
+      socket.off("feed:presence", onPresence);
+      clearInterval(refreshInterval);
+    };
   }, [token, courseId]);
 
   return presence;

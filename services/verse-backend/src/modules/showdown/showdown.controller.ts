@@ -166,5 +166,77 @@ export class ShowdownController {
         return this.showdownService.listOutgoingChallenges(arenaUser.id);
     }
 
+    // ── Async Duel Endpoints ──────────────────────────────────────────────
+    
+    @Post('async-duel/challenge')
+    @UsePipes(new ValidationPipe({ transform: true }))
+    async createAsyncChallenge(@Body() body: CreateDuelChallengeDto, @Request() req) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        const showdown = await this.showdownService.createAsyncDuelChallenge(arenaUser.id, body);
+
+        // Can optionally notify via gateway if opponent is online, but async relies more on persistent list/push
+        this.gateway.notifyChallenge(body.opponentArenaUserId, {
+            showdownId: showdown.id,
+            courseId: showdown.courseId,
+            fromArenaUserId: arenaUser.id,
+            fromUsername: req.user.username,
+        });
+
+        return showdown;
+    }
+
+    @Post('async-duel/:id/answer')
+    async submitAsyncAnswers(
+        @Param('id') id: string,
+        @Body() body: { answers: { questionNumber: number; optionIndex: number; timeSpentMs: number }[] },
+        @Request() req,
+    ) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.showdownService.submitAsyncAnswers(id, arenaUser.id, body.answers);
+    }
+
+    @Get('async-duel/:id')
+    async getAsyncDuelState(@Param('id') id: string, @Request() req) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        const state = await this.showdownService.getFullState(id);
+        if (state.showdown.mode !== 'async_duel') {
+            throw new BadRequestException('Not an async duel.');
+        }
+        
+        // Hide opponent's score and answers if they aren't both done
+        const pA = state.participants.find(p => p.id === state.matches[0]?.playerAId);
+        const pB = state.participants.find(p => p.id === state.matches[0]?.playerBId);
+        
+        const bothDone = pA?.completedAt && pB?.completedAt;
+        
+        if (!bothDone) {
+            // Mask answers of the other player
+            const myId = state.participants.find(p => p.arenaUserId === arenaUser.id)?.id;
+            
+            for (const mq of state.matches[0]?.questions || []) {
+                mq.answers = mq.answers.filter(a => a.participantId === myId);
+            }
+        }
+        
+        return state;
+    }
+
+    @Get('async-duel/list')
+    async listAsyncDuels(@Query('courseId') courseId: string, @Request() req) {
+        if (!courseId) throw new BadRequestException('courseId is required.');
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.showdownService.getAsyncDuelsList(courseId, arenaUser.id);
+    }
+
+    @Get('opponents/search')
+    async searchOpponents(
+        @Query('courseId') courseId: string,
+        @Query('q') query: string,
+        @Request() req,
+    ) {
+        if (!courseId || !query) return [];
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.showdownService.searchCourseMembers(courseId, arenaUser.id, query);
+    }
 
 }

@@ -213,6 +213,8 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       return;
     }
     await this.broadcastState(payload.showdownId);
+    // Notify both participants' personal rooms so their feed refetches immediately
+    await this.notifyParticipantsOfStatusChange(payload.showdownId);
     // Do not start the tick loop here — activation happens once both
     // participants are confirmed present, via trackDuelPresence below.
     await this.trackDuelPresence(payload.showdownId, this.arenaUserId(client));
@@ -231,6 +233,8 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       return;
     }
     await this.broadcastState(payload.showdownId);
+    // Notify both participants so the challenger's feed also updates
+    await this.notifyParticipantsOfStatusChange(payload.showdownId);
   }
 
   // ── Participant events (shared by both modes) ─────────────────────────
@@ -281,14 +285,37 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   // ── Outbound push (called from ShowdownController, not a socket event) ──
 
-  /** Pushes a live "you've been challenged" event to the opponent if they're connected. Durable fallback (unread challenges list) is the GET /v1/showdown/duel/pending endpoint. */
   notifyChallenge(opponentArenaUserId: string, payload: {
     showdownId: string;
     courseId: string;
     fromArenaUserId: string;
     fromUsername: string;
   }) {
+    // Private push to the opponent (shows accept/decline card)
     this.server.to(userRoomFor(opponentArenaUserId)).emit('duel:challenge-received', payload);
+    // Private push to the challenger (their sent challenges list)
+    this.server.to(userRoomFor(payload.fromArenaUserId)).emit('duel:challenge-sent', payload);
+    // Public push to the entire course feed room (everyone sees the activity card)
+    this.broadcastCourseActivity(payload.courseId, 'duel:feed-activity');
+  }
+
+  /** Emits a signal to the course feed room that invalidates feed queries for all members.
+   * Used so every fighter in the course sees challenge/accept/live events in real time. */
+  private broadcastCourseActivity(courseId: string, event: string, data?: Record<string, unknown>) {
+    this.server.to(`feed:${courseId}`).emit(event, data ?? {});
+  }
+
+  /** Emits `showdown:state` to every participant's personal room AND a
+   * `duel:feed-activity` event to the whole course feed room so all fighters
+   * see the status change (accepted, live, declined) in real time.
+   */
+  private async notifyParticipantsOfStatusChange(showdownId: string) {
+    const state = await this.showdownService.getFullState(showdownId);
+    for (const p of state.participants) {
+      this.server.to(userRoomFor(p.arenaUserId)).emit('showdown:state', state);
+    }
+    // Broadcast to the whole course so spectators see it too
+    this.broadcastCourseActivity(state.showdown.courseId, 'duel:feed-activity');
   }
 
   // ── Scheduling helpers ─────────────────────────────────────────────────

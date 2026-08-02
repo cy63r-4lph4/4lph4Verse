@@ -33,11 +33,15 @@ export function useFeed(courseId: string) {
         socket.on("feed:new-post", invalidate);
         socket.on("feed:new-comment", invalidate);
         socket.on("feed:reaction", invalidate);
+        // Course-wide duel activity — emitted to the whole feed room so every
+        // fighter sees challenges/accepts/live-duel events without being a participant
+        socket.on("duel:feed-activity", invalidate);
 
         return () => {
             socket.off("feed:new-post", invalidate);
             socket.off("feed:new-comment", invalidate);
             socket.off("feed:reaction", invalidate);
+            socket.off("duel:feed-activity", invalidate);
         };
     }, [token, courseId, qc]);
 
@@ -45,10 +49,13 @@ export function useFeed(courseId: string) {
         if (!token) return;
         const socket = getShowdownSocket(token);
         const invalidate = () => qc.invalidateQueries({ queryKey });
+        // Personal events — only fires for the participant
         socket.on("duel:challenge-received", invalidate);
-        socket.on("showdown:state", invalidate); // catches accept/decline clearing the card too
+        socket.on("duel:challenge-sent", invalidate);
+        socket.on("showdown:state", invalidate); // catches accept/decline transitions
         return () => {
             socket.off("duel:challenge-received", invalidate);
+            socket.off("duel:challenge-sent", invalidate);
             socket.off("showdown:state", invalidate);
         };
     }, [token, qc]);

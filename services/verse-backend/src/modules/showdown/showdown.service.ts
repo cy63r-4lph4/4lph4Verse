@@ -6,7 +6,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, inArray } from 'drizzle-orm';
 import * as schema from '../../db/schema';
 import { buildFirstRound } from './bracket.util';
 import { QuestionsService } from 'src/modules/questions/questions.service';
@@ -542,20 +542,71 @@ export class ShowdownService {
 
         const pending = await this.db.query.showdownParticipants.findMany({
             where: (p, { eq }) => eq(p.arenaUserId, viewerArenaUserId),
-            with: { showdown: true },
+            with: { showdown: { with: { participants: { with: { arenaUser: { with: { user: true } } } } } } },
         });
 
         const challenges = pending
             .filter((p) => p.showdown.courseId === courseId)
             .filter((p) => p.showdown.mode === 'duel' && p.showdown.status === 'challenge_pending')
             .filter((p) => p.showdown.createdBy !== viewerArenaUserId)
-            .map((p) => ({
-                id: p.showdown.id,
-                showdownId: p.showdown.id,
-                createdAt: p.showdown.createdAt,
-            }));
+            .map((p) => {
+                const challenger = p.showdown.participants.find((x) => x.arenaUserId === p.showdown.createdBy);
+                return {
+                    id: p.showdown.id,
+                    showdownId: p.showdown.id,
+                    fromUsername: challenger?.arenaUser.user.username,
+                    createdAt: p.showdown.createdAt,
+                };
+            });
 
-        return { battles, challenges };
+        const liveDuels = pending
+            .filter((p) => p.showdown.courseId === courseId)
+            .filter((p) => (p.showdown.mode === 'duel' || p.showdown.mode === 'async_duel') && (p.showdown.status === 'live' || p.showdown.status === 'ready_check') && !p.completedAt)
+            .map((p) => {
+                const opponent = p.showdown.participants.find((x) => x.arenaUserId !== viewerArenaUserId);
+                return {
+                    id: p.showdown.id,
+                    showdownId: p.showdown.id,
+                    opponentName: opponent?.arenaUser.user.username ?? '?',
+                    opponentAvatar: opponent?.arenaUser.user.username ?? '?',
+                    mode: p.showdown.mode,
+                    createdAt: p.showdown.createdAt,
+                };
+            });
+
+        // ── Public activity — visible to ALL course members ──────────────────
+        // Shows challenge_pending, ready_check, and live duels/async_duels
+        // so the whole room can watch the action unfold.
+        const activePublicDuels = await this.db.query.showdowns.findMany({
+            where: (s, { eq: eqFn, and, inArray: inArr }) => and(
+                eqFn(s.courseId, courseId),
+                inArr(s.mode, ['duel', 'async_duel'] as any),
+                inArr(s.status, ['challenge_pending', 'ready_check', 'live'] as any),
+            ),
+            with: {
+                participants: { with: { arenaUser: { with: { user: true } } } },
+            },
+            orderBy: (s, { desc }) => [desc(s.createdAt)],
+            limit: 20,
+        });
+
+        const publicActivity = activePublicDuels.map((s) => {
+            const challenger = s.participants.find((p) => p.arenaUserId === s.createdBy);
+            const opponent   = s.participants.find((p) => p.arenaUserId !== s.createdBy);
+            const isLive     = s.status === 'live' || s.status === 'ready_check';
+            return {
+                id: s.id,
+                showdownId: s.id,
+                challengerName: challenger?.arenaUser.user.username ?? '?',
+                opponentName:   opponent?.arenaUser.user.username ?? '?',
+                status: s.status as string,
+                mode:   s.mode as string,
+                event:  isLive ? 'live' : 'challenged',
+                createdAt: s.createdAt,
+            };
+        });
+
+        return { battles, challenges, liveDuels, publicActivity };
     }
 
     // ── Read model for the gateway to broadcast ─────────────────────────
@@ -713,8 +764,205 @@ export class ShowdownService {
         return showdown;
     }
 
+    // ── Async Duel Phase ────────────────────────────────────────────────
+    
+    async createAsyncDuelChallenge(initiatorArenaUserId: string, dto: {
+        courseId: string; opponentArenaUserId: string;
+        questionsPerMatch?: number; timeLimitSeconds?: number;
+    }) {
+        if (initiatorArenaUserId === dto.opponentArenaUserId) {
+            throw new BadRequestException('Cannot challenge yourself.');
+        }
+
+        return this.db.transaction(async (tx) => {
+            const expiresAt = new Date();
+            expiresAt.setHours(expiresAt.getHours() + 48); // default 48h expiry
+
+            const [showdown] = await tx.insert(schema.showdowns).values({
+                courseId: dto.courseId,
+                createdBy: initiatorArenaUserId,
+                title: 'Async Duel',
+                mode: 'async_duel',
+                status: 'challenge_pending', // Will transition to 'live' immediately in async, or we can use 'live' from start since no ready check. Let's use 'live' for async.
+                questionsPerMatch: dto.questionsPerMatch ?? 3,
+                timeLimitSeconds: dto.timeLimitSeconds ?? 20,
+                matchCountdownMs: 0,
+                totalRounds: 1,
+                expiresAt,
+            }).returning();
+
+            const participants = await tx.insert(schema.showdownParticipants).values([
+                { showdownId: showdown.id, arenaUserId: initiatorArenaUserId },
+                { showdownId: showdown.id, arenaUserId: dto.opponentArenaUserId },
+            ]).returning();
+
+            const [match] = await tx.insert(schema.showdownMatches).values({
+                showdownId: showdown.id,
+                round: 0,
+                matchIndex: 0,
+                playerAId: participants[0].id,
+                playerBId: participants[1].id,
+                status: 'active', // async match is always active until complete
+                startedAt: new Date(),
+            }).returning();
+
+            // Pre-select questions for both players so they are identical
+            const limit = showdown.questionsPerMatch;
+            const bank = await tx.query.arenaQuestions.findMany({
+                where: (q, { eq }) => eq(q.courseId, showdown.courseId),
+            });
+            const picked = bank.sort(() => Math.random() - 0.5).slice(0, limit);
+
+            if (picked.length < limit) {
+                throw new BadRequestException('Not enough questions in the course bank.');
+            }
+
+            await tx.insert(schema.showdownMatchQuestions).values(
+                picked.map((q, i) => ({
+                    matchId: match.id,
+                    questionId: q.id,
+                    questionNumber: i + 1,
+                    timeLimitSeconds: showdown.timeLimitSeconds,
+                }))
+            );
+
+            await tx.update(schema.showdowns)
+                .set({ status: 'live' })
+                .where(eq(schema.showdowns.id, showdown.id));
+
+            return showdown;
+        });
+    }
+
+    async submitAsyncAnswers(
+        showdownId: string,
+        arenaUserId: string,
+        answers: { questionNumber: number; optionIndex: number; timeSpentMs: number }[]
+    ) {
+        const showdown = await this.getShowdownOrThrow(showdownId);
+        if (showdown.mode !== 'async_duel') {
+            throw new BadRequestException('Not an async duel.');
+        }
+
+        const participant = await this.db.query.showdownParticipants.findFirst({
+            where: (p, { eq, and }) => and(eq(p.showdownId, showdownId), eq(p.arenaUserId, arenaUserId)),
+        });
+
+        if (!participant) {
+            throw new ForbiddenException('Not a participant in this duel.');
+        }
+
+        if (participant.completedAt) {
+            throw new BadRequestException('You have already completed this duel.');
+        }
+
+        return this.db.transaction(async (tx) => {
+            const match = await tx.query.showdownMatches.findFirst({
+                where: (m, { eq }) => eq(m.showdownId, showdownId),
+                with: { questions: { with: { question: true } } },
+            });
+
+            if (!match) throw new NotFoundException('Match not found.');
+
+            let totalScore = 0;
+
+            for (const ans of answers) {
+                const mq = match.questions.find(q => q.questionNumber === ans.questionNumber);
+                if (!mq) continue;
+
+                const isCorrect = ans.optionIndex === mq.question.correctIndex;
+                const timeLimitMs = mq.timeLimitSeconds * 1000;
+                
+                const speedBonus = isCorrect
+                    ? Math.max(0, Math.round(500 * (1 - ans.timeSpentMs / timeLimitMs)))
+                    : 0;
+                const pointsAwarded = isCorrect ? 1000 + speedBonus : 0;
+                
+                totalScore += pointsAwarded;
+
+                try {
+                    await tx.insert(schema.showdownAnswers).values({
+                        matchQuestionId: mq.id,
+                        participantId: participant.id,
+                        optionIndex: ans.optionIndex,
+                        isCorrect,
+                        pointsAwarded,
+                    });
+                } catch (err: any) {
+                    if (err?.cause?.code !== '23505') throw err;
+                }
+            }
+
+            await tx.update(schema.showdownParticipants)
+                .set({ completedAt: new Date(), asyncScore: totalScore })
+                .where(eq(schema.showdownParticipants.id, participant.id));
+
+            // Check if both completed
+            const allParticipants = await tx.query.showdownParticipants.findMany({
+                where: (p, { eq }) => eq(p.showdownId, showdownId),
+            });
+            const pA = allParticipants.find(p => p.id === match.playerAId);
+            const pB = allParticipants.find(p => p.id === match.playerBId);
+
+            if (pA?.completedAt && pB?.completedAt) {
+                const winnerId = (pA.asyncScore ?? 0) >= (pB.asyncScore ?? 0) ? pA.id : pB.id;
+                
+                await tx.update(schema.showdownMatches)
+                    .set({ winnerId, status: 'complete', completedAt: new Date() })
+                    .where(eq(schema.showdownMatches.id, match.id));
+
+                await tx.update(schema.showdowns)
+                    .set({ championId: winnerId, status: 'complete' })
+                    .where(eq(schema.showdowns.id, showdownId));
+            }
+            
+            return { success: true };
+        });
+    }
+
+    async searchCourseMembers(courseId: string, arenaUserId: string, query: string) {
+        if (!query || query.length < 2) return [];
+
+        const members = await this.db.query.arenaUser.findMany({
+            where: (u, { eq }) => eq(u.schoolId, (
+                this.db.select({ schoolId: schema.arenaCourses.schoolId })
+                    .from(schema.arenaCourses)
+                    .where(eq(schema.arenaCourses.id, courseId))
+            )),
+            with: { user: true },
+        });
+
+        const queryLower = query.toLowerCase();
+        return members
+            .filter(m => m.id !== arenaUserId && m.user.username.toLowerCase().includes(queryLower))
+            .map(m => ({
+                id: m.id,
+                username: m.user.username,
+                // Using a mock rank/win rate since this isn't implemented in schema yet
+                rank: 1,
+                winRate: 50,
+            }));
+    }
+
+    async getAsyncDuelsList(courseId: string, arenaUserId: string) {
+        const duels = await this.db.query.showdowns.findMany({
+            where: (s, { eq, and }) => and(
+                eq(s.courseId, courseId),
+                eq(s.mode, 'async_duel')
+            ),
+            with: {
+                participants: { with: { arenaUser: { with: { user: true } } } },
+                matches: true
+            },
+            orderBy: (s, { desc }) => [desc(s.createdAt)],
+        });
+
+        // Filter to only those where the user is a participant
+        return duels.filter(d => d.participants.some(p => p.arenaUserId === arenaUserId));
+    }
 
     // ── Shared: answer submission (both tournament and duel modes) ──────
+
 
     /** Called by a participant socket. Enforces one answer per player per question at the DB level. */
     async submitAnswer(

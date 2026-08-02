@@ -15,6 +15,7 @@ import { showdownParticipants } from "./showdown_participants";
 export const showdownMode = pgEnum("showdown_mode", [
   "tournament",
   "duel",
+  "async_duel",
 ]);
 
 export const showdownStatus = pgEnum("showdown_status", [
@@ -59,4 +60,7 @@ export const showdowns = pgTable("showdowns", {
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
+
+  // Async duel: point in time after which the challenge auto-expires
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
 });

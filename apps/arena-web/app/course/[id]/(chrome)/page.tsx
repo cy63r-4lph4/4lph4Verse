@@ -23,7 +23,6 @@ import { useScheduledTournament } from "@verse/arena-web/hooks/useScheduledTourn
 import { LiveTournamentBanner, ScheduledTournamentBanner } from "@verse/arena-web/components/ui/TournamentBanners";
 import { useActiveTournament } from "@verse/arena-web/hooks/useActiveTournament";
 
-// Mock leaderboard removed
 
 function TournamentAlert({ startsIn }: { startsIn: string }) {
     return (
@@ -124,7 +123,7 @@ export default function CourseHome() {
             isOnline: f.status === "online",
             avatar: dicebearUrl(f.username),
         }));
-    useLiveTournamentPush(courseId); // side-effect only, no return value needed
+    useLiveTournamentPush(courseId); 
     const activeTournament = useActiveTournament(courseId);
     const scheduledTournament = useScheduledTournament(courseId);
 
@@ -202,6 +201,7 @@ export default function CourseHome() {
                                         item={item}
                                         onAcceptChallenge={showdownId ? () => handleAcceptChallenge(showdownId) : undefined}
                                         onDeclineChallenge={showdownId ? () => handleDeclineChallenge(showdownId) : undefined}
+                                        onJoinLiveDuel={showdownId ? () => router.push(`/course/${courseId}/duels/challenge/${showdownId}`) : undefined}
                                         onReact={postId ? (type) => react.mutate({ postId, type }) : undefined}
                                         onAddComment={postId ? (content) => comment.mutate({ postId, content }) : undefined}
                                         onDelete={postId ? () => deletePost.mutate(postId) : undefined}

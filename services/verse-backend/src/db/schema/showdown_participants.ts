@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, text, timestamp, smallint, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, smallint, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { showdowns } from "./showdowns";
 import { arenaUser } from "./arena_users";
 
@@ -24,6 +24,10 @@ export const showdownParticipants = pgTable(
     joinedAt: timestamp("joined_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
+
+    // Async duel fields — null for sync/tournament participants
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    asyncScore: integer("async_score"),
   },
   (table) => [
     uniqueIndex("showdown_participants_unique").on(

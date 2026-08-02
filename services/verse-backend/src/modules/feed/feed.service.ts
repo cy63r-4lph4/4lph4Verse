@@ -157,12 +157,22 @@ export class FeedService {
       })),
     }));
 
-    const { battles, challenges } = await this.showdownService.getFeed(courseId, viewerArenaUserId);
+    const { battles, challenges, liveDuels, publicActivity } = await this.showdownService.getFeed(courseId, viewerArenaUserId);
 
-    const battleItems = battles.map((b) => ({ ...b, kind: 'battle' as const }));
-    const challengeItems = challenges.map((c) => ({ ...c, kind: 'challenge' as const }));
+    const battleItems      = battles.map((b) => ({ ...b, kind: 'battle' as const }));
+    const challengeItems   = challenges.map((c) => ({ ...c, kind: 'challenge' as const }));
+    const liveDuelItems    = (liveDuels || []).map((ld) => ({ ...ld, kind: 'live_duel' as const }));
+    // Public activity: deduplicate against private cards — if the viewer IS a participant they
+    // already see the private challenge/live_duel card, so skip the public echo for that showdown.
+    const privateShowdownIds = new Set([
+      ...challengeItems.map((c) => c.showdownId),
+      ...liveDuelItems.map((ld) => ld.showdownId),
+    ]);
+    const activityItems = (publicActivity || [])
+      .filter((a) => !privateShowdownIds.has(a.showdownId))
+      .map((a) => ({ ...a, kind: 'activity' as const }));
 
-    return [...postItems, ...battleItems, ...challengeItems].sort(
+    return [...postItems, ...battleItems, ...challengeItems, ...liveDuelItems, ...activityItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }

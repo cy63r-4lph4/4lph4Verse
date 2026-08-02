@@ -7,7 +7,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
 
 
-@Controller('arena')
+@Controller('v1/arena')
 @UseGuards(JwtAuthGuard)
 export class ArenaController {
   constructor(

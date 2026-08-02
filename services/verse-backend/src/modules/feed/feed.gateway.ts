@@ -22,6 +22,10 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(FeedGateway.name);
   private heartbeatTimers = new Map<string, NodeJS.Timeout>(); // socket.id -> timer
+  private presenceTickers = new Map<string, NodeJS.Timeout>(); // courseId -> tick
+  private courseRefCount  = new Map<string, number>();          // courseId -> # of joined sockets
+
+  private readonly PRESENCE_TICK_MS = 20_000;
 
   constructor(
     private readonly identity: ArenaIdentityService,
@@ -48,6 +52,7 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
+    // Clear the heartbeat for this socket
     const timer = this.heartbeatTimers.get(client.id);
     if (timer) clearInterval(timer);
     this.heartbeatTimers.delete(client.id);
@@ -55,7 +60,23 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const courseId = (client.data as any)?.courseId;
     const arenaUserId = (client.data as any)?.arenaUserId;
     if (courseId && arenaUserId) {
-      this.presence.markOffline(courseId, arenaUserId).then(() => this.broadcastPresence(courseId));
+      // Mark offline immediately so the next broadcast shows the correct state
+      this.presence.markOffline(courseId, arenaUserId).then(() =>
+        this.broadcastPresence(courseId)
+      );
+
+      // Decrement the ref-count; stop the ticker when no one is in the room
+      const count = (this.courseRefCount.get(courseId) ?? 1) - 1;
+      if (count <= 0) {
+        this.courseRefCount.delete(courseId);
+        const ticker = this.presenceTickers.get(courseId);
+        if (ticker) {
+          clearInterval(ticker);
+          this.presenceTickers.delete(courseId);
+        }
+      } else {
+        this.courseRefCount.set(courseId, count);
+      }
     }
   }
 
@@ -75,11 +96,34 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.presence.heartbeat(payload.courseId, arenaUserId, username);
     await this.broadcastPresence(payload.courseId);
 
-    // Keep refreshing the TTL while this socket is alive
+    // Clear any existing heartbeat timer to prevent duplication on re-joins
+    const existingTimer = this.heartbeatTimers.get(client.id);
+    if (existingTimer) clearInterval(existingTimer);
+
+    // Keep refreshing the Redis TTL while this socket is alive
     const timer = setInterval(async () => {
       await this.presence.heartbeat(payload.courseId, arenaUserId, username);
     }, HEARTBEAT_INTERVAL_MS);
     this.heartbeatTimers.set(client.id, timer);
+
+    // Start a per-course presence tick if not already running.
+    // This catches fighters who drop without a clean disconnect.
+    const refCount = (this.courseRefCount.get(payload.courseId) ?? 0) + 1;
+    this.courseRefCount.set(payload.courseId, refCount);
+    if (refCount === 1) {
+      const ticker = setInterval(() => {
+        this.broadcastPresence(payload.courseId);
+      }, this.PRESENCE_TICK_MS);
+      this.presenceTickers.set(payload.courseId, ticker);
+    }
+  }
+
+  /** Allow clients to request a fresh presence snapshot without a full re-join. */
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('presence:refresh')
+  async handlePresenceRefresh(@ConnectedSocket() client: Socket) {
+    const courseId = (client.data as any)?.courseId;
+    if (courseId) await this.broadcastPresence(courseId);
   }
 
   private async broadcastPresence(courseId: string) {

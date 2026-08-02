@@ -44,6 +44,30 @@ export function mapFeedResponse(raw: any[]): FeedItemType[] {
       } as unknown as FeedItemType;
     }
 
+    if (item.kind === "live_duel") {
+      return {
+        id: item.id,
+        type: "live_duel",
+        time: relativeTime(item.createdAt),
+        opponent: { name: item.opponentName, avatar: dicebearUrl(item.opponentName) },
+        mode: item.mode,
+        _showdownId: item.showdownId,
+      } as unknown as FeedItemType;
+    }
+
+    if (item.kind === "activity") {
+      return {
+        id: item.id,
+        type: "activity",
+        time: relativeTime(item.createdAt),
+        event: item.event as "challenged" | "live",
+        challenger: { name: item.challengerName, avatar: dicebearUrl(item.challengerName) },
+        opponent:   { name: item.opponentName,   avatar: dicebearUrl(item.opponentName) },
+        mode: item.mode as "duel" | "async_duel",
+        _showdownId: item.showdownId,
+      } as unknown as FeedItemType;
+    }
+
     // kind === "post"
     const base = {
       id: item.id,

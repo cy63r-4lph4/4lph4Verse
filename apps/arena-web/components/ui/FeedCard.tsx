@@ -56,9 +56,26 @@ interface UserPostItem extends BaseFeedItem {
   content:  string;
 }
 
+interface LiveDuelItem extends BaseFeedItem {
+  type:       "live_duel";
+  opponent:   { name: string; avatar: string };
+  mode:       "duel" | "async_duel";
+}
+
+/** Public course-wide activity card — visible to every fighter in the sector. */
+interface ActivityItem extends BaseFeedItem {
+  type:       "activity";
+  event:      "challenged" | "live";
+  challenger: { name: string; avatar: string };
+  opponent:   { name: string; avatar: string };
+  mode:       "duel" | "async_duel";
+}
+
 export type FeedItemType =
   | BattleResultItem
   | ChallengeItem
+  | LiveDuelItem
+  | ActivityItem
   | AnnouncementItem
   | UserPostItem;
 
@@ -70,6 +87,7 @@ interface FeedCardProps {
   onAddComment?:       (text: string) => void;
   onDelete?:           () => void;
   onEdit?:             (newContent: string) => void;
+  onJoinLiveDuel?:     () => void;
   className?:          string;
   style?:              React.CSSProperties;
 }
@@ -79,6 +97,8 @@ interface FeedCardProps {
 const ACCENT: Record<FeedItemType["type"], string> = {
   battle:       "from-orange-500/60 via-orange-400/20 to-transparent",
   challenge:    "from-primary/60 via-primary/20 to-transparent",
+  live_duel:    "from-red-500/60 via-red-500/20 to-transparent",
+  activity:     "from-white/15 via-white/5 to-transparent",
   announcement: "from-amber-400/60 via-amber-400/20 to-transparent",
   post:         "from-white/10 via-white/5 to-transparent",
 };
@@ -485,6 +505,126 @@ function ChallengeBody({
   );
 }
 
+function LiveDuelBody({
+  item,
+  onJoin,
+}: {
+  item:       LiveDuelItem;
+  onJoin?:    () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Swords size={13} className="text-red-400 shrink-0" />
+        <span className="font-display text-[9px] font-black text-white/30 uppercase tracking-[.25em]">
+          Live Duel
+        </span>
+        <div className="h-px flex-1 bg-white/[0.05]" />
+        <span className="font-display text-[9px] font-bold text-white/20 uppercase tracking-wider shrink-0">
+          {item.time}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative shrink-0">
+          <div
+            className="absolute -inset-1 rounded-full border border-red-500/30 animate-ping"
+            style={{ animationDuration: "2s" }}
+          />
+          <ArenaAvatar src={item.opponent.avatar} size="lg" glow glowColor="danger" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-display text-[13px] font-black text-white uppercase tracking-wide truncate">
+            {item.opponent.name}
+          </p>
+          <p className="font-display text-[9px] font-bold text-red-400/50 uppercase tracking-[.2em] mt-0.5">
+            VS YOU — IN PROGRESS
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1">
+        <button
+          onClick={onJoin}
+          className="py-3 rounded-xl font-display text-[10px] font-black text-black uppercase tracking-[.2em] flex items-center justify-center gap-2 active:scale-95 transition-all"
+          style={{
+            background: "hsl(var(--destructive))",
+            boxShadow: "0 4px 16px rgba(239, 68, 68, .35)",
+          }}
+        >
+          <Swords size={12} />
+          Resume Duel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ActivityBody({ item }: { item: ActivityItem }) {
+  const isLive = item.event === "live";
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Swords size={12} className={cn("shrink-0", isLive ? "text-red-400" : "text-white/40")} />
+        <span className="font-display text-[9px] font-black text-white/30 uppercase tracking-[.25em]">
+          {isLive ? "Live Duel" : "Challenge Issued"}
+        </span>
+        <div className="h-px flex-1 bg-white/[0.05]" />
+        <span className="font-display text-[9px] font-bold text-white/20 uppercase tracking-wider shrink-0">
+          {item.time}
+        </span>
+      </div>
+
+      {/* Fighter row */}
+      <div className="flex items-center gap-3">
+        {/* Challenger */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <ArenaAvatar src={item.challenger.avatar} size="md" glow={isLive} glowColor={isLive ? "primary" : undefined} />
+          <p className="font-display text-[10px] font-black text-white/70 uppercase tracking-wide truncate w-full text-center">
+            {item.challenger.name}
+          </p>
+        </div>
+
+        {/* Center separator — ⚡ for pending, pulsing dot for live */}
+        <div className="flex flex-col items-center gap-0.5 shrink-0">
+          {isLive ? (
+            <>
+              <div
+                className="w-2 h-2 rounded-full bg-red-400"
+                style={{ boxShadow: "0 0 8px rgba(248,113,113,.9)", animation: "pulse 1s ease-in-out infinite" }}
+              />
+              <span className="font-display text-[8px] font-black text-red-400/70 uppercase tracking-widest">live</span>
+            </>
+          ) : (
+            <Zap size={14} className="text-primary/60" />
+          )}
+        </div>
+
+        {/* Opponent */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <ArenaAvatar src={item.opponent.avatar} size="md" glow={isLive} glowColor={isLive ? "danger" : undefined} />
+          <p className="font-display text-[10px] font-black text-white/50 uppercase tracking-wide truncate w-full text-center">
+            {item.opponent.name}
+          </p>
+        </div>
+      </div>
+
+      {/* Mode pill */}
+      <div className="flex justify-center">
+        <span className={cn(
+          "px-2.5 py-1 rounded-full font-display text-[8px] font-black uppercase tracking-[.2em]",
+          isLive
+            ? "bg-red-500/10 border border-red-500/20 text-red-400/70"
+            : "bg-white/[0.04] border border-white/[0.07] text-white/25"
+        )}>
+          {item.mode === "async_duel" ? "Async Duel" : isLive ? "In Progress" : "Awaiting Response"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function AnnouncementBody({
   item,
   editing,
@@ -593,6 +733,7 @@ const FeedCard = ({
   onAddComment,
   onDelete,
   onEdit,
+  onJoinLiveDuel,
   className,
   style,
 }: FeedCardProps) => {
@@ -604,6 +745,7 @@ const FeedCard = ({
         "relative rounded-2xl border border-white/[0.07] overflow-hidden",
         "bg-black/35 backdrop-blur-sm",
         item.type === "challenge"    && "border-primary/20",
+        item.type === "live_duel"    && "border-red-500/20",
         item.type === "announcement" && "border-amber-400/15",
         item.type === "battle"       && "border-orange-500/15",
         className,
@@ -611,6 +753,7 @@ const FeedCard = ({
       style={{
         boxShadow:
           item.type === "challenge"    ? "0 0 20px hsl(var(--primary) / .06)"   :
+          item.type === "live_duel"    ? "0 0 20px rgba(239,68,68,.06)"         :
           item.type === "announcement" ? "0 0 20px rgba(251,191,36,.05)"         :
           item.type === "battle"       ? "0 0 20px rgba(249,115,22,.06)"         :
           undefined,
@@ -629,6 +772,15 @@ const FeedCard = ({
             onDecline={onDeclineChallenge}
           />
         )}
+
+        {item.type === "live_duel" && (
+          <LiveDuelBody
+            item={item}
+            onJoin={onJoinLiveDuel}
+          />
+        )}
+
+        {item.type === "activity" && <ActivityBody item={item} />}
 
         {item.type === "announcement" && (
           <AnnouncementBody

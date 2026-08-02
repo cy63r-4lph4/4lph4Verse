@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common'; // TS Server refresh
+// mail.service.ts — fix the invalid From header on sendWelcomeVerification
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { welcomeTemplate } from './templates/welcome';
@@ -14,7 +15,7 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com',
       port,
-      secure: port === 465, // true for 465, false for other ports
+      secure: port === 465,
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASS'),
@@ -22,20 +23,26 @@ export class MailService {
     });
   }
 
+  private get fromAddress() {
+    // Was previously `from: 'Arena by DeskMate'` with no email address —
+    // invalid RFC 5322 syntax, several SMTP providers reject or silently
+    // rewrite it. Always pass "Display Name <email>".
+    return `"Arena" <${this.configService.get<string>('SMTP_USER')}>`;
+  }
+
   async sendWelcomeVerification(email: string, username: string, token: string) {
     try {
       const appUrl = this.configService.get<string>('ARENA_FRONTEND_URL') || 'https://arena-community-phi.vercel.app';
       const verifyLink = `${appUrl}/verify-email?token=${token}`;
-      
       const html = welcomeTemplate(username, verifyLink);
-      
+
       await this.transporter.sendMail({
-        from: `Arena by DeskMate`,
+        from: this.fromAddress,
         to: email,
-        subject: '⚔️ WELCOME TO THE ARENA - Verify Your Entry',
-        html: html,
+        subject: '⚔️ WELCOME TO THE ARENA — Verify Your Entry',
+        html,
       });
-      
+
       this.logger.log(`Sent welcome verification email to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send welcome email to ${email}`, error);
@@ -45,14 +52,14 @@ export class MailService {
   async sendCourseJoined(email: string, username: string, courseCode: string) {
     try {
       const html = courseJoinedTemplate(username, courseCode);
-      
+
       await this.transporter.sendMail({
-        from: `"Arena DeskMate" <${this.configService.get<string>('SMTP_USER')}>`,
+        from: this.fromAddress,
         to: email,
         subject: '⚔️ SYSTEM MESSAGE // NEW BATTLEFIELD DETECTED',
-        html: html,
+        html,
       });
-      
+
       this.logger.log(`Sent course joined email to ${email} for course ${courseCode}`);
     } catch (error) {
       this.logger.error(`Failed to send course joined email to ${email}`, error);
