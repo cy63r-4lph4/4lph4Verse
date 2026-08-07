@@ -138,7 +138,7 @@ export default function CourseHome() {
                 <ChallengeHero
                     onSelectMode={(mode) => {
                         if (mode === "duel") {
-                            document.getElementById("fighter-radar")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                            router.push(`/course/${courseId}/duels/find-fighter`);
                         }
                     }}
                 />            </section>

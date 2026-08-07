@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import { CourseHeader } from "@verse/arena-web/app/course/[id]/modules/SectorSwitcher";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import useAuth from "@verse/arena-web/hooks/useAuth";
@@ -21,11 +21,16 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
   const { user, isLoading: authLoading } = useAuth();
   const { data: mySectors = [], isLoading: sectorsLoading } = useMySectors();
 
-  const { data: courseDetail, isLoading: courseLoading } = useQuery({
+  const { data: courseDetail, isLoading: courseLoading, isError: courseError } = useQuery({
     queryKey: ["course-detail", params.id],
     queryFn: async () => (await api.get(`v1/arena/courses/${params.id}`)).data,
     enabled: !!params.id,
+    retry: false,
   });
+
+  if (courseError) {
+    notFound();
+  }
 
   if (authLoading || !user || sectorsLoading || courseLoading) {
     return (

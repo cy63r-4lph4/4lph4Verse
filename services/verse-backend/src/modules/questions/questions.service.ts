@@ -72,6 +72,23 @@ export class QuestionsService {
     });
   }
 
+  /** Returns the distinct non-null category values used by the course's question bank.
+   *  Powers the "Combat Disciplines" chips on the battles page. */
+  async listCategories(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectDistinct({ category: schema.arenaQuestions.category })
+      .from(schema.arenaQuestions)
+      .where(
+        and(
+          eq(schema.arenaQuestions.courseId, courseId),
+          sql`${schema.arenaQuestions.category} IS NOT NULL`,
+        )
+      )
+      .orderBy(schema.arenaQuestions.category);
+
+    return rows.map((r) => r.category as string);
+  }
+
   async getOrThrow(id: string) {
     const question = await this.db.query.arenaQuestions.findFirst({
       where: (q, { eq }) => eq(q.id, id),

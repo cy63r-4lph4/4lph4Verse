@@ -185,6 +185,12 @@ export class ShowdownController {
         return showdown;
     }
 
+    @Post('async-duel/:id/accept')
+    async acceptAsyncDuelChallenge(@Param('id') id: string, @Request() req) {
+        const arenaUser = await this.identity.resolve(req.user.id);
+        return this.showdownService.acceptAsyncDuelChallenge(id, arenaUser.id);
+    }
+
     @Post('async-duel/:id/answer')
     async submitAsyncAnswers(
         @Param('id') id: string,

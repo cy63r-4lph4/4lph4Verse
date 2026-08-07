@@ -215,9 +215,11 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     await this.broadcastState(payload.showdownId);
     // Notify both participants' personal rooms so their feed refetches immediately
     await this.notifyParticipantsOfStatusChange(payload.showdownId);
-    // Do not start the tick loop here — activation happens once both
-    // participants are confirmed present, via trackDuelPresence below.
-    await this.trackDuelPresence(payload.showdownId, this.arenaUserId(client));
+    // NOTE: intentionally NOT calling trackDuelPresence here.
+    // Presence is only recorded when a client emits showdown:join from the
+    // actual game page — accepting via a notification/toast does NOT mean
+    // the user is watching the duel UI. Both players must call showdown:join
+    // (from /duels/challenge/[showdownId]) before the duel goes live.
   }
 
   @UseGuards(WsJwtGuard)

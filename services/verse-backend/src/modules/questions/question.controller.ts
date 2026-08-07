@@ -30,6 +30,12 @@ export class QuestionController {
     return this.questionsService.create(body);
   }
 
+  @Get('categories')
+  async listCategories(@Query('courseId') courseId: string) {
+    if (!courseId) throw new (require('@nestjs/common').BadRequestException)('courseId is required.');
+    return this.questionsService.listCategories(courseId);
+  }
+
   @Get()
   async list(@Query('courseId') courseId: string) {
     if (!courseId) throw new (require('@nestjs/common').BadRequestException)('courseId is required.');

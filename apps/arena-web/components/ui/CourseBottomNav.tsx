@@ -8,7 +8,7 @@ import useAuth from "@verse/arena-web/hooks/useAuth";
 
 const STUDENT_NAV_ITEMS = [
   { icon: MessageSquare, label: "Feed", segment: "home", href: "", activeIcon: "text-sky-400", activeGlow: "bg-sky-500", activeBorder: "border-sky-500/40" },
-  { icon: Swords, label: "Battle", segment: "duels", href: "/duels", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
+  { icon: Swords, label: "Battle", segment: "battles", href: "/battles", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
   { icon: Trophy, label: "Ranks", segment: "leaderboard", href: "/leaderboard", activeIcon: "text-amber-400", activeGlow: "bg-amber-500", activeBorder: "border-amber-500/40" },
   { icon: BookOpen, label: "Resources", segment: "materials", href: "/materials", activeIcon: "text-violet-400", activeGlow: "bg-violet-500", activeBorder: "border-violet-500/40" },
 ] as const;
@@ -29,7 +29,7 @@ export function CourseBottomNav() {
   const items = isInstructor ? INSTRUCTOR_NAV_ITEMS : STUDENT_NAV_ITEMS;
 
   const segments = pathname.split("/").filter(Boolean);
-  const subSegments = segments.slice(2); // everything after /course/[id]
+  const subSegments = segments.slice(2); 
   const namedSegments = items.map((i) => i.segment).filter((s) => s !== "home");
   const activeSegment = subSegments.length === 0
     ? "home"

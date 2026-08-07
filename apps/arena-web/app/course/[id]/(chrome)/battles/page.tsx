@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ArrowLeft, Shuffle, Users, Clock, Hammer,
-  Flame, Skull, FileText, Target, Zap, Swords, BookOpen
+  Flame, Skull, FileText, Target, Zap, Swords, BookOpen, Tag
 } from "lucide-react";
 import { cn } from "@verse/ui";
 
@@ -16,6 +16,7 @@ import useAuth from "@verse/arena-web/hooks/useAuth";
 import { useAsyncDuel } from "@verse/arena-web/hooks/useAsyncDuel";
 import { useActiveTournament } from "@verse/arena-web/hooks/useActiveTournament";
 import { useScheduledTournament } from "@verse/arena-web/hooks/useScheduledTournament";
+import { api } from "@verse/arena-web/lib/api";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -30,20 +31,6 @@ function relativeExpiry(iso?: string | null) {
   if (hrs < 24) return `${hrs}h left`;
   return `${Math.floor(hrs / 24)}d left`;
 }
-
-/**
- * Topic-based battles are presentational only for now — the question bank
- * has no topic/tag column and ShowdownService.createAsyncDuelChallenge just
- * pulls a random slice of the course's whole bank. Selecting a discipline
- * here is carried through as a `topic` query param so it's a one-line wire-up
- * once the backend supports filtering; it does nothing today.
- */
-const TOPICS = [
-  { id: "mechanics", label: "Mechanics", icon: Zap },
-  { id: "thermo", label: "Thermodynamics", icon: Flame },
-  { id: "waves", label: "Waves", icon: Target },
-  { id: "energy", label: "Energy & Work", icon: BookOpen },
-];
 
 export default function DuelsHub() {
   const router = useRouter();
@@ -63,6 +50,20 @@ export default function DuelsHub() {
   const [duelsLoading, setDuelsLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [matchmaking, setMatchmaking] = useState(false);
+
+  // ── Dynamic topics from the question bank ────────────────────────────────
+  const [topics, setTopics] = useState<string[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!courseId) return;
+    setTopicsLoading(true);
+    api
+      .get<string[]>(`/v1/questions/categories?courseId=${courseId}`)
+      .then((res) => setTopics(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setTopics([]))
+      .finally(() => setTopicsLoading(false));
+  }, [courseId]);
 
   const loadDuels = useCallback(() => {
     setDuelsLoading(true);
@@ -88,14 +89,11 @@ export default function DuelsHub() {
   };
 
   const openDuel = (showdownId: string) => {
-    // TODO: build a dedicated async-duel detail/play page. Routing into the
-    // hub for now so this doesn't 404.
-    router.push(`${courseBasePath}/duels`);
-    console.warn(`[DuelsHub] async duel detail page not built yet — showdown ${showdownId}`);
+    router.push(`${courseBasePath}/async-duel/${showdownId}`);
   };
 
   return (
-    <EnergyBackground className="min-h-screen pb-40">
+    <div className="min-h-screen w-full pb-40">
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 px-4 h-16 flex items-center justify-between">
         <button onClick={() => router.back()} className="flex items-center gap-2 text-primary group">
@@ -163,7 +161,7 @@ export default function DuelsHub() {
               </div>
               <div className="flex-1 text-left">
                 <h3 className="text-sm font-black text-white uppercase tracking-tighter">Challenge_Fighter</h3>
-                <p className="text-[10px] font-mono text-primary uppercase tracking-widest">Search & Send Uplink</p>
+                <p className="text-[10px] font-mono text-primary uppercase tracking-widest">Search &amp; Send Uplink</p>
               </div>
               <Users size={16} className="text-primary" />
             </div>
@@ -199,31 +197,49 @@ export default function DuelsHub() {
           </button>
         </section>
 
-        {/* TOPIC-BASED BATTLES — new, presentational until the backend can filter by topic */}
+        {/* COMBAT DISCIPLINES — fetched live from the question bank categories */}
         <section className="space-y-3">
           <div className="flex items-center gap-2 px-1">
             <BookOpen size={12} className="text-primary" />
             <span className="text-[10px] font-mono text-primary/50 uppercase tracking-[0.3em]">Combat_Disciplines</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-            {TOPICS.map((t) => {
-              const Icon = t.icon;
-              const active = selectedTopic === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setSelectedTopic(active ? null : t.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-full border text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all",
-                    active ? "bg-primary border-primary text-black" : "bg-transparent border-white/10 text-white/40 hover:text-white"
-                  )}
-                >
-                  <Icon size={11} />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+
+          {topicsLoading ? (
+            /* Skeleton shimmer while loading */
+            <div className="flex gap-2 py-1">
+              {[80, 110, 95, 120].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-7 rounded-full bg-white/[0.04] border border-white/5 animate-pulse"
+                  style={{ width: w }}
+                />
+              ))}
+            </div>
+          ) : topics.length > 0 ? (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+              {topics.map((topic) => {
+                const active = selectedTopic === topic;
+                return (
+                  <button
+                    key={topic}
+                    onClick={() => setSelectedTopic(active ? null : topic)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-4 py-2 rounded-full border text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all",
+                      active ? "bg-primary border-primary text-black" : "bg-transparent border-white/10 text-white/40 hover:text-white"
+                    )}
+                  >
+                    <Tag size={10} />
+                    {topic}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest px-1">
+              No disciplines in bank — add categorised questions to unlock.
+            </p>
+          )}
+
           {selectedTopic && (
             <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest px-1">
               Discipline locked in — carries through to your next challenge.
@@ -281,6 +297,6 @@ export default function DuelsHub() {
           )}
         </section>
       </main>
-    </EnergyBackground>
+    </div>
   );
 }

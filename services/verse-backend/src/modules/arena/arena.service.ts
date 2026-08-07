@@ -2,7 +2,7 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import * as schema from '../../db/schema';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { eq } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 
 @Injectable()
 export class ArenaService {
@@ -205,43 +205,102 @@ export class ArenaService {
     }
 
     async getCourseLeaderboard(courseId: string) {
+        // Find all memberships in this course
         const memberships = await this.db.query.arenaUserCourses.findMany({
             where: (uc: any, { eq }: any) => eq(uc.courseId, courseId),
             with: {
                 user: { with: { user: true } },
             },
-            orderBy: (uc: any, { desc, asc }: any) => [desc(uc.score), asc(uc.joinedAt)], // Fallback to joinedAt if score is tied
         });
 
-        return memberships
-            .filter((m: any) => m.user?.user)
-            .map((m: any, index: number) => {
-                const rank = index + 1;
-                const prevRank = m.previousRank;
-                
-                let trend: 'up' | 'down' | 'same' = 'same';
-                let change = 0;
-                
-                if (prevRank) {
-                    if (prevRank > rank) {
-                        trend = 'up';
-                        change = prevRank - rank;
-                    } else if (prevRank < rank) {
-                        trend = 'down';
-                        change = rank - prevRank;
-                    }
-                }
+        // 1. Current Week Scores
+        const currentScoresRaw = await this.db
+            .select({
+                arenaUserId: schema.showdownParticipants.arenaUserId,
+                score: sql<number>`SUM(${schema.showdownAnswers.pointsAwarded})`.mapWith(Number),
+            })
+            .from(schema.showdownAnswers)
+            .innerJoin(schema.showdownParticipants, eq(schema.showdownAnswers.participantId, schema.showdownParticipants.id))
+            .innerJoin(schema.showdowns, eq(schema.showdownParticipants.showdownId, schema.showdowns.id))
+            .where(
+                and(
+                    eq(schema.showdowns.courseId, courseId),
+                    sql`${schema.showdowns.createdAt} >= NOW() - INTERVAL '7 days'`
+                )
+            )
+            .groupBy(schema.showdownParticipants.arenaUserId);
 
-                return {
-                    arenaUserId: m.user.id,
-                    name: m.user.user.username,
-                    avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${m.user.user.username}`,
-                    score: m.score,
-                    rank,
-                    trend,
-                    change,
-                };
-            });
+        const currentScoreMap = new Map(currentScoresRaw.map((s) => [s.arenaUserId, s.score]));
+
+        // 2. Previous Week Scores (for Trend & Change calculation)
+        const prevScoresRaw = await this.db
+            .select({
+                arenaUserId: schema.showdownParticipants.arenaUserId,
+                score: sql<number>`SUM(${schema.showdownAnswers.pointsAwarded})`.mapWith(Number),
+            })
+            .from(schema.showdownAnswers)
+            .innerJoin(schema.showdownParticipants, eq(schema.showdownAnswers.participantId, schema.showdownParticipants.id))
+            .innerJoin(schema.showdowns, eq(schema.showdownParticipants.showdownId, schema.showdowns.id))
+            .where(
+                and(
+                    eq(schema.showdowns.courseId, courseId),
+                    sql`${schema.showdowns.createdAt} >= NOW() - INTERVAL '14 days'`,
+                    sql`${schema.showdowns.createdAt} < NOW() - INTERVAL '7 days'`
+                )
+            )
+            .groupBy(schema.showdownParticipants.arenaUserId);
+
+        const prevScoreMap = new Map(prevScoresRaw.map((s) => [s.arenaUserId, s.score]));
+
+        // Calculate previous ranks
+        const prevRanked = memberships
+            .filter((m: any) => m.user?.user)
+            .map((m: any) => ({
+                userId: m.user.id,
+                score: prevScoreMap.get(m.user.id) || 0,
+                joinedAt: m.joinedAt,
+            }))
+            .sort((a, b) => b.score - a.score || a.joinedAt.getTime() - b.joinedAt.getTime());
+
+        const prevRankMap = new Map<string, number>(prevRanked.map((m, idx) => [m.userId, idx + 1]));
+
+        // Calculate current ranks
+        const currentRanked = memberships
+            .filter((m: any) => m.user?.user)
+            .map((m: any) => ({
+                ...m,
+                computedWeeklyScore: currentScoreMap.get(m.user.id) || 0,
+            }))
+            .sort((a, b) => b.computedWeeklyScore - a.computedWeeklyScore || a.joinedAt.getTime() - b.joinedAt.getTime());
+
+        // Build the final response payload matching the frontend Player interface
+        return currentRanked.map((m: any, index: number) => {
+            const rank = index + 1;
+            const prevRank = prevRankMap.get(m.user.id);
+            
+            let trend: 'up' | 'down' | 'same' = 'same';
+            let change = 0;
+            
+            if (prevRank) {
+                if (prevRank > rank) {
+                    trend = 'up';
+                    change = prevRank - rank;
+                } else if (prevRank < rank) {
+                    trend = 'down';
+                    change = rank - prevRank;
+                }
+            }
+
+            return {
+                arenaUserId: m.user.id,
+                name: m.user.user.username,
+                avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${m.user.user.username}`,
+                score: m.computedWeeklyScore,
+                rank,
+                trend,
+                change,
+            };
+        });
     }
 
     // ── Platform stats ───────────────────────────────────────────────────

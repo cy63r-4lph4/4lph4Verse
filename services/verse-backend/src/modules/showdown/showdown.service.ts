@@ -783,8 +783,8 @@ export class ShowdownService {
                 createdBy: initiatorArenaUserId,
                 title: 'Async Duel',
                 mode: 'async_duel',
-                status: 'challenge_pending', // Will transition to 'live' immediately in async, or we can use 'live' from start since no ready check. Let's use 'live' for async.
-                questionsPerMatch: dto.questionsPerMatch ?? 3,
+                status: 'challenge_pending', 
+                questionsPerMatch: dto.questionsPerMatch ?? 10,
                 timeLimitSeconds: dto.timeLimitSeconds ?? 20,
                 matchCountdownMs: 0,
                 totalRounds: 1,
@@ -806,16 +806,16 @@ export class ShowdownService {
                 startedAt: new Date(),
             }).returning();
 
-            // Pre-select questions for both players so they are identical
-            const limit = showdown.questionsPerMatch;
+            // Pre-select questions — use however many the bank has, up to the requested amount
             const bank = await tx.query.arenaQuestions.findMany({
                 where: (q, { eq }) => eq(q.courseId, showdown.courseId),
             });
-            const picked = bank.sort(() => Math.random() - 0.5).slice(0, limit);
-
-            if (picked.length < limit) {
-                throw new BadRequestException('Not enough questions in the course bank.');
+            // Clamp to bank size so we never throw if bank is smaller than requested
+            const actualLimit = Math.min(showdown.questionsPerMatch, bank.length);
+            if (actualLimit === 0) {
+                throw new BadRequestException('No questions available in the course bank.');
             }
+            const picked = bank.sort(() => Math.random() - 0.5).slice(0, actualLimit);
 
             await tx.insert(schema.showdownMatchQuestions).values(
                 picked.map((q, i) => ({
@@ -826,12 +826,35 @@ export class ShowdownService {
                 }))
             );
 
-            await tx.update(schema.showdowns)
-                .set({ status: 'live' })
-                .where(eq(schema.showdowns.id, showdown.id));
+            if (actualLimit !== showdown.questionsPerMatch) {
+                await tx.update(schema.showdowns)
+                    .set({ questionsPerMatch: actualLimit })
+                    .where(eq(schema.showdowns.id, showdown.id));
+                showdown.questionsPerMatch = actualLimit;
+            }
 
             return showdown;
         });
+    }
+
+    async acceptAsyncDuelChallenge(showdownId: string, requesterArenaUserId: string) {
+        const showdown = await this.getShowdownOrThrow(showdownId);
+        if (showdown.mode !== 'async_duel' || showdown.status !== 'challenge_pending') {
+            throw new BadRequestException('This challenge is not awaiting a response.');
+        }
+
+        const participant = await this.db.query.showdownParticipants.findFirst({
+            where: (p, { eq, and }) => and(eq(p.showdownId, showdownId), eq(p.arenaUserId, requesterArenaUserId)),
+        });
+        if (!participant || participant.arenaUserId === showdown.createdBy) {
+            throw new ForbiddenException('Only the challenged opponent can accept.');
+        }
+
+        await this.db.update(schema.showdowns)
+            .set({ status: 'live' })
+            .where(eq(schema.showdowns.id, showdownId));
+
+        return this.getFullState(showdownId);
     }
 
     async submitAsyncAnswers(
@@ -921,7 +944,7 @@ export class ShowdownService {
     }
 
     async searchCourseMembers(courseId: string, arenaUserId: string, query: string) {
-        if (!query || query.length < 2) return [];
+        if (!query || (query.length < 2 && query !== ':random:')) return [];
 
         const members = await this.db.query.arenaUser.findMany({
             where: (u, { eq }) => eq(u.schoolId, (
@@ -932,16 +955,23 @@ export class ShowdownService {
             with: { user: true },
         });
 
-        const queryLower = query.toLowerCase();
-        return members
-            .filter(m => m.id !== arenaUserId && m.user.username.toLowerCase().includes(queryLower))
-            .map(m => ({
-                id: m.id,
-                username: m.user.username,
-                // Using a mock rank/win rate since this isn't implemented in schema yet
-                rank: 1,
-                winRate: 50,
-            }));
+        let filtered = members.filter(m => m.id !== arenaUserId);
+
+        if (query === ':random:') {
+            // Shuffle and pick up to 10
+            filtered = filtered.sort(() => 0.5 - Math.random()).slice(0, 10);
+        } else {
+            const queryLower = query.toLowerCase();
+            filtered = filtered.filter(m => m.user.username.toLowerCase().includes(queryLower));
+        }
+
+        return filtered.map(m => ({
+            id: m.id,
+            username: m.user.username,
+            // Using a mock rank/win rate since this isn't implemented in schema yet
+            rank: 1,
+            winRate: 50,
+        }));
     }
 
     async getAsyncDuelsList(courseId: string, arenaUserId: string) {

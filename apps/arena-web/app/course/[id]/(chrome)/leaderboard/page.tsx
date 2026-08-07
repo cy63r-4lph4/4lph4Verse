@@ -6,7 +6,6 @@ import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import useAuth from "@verse/arena-web/hooks/useAuth";
 import { ArrowLeft, Clock, Target, Trophy } from "lucide-react";
 import { cn } from "@verse/ui";
-import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -255,7 +254,7 @@ export default function Leaderboard() {
         }
       `}</style>
 
-      <EnergyBackground className="min-h-dvh flex flex-col">
+      <div className="min-h-dvh w-full flex flex-col">
 
         {/* ── HEADER ──────────────────────────────────────────────────────── */}
         <header className="sticky top-0 z-50 h-14 px-4 flex items-center justify-between bg-black/70 backdrop-blur-xl border-b border-white/[0.05]">
@@ -357,7 +356,7 @@ export default function Leaderboard() {
 
           </div>
         </div>
-      </EnergyBackground>
+      </div>
     </>
   );
 }
