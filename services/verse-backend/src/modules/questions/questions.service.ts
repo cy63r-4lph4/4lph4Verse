@@ -72,11 +72,15 @@ export class QuestionsService {
     });
   }
 
-  /** Returns the distinct non-null category values used by the course's question bank.
+  /** Returns the distinct non-null category values used by the course's question bank,
+   *  along with the count of available questions in each category.
    *  Powers the "Combat Disciplines" chips on the battles page. */
-  async listCategories(courseId: string): Promise<string[]> {
+  async listCategories(courseId: string): Promise<{ category: string; count: number }[]> {
     const rows = await this.db
-      .selectDistinct({ category: schema.arenaQuestions.category })
+      .select({
+        category: schema.arenaQuestions.category,
+        count: sql<number>`cast(count(${schema.arenaQuestions.id}) as integer)`,
+      })
       .from(schema.arenaQuestions)
       .where(
         and(
@@ -84,9 +88,13 @@ export class QuestionsService {
           sql`${schema.arenaQuestions.category} IS NOT NULL`,
         )
       )
+      .groupBy(schema.arenaQuestions.category)
       .orderBy(schema.arenaQuestions.category);
 
-    return rows.map((r) => r.category as string);
+    return rows.map((r) => ({
+      category: r.category as string,
+      count: r.count,
+    }));
   }
 
   async getOrThrow(id: string) {

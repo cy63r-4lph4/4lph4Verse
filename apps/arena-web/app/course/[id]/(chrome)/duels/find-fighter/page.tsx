@@ -96,7 +96,7 @@ export default function FindFighterPage() {
 
     const initiateChallenge = (opponentId: string) => {
         setLoading(true);
-        createChallenge(opponentId, 10, 20)
+        createChallenge(opponentId, 10, 20, topic || undefined)
             .then((showdown) => {
                 router.push(`/course/${courseId}/async-duel/${showdown.id}`);
             })
@@ -109,46 +109,55 @@ export default function FindFighterPage() {
     if (isRandomMode) {
         return (
             <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none bg-[url('/scanlines.png')] opacity-20 z-50"></div>
+                {/* Advanced Grid & Glow Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#06b6d41a_1px,transparent_1px),linear-gradient(to_bottom,#06b6d41a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40 z-0"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/20 blur-[100px] rounded-full z-0"></div>
                 
-                <div className="text-center space-y-8 relative z-10 w-full max-w-sm">
+                <div className="text-center space-y-12 relative z-10 w-full max-w-lg">
                     {randomScanning ? (
-                        <div className="space-y-6 animate-pulse">
-                            <Radar className="w-24 h-24 text-primary mx-auto animate-spin-slow" />
-                            <div className="space-y-2">
-                                <h2 className="font-display text-2xl text-primary tracking-[0.2em] uppercase">Scanning Sectors</h2>
-                                <p className="font-mono text-xs text-primary/50 tracking-widest">Uplink established... searching for targets...</p>
+                        <div className="space-y-12 animate-in fade-in duration-700">
+                            <div className="relative w-48 h-48 mx-auto flex items-center justify-center">
+                                <div className="absolute inset-0 border-[4px] border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin-slow"></div>
+                                <div className="absolute inset-4 border-[2px] border-cyan-500/20 border-b-cyan-300 rounded-full animate-[spin_3s_linear_infinite_reverse]"></div>
+                                <Radar className="w-16 h-16 text-cyan-400 animate-pulse" />
+                            </div>
+                            <div className="space-y-4">
+                                <h2 className="font-display text-4xl text-cyan-400 font-black tracking-[0.3em] uppercase drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]">Scanning</h2>
+                                <p className="font-mono text-xs text-cyan-400/60 tracking-[0.4em] uppercase">Locking onto active targets</p>
                             </div>
                             
                             {scannedOpponents.length > 0 && (
-                                <div className="mt-8 border border-primary/20 bg-primary/5 p-4 rounded-xl flex items-center justify-center gap-4 opacity-50 blur-[1px]">
-                                    <img src={dicebearUrl(scannedOpponents[scanIndex].username)} alt="scanned" className="w-12 h-12 rounded-lg opacity-80" />
-                                    <span className="font-mono text-primary truncate">{scannedOpponents[scanIndex].username}</span>
+                                <div className="mt-12 mx-auto w-64 h-24 border border-cyan-500/30 bg-cyan-950/40 backdrop-blur-md rounded-2xl flex items-center justify-center gap-6 overflow-hidden relative shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent animate-[shimmer_1s_infinite]"></div>
+                                    <img src={dicebearUrl(scannedOpponents[scanIndex].username)} alt="scanned" className="w-16 h-16 rounded-xl border border-cyan-500/50 shadow-lg relative z-10" />
+                                    <span className="font-mono text-cyan-100 text-lg uppercase tracking-widest relative z-10 w-24 truncate text-left">{scannedOpponents[scanIndex].username}</span>
                                 </div>
                             )}
                         </div>
                     ) : lockedOpponent ? (
-                        <div className="space-y-6 animate-in zoom-in duration-500">
-                            <div className="relative w-32 h-32 mx-auto">
-                                <div className="absolute inset-0 border-2 border-red-500 rounded-xl animate-ping opacity-20"></div>
-                                <div className="absolute inset-0 border-2 border-red-500 rounded-xl flex items-center justify-center bg-red-500/10 backdrop-blur-sm">
-                                    <img src={dicebearUrl(lockedOpponent.username)} alt="target" className="w-24 h-24 rounded-lg" />
+                        <div className="space-y-12 animate-in zoom-in duration-500">
+                            <div className="relative w-64 h-64 mx-auto">
+                                <div className="absolute inset-0 border-4 border-red-500 rounded-full animate-ping opacity-20"></div>
+                                <div className="absolute inset-4 border-2 border-red-500/50 rounded-full flex items-center justify-center bg-red-950/40 backdrop-blur-md shadow-[0_0_50px_rgba(239,68,68,0.4)]">
+                                    <img src={dicebearUrl(lockedOpponent.username)} alt="target" className="w-40 h-40 rounded-full border-4 border-red-500 shadow-2xl" />
                                 </div>
-                                <Crosshair className="absolute -top-4 -right-4 w-10 h-10 text-red-500" />
+                                <Crosshair className="absolute -top-8 -right-8 w-16 h-16 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,1)]" />
+                                <Crosshair className="absolute -bottom-8 -left-8 w-16 h-16 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,1)]" />
                             </div>
-                            <div className="space-y-2">
-                                <h2 className="font-display text-3xl text-red-500 tracking-[0.2em] uppercase animate-pulse">Target Locked</h2>
-                                <p className="font-mono text-xl text-white">{lockedOpponent.username}</p>
-                                <p className="font-mono text-xs text-red-500/70 tracking-widest uppercase mt-4">Initiating sequence...</p>
+                            <div className="space-y-4 bg-red-950/20 p-6 rounded-3xl border border-red-500/20 backdrop-blur-md">
+                                <h2 className="font-display text-4xl text-red-500 font-black tracking-[0.3em] uppercase drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse">Target Locked</h2>
+                                <p className="font-display font-bold text-3xl text-white uppercase tracking-widest">{lockedOpponent.username}</p>
+                                <p className="font-mono text-xs text-red-400/80 tracking-[0.4em] uppercase pt-4">Initiating Battle Sequence...</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto" />
-                            <h2 className="font-display text-xl text-yellow-500 tracking-widest uppercase">No Targets Found</h2>
+                        <div className="space-y-8 bg-black/40 p-12 rounded-3xl border border-white/10 backdrop-blur-md">
+                            <AlertCircle className="w-24 h-24 text-yellow-500 mx-auto opacity-80" />
+                            <h2 className="font-display text-3xl text-yellow-500 font-black tracking-widest uppercase">No Targets</h2>
+                            <p className="font-mono text-white/50 text-sm">Sector is empty.</p>
                             <button 
                                 onClick={() => router.back()}
-                                className="font-mono text-xs text-white/50 hover:text-white transition-colors uppercase tracking-widest"
+                                className="mt-8 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-mono text-sm uppercase tracking-widest rounded-xl transition-all border border-white/10"
                             >
                                 Return to Base
                             </button>
@@ -160,67 +169,89 @@ export default function FindFighterPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-black pb-40">
-            <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 px-4 h-16 flex items-center gap-4">
-                <button onClick={() => router.back()} className="flex items-center gap-2 text-white/50 hover:text-white transition-colors group">
-                    <div className="p-1.5 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all">
-                        <ChevronLeft size={16} />
+        <div className="min-h-screen w-full bg-black relative pb-40 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#06b6d41a,transparent_70%)] z-0"></div>
+
+            <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-cyan-500/20 px-4 h-20 flex items-center gap-4">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-cyan-500/70 hover:text-cyan-400 transition-colors group">
+                    <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/20 group-hover:bg-cyan-900/50 group-hover:border-cyan-400/50 transition-all">
+                        <ChevronLeft size={20} />
                     </div>
                 </button>
                 <div className="flex-1">
-                    <p className="text-[12px] font-mono font-bold text-white uppercase tracking-widest">Fighter_Search</p>
+                    <p className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-[0.3em]">Global_Registry</p>
+                    <h1 className="font-display text-xl text-white font-black tracking-widest uppercase mt-1">Fighter Search</h1>
                 </div>
-                <Crosshair className="w-5 h-5 text-primary opacity-50" />
+                <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                    <Radar className="w-5 h-5 text-cyan-400" />
+                </div>
             </header>
 
-            <main className="max-w-md mx-auto px-4 pt-8 space-y-6">
+            <main className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 pt-12 space-y-8 relative z-10">
                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Search className="w-5 h-5 text-primary/50 group-focus-within:text-primary transition-colors" />
+                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                        <Search className="w-6 h-6 text-cyan-500/50 group-focus-within:text-cyan-400 transition-colors" />
                     </div>
                     <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search by alias..."
-                        className="w-full bg-primary/5 border border-primary/20 rounded-2xl py-4 pl-12 pr-4 text-white font-mono placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:bg-primary/10 transition-all"
+                        placeholder="SEARCH BY ALIAS..."
+                        className="w-full bg-cyan-950/20 border border-cyan-500/30 rounded-3xl py-6 pl-16 pr-6 text-white font-display text-lg tracking-widest placeholder:text-cyan-500/30 focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/40 focus:ring-4 focus:ring-cyan-500/10 transition-all backdrop-blur-md uppercase"
                     />
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4 mt-8">
                     {loading && (
-                        <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest text-center py-8 animate-pulse">
-                            Scanning registry...
-                        </p>
+                        <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                            <Radar className="w-12 h-12 text-cyan-500 animate-spin-slow opacity-50" />
+                            <p className="font-mono text-[10px] text-cyan-500/70 uppercase tracking-[0.4em] animate-pulse">
+                                Accessing Database...
+                            </p>
+                        </div>
                     )}
                     
                     {!loading && query.length >= 2 && results.length === 0 && (
-                        <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest text-center py-8">
-                            No matching fighters found.
-                        </p>
+                        <div className="flex flex-col items-center justify-center py-20 space-y-6 bg-cyan-950/10 rounded-3xl border border-cyan-500/10">
+                            <User className="w-12 h-12 text-cyan-500/30" />
+                            <p className="font-mono text-[10px] text-cyan-500/50 uppercase tracking-[0.4em] text-center">
+                                No registered fighters match query.
+                            </p>
+                        </div>
                     )}
 
-                    {!loading && results.map((opponent) => (
-                        <div key={opponent.id} className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-primary/30 hover:bg-primary/5 transition-all">
-                            <div className="flex items-center gap-4">
-                                <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-12 h-12 rounded-xl bg-black" />
+                    {!loading && results.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {results.map((opponent) => (
+                                <div key={opponent.id} className="flex flex-col sm:flex-row items-center justify-between p-6 rounded-3xl border border-cyan-500/20 bg-cyan-950/20 hover:border-cyan-400 hover:bg-cyan-900/30 transition-all backdrop-blur-sm group gap-6 sm:gap-4">
+                            <div className="flex items-center gap-6 w-full sm:w-auto">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full group-hover:bg-cyan-400/30 transition-colors"></div>
+                                    <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-20 h-20 rounded-2xl bg-black border-2 border-cyan-500/50 relative z-10" />
+                                </div>
                                 <div>
-                                    <p className="font-mono font-bold text-white">{opponent.username}</p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-[10px] font-mono text-white/40 uppercase">Rank: {opponent.rank}</span>
-                                        <span className="text-[10px] font-mono text-primary/60 uppercase">Win: {opponent.winRate}%</span>
+                                    <p className="font-display font-black text-2xl text-white uppercase tracking-wider">{opponent.username}</p>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <div className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Rank: {opponent.rank}</span>
+                                        </div>
+                                        <div className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Win: {opponent.winRate}%</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <button
                                 onClick={() => initiateChallenge(opponent.id)}
                                 disabled={loading}
-                                className="px-4 py-2 rounded-xl bg-primary/20 text-primary border border-primary/30 font-mono text-[10px] uppercase tracking-wider font-bold hover:bg-primary hover:text-black transition-all disabled:opacity-50"
+                                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-cyan-500 text-black font-display font-black text-sm uppercase tracking-widest hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-50 active:scale-95"
                             >
                                 Challenge
                             </button>
                         </div>
-                    ))}
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

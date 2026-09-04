@@ -21,12 +21,13 @@ export function useAsyncDuel(courseId: string) {
         }
     }, [courseId]);
 
-    const createChallenge = useCallback(async (opponentArenaUserId: string, questionsPerMatch = 10, timeLimitSeconds = 20) => {
+    const createChallenge = useCallback(async (opponentArenaUserId: string, questionsPerMatch = 10, timeLimitSeconds = 20, topic?: string) => {
         const res = await api.post('/v1/showdown/async-duel/challenge', {
             courseId,
             opponentArenaUserId,
             questionsPerMatch,
             timeLimitSeconds,
+            ...(topic && { topic }),
         });
         return res.data;
     }, [courseId]);

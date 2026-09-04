@@ -52,14 +52,14 @@ export default function DuelsHub() {
   const [matchmaking, setMatchmaking] = useState(false);
 
   // ── Dynamic topics from the question bank ────────────────────────────────
-  const [topics, setTopics] = useState<string[]>([]);
+  const [topics, setTopics] = useState<{ category: string, count: number }[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(true);
 
   useEffect(() => {
     if (!courseId) return;
     setTopicsLoading(true);
     api
-      .get<string[]>(`/v1/questions/categories?courseId=${courseId}`)
+      .get<{ category: string, count: number }[]>(`/v1/questions/categories?courseId=${courseId}`)
       .then((res) => setTopics(Array.isArray(res.data) ? res.data : []))
       .catch(() => setTopics([]))
       .finally(() => setTopicsLoading(false));
@@ -108,7 +108,7 @@ export default function DuelsHub() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 pt-6 space-y-6">
+      <main className="max-w-md md:max-w-3xl lg:max-w-5xl mx-auto px-4 pt-6 md:pt-12 space-y-6 md:space-y-8">
 
         {/* TOURNAMENT BANNERS — reuses the same real hooks CourseHome uses */}
         {activeTournament && (
@@ -169,8 +169,8 @@ export default function DuelsHub() {
         </section>
 
         {/* SUPPORT WINGS — unchanged */}
-        <section className="grid grid-cols-2 gap-3">
-          <button onClick={() => router.push(`${courseBasePath}/forge`)} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+        <section className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6">
+          <button onClick={() => router.push(`${courseBasePath}/forge`)} className="flex flex-col items-center gap-2 p-4 md:p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all">
             <div className="relative">
               <Hammer size={20} className="text-arena-warning" />
               <Flame size={10} className="absolute -top-1 -right-1 text-orange-500 animate-pulse" />
@@ -178,7 +178,7 @@ export default function DuelsHub() {
             <span className="text-[9px] font-black uppercase tracking-widest text-white/70">The_Forge</span>
           </button>
 
-          <button onClick={() => router.push(`${courseBasePath}/contributions`)} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+          <button onClick={() => router.push(`${courseBasePath}/contributions`)} className="flex flex-col items-center gap-2 p-4 md:p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all">
             <FileText size={20} className="text-primary" />
             <span className="text-[9px] font-black uppercase tracking-widest text-white/70">My_Intel</span>
           </button>
@@ -186,7 +186,7 @@ export default function DuelsHub() {
 
         {/* PRACTICE DUNGEON — link kept, backend not implemented yet */}
         <section>
-          <button onClick={() => router.push(`${courseBasePath}/practice`)} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all group">
+          <button onClick={() => router.push(`${courseBasePath}/practice`)} className="w-full flex items-center gap-4 p-4 md:p-6 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all group">
             <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:rotate-12 transition-transform">
               <Skull size={20} className="text-red-500" />
             </div>
@@ -216,20 +216,29 @@ export default function DuelsHub() {
               ))}
             </div>
           ) : topics.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-              {topics.map((topic) => {
+            <div className="flex gap-2 overflow-x-auto styled-scrollbar py-2">
+              {topics.map((t) => {
+                const topic = t.category;
                 const active = selectedTopic === topic;
                 return (
                   <button
                     key={topic}
                     onClick={() => setSelectedTopic(active ? null : topic)}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-2 rounded-full border text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all",
-                      active ? "bg-primary border-primary text-black" : "bg-transparent border-white/10 text-white/40 hover:text-white"
+                      "flex items-center gap-2 px-4 py-2 rounded-xl border whitespace-nowrap transition-all shadow-sm active:scale-95",
+                      active 
+                        ? "bg-primary border-primary text-black" 
+                        : "bg-primary/5 border-primary/20 text-white hover:bg-primary/10 hover:border-primary/40"
                     )}
                   >
-                    <Tag size={10} />
-                    {topic}
+                    <Tag size={12} className={active ? "text-black" : "text-primary/70"} />
+                    <span className="text-[11px] font-black uppercase tracking-widest">{topic}</span>
+                    <span className={cn(
+                      "ml-1 text-[9px] font-mono px-1.5 py-0.5 rounded-md",
+                      active ? "bg-black/20 text-black font-bold" : "bg-primary/20 text-primary font-bold"
+                    )}>
+                      {t.count}
+                    </span>
                   </button>
                 );
               })}
@@ -256,12 +265,18 @@ export default function DuelsHub() {
 
           {duelsLoading ? (
             <p className="text-[10px] font-mono text-white/25 uppercase tracking-widest text-center py-6">Syncing Uplinks...</p>
-          ) : asyncDuels.length > 0 ? asyncDuels.map((d) => {
-            const myParticipant = d.participants.find((p: any) => p.arenaUser?.user?.id === user?.id);
+          ) : asyncDuels.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {asyncDuels.map((d) => {
+                const myParticipant = d.participants.find((p: any) => p.arenaUser?.user?.id === user?.id);
             const opp = d.participants.find((p: any) => p.id !== myParticipant?.id);
             const oppName = opp?.arenaUser?.user?.username ?? "Unknown";
             const isComplete = d.status === "complete";
             const waitingOnMe = !isComplete && myParticipant && !myParticipant.completedAt;
+
+            const didIWin = isComplete && d.championId === myParticipant?.id;
+            const didILose = isComplete && d.championId !== null && d.championId !== myParticipant?.id;
+            const isDraw = isComplete && d.championId === null;
 
             return (
               <button
@@ -270,7 +285,7 @@ export default function DuelsHub() {
                 className={cn(
                   "w-full text-left p-4 rounded-xl border-l-4 border border-white/5 transition-all active:scale-[0.98]",
                   isComplete
-                    ? "border-l-white/20 bg-white/[0.02]"
+                    ? (didIWin ? "border-l-green-500/80 bg-green-500/5" : didILose ? "border-l-red-500/80 bg-red-500/5" : "border-l-white/30 bg-white/[0.04]")
                     : waitingOnMe
                       ? "border-l-arena-danger/60 bg-arena-danger/5"
                       : "border-l-arena-warning/50 bg-arena-warning/5"
@@ -280,8 +295,11 @@ export default function DuelsHub() {
                   <ArenaAvatar src={dicebearUrl(oppName)} size="md" />
                   <div className="flex-1 min-w-0">
                     <h3 className="text-xs font-black text-white uppercase truncate">vs {oppName}</h3>
-                    <p className="text-[9px] font-mono text-muted-foreground uppercase mt-1">
-                      {isComplete ? "Resolved" : waitingOnMe ? "Awaiting your move" : "Waiting on opponent"}
+                    <p className={cn(
+                      "text-[9px] font-mono uppercase mt-1",
+                      isComplete ? (didIWin ? "text-green-500" : didILose ? "text-red-500" : "text-white/50") : "text-muted-foreground"
+                    )}>
+                      {isComplete ? (didIWin ? "VICTORY" : didILose ? "DEFEAT" : "DRAW") : waitingOnMe ? "Awaiting your move" : "Waiting on opponent"}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 font-mono text-[9px] text-white/30">
@@ -290,7 +308,9 @@ export default function DuelsHub() {
                 </div>
               </button>
             );
-          }) : (
+          })}
+            </div>
+          ) : (
             <div className="py-10 text-center border border-dashed border-white/10 rounded-2xl">
               <p className="text-xs font-mono text-muted-foreground uppercase">No active duels — challenge someone</p>
             </div>

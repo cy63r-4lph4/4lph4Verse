@@ -17,4 +17,7 @@ export * from "./config/chainConfig";
 export * from "./types";
 export * from "./config/pinataConfig";
 
-export * from "./utils/profile"
+export * from "./utils/profile";
+
+// Verse Wallet Infrastructure (v6) — address derivation utilities
+export * from "./wallet";export * from "./core/guardian-signatures";

@@ -4,78 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Users, Trophy, Zap, ChevronRight,
-  Bell, Shield, Activity, Target, Swords,
+  Bell, Shield, Activity, Swords,
   Radio, BookOpen, TrendingUp,
 } from "lucide-react";
 import { cn } from "@verse/ui";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
-
-// ─── Mock data ────────────────────────────────────────────────────────────────
-// Replace with real auth / API data
-
-const USER = {
-  username: "SHADOW_SCHOLAR",
-  avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=player1",
-  level: 12,
-  rank: "ELITE_GUARD",
-  xp: 85,           // percent to next level
-  streak: 5,
-  globalRank: 482,
-};
-
-const COURSES = [
-  {
-    id: "phy101",
-    code: "PHY-101",
-    name: "Intro to Physics",
-    members: 47,
-    activeBattles: 3,
-    status: "IN_BATTLE" as const,
-    lastActivity: "2m ago",
-  },
-  {
-    id: "math201",
-    code: "MATH-201",
-    name: "Calculus II",
-    members: 32,
-    activeBattles: 0,
-    status: "IDLE" as const,
-    lastActivity: "1h ago",
-  },
-  {
-    id: "chem150",
-    code: "CHEM-150",
-    name: "Organic Chemistry",
-    members: 28,
-    activeBattles: 1,
-    status: "IN_BATTLE" as const,
-    lastActivity: "12m ago",
-  },
-];
-
-// ─── Status config ────────────────────────────────────────────────────────────
-
-const STATUS_CFG = {
-  IN_BATTLE: {
-    dot: "bg-red-500",
-    dotGlow: "0 0 8px rgba(239,68,68,.7)",
-    label: "Live Battle",
-    labelColor: "text-red-400",
-    badge: "bg-red-500/10 border-red-500/30 text-red-400",
-    cardBorder: "border-red-500/15",
-    cardHover: "hover:border-red-500/35 hover:bg-red-500/[0.04]",
-  },
-  IDLE: {
-    dot: "bg-white/20",
-    dotGlow: "none",
-    label: "Idle",
-    labelColor: "text-white/30",
-    badge: "bg-white/[0.06] border-white/10 text-white/35",
-    cardBorder: "border-white/[0.07]",
-    cardHover: "hover:border-white/[0.14] hover:bg-white/[0.03]",
-  },
-};
+import useFetch from "@verse/arena-web/hooks/useFetch";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -140,7 +75,7 @@ function CourseCard({
   index,
   onClick,
 }: {
-  course: typeof COURSES[number];
+  course: { id: string; code: string; name: string; score: number; rank: number };
   index: number;
   onClick: () => void;
 }) {
@@ -150,38 +85,26 @@ function CourseCard({
     return () => clearTimeout(t);
   }, [index]);
 
-  const cfg = STATUS_CFG[course.status];
-
   return (
     <button
       onClick={onClick}
       className={cn(
         "group relative w-full text-left rounded-2xl border overflow-hidden",
-        "bg-black/35 backdrop-blur-sm",
+        "bg-black/35 backdrop-blur-sm border-white/[0.07]",
         "transition-all duration-500",
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-        cfg.cardBorder,
-        cfg.cardHover,
+        "hover:border-white/[0.14] hover:bg-white/[0.03]",
         "active:scale-[0.98]"
       )}
     >
-      {/* Top accent line — only visible on IN_BATTLE */}
-      {course.status === "IN_BATTLE" && (
-        <div className="h-[2px] w-full bg-gradient-to-r from-red-500/60 via-orange-500/40 to-transparent" />
-      )}
-
       <div className="p-4">
         {/* Row 1: code + status badge */}
         <div className="flex items-center justify-between mb-2">
           <span className="font-display text-[10px] font-black text-primary/70 uppercase tracking-[.2em]">
             {course.code}
           </span>
-          <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[9px] font-bold font-display uppercase tracking-wider", cfg.badge)}>
-            <span
-              className={cn("w-[5px] h-[5px] rounded-full shrink-0", cfg.dot)}
-              style={{ boxShadow: cfg.dotGlow }}
-            />
-            {course.status === "IN_BATTLE" ? `${course.activeBattles} Active` : "Idle"}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border bg-white/[0.06] border-white/10 text-white/35 text-[9px] font-bold font-display uppercase tracking-wider">
+            {course.score ?? 0} PTS
           </div>
         </div>
 
@@ -190,50 +113,23 @@ function CourseCard({
           {course.name}
         </p>
 
-        {/* Row 3: members + last activity + chevron */}
+        {/* Row 3: rank + chevron */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <Users size={11} className="text-white/30" />
-              <span className="font-display text-[10px] font-bold text-white/40 uppercase tracking-wide">
-                {course.members} fighters
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Radio size={10} className="text-white/20" />
-              <span className="font-display text-[9px] font-semibold text-white/25 uppercase tracking-wide">
-                {course.lastActivity}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <Trophy size={11} className="text-white/30" />
+            <span className="font-display text-[10px] font-bold text-white/40 uppercase tracking-wide">
+              Rank #{course.rank ?? 1}
+            </span>
           </div>
 
-          <div className={cn(
-            "w-8 h-8 rounded-xl border flex items-center justify-center shrink-0",
-            "transition-all duration-200",
-            course.status === "IN_BATTLE"
-              ? "bg-red-500/10 border-red-500/25 group-hover:bg-red-500/20"
-              : "bg-white/[0.04] border-white/[0.08] group-hover:bg-white/[0.08]"
-          )}>
+          <div className="w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-all duration-200 bg-white/[0.04] border-white/[0.08] group-hover:bg-white/[0.08]">
             <ChevronRight
               size={15}
-              className={cn(
-                "transition-all duration-200 group-hover:translate-x-0.5",
-                course.status === "IN_BATTLE" ? "text-red-400" : "text-white/35"
-              )}
+              className="transition-all duration-200 group-hover:translate-x-0.5 text-white/35"
             />
           </div>
         </div>
       </div>
-
-      {/* Subtle bottom shimmer for active courses */}
-      {course.status === "IN_BATTLE" && (
-        <div className="absolute bottom-0 left-0 right-0 h-px overflow-hidden">
-          <div
-            className="h-full w-1/2 bg-gradient-to-r from-transparent via-red-500/50 to-transparent"
-            style={{ animation: "shimmer-slide 2.5s ease-in-out infinite" }}
-          />
-        </div>
-      )}
     </button>
   );
 }
@@ -242,6 +138,37 @@ function CourseCard({
 
 export default function ArenaLobby() {
   const router = useRouter();
+  const { data: profile, isLoading, error } = useFetch<any>('/v1/gateway/profile');
+
+  if (isLoading) {
+    return (
+        <EnergyBackground className="flex flex-col h-dvh items-center justify-center" variant="intense">
+          <Shield className="animate-pulse text-primary mb-4" size={32} />
+          <p className="font-display text-white/50 tracking-widest text-xs uppercase animate-pulse">Syncing Grid...</p>
+        </EnergyBackground>
+    )
+  }
+
+  if (error || !profile) {
+    return (
+        <EnergyBackground className="flex flex-col h-dvh items-center justify-center" variant="intense">
+          <p className="font-display text-red-500 tracking-widest text-xs uppercase">Error loading profile</p>
+        </EnergyBackground>
+    )
+  }
+
+  const user = {
+    username: profile.name,
+    avatar: profile.avatar,
+    level: profile.level || 1,
+    rank: profile.university || "ARENA FIGHTER",
+    xp: profile.xp || 0,
+    streak: profile.streakCurrent || 0,
+    winRate: profile.winRate || 0,
+    globalRank: "-", 
+  };
+
+  const courses = profile.sectors || [];
 
   return (
     <>
@@ -297,14 +224,14 @@ export default function ArenaLobby() {
               >
                 <div className="text-right">
                   <p className="font-display text-[10px] font-black text-white uppercase tracking-wide leading-none">
-                    {USER.username}
+                    {user.username}
                   </p>
                   <p className="font-display text-[8px] font-bold text-primary/60 uppercase tracking-wider leading-none mt-0.5">
-                    {USER.rank}
+                    {user.rank}
                   </p>
                 </div>
                 <ArenaAvatar
-                  src={USER.avatar}
+                  src={user.avatar}
                   size="sm"
                   className="border border-primary/30"
                 />
@@ -328,30 +255,30 @@ export default function ArenaLobby() {
                   className="absolute -inset-[3px] rounded-full border border-primary/40"
                   style={{ boxShadow: "0 0 14px rgba(var(--primary-rgb),.25)" }}
                 />
-                <ArenaAvatar src={USER.avatar} size="lg" className="relative z-10" />
+                <ArenaAvatar src={user.avatar} size="lg" className="relative z-10" />
                 {/* Level badge */}
                 <div className="absolute -bottom-1 -right-1 z-20 w-6 h-6 rounded-lg bg-primary flex items-center justify-center border-2 border-black">
-                  <span className="font-display text-[9px] font-black text-black leading-none">{USER.level}</span>
+                  <span className="font-display text-[9px] font-black text-black leading-none">{user.level}</span>
                 </div>
               </div>
 
               {/* Name + XP bar */}
               <div className="flex-1 min-w-0">
                 <p className="font-display text-[16px] font-black text-white uppercase tracking-wide leading-none mb-1">
-                  {USER.username}
+                  {user.username}
                 </p>
                 <p className="font-display text-[10px] font-bold text-primary/60 uppercase tracking-wider mb-3">
-                  {USER.rank}
+                  {user.rank}
                 </p>
-                <XpBar xp={USER.xp} level={USER.level} />
+                <XpBar xp={user.xp} level={user.level} />
               </div>
             </div>
 
             {/* Stat pills row */}
             <div className="grid grid-cols-3 gap-2 px-4 pb-4">
-              <StatPill icon={Zap}       label="Streak"      value={`${USER.streak}d`}       color="text-primary" />
-              <StatPill icon={Trophy}    label="Global"      value={`#${USER.globalRank}`}    color="text-amber-400" />
-              <StatPill icon={TrendingUp} label="Win Rate"   value="68%"                      color="text-green-400" />
+              <StatPill icon={Zap}       label="Streak"      value={`${user.streak}d`}       color="text-primary" />
+              <StatPill icon={Trophy}    label="Global"      value={user.globalRank}    color="text-amber-400" />
+              <StatPill icon={TrendingUp} label="Win Rate"   value={`${user.winRate}%`}                      color="text-green-400" />
             </div>
           </section>
 
@@ -378,14 +305,21 @@ export default function ArenaLobby() {
 
             {/* Course cards */}
             <div className="space-y-2.5">
-              {COURSES.map((course, idx) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  index={idx}
-                  onClick={() => router.push(`/course/${course.id}`)}
-                />
-              ))}
+              {courses.length === 0 ? (
+                <div className="text-center py-6 border border-white/[0.08] rounded-2xl bg-white/[0.02]">
+                  <p className="font-display text-white/40 text-xs uppercase tracking-wider">No sectors found</p>
+                  <p className="font-display text-white/20 text-[10px] mt-1">Join a course to begin</p>
+                </div>
+              ) : (
+                courses.map((course: any, idx: number) => (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    index={idx}
+                    onClick={() => router.push(`/course/${course.id}`)}
+                  />
+                ))
+              )}
             </div>
           </section>
 

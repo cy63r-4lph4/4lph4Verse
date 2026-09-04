@@ -1,0 +1,102 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { DatabaseService } from '@/db/database.service';
+import { eq, and, desc } from 'drizzle-orm';
+import { verseGuardians, verseRecoveryRequests } from '@/db/schema';
+import { buildGuardianSignaturePayload, GUARDIAN_ACTIONS } from '@4lph4/sdk';
+
+@Injectable()
+export class VerseGuardianService {
+  private readonly logger = new Logger(VerseGuardianService.name);
+
+  constructor(private readonly db: DatabaseService) {}
+
+  /**
+   * Retrieves the current guardian epoch from the database for a specific verseId.
+   */
+  async getGuardianEpoch(verseId: string): Promise<bigint> {
+    const activeGuardians = await this.db.db
+      .select({ epoch: verseGuardians.epoch })
+      .from(verseGuardians)
+      .where(and(eq(verseGuardians.verseId, verseId), eq(verseGuardians.status, 'active')))
+      .orderBy(desc(verseGuardians.epoch))
+      .limit(1);
+    
+    return activeGuardians.length > 0 ? BigInt(activeGuardians[0].epoch) : 0n;
+  }
+
+  /**
+   * Retrieves the current active recovery nonce.
+   */
+  async getCurrentRecoveryNonce(verseId: string): Promise<bigint> {
+    const activeRequest = await this.db.db
+      .select({ nonce: verseRecoveryRequests.nonce })
+      .from(verseRecoveryRequests)
+      .where(and(eq(verseRecoveryRequests.verseId, verseId), eq(verseRecoveryRequests.active, true)))
+      .orderBy(desc(verseRecoveryRequests.createdAt))
+      .limit(1);
+
+    return activeRequest.length > 0 && activeRequest[0].nonce 
+      ? BigInt(activeRequest[0].nonce) 
+      : 0n;
+  }
+
+  /**
+   * The next recovery nonce is currentNonce + 1 for new initiations.
+   * If there is an active recovery, initiateRecovery should fail (handled in contract, but here we can just return current + 1 based on latest).
+   * Actually, if there is an active recovery, we should probably fetch the latest overall nonce, not just active.
+   */
+  async getNextRecoveryNonce(verseId: string): Promise<bigint> {
+    const latestRequest = await this.db.db
+      .select({ nonce: verseRecoveryRequests.nonce })
+      .from(verseRecoveryRequests)
+      .where(eq(verseRecoveryRequests.verseId, verseId))
+      .orderBy(desc(verseRecoveryRequests.createdAt))
+      .limit(1);
+      
+    const currentNonce = latestRequest.length > 0 && latestRequest[0].nonce 
+      ? BigInt(latestRequest[0].nonce) 
+      : 0n;
+      
+    return currentNonce + 1n;
+  }
+
+  /**
+   * Retrieves the pendingNewOwner for the current active recovery.
+   */
+  async getPendingNewOwner(verseId: string): Promise<`0x${string}` | null> {
+    const activeRequest = await this.db.db
+      .select({ pendingNewOwner: verseRecoveryRequests.pendingNewOwner })
+      .from(verseRecoveryRequests)
+      .where(and(eq(verseRecoveryRequests.verseId, verseId), eq(verseRecoveryRequests.active, true)))
+      .orderBy(desc(verseRecoveryRequests.createdAt))
+      .limit(1);
+      
+    return activeRequest.length > 0 ? activeRequest[0].pendingNewOwner as `0x${string}` : null;
+  }
+
+  /**
+   * Constructs the EIP-712 payload for any guardian action.
+   */
+  async buildGuardianPayload(
+    verseId: string, 
+    actionName: keyof typeof GUARDIAN_ACTIONS,
+    paramsHash: `0x${string}`,
+    recoveryNonce: bigint,
+    deadline: bigint,
+    domain: any
+  ) {
+    const action = GUARDIAN_ACTIONS[actionName];
+    const guardianEpoch = await this.getGuardianEpoch(verseId);
+
+    const message = {
+      verseId: BigInt(verseId),
+      action,
+      paramsHash,
+      guardianEpoch,
+      recoveryNonce,
+      deadline,
+    };
+
+    return buildGuardianSignaturePayload(domain, message);
+  }
+}

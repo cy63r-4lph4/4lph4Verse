@@ -18,7 +18,8 @@ const STUDENT_NAV_ITEMS = [
 // which don't serve a managing instructor.
 const INSTRUCTOR_NAV_ITEMS = [
   { icon: MessageSquare, label: "Feed", segment: "home", href: "", activeIcon: "text-sky-400", activeGlow: "bg-sky-500", activeBorder: "border-sky-500/40" },
-  { icon: Swords, label: "Battle", segment: "duels", href: "/duels", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
+  { icon: Swords, label: "Battle", segment: "battles", href: "/battles", activeIcon: "text-red-400", activeGlow: "bg-red-500", activeBorder: "border-red-500/40" },
+  { icon: Trophy, label: "Ranks", segment: "leaderboard", href: "/leaderboard", activeIcon: "text-amber-400", activeGlow: "bg-amber-500", activeBorder: "border-amber-500/40" },
   { icon: ShieldCheck, label: "Console", segment: "console", href: "/console", activeIcon: "text-primary", activeGlow: "bg-primary", activeBorder: "border-primary/40" },
 ] as const;
 

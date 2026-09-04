@@ -133,47 +133,87 @@ export default function AsyncDuelPage() {
     // --- RENDER LOBBY ---
     if (showdown.status === 'challenge_pending') {
         return (
-            <EnergyBackground variant="default" className="h-dvh w-full flex flex-col items-center justify-center text-center p-6 bg-cyan-950/20">
-                <div className="max-w-sm w-full space-y-8 bg-black/60 p-8 rounded-3xl border border-cyan-500/20 backdrop-blur-md">
-                    <div className="flex justify-between items-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <ArenaAvatar src={dicebearUrl(isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username)} size="lg" glow glowColor="primary" />
-                            <p className="font-mono text-xs text-white uppercase">{isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username}</p>
+            <div className="h-dvh w-full bg-black relative flex flex-col items-center justify-center text-center p-6 overflow-hidden">
+                {/* Dynamic Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#06b6d41a_1px,transparent_1px),linear-gradient(to_bottom,#06b6d41a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30"></div>
+                
+                {/* Floating VS Layout */}
+                <div className="w-full max-w-lg md:max-w-4xl z-10 space-y-12">
+                    <div className="space-y-4 mb-8">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur-md">
+                            Async Match Initiated
                         </div>
-                        <span className="font-display text-cyan-500 font-bold text-xl">VS</span>
-                        <div className="flex flex-col items-center gap-2">
-                            <ArenaAvatar src={dicebearUrl(!isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username)} size="lg" />
-                            <p className="font-mono text-xs text-white uppercase">{!isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username}</p>
-                        </div>
+                        <p className="font-mono text-xs text-white/40 uppercase tracking-[0.2em]">{showdown.questionsPerMatch} Questions • {showdown.timeLimitSeconds}s / Q</p>
                     </div>
 
-                    <div className="space-y-2">
-                        <h2 className="font-display text-2xl text-cyan-400 uppercase tracking-widest">Async Challenge</h2>
-                        <p className="font-mono text-[10px] text-cyan-400/50 uppercase tracking-[0.2em]">{showdown.questionsPerMatch} Questions • {showdown.timeLimitSeconds}s / Q</p>
+                    <div className="flex flex-col md:flex-row justify-between items-center relative gap-8 md:gap-0">
+                        {/* Connecting lightning line */}
+                        <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent -translate-y-1/2 z-0"></div>
+                        <div className="md:hidden absolute top-0 left-1/2 h-full w-[2px] bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent -translate-x-1/2 z-0"></div>
+
+                        {/* Player 1 */}
+                        <motion.div 
+                            initial={{ x: -50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ type: "spring", bounce: 0.5 }}
+                            className="flex flex-col items-center gap-4 z-10"
+                        >
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-full"></div>
+                                <ArenaAvatar src={dicebearUrl(isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username)} size="2xl" glow glowColor="primary" className="border-4 border-cyan-950 shadow-2xl" />
+                            </div>
+                            <p className="font-display font-black text-lg text-white uppercase tracking-widest">{isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username}</p>
+                        </motion.div>
+
+                        {/* VS Badge */}
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                            className="z-20 w-16 h-16 rounded-full bg-black border-2 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.5)] flex items-center justify-center flex-shrink-0"
+                        >
+                            <span className="font-display text-cyan-400 font-black text-2xl italic">VS</span>
+                        </motion.div>
+
+                        {/* Player 2 */}
+                        <motion.div 
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ type: "spring", bounce: 0.5 }}
+                            className="flex flex-col items-center gap-4 z-10"
+                        >
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full"></div>
+                                <ArenaAvatar src={dicebearUrl(!isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username)} size="2xl" glow glowColor="danger" className="border-4 border-red-950 shadow-2xl" />
+                            </div>
+                            <p className="font-display font-black text-lg text-white uppercase tracking-widest">{!isCreator ? myParticipant.arenaUser.user.username : opponent.arenaUser.user.username}</p>
+                        </motion.div>
                     </div>
 
-                    {isCreator ? (
-                        <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                            <p className="font-mono text-xs text-cyan-300 uppercase tracking-widest animate-pulse">Waiting for {opponent.arenaUser.user.username} to accept...</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            <button 
-                                onClick={handleAccept}
-                                className="w-full py-4 rounded-xl bg-cyan-500 text-black font-display font-black text-lg uppercase tracking-wider hover:bg-cyan-400 transition-colors"
-                            >
-                                Accept Challenge
-                            </button>
-                            <button 
-                                onClick={() => router.push(`/course/${params.id}/battles`)}
-                                className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white/50 font-mono text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-colors"
-                            >
-                                Decline
-                            </button>
-                        </div>
-                    )}
+                    <div className="pt-8">
+                        {isCreator ? (
+                            <div className="inline-block p-4 px-8 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-md">
+                                <p className="font-mono text-sm text-cyan-300 uppercase tracking-[0.2em] animate-pulse">Waiting for {opponent.arenaUser.user.username}...</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 max-w-xs mx-auto">
+                                <button 
+                                    onClick={handleAccept}
+                                    className="w-full py-4 rounded-xl bg-cyan-500 text-black font-display font-black text-xl uppercase tracking-widest hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all active:scale-95"
+                                >
+                                    Accept Challenge
+                                </button>
+                                <button 
+                                    onClick={() => router.push(`/course/${params.id}/battles`)}
+                                    className="w-full py-3 rounded-xl bg-transparent border border-white/10 text-white/50 font-mono text-xs uppercase tracking-widest hover:bg-white/5 hover:text-white transition-colors"
+                                >
+                                    Decline
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </EnergyBackground>
+            </div>
         );
     }
 
@@ -185,7 +225,7 @@ export default function AsyncDuelPage() {
 
         return (
             <div className="h-dvh w-full bg-black text-white flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-lg space-y-8">
+                <div className="w-full max-w-lg md:max-w-3xl space-y-8">
                     <div className="flex justify-between items-center border-b border-cyan-500/20 pb-4">
                         <p className="font-mono text-xs text-cyan-500 uppercase tracking-widest">Async Match</p>
                         <p className="font-mono text-xs text-white/50 uppercase">Q {activeIndex + 1} / {match.questions.length}</p>
@@ -195,7 +235,7 @@ export default function AsyncDuelPage() {
                         <h2 className="text-xl md:text-2xl font-bold leading-relaxed">{currentQ.content}</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                         {currentQ.options.map((opt: string, i: number) => (
                             <button
                                 key={i}
@@ -302,9 +342,9 @@ export default function AsyncDuelPage() {
 
             {/* Score Comparison */}
             <div className="flex-1 px-6 pb-20">
-                <div className="max-w-md mx-auto space-y-6">
+                <div className="max-w-md md:max-w-3xl lg:max-w-4xl mx-auto space-y-6">
                     {/* Player vs Opponent Score */}
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-md">
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-md">
                         {/* Player */}
                         <div className="flex-1 text-center">
                             <ArenaAvatar src={dicebearUrl(myParticipant.arenaUser.user.username)} size="lg" glow glowColor={isVictory ? "success" : (!bothDone ? "primary" : "danger")} className="mx-auto mb-3" />

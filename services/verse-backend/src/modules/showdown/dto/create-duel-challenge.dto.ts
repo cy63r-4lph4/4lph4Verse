@@ -12,4 +12,7 @@ export class CreateDuelChallengeDto {
 
   @IsOptional() @IsInt() @Min(5) @Max(120)
   timeLimitSeconds?: number;
+
+  @IsOptional() @IsString()
+  topic?: string;
 }

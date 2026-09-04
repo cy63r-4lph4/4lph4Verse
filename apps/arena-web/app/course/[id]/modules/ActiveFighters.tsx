@@ -222,7 +222,7 @@ export function ActiveFighters({ fighters = mockFighters, onChallenge }: ActiveF
 
       {/* Scroll strip */}
       <div
-        className="overflow-x-auto scrollbar-hide"
+        className="overflow-x-auto styled-scrollbar"
         style={{
           maskImage: "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",

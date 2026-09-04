@@ -47,6 +47,313 @@ export const RelayableTxTypes = {
       },
     },
   },
+  GuardianRecovery: {
+    cancelRecovery: {
+      primaryType: "GuardianApproval",
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "verseId",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "guardian",
+              type: "address",
+            },
+            {
+              internalType: "bytes",
+              name: "signature",
+              type: "bytes",
+            },
+          ],
+          internalType: "struct GuardianRecoveryModule.GuardianSignature[]",
+          name: "approvals",
+          type: "tuple[]",
+        },
+      ],
+      types: {
+        GuardianApproval: [
+          {
+            name: "verseId",
+            type: "uint256",
+          },
+          {
+            name: "action",
+            type: "bytes32",
+          },
+          {
+            name: "paramsHash",
+            type: "bytes32",
+          },
+          {
+            name: "guardianEpoch",
+            type: "uint64",
+          },
+          {
+            name: "recoveryNonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+    },
+    executeRecovery: {
+      primaryType: "GuardianApproval",
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "verseId",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "guardian",
+              type: "address",
+            },
+            {
+              internalType: "bytes",
+              name: "signature",
+              type: "bytes",
+            },
+          ],
+          internalType: "struct GuardianRecoveryModule.GuardianSignature[]",
+          name: "approvals",
+          type: "tuple[]",
+        },
+      ],
+      types: {
+        GuardianApproval: [
+          {
+            name: "verseId",
+            type: "uint256",
+          },
+          {
+            name: "action",
+            type: "bytes32",
+          },
+          {
+            name: "paramsHash",
+            type: "bytes32",
+          },
+          {
+            name: "guardianEpoch",
+            type: "uint64",
+          },
+          {
+            name: "recoveryNonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+    },
+    hardFreeze: {
+      primaryType: "GuardianApproval",
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "verseId",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "guardian",
+              type: "address",
+            },
+            {
+              internalType: "bytes",
+              name: "signature",
+              type: "bytes",
+            },
+          ],
+          internalType: "struct GuardianRecoveryModule.GuardianSignature[]",
+          name: "approvals",
+          type: "tuple[]",
+        },
+      ],
+      types: {
+        GuardianApproval: [
+          {
+            name: "verseId",
+            type: "uint256",
+          },
+          {
+            name: "action",
+            type: "bytes32",
+          },
+          {
+            name: "paramsHash",
+            type: "bytes32",
+          },
+          {
+            name: "guardianEpoch",
+            type: "uint64",
+          },
+          {
+            name: "recoveryNonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+    },
+    initiateRecovery: {
+      primaryType: "GuardianApproval",
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "verseId",
+          type: "uint256",
+        },
+        {
+          internalType: "address",
+          name: "newOwner",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "guardian",
+              type: "address",
+            },
+            {
+              internalType: "bytes",
+              name: "signature",
+              type: "bytes",
+            },
+          ],
+          internalType: "struct GuardianRecoveryModule.GuardianSignature[]",
+          name: "approvals",
+          type: "tuple[]",
+        },
+      ],
+      types: {
+        GuardianApproval: [
+          {
+            name: "verseId",
+            type: "uint256",
+          },
+          {
+            name: "action",
+            type: "bytes32",
+          },
+          {
+            name: "paramsHash",
+            type: "bytes32",
+          },
+          {
+            name: "guardianEpoch",
+            type: "uint64",
+          },
+          {
+            name: "recoveryNonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+    },
+    unfreeze: {
+      primaryType: "GuardianApproval",
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "verseId",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "guardian",
+              type: "address",
+            },
+            {
+              internalType: "bytes",
+              name: "signature",
+              type: "bytes",
+            },
+          ],
+          internalType: "struct GuardianRecoveryModule.GuardianSignature[]",
+          name: "approvals",
+          type: "tuple[]",
+        },
+      ],
+      types: {
+        GuardianApproval: [
+          {
+            name: "verseId",
+            type: "uint256",
+          },
+          {
+            name: "action",
+            type: "bytes32",
+          },
+          {
+            name: "paramsHash",
+            type: "bytes32",
+          },
+          {
+            name: "guardianEpoch",
+            type: "uint64",
+          },
+          {
+            name: "recoveryNonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+    },
+  },
   VerseProfile: {
     createProfileWithSig: {
       primaryType: "CreateProfileWithSig",

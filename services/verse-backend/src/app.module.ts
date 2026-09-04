@@ -12,8 +12,11 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 
+import { IdentityModule } from './modules/identity/identity.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), ArenaModule, GatewayModule, HealthModule, DatabaseModule, FeedModule, ForgeModule, ShowdownModule, QuestionsModule, MailModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), ArenaModule, GatewayModule, HealthModule, DatabaseModule, FeedModule, ForgeModule, ShowdownModule, QuestionsModule, MailModule, IdentityModule, WalletModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -86,7 +86,7 @@ export default function DuelChallengePage() {
 
         {showdown.status === "complete" && (
           <motion.div key="complete" initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="h-full">
-            {!showdown.championId ? (
+            {!showdown.championId && (!match || match.status !== "complete") ? (
               <p className="font-display text-white/40 uppercase tracking-[.3em] text-sm">Challenge declined</p>
             ) : (
               (() => {

@@ -769,6 +769,7 @@ export class ShowdownService {
     async createAsyncDuelChallenge(initiatorArenaUserId: string, dto: {
         courseId: string; opponentArenaUserId: string;
         questionsPerMatch?: number; timeLimitSeconds?: number;
+        topic?: string;
     }) {
         if (initiatorArenaUserId === dto.opponentArenaUserId) {
             throw new BadRequestException('Cannot challenge yourself.');
@@ -781,7 +782,7 @@ export class ShowdownService {
             const [showdown] = await tx.insert(schema.showdowns).values({
                 courseId: dto.courseId,
                 createdBy: initiatorArenaUserId,
-                title: 'Async Duel',
+                title: dto.topic ? `Async Duel: ${dto.topic}` : 'Async Duel',
                 mode: 'async_duel',
                 status: 'challenge_pending', 
                 questionsPerMatch: dto.questionsPerMatch ?? 10,
@@ -808,7 +809,9 @@ export class ShowdownService {
 
             // Pre-select questions — use however many the bank has, up to the requested amount
             const bank = await tx.query.arenaQuestions.findMany({
-                where: (q, { eq }) => eq(q.courseId, showdown.courseId),
+                where: (q, { eq, and }) => dto.topic 
+                    ? and(eq(q.courseId, showdown.courseId), eq(q.category, dto.topic))
+                    : eq(q.courseId, showdown.courseId),
             });
             // Clamp to bank size so we never throw if bank is smaller than requested
             const actualLimit = Math.min(showdown.questionsPerMatch, bank.length);
@@ -928,7 +931,9 @@ export class ShowdownService {
             const pB = allParticipants.find(p => p.id === match.playerBId);
 
             if (pA?.completedAt && pB?.completedAt) {
-                const winnerId = (pA.asyncScore ?? 0) >= (pB.asyncScore ?? 0) ? pA.id : pB.id;
+                const scoreA = pA.asyncScore ?? 0;
+                const scoreB = pB.asyncScore ?? 0;
+                const winnerId = scoreA > scoreB ? pA.id : (scoreB > scoreA ? pB.id : null);
                 
                 await tx.update(schema.showdownMatches)
                     .set({ winnerId, status: 'complete', completedAt: new Date() })

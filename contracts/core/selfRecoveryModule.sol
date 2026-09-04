@@ -73,31 +73,13 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         ).setVerificationConfigV2(formatted);
     }
 
-    function _parseAddr(string memory _a) internal pure returns (address) {
-        bytes memory tmp = bytes(_a);
-        uint160 iaddr = 0;
-        uint160 b1;
-        uint160 b2;
-        for (uint i = 2; i < 2 + 2 * 20; i += 2) {
-            iaddr *= 256;
-            b1 = uint160(uint8(tmp[i]));
-            b2 = uint160(uint8(tmp[i + 1]));
-            b1 = b1 >= 97 ? b1 - 87 : b1 >= 65 ? b1 - 55 : b1 - 48;
-            b2 = b2 >= 97 ? b2 - 87 : b2 >= 65 ? b2 - 55 : b2 - 48;
-            iaddr += (b1 * 16 + b2);
-        }
-        return address(iaddr);
-    }
-
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal override {
-        require(userData.length == 42, "BAD_USERDATA_LEN");
-        require(userData[0] == "0" && userData[1] == "x", "MISSING_0X_PREFIX");
-
-        address subject = _parseAddr(string(userData));
+        address subject = abi.decode(userData, (address));
         address verifier = address(uint160(output.userIdentifier));
+        require(verifier != address(0), "INVALID_VERIFIER");
         bytes32 dochash;
 
         dochash = keccak256(
@@ -119,9 +101,10 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         bytes32 verifiedHash = vp.getDochash(verseId);
         require(verifiedHash != bytes32(""), "PROFILE_NOT_VERIFIED");
 
-        if (verifiedHash == dochash) {
-            vp.recoverySetOwner(verseId, verifier);
-        }
+        require(verifiedHash == dochash, "DOCHASH_MISMATCH");
+
+        vp.recoverySetOwner(verseId, verifier);
+        emit HumanVerified(output, block.timestamp, userData);
     }
 
     // -------------------------

@@ -544,9 +544,9 @@ contract GuardianRecoveryModule is
             approvals
         );
 
-        // Freeze during recovery
+        // Freeze during recovery for the full RECOVERY_DELAY
         softFreezeUntil[verseId] = uint64(
-            block.timestamp + SOFT_FREEZE_DURATION
+            block.timestamp + RECOVERY_DELAY
         );
 
         r.pendingNewOwner = newOwner;
@@ -685,24 +685,18 @@ contract GuardianRecoveryModule is
         RecoveryState storage r = recovery[verseId];
         require(r.active, "GuardianModule: no active recovery");
 
-        address owner = verseProfile.ownerOf(verseId);
-        bool byOwner = owner == _msgSender();
-        bool byGuardians = false;
-
-        if (!byOwner) {
-            bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
-            _requireGuardianThreshold(
-                verseId,
-                ACTION_RECOVERY_CANCEL,
-                paramsHash,
-                r.nonce,
-                deadline,
-                approvals
-            );
-            byGuardians = true;
-        }
-
-        require(byOwner || byGuardians, "GuardianModule: no cancel authority");
+        // Require guardian threshold to cancel.
+        // We do not allow unilateral owner cancellation because a compromised
+        // key could be used by an attacker to indefinitely block their own recovery.
+        bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
+        _requireGuardianThreshold(
+            verseId,
+            ACTION_RECOVERY_CANCEL,
+            paramsHash,
+            r.nonce,
+            deadline,
+            approvals
+        );
 
         r.active = false;
         emit RecoveryCanceled(verseId, r.nonce);

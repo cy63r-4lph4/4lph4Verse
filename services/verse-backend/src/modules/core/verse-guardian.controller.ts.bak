@@ -1,0 +1,123 @@
+import { Controller, Post, Get, Body, Param, NotFoundException, BadRequestException } from '@nestjs/common';
+import { VerseGuardianService } from './services/verse-guardian.service';
+import { GuardianParamsHash } from '@4lph4/sdk';
+
+@Controller('profile/:verseId/guardians')
+export class VerseGuardianController {
+  constructor(private readonly guardianService: VerseGuardianService) {}
+
+  @Get('status')
+  async getGuardianStatus(@Param('verseId') verseId: string) {
+    const guardianEpoch = await this.guardianService.getGuardianEpoch(verseId);
+    const recoveryNonce = await this.guardianService.getCurrentRecoveryNonce(verseId);
+    const pendingOwner = await this.guardianService.getPendingNewOwner(verseId);
+    
+    return {
+      guardianEpoch: guardianEpoch.toString(),
+      activeRecoveryNonce: recoveryNonce.toString(),
+      pendingNewOwner: pendingOwner,
+    };
+  }
+
+  @Post('payload/initiate-recovery')
+  async getInitiateRecoveryPayload(
+    @Param('verseId') verseId: string,
+    @Body() body: { newOwner: `0x${string}`; deadline: string; domain: any }
+  ) {
+    if (!body.newOwner) {
+      throw new BadRequestException('newOwner is required for initiation');
+    }
+
+    const paramsHash = GuardianParamsHash.initiateRecovery(body.newOwner);
+    const nextNonce = await this.guardianService.getNextRecoveryNonce(verseId);
+
+    return this.guardianService.buildGuardianPayload(
+      verseId,
+      'RECOVERY_INIT',
+      paramsHash,
+      nextNonce,
+      BigInt(body.deadline),
+      body.domain
+    );
+  }
+
+  @Post('payload/execute-recovery')
+  async getExecuteRecoveryPayload(
+    @Param('verseId') verseId: string,
+    @Body() body: { deadline: string; domain: any }
+  ) {
+    const pendingOwner = await this.guardianService.getPendingNewOwner(verseId);
+    if (!pendingOwner) {
+      throw new NotFoundException('No active recovery request found for this profile');
+    }
+
+    const paramsHash = GuardianParamsHash.executeRecovery(pendingOwner);
+    const currentNonce = await this.guardianService.getCurrentRecoveryNonce(verseId);
+
+    return this.guardianService.buildGuardianPayload(
+      verseId,
+      'RECOVERY_EXECUTE',
+      paramsHash,
+      currentNonce,
+      BigInt(body.deadline),
+      body.domain
+    );
+  }
+
+  @Post('payload/cancel-recovery')
+  async getCancelRecoveryPayload(
+    @Param('verseId') verseId: string,
+    @Body() body: { deadline: string; domain: any }
+  ) {
+    const pendingOwner = await this.guardianService.getPendingNewOwner(verseId);
+    if (!pendingOwner) {
+      throw new NotFoundException('No active recovery request found for this profile');
+    }
+
+    const paramsHash = GuardianParamsHash.cancelRecovery(pendingOwner);
+    const currentNonce = await this.guardianService.getCurrentRecoveryNonce(verseId);
+
+    return this.guardianService.buildGuardianPayload(
+      verseId,
+      'RECOVERY_CANCEL',
+      paramsHash,
+      currentNonce,
+      BigInt(body.deadline),
+      body.domain
+    );
+  }
+
+  @Post('payload/hard-freeze')
+  async getHardFreezePayload(
+    @Param('verseId') verseId: string,
+    @Body() body: { deadline: string; domain: any }
+  ) {
+    const paramsHash = GuardianParamsHash.empty();
+    // Freeze does not sign over a recovery nonce, contract ignores it. We pass 0n.
+    return this.guardianService.buildGuardianPayload(
+      verseId,
+      'HARD_FREEZE',
+      paramsHash,
+      0n,
+      BigInt(body.deadline),
+      body.domain
+    );
+  }
+
+  @Post('payload/unfreeze')
+  async getUnfreezePayload(
+    @Param('verseId') verseId: string,
+    @Body() body: { deadline: string; domain: any }
+  ) {
+    const paramsHash = GuardianParamsHash.empty();
+    // Unfreeze does not sign over a recovery nonce.
+    return this.guardianService.buildGuardianPayload(
+      verseId,
+      'UNFREEZE',
+      paramsHash,
+      0n,
+      BigInt(body.deadline),
+      body.domain
+    );
+  }
+}
