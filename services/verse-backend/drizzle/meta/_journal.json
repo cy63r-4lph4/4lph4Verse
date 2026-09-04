@@ -8,6 +8,13 @@
       "when": 1788526968162,
       "tag": "0000_arena_pilot_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788527136811,
+      "tag": "0001_wallet_infrastructure",
+      "breakpoints": true
     }
   ]
 }
