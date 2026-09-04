@@ -14,12 +14,34 @@ import { feedReactions } from 'src/db/schema/feed_reactions';
 import { feedPosts } from 'src/db/schema/feed_posts';
 import { feedComments } from 'src/db/schema/feed_comments';
 import { forgeSubmissions } from 'src/db/schema/forge_submissions';
+import { verseProfiles } from './core/verse_profiles';
+import { profileContacts } from './core/profile_contacts';
 
 // --- 1. CORE USER RELATIONS ---
 export const usersRelations = relations(users, ({ one }) => ({
     arenaUser: one(arenaUser, {
         fields: [users.id],
         references: [arenaUser.userId],
+    }),
+    verseProfile: one(verseProfiles, {
+        fields: [users.id],
+        references: [verseProfiles.userId],
+    }),
+}));
+
+// --- 1.1 VERSE PROFILE RELATIONS ---
+export const verseProfilesRelations = relations(verseProfiles, ({ one, many }) => ({
+    user: one(users, {
+        fields: [verseProfiles.userId],
+        references: [users.id],
+    }),
+    contacts: many(profileContacts),
+}));
+
+export const profileContactsRelations = relations(profileContacts, ({ one }) => ({
+    profile: one(verseProfiles, {
+        fields: [profileContacts.profileId],
+        references: [verseProfiles.id],
     }),
 }));
 
@@ -33,7 +55,6 @@ export const arenaUserRelations = relations(arenaUser, ({ one, many }) => ({
         fields: [arenaUser.schoolId],
         references: [arenaSchools.id],
     }),
-    // Link to the junction table
     userCourses: many(arenaUserCourses),
 }));
 
@@ -49,11 +70,10 @@ export const arenaCoursesRelations = relations(arenaCourses, ({ one, many }) => 
         fields: [arenaCourses.schoolId],
         references: [arenaSchools.id],
     }),
-    // Link to the junction table (This is where our fighter count comes from)
     courseUsers: many(arenaUserCourses),
 }));
 
-// --- 5. JUNCTION TABLE RELATIONS (The Bridge) ---
+// --- 5. JUNCTION TABLE RELATIONS ---
 export const arenaUserCoursesRelations = relations(arenaUserCourses, ({ one }) => ({
     user: one(arenaUser, {
         fields: [arenaUserCourses.userId],

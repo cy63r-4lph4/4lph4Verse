@@ -1,1 +1,0 @@
-ALTER TABLE "showdowns" ADD COLUMN "scheduled_at" timestamp with time zone;

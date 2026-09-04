@@ -11,6 +11,8 @@ import { useMySectors } from "@verse/arena-web/hooks/useMySectors";
 import { ArenaContext } from "@verse/arena-web/app/course/[id]/ArenaContext";
 import { Course, CurrentUser } from "@verse/arena-web/lib/course/types";
 import CourseBottomNav from "@verse/arena-web/components/ui/CourseBottomNav";
+import { LecturerDashboard } from "@verse/arena-web/app/course/[id]/(chrome)/lecturer-desktop/LecturerDashboard";
+import { useForgePending } from "@verse/arena-web/hooks/useForgeSubmissions";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -28,6 +30,10 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
     retry: false,
   });
 
+  const isInstructor = !!user && (user.role === "instructor" || user.role === "admin");
+
+  const { data: pendingForge = [] } = useForgePending(params.id, isInstructor);
+
   if (courseError) {
     notFound();
   }
@@ -42,8 +48,8 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
 
   const currentUser: CurrentUser = {
     name: user.username,
-    level: 1, // no XP/leveling backend exists yet — honest placeholder
-    rank: 0,  // no ranking backend exists yet — honest placeholder
+    level: 1,
+    rank: 0,
     avatar: dicebearUrl(user.username),
   };
 
@@ -55,26 +61,43 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
     id: s.id,
     code: s.code,
     name: s.title,
-    members: 0, // mySectors doesn't return a member count — acceptable in the dropdown list, not misleading since it's not displayed there
+    members: 0,
   }));
 
   return (
     <ArenaContext.Provider value={{ currentUser, currentCourse, allCourses }}>
       <EnergyBackground className="h-dvh w-full flex flex-col overflow-hidden">
-        <header className="shrink-0 sticky top-0 z-50">
-          <CourseHeader currentCourse={currentCourse} courses={allCourses} currentUser={currentUser} />
-        </header>
 
-        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
-          <div className="max-w-md mx-auto w-full px-4 pb-6">{children}</div>
-        </main>
+        {/* ── DESKTOP LECTURER DASHBOARD (lg+ and instructor/admin only) ── */}
+        {isInstructor && (
+          <div className="hidden lg:flex h-full w-full">
+            <LecturerDashboard
+              currentCourse={currentCourse}
+              allCourses={allCourses}
+              currentUser={currentUser}
+              pendingForgeCount={Array.isArray(pendingForge) ? pendingForge.length : 0}
+            />
+          </div>
+        )}
 
-        <nav
-          className="shrink-0 relative z-50 px-4 pb-4 pt-3"
-          style={{ background: "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.92) 55%, transparent 100%)" }}
-        >
-          <CourseBottomNav />
-        </nav>
+        {/* ── MOBILE LAYOUT (always visible on <lg; also for students on all sizes) ── */}
+        <div className={isInstructor ? "lg:hidden flex flex-col flex-1 min-h-0 overflow-hidden" : "flex flex-col flex-1 min-h-0 overflow-hidden"}>
+          <header className="shrink-0 sticky top-0 z-50">
+            <CourseHeader currentCourse={currentCourse} courses={allCourses} currentUser={currentUser} />
+          </header>
+
+          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+            <div className="max-w-md mx-auto w-full px-4 pb-6">{children}</div>
+          </main>
+
+          <nav
+            className="shrink-0 relative z-50 px-4 pb-4 pt-3"
+            style={{ background: "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.92) 55%, transparent 100%)" }}
+          >
+            <CourseBottomNav />
+          </nav>
+        </div>
+
       </EnergyBackground>
     </ArenaContext.Provider>
   );

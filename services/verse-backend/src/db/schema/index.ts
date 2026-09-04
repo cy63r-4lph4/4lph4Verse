@@ -1,11 +1,12 @@
-
 export * from "./core/users";
 export * from "./core/user_credentials";
+export * from "./core/verse_profiles";
+export * from "./core/profile_contacts";
 
 export * from "./arena_users";
 export * from "./arena_universities";
 export * from "./arena_courses";
-export * from "./arena_user_courses"
+export * from "./arena_user_courses";
 export * from "./relations";
 
 export * from "./arena_questions";
