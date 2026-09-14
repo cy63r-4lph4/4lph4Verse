@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Settings, Trophy, Swords, Target, Zap,
+  Settings, Trophy, Swords, Target, Zap, ArrowLeft,
   ChevronRight, LogOut, ShieldCheck, TrendingUp,
   Lock, Star,
 } from "lucide-react";
@@ -268,6 +268,12 @@ export default function Profile() {
 
       {/* ── HEADER ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 h-14 px-4 flex items-center justify-between bg-black/70 backdrop-blur-xl border-b border-white/5">
+        <button onClick={() => router.back()} className="flex items-center gap-2 group outline-none">
+          <div className="w-8 h-8 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center transition-all group-hover:bg-white/[0.08] group-active:scale-90">
+            <ArrowLeft size={15} className="text-white/60" />
+          </div>
+          <span className="font-display text-[10px] font-bold text-white/35 uppercase tracking-[.2em]">Back</span>
+        </button>
         <div className="flex items-center gap-2">
           <ShieldCheck size={13} className="text-primary" style={{ filter: "drop-shadow(0 0 6px hsl(var(--primary) / .6))" }} />
           <span className="font-display text-[11px] font-black text-white/40 uppercase tracking-[.25em]">

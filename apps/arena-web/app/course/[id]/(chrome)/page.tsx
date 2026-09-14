@@ -2,17 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Activity, ShieldAlert, Trophy, Zap } from "lucide-react";
+import { Activity, ShieldAlert, Zap } from "lucide-react";
 import { cn } from "@verse/ui";
 
-import MiniLeaderboard from "@verse/arena-web/components/ui/MiniLeaderboard";
+
 import { CreatePostSheet } from "@verse/arena-web/app/course/[id]/modules/CreatePostSheet";
 import { ChallengeHero } from "@verse/arena-web/app/course/[id]/modules/ChallengeHero";
 import { useArena } from "@verse/arena-web/app/course/[id]/ArenaContext";
 import ActiveFighters from "@verse/arena-web/app/course/[id]/modules/ActiveFighters";
 import FeedCard from "@verse/arena-web/components/ui/FeedCard";
 import { useFeed } from "@verse/arena-web/hooks/useFeed";
-import useFetch from "@verse/arena-web/hooks/useFetch";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import { getShowdownSocket } from "@verse/arena-web/lib/showdown/socket";
 import useAuth from "@verse/arena-web/hooks/useAuth";
@@ -72,8 +71,7 @@ export default function CourseHome() {
 
     const { data: feedItems = [], isLoading: feedLoading, createPost, react, comment, deletePost, editPost } = useFeed(courseId);
 
-    const { data: rawLeaderboard } = useFetch<any[]>(`/v1/arena/courses/${courseId}/leaderboard`, `leaderboard-${courseId}`);
-    const leaderboard = Array.isArray(rawLeaderboard) ? rawLeaderboard.slice(0, 3) : [];
+
 
     useEffect(() => {
         const t = setTimeout(() => setIsBooting(false), 600);
@@ -214,13 +212,7 @@ export default function CourseHome() {
                 </div>
             </section>
 
-            {/* ── 4. LEADERBOARD ──────────────────────── */}
-            <section className={reveal()} style={revealStyle(500)}>
-                <div className="space-y-3">
-                    <SectionHeading icon={<Trophy size={14} className="text-yellow-400" />} label="Sector_Rankings" />
-                    <MiniLeaderboard players={leaderboard} />
-                </div>
-            </section>
+
 
             {/* ── 5. CREATE POST FAB ─────────────────────────────────────────────── */}
             <CreatePostSheet currentUser={currentUser} onCreatePost={handleCreatePost} />

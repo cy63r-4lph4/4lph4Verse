@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useArenaToken } from "@verse/arena-web/hooks/useArenaToken";
 import useAuth from "@verse/arena-web/hooks/useAuth";
-import { ArrowLeft, Clock, Target, Trophy } from "lucide-react";
+import { useArena } from "@verse/arena-web/app/course/[id]/ArenaContext";
+import { ArrowLeft, Clock, Target, Trophy, Swords } from "lucide-react";
 import { cn } from "@verse/ui";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
 
@@ -20,9 +21,41 @@ interface Player {
   isCurrentUser?: boolean;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+// ─── Weekly countdown hook ────────────────────────────────────────────────────
 
-// ─── Mock data removed, fetching from backend instead ───
+function useWeeklyCountdown() {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    function calc() {
+      const now = new Date();
+      // Next Sunday midnight UTC
+      const daysUntilSunday = (7 - now.getUTCDay()) % 7 || 7;
+      const nextSunday = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + daysUntilSunday,
+        0, 0, 0, 0
+      ));
+      const diff = nextSunday.getTime() - now.getTime();
+      if (diff <= 0) { setTimeLeft("Resetting…"); return; }
+
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (d > 0) setTimeLeft(`${d}d ${h}h`);
+      else if (h > 0) setTimeLeft(`${h}h ${m}m`);
+      else setTimeLeft(`${m}m`);
+    }
+
+    calc();
+    const interval = setInterval(calc, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return timeLeft;
+}
 
 // ─── Trend indicator ──────────────────────────────────────────────────────────
 
@@ -37,7 +70,6 @@ function TrendBadge({ trend, change }: { trend: Player["trend"]; change: number 
 function PodiumSlot({ player, position }: { player: Player; position: "first" | "second" | "third" }) {
   const cfg = {
     first: {
-      avatarSize: "w-[72px] h-[72px]",
       avatarBorder: "border-amber-500/50",
       ring: "border-amber-500/55",
       ringGlow: "0 0 22px rgba(245,158,11,.4), inset 0 0 12px rgba(245,158,11,.12)",
@@ -49,7 +81,6 @@ function PodiumSlot({ player, position }: { player: Player; position: "first" | 
       slot: "-translate-y-5",
     },
     second: {
-      avatarSize: "w-[56px] h-[56px]",
       avatarBorder: "border-white/10",
       ring: "border-slate-400/35",
       ringGlow: "0 0 10px rgba(148,163,184,.15)",
@@ -61,7 +92,6 @@ function PodiumSlot({ player, position }: { player: Player; position: "first" | 
       slot: "",
     },
     third: {
-      avatarSize: "w-[56px] h-[56px]",
       avatarBorder: "border-white/10",
       ring: "border-orange-700/35",
       ringGlow: "0 0 10px rgba(180,120,60,.15)",
@@ -150,17 +180,14 @@ function PlayerRow({ player, maxScore, index }: { player: Player; maxScore: numb
       )}
       style={player.isCurrentUser ? { boxShadow: "0 0 24px rgba(99,102,241,.1), inset 0 0 20px rgba(99,102,241,.03)" } : undefined}
     >
-      {/* Current user left accent bar */}
       {player.isCurrentUser && (
         <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl bg-gradient-to-b from-indigo-400 to-indigo-600" />
       )}
 
-      {/* Rank */}
       <span className={cn("font-display text-[13px] font-black w-7 text-center shrink-0 leading-none", player.isCurrentUser ? "text-indigo-400" : "text-white/20")}>
         {String(player.rank).padStart(2, "0")}
       </span>
 
-      {/* Avatar */}
       <ArenaAvatar
         src={player.avatar}
         size="sm"
@@ -172,7 +199,6 @@ function PlayerRow({ player, maxScore, index }: { player: Player; maxScore: numb
         )}
       />
 
-      {/* Name + score bar */}
       <div className="flex-1 min-w-0">
         <p className={cn("font-display text-[12px] font-black uppercase tracking-wide truncate leading-tight", player.isCurrentUser ? "text-indigo-300" : "text-white/85")}>
           {player.name}
@@ -190,7 +216,6 @@ function PlayerRow({ player, maxScore, index }: { player: Player; maxScore: numb
         </div>
       </div>
 
-      {/* Trend + YOU tag */}
       <div className="flex flex-col items-end gap-1 shrink-0">
         <TrendBadge trend={player.trend} change={player.change} />
         {player.isCurrentUser && (
@@ -203,6 +228,56 @@ function PlayerRow({ player, maxScore, index }: { player: Player; maxScore: numb
   );
 }
 
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+function EmptyLeaderboard({ courseId }: { courseId: string }) {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+      {/* Icon cluster */}
+      <div className="relative mb-6">
+        <div
+          className="w-20 h-20 rounded-2xl border border-amber-500/15 bg-amber-500/[0.04] flex items-center justify-center"
+          style={{ boxShadow: "0 0 32px rgba(245,158,11,.06)" }}
+        >
+          <Trophy size={32} className="text-amber-400/30" />
+        </div>
+        <div
+          className="absolute -bottom-2 -right-2 w-9 h-9 rounded-xl border border-primary/20 bg-primary/10 flex items-center justify-center"
+          style={{ boxShadow: "0 0 12px hsl(var(--primary) / .15)" }}
+        >
+          <Swords size={14} className="text-primary/60" />
+        </div>
+      </div>
+
+      {/* Title */}
+      <p className="font-display text-[16px] font-black text-white/50 uppercase tracking-[.15em] leading-tight">
+        No Rankings Yet
+      </p>
+      <p className="font-display text-[10px] font-bold text-white/20 uppercase tracking-[.2em] mt-2 max-w-[260px] leading-relaxed">
+        The leaderboard is empty this week. Be the first to claim the top spot!
+      </p>
+
+      {/* CTA */}
+      <button
+        onClick={() => router.push(`/course/${courseId}/duels/find-fighter`)}
+        className="mt-6 flex items-center gap-2.5 px-5 py-3 rounded-2xl border border-primary/25 bg-primary/[0.08] hover:bg-primary/[0.14] transition-all active:scale-[.97] group"
+        style={{ boxShadow: "0 0 20px hsl(var(--primary) / .08)" }}
+      >
+        <Swords size={14} className="text-primary group-hover:rotate-12 transition-transform" />
+        <span className="font-display text-[11px] font-black text-primary uppercase tracking-[.2em]">
+          Find a Fighter
+        </span>
+      </button>
+
+      <p className="font-display text-[8px] font-bold text-white/12 uppercase tracking-[.25em] mt-3">
+        Win a duel to enter this week&apos;s leaderboard
+      </p>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Leaderboard() {
@@ -210,9 +285,11 @@ export default function Leaderboard() {
   const params = useParams();
   const courseId = params.id as string;
   const { user } = useAuth();
+  const { currentCourse } = useArena();
   const token = useArenaToken();
   const [leaderboard, setLeaderboard] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
+  const countdown = useWeeklyCountdown();
 
   useEffect(() => {
     if (!token || !courseId) return;
@@ -266,13 +343,13 @@ export default function Leaderboard() {
           </button>
 
           <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
-            <p className="font-display text-[10px] font-black text-white/25 uppercase tracking-[.25em]">CS_101</p>
+            <p className="font-display text-[10px] font-black text-white/25 uppercase tracking-[.25em]">{currentCourse.code}</p>
             <p className="font-display text-[13px] font-black text-white uppercase tracking-wide leading-tight">Sector Rankings</p>
           </div>
 
           <div className="flex items-center gap-1.5">
             <Clock size={11} className="text-amber-400 animate-pulse" />
-            <span className="font-display text-[10px] font-bold text-amber-400/65 uppercase tracking-wider">3d 14h</span>
+            <span className="font-display text-[10px] font-bold text-amber-400/65 uppercase tracking-wider">{countdown}</span>
           </div>
         </header>
 
@@ -283,75 +360,77 @@ export default function Leaderboard() {
                 <div className="w-8 h-8 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
                 <p className="font-display text-[10px] font-black text-white/30 uppercase tracking-[.3em]">Loading Rankings...</p>
               </div>
+            ) : leaderboard.length === 0 ? (
+              <EmptyLeaderboard courseId={courseId} />
             ) : (
               <>
                 {/* ── PODIUM ────────────────────────────────────────────────── */}
                 <section className="relative pt-8 pb-0">
-              <div
-                className="absolute top-4 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle, rgba(245,158,11,.08) 0%, transparent 70%)" }}
-              />
-              <div className="relative grid grid-cols-3 items-end gap-2">
-                <PodiumSlot player={topThree[1]} position="second" />
-                <PodiumSlot player={topThree[0]} position="first"  />
-                <PodiumSlot player={topThree[2]} position="third"  />
-              </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-            </section>
-
-            {/* ── TARGET LOCK ───────────────────────────────────────────── */}
-            {currentUser && nextRank && (
-              <section className="mt-5">
-                <div
-                  className="relative overflow-hidden rounded-2xl border border-indigo-500/25 bg-indigo-500/[0.06] p-4"
-                  style={{ boxShadow: "0 0 24px rgba(99,102,241,.07)" }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.06] to-transparent pointer-events-none" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Target size={12} className="text-indigo-400" />
-                        <span className="font-display text-[10px] font-black text-indigo-400 uppercase tracking-[.2em]">
-                          Next Target · Rank #{currentUser.rank - 1}
-                        </span>
-                      </div>
-                      <span className="font-display text-[10px] font-bold text-white/25 uppercase tracking-wider">
-                        {pointsGap} pts away
-                      </span>
-                    </div>
-                    <div className="h-[5px] rounded-full bg-white/[0.06] border border-white/[0.04] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
-                        style={{ width: `${progressPct}%`, boxShadow: "0 0 8px rgba(99,102,241,.45)" }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-2">
-                      <span className="font-display text-[9px] font-bold text-indigo-400 uppercase tracking-wider">
-                        You · {currentUser.score.toLocaleString()}
-                      </span>
-                      <span className="font-display text-[9px] font-bold text-white/22 uppercase tracking-wider">
-                        {nextRank.name} · {nextRank.score.toLocaleString()}
-                      </span>
-                    </div>
+                  <div
+                    className="absolute top-4 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full pointer-events-none"
+                    style={{ background: "radial-gradient(circle, rgba(245,158,11,.08) 0%, transparent 70%)" }}
+                  />
+                  <div className="relative grid grid-cols-3 items-end gap-2">
+                    <PodiumSlot player={topThree[1]} position="second" />
+                    <PodiumSlot player={topThree[0]} position="first"  />
+                    <PodiumSlot player={topThree[2]} position="third"  />
                   </div>
-                </div>
-              </section>
-            )}
+                  <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+                </section>
 
-            {/* ── RANKINGS LIST ─────────────────────────────────────────── */}
-            <section className="mt-6 space-y-2">
-              <div className="flex items-center gap-3 mb-3 px-1">
-                <span className="font-display text-[10px] font-bold text-white/22 uppercase tracking-[.3em] whitespace-nowrap">
-                  Full Rankings
-                </span>
-                <div className="h-px flex-1 bg-linear-to-r from-white/[0.07] to-transparent" />
-              </div>
-              {restOfList.map((player, idx) => (
-                <PlayerRow key={player.rank} player={player} maxScore={maxScore} index={idx} />
-              ))}
-              </section>
-            
-            </>
+                {/* ── TARGET LOCK ───────────────────────────────────────────── */}
+                {currentUser && nextRank && (
+                  <section className="mt-5">
+                    <div
+                      className="relative overflow-hidden rounded-2xl border border-indigo-500/25 bg-indigo-500/[0.06] p-4"
+                      style={{ boxShadow: "0 0 24px rgba(99,102,241,.07)" }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.06] to-transparent pointer-events-none" />
+                      <div className="relative">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Target size={12} className="text-indigo-400" />
+                            <span className="font-display text-[10px] font-black text-indigo-400 uppercase tracking-[.2em]">
+                              Next Target · Rank #{currentUser.rank - 1}
+                            </span>
+                          </div>
+                          <span className="font-display text-[10px] font-bold text-white/25 uppercase tracking-wider">
+                            {pointsGap} pts away
+                          </span>
+                        </div>
+                        <div className="h-[5px] rounded-full bg-white/[0.06] border border-white/[0.04] overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
+                            style={{ width: `${progressPct}%`, boxShadow: "0 0 8px rgba(99,102,241,.45)" }}
+                          />
+                        </div>
+                        <div className="flex justify-between mt-2">
+                          <span className="font-display text-[9px] font-bold text-indigo-400 uppercase tracking-wider">
+                            You · {currentUser.score.toLocaleString()}
+                          </span>
+                          <span className="font-display text-[9px] font-bold text-white/22 uppercase tracking-wider">
+                            {nextRank.name} · {nextRank.score.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {/* ── RANKINGS LIST ─────────────────────────────────────────── */}
+                <section className="mt-6 space-y-2">
+                  <div className="flex items-center gap-3 mb-3 px-1">
+                    <span className="font-display text-[10px] font-bold text-white/22 uppercase tracking-[.3em] whitespace-nowrap">
+                      Full Rankings
+                    </span>
+                    <div className="h-px flex-1 bg-linear-to-r from-white/[0.07] to-transparent" />
+                  </div>
+                  {restOfList.map((player, idx) => (
+                    <PlayerRow key={player.rank} player={player} maxScore={maxScore} index={idx} />
+                  ))}
+                </section>
+
+              </>
             )}
 
           </div>

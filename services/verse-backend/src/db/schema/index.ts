@@ -2,6 +2,7 @@ export * from './core/users';
 export * from './core/user_credentials';
 export * from './core/verse_profiles';
 export * from './core/profile_contacts';
+export * from './core/profile_wallets';
 
 export * from './arena_users';
 export * from './arena_universities';
@@ -21,3 +22,9 @@ export * from './feed_posts';
 export * from './feed_comments';
 export * from './feed_reactions';
 export * from './forge_submissions';
+
+export * from './wallet/supported_chains';
+export * from './wallet/wallets';
+export * from './wallet/wallet_accounts';
+export * from './wallet/wallet_controllers';
+export * from './wallet/connected_wallets';

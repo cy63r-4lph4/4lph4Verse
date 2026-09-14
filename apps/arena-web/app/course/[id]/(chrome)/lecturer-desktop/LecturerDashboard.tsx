@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Library, Hammer, Trophy, BarChart3,
-  Globe, Bell, LogOut, ChevronDown, CheckCircle2, Zap, Shield,
+  Globe, Bell, LogOut, ChevronDown, CheckCircle2, Zap, Shield, MessageSquare,
 } from "lucide-react";
 import { cn } from "@verse/ui";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
@@ -18,9 +18,10 @@ import { ForgeReviewPanel } from "./panels/ForgeReviewPanel";
 import { TournamentPanel } from "./panels/TournamentPanel";
 import { LeaderboardPanel } from "./panels/LeaderboardPanel";
 import { DatapadsPanel } from "./panels/DatapadsPanel";
+import { ConsolePanel } from "./panels/ConsolePanel";
 import { BookOpen } from "lucide-react";
 
-export type PanelId = "overview" | "roster" | "bank" | "forge" | "tournaments" | "leaderboard" | "datapads";
+export type PanelId = "overview" | "roster" | "bank" | "forge" | "tournaments" | "leaderboard" | "datapads" | "console";
 
 const NAV_ITEMS: {
   id: PanelId;
@@ -37,6 +38,7 @@ const NAV_ITEMS: {
   { id: "tournaments",  label: "Tournaments",    icon: Trophy,          accent: "text-amber-400",  accentBg: "bg-amber-500/10 border-amber-500/25" },
   { id: "leaderboard",  label: "Leaderboard",    icon: BarChart3,       accent: "text-emerald-400",accentBg: "bg-emerald-500/10 border-emerald-500/25" },
   { id: "datapads",     label: "Datapads",       icon: BookOpen,        accent: "text-cyan-400",   accentBg: "bg-cyan-500/10 border-cyan-500/25" },
+  { id: "console",      label: "Console",        icon: MessageSquare,   accent: "text-rose-400",   accentBg: "bg-rose-500/10 border-rose-500/25" },
 ];
 
 interface LecturerDashboardProps {
@@ -269,6 +271,7 @@ export function LecturerDashboard({
           {activePanel === "tournaments" && <TournamentPanel    courseId={currentCourse.id} />}
           {activePanel === "leaderboard" && <LeaderboardPanel   courseId={currentCourse.id} />}
           {activePanel === "datapads"    && <DatapadsPanel      courseId={currentCourse.id} />}
+          {activePanel === "console"     && <ConsolePanel       courseId={currentCourse.id} currentUser={currentUser} />}
         </main>
       </div>
     </div>

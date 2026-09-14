@@ -70,7 +70,7 @@ export class PresenceService implements OnModuleDestroy {
         return {
           arenaUserId,
           username,
-          status: onlineRaw ? 'online' : 'recent',
+          status: (onlineRaw ? 'online' : 'recent') as 'online' | 'recent',
         };
       }),
     );
