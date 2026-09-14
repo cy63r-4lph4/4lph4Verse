@@ -7,9 +7,9 @@ import { ArenaIdentityService } from '../arena/arena-identity.service';
 import { QuestionsModule } from 'src/modules/questions/questions.module';
 
 @Module({
-    imports: [GatewayModule, QuestionsModule],
-    controllers: [ShowdownController],
-    providers: [ShowdownService, ShowdownGateway, ArenaIdentityService],
-    exports: [ShowdownService, ArenaIdentityService],
+  imports: [GatewayModule, QuestionsModule],
+  controllers: [ShowdownController],
+  providers: [ShowdownService, ShowdownGateway, ArenaIdentityService],
+  exports: [ShowdownService, ArenaIdentityService],
 })
-export class ShowdownModule { }
+export class ShowdownModule {}

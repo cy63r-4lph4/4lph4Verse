@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  text,
-  integer,
-  timestamp,
-  unique,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, unique } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { verseProfiles } from '../core/verse_profiles';
 
@@ -61,6 +55,8 @@ export const wallets = pgTable(
     // One Verse Wallet per profile
     uniqueProfileWallet: unique('uq_wallets_profile').on(table.verseProfileId),
     // walletIdentityId must be globally unique
-    uniqueIdentityId: unique('uq_wallets_identity_id').on(table.walletIdentityId),
+    uniqueIdentityId: unique('uq_wallets_identity_id').on(
+      table.walletIdentityId,
+    ),
   }),
 );

@@ -1,11 +1,27 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, UseGuards, Inject, Request, Query, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Delete,
+  UseGuards,
+  Inject,
+  Request,
+  Query,
+  StreamableFile,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import { ArenaService } from './arena.service';
 import { JwtAuthGuard } from '../../shared/gurds/jwt-auth.guard';
 import { RolesGuard } from '../../shared/gurds/roles.gurd';
 import { ArenaIdentityService } from 'src/modules/arena/arena-identity.service';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
-
+import { PdfService } from './pdf.service';
 
 @Controller('v1/arena')
 @UseGuards(JwtAuthGuard)
@@ -13,8 +29,9 @@ export class ArenaController {
   constructor(
     private readonly arenaService: ArenaService,
     private readonly identity: ArenaIdentityService,
+    private readonly pdfService: PdfService,
     @Inject('DB') private readonly db: NodePgDatabase<typeof schema>,
-  ) { }
+  ) {}
   @Get('courses/:id')
   async getCourseDetail(@Param('id') courseId: string) {
     return this.arenaService.getCourseDetail(courseId);
@@ -27,10 +44,14 @@ export class ArenaController {
       where: (c, { eq }) => eq(c.id, courseId),
     });
     if (!course) {
-      throw new (require('@nestjs/common').NotFoundException)('Course not found.');
+      throw new (require('@nestjs/common').NotFoundException)(
+        'Course not found.',
+      );
     }
     if (arenaUser.role !== 'admin' && course.schoolId !== arenaUser.schoolId) {
-      throw new ForbiddenException('Cannot view members for a course outside your school.');
+      throw new ForbiddenException(
+        'Cannot view members for a course outside your school.',
+      );
     }
 
     return this.arenaService.getCourseMembers(courseId);
@@ -42,17 +63,74 @@ export class ArenaController {
       where: (c, { eq }) => eq(c.id, courseId),
     });
     if (!course) {
-      throw new (require('@nestjs/common').NotFoundException)('Course not found.');
+      throw new (require('@nestjs/common').NotFoundException)(
+        'Course not found.',
+      );
     }
     return this.arenaService.getCourseLeaderboard(courseId);
   }
 
+  // ── Resources ────────────────────────────────────────────────────────
+
+  @Get('courses/:id/resources')
+  async getCourseResources(@Param('id') courseId: string) {
+    return this.arenaService.getCourseResources(courseId);
+  }
+
+  @Post('courses/:id/resources')
+  async createResource(
+    @Param('id') courseId: string,
+    @Body() body: { title: string; content: string; isPublished?: boolean },
+  ) {
+    return this.arenaService.createResource(courseId, body);
+  }
+
+  @Patch('courses/:id/resources/:resId')
+  async updateResource(
+    @Param('resId') resId: string,
+    @Body() body: { title?: string; content?: string; isPublished?: boolean },
+  ) {
+    return this.arenaService.updateResource(resId, body);
+  }
+
+  @Delete('courses/:id/resources/:resId')
+  async deleteResource(@Param('resId') resId: string) {
+    return this.arenaService.deleteResource(resId);
+  }
+
+  @Get('courses/:id/resources/:resId/download')
+  async downloadResourcePdf(
+    @Param('resId') resId: string,
+    @Request() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const resource = await this.arenaService.getResource(resId);
+    const arenaUser = await this.identity
+      .requireInstructorOrAdmin(req.user.id)
+      .catch(() => null);
+
+    // In a real app we'd get the codename from arenaUser, but here we can just use req.user.username
+    const codename = req.user.username;
+
+    const buffer = await this.pdfService.generatePdf(
+      resource.content,
+      resource.title,
+      codename,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${resource.title.replace(/\s+/g, '_')}_Codex.pdf"`,
+    });
+
+    return new StreamableFile(buffer);
+  }
 }
 
 @Controller('v1/arena/su')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AdminController {
-  constructor(private readonly arenaService: ArenaService) { }
+  constructor(private readonly arenaService: ArenaService) {}
 
   @Post('institution')
   async createInstitution(@Body() body: { name: string; slug: string }) {
@@ -70,7 +148,9 @@ export class AdminController {
   }
 
   @Post('course')
-  async createCourse(@Body() body: { title: string; code: string; schoolId: string }) {
+  async createCourse(
+    @Body() body: { title: string; code: string; schoolId: string },
+  ) {
     return this.arenaService.createCourse(body);
   }
 
@@ -85,7 +165,15 @@ export class AdminController {
   }
 
   @Post('instructor')
-  async createInstructor(@Body() body: { username: string; password: string; email?: string; schoolId: string }) {
+  async createInstructor(
+    @Body()
+    body: {
+      username: string;
+      password: string;
+      email?: string;
+      schoolId: string;
+    },
+  ) {
     return this.arenaService.createInstructor(body);
   }
 

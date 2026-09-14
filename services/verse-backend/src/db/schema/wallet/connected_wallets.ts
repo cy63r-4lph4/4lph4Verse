@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  text,
-  boolean,
-  timestamp,
-  unique,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, unique } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { verseProfiles } from '../core/verse_profiles';
 

@@ -153,6 +153,95 @@ function AchievementCard({ achievement, index }: { achievement: { icon: string; 
   );
 }
 
+import { api } from "@verse/arena-web/lib/api";
+
+function ChangePasswordForm() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setErrorMsg("New passwords do not match.");
+      setStatus("error");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setErrorMsg("Password must be at least 6 characters.");
+      setStatus("error");
+      return;
+    }
+
+    try {
+      setStatus("loading");
+      await api.post("/v1/gateway/change-password", { currentPassword, newPassword });
+      setStatus("success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || "Failed to change password.");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="p-4 rounded-2xl border border-white/8 bg-white/2.5 mt-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Lock size={14} className="text-primary" />
+        <span className="font-display text-[10px] font-bold text-white uppercase tracking-[.2em]">
+          Security Settings
+        </span>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          type="password"
+          placeholder="CURRENT PASSWORD"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-white/20 focus:border-primary/50 outline-none"
+          required
+        />
+        <input
+          type="password"
+          placeholder="NEW PASSWORD"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-white/20 focus:border-primary/50 outline-none"
+          required
+        />
+        <input
+          type="password"
+          placeholder="CONFIRM NEW PASSWORD"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-white/20 focus:border-primary/50 outline-none"
+          required
+        />
+
+        {status === "error" && (
+          <p className="text-red-400 text-[9px] font-bold uppercase tracking-wider">{errorMsg}</p>
+        )}
+        {status === "success" && (
+          <p className="text-green-400 text-[9px] font-bold uppercase tracking-wider">Password updated successfully.</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="w-full py-2.5 rounded-xl border border-primary/20 bg-primary/10 text-primary font-display text-[10px] font-black uppercase tracking-[.2em] flex items-center justify-center gap-2 hover:bg-primary/20 transition-all disabled:opacity-50"
+        >
+          {status === "loading" ? "Updating..." : "Change Password"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Profile() {
@@ -327,6 +416,10 @@ export default function Profile() {
                 </button>
               ))}
             </div>
+          </section>
+          {/* ── SECURITY SETTINGS ───────────────────────────────────────────── */}
+          <section className="pt-2">
+            <ChangePasswordForm />
           </section>
 
           {/* ── SIGN OUT ────────────────────────────────────────────────────── */}

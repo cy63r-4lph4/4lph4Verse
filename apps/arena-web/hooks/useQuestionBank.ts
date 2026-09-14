@@ -10,6 +10,8 @@ export interface Question {
   correctIndex: number;
   difficulty: "easy" | "medium" | "hard";
   category?: string | null;
+  explanation?: string | null;
+  resourceId?: string | null;
 }
 
 export function useQuestionBank(courseId: string, enabled: boolean = true) {
@@ -25,7 +27,7 @@ export function useCreateQuestion(courseId: string) {
   return useMutation({
     mutationFn: async (payload: {
       prompt: string; options: string[]; correctIndex: number;
-      difficulty?: string; category?: string;
+      difficulty?: string; category?: string; explanation?: string; resourceId?: string;
     }) => (await api.post("/v1/questions", { courseId, ...payload })).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["question-bank", courseId] }),
   });
@@ -42,7 +44,7 @@ export function useDeleteQuestion(courseId: string) {
 export function useUpdateQuestion(courseId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...payload }: { id: string; prompt: string; options: string[]; correctIndex: number; difficulty: string; category: string }) =>
+    mutationFn: async ({ id, ...payload }: { id: string; prompt: string; options: string[]; correctIndex: number; difficulty: string; category: string; explanation?: string; resourceId?: string; }) =>
       (await api.patch(`/v1/questions/${id}`, payload)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["question-bank", courseId] }),
   });
@@ -51,10 +53,11 @@ export function useUpdateQuestion(courseId: string) {
 export function useImportQuestionsCsv(courseId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, resourceId }: { file: File; resourceId?: string }) => {
       const form = new FormData();
       form.append("courseId", courseId);
       form.append("file", file);
+      if (resourceId) form.append("resourceId", resourceId);
       const { data } = await api.post("/v1/questions/csv", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });

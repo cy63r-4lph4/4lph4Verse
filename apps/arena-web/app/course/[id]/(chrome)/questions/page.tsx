@@ -159,7 +159,7 @@ export default function QuestionBankPage() {
           <CsvImportDropzone
             isUploading={importCsv.isPending}
             result={importCsv.data ?? null}
-            onFileSelected={(file) => importCsv.mutate(file)}
+            onFileSelected={(file) => importCsv.mutate({ file })}
           />
         )}
       </div>

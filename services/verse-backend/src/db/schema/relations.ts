@@ -16,74 +16,88 @@ import { feedComments } from 'src/db/schema/feed_comments';
 import { forgeSubmissions } from 'src/db/schema/forge_submissions';
 import { verseProfiles } from './core/verse_profiles';
 import { profileContacts } from './core/profile_contacts';
+import { arenaResources } from './arena_resources';
 
 // --- 1. CORE USER RELATIONS ---
 export const usersRelations = relations(users, ({ one }) => ({
-    arenaUser: one(arenaUser, {
-        fields: [users.id],
-        references: [arenaUser.userId],
-    }),
-    verseProfile: one(verseProfiles, {
-        fields: [users.id],
-        references: [verseProfiles.userId],
-    }),
+  arenaUser: one(arenaUser, {
+    fields: [users.id],
+    references: [arenaUser.userId],
+  }),
+  verseProfile: one(verseProfiles, {
+    fields: [users.id],
+    references: [verseProfiles.userId],
+  }),
 }));
 
 // --- 1.1 VERSE PROFILE RELATIONS ---
-export const verseProfilesRelations = relations(verseProfiles, ({ one, many }) => ({
+export const verseProfilesRelations = relations(
+  verseProfiles,
+  ({ one, many }) => ({
     user: one(users, {
-        fields: [verseProfiles.userId],
-        references: [users.id],
+      fields: [verseProfiles.userId],
+      references: [users.id],
     }),
     contacts: many(profileContacts),
-}));
+  }),
+);
 
-export const profileContactsRelations = relations(profileContacts, ({ one }) => ({
+export const profileContactsRelations = relations(
+  profileContacts,
+  ({ one }) => ({
     profile: one(verseProfiles, {
-        fields: [profileContacts.profileId],
-        references: [verseProfiles.id],
+      fields: [profileContacts.profileId],
+      references: [verseProfiles.id],
     }),
-}));
+  }),
+);
 
 // --- 2. ARENA USER (FIGHTER) RELATIONS ---
 export const arenaUserRelations = relations(arenaUser, ({ one, many }) => ({
-    user: one(users, {
-        fields: [arenaUser.userId],
-        references: [users.id],
-    }),
-    school: one(arenaSchools, {
-        fields: [arenaUser.schoolId],
-        references: [arenaSchools.id],
-    }),
-    userCourses: many(arenaUserCourses),
+  user: one(users, {
+    fields: [arenaUser.userId],
+    references: [users.id],
+  }),
+  school: one(arenaSchools, {
+    fields: [arenaUser.schoolId],
+    references: [arenaSchools.id],
+  }),
+  userCourses: many(arenaUserCourses),
 }));
 
 // --- 3. ARENA SCHOOL (HUB) RELATIONS ---
 export const arenaSchoolRelations = relations(arenaSchools, ({ many }) => ({
-    students: many(arenaUser),
-    sectors: many(arenaCourses),
+  students: many(arenaUser),
+  sectors: many(arenaCourses),
 }));
 
 // --- 4. ARENA COURSE (SECTOR) RELATIONS ---
-export const arenaCoursesRelations = relations(arenaCourses, ({ one, many }) => ({
+export const arenaCoursesRelations = relations(
+  arenaCourses,
+  ({ one, many }) => ({
     school: one(arenaSchools, {
-        fields: [arenaCourses.schoolId],
-        references: [arenaSchools.id],
+      fields: [arenaCourses.schoolId],
+      references: [arenaSchools.id],
     }),
     courseUsers: many(arenaUserCourses),
-}));
+    resources: many(arenaResources),
+  }),
+);
 
 // --- 5. JUNCTION TABLE RELATIONS ---
-export const arenaUserCoursesRelations = relations(arenaUserCourses, ({ one }) => ({
+export const arenaUserCoursesRelations = relations(
+  arenaUserCourses,
+  ({ one }) => ({
     user: one(arenaUser, {
-        fields: [arenaUserCourses.userId],
-        references: [arenaUser.id],
+      fields: [arenaUserCourses.userId],
+      references: [arenaUser.id],
     }),
     course: one(arenaCourses, {
-        fields: [arenaUserCourses.courseId],
-        references: [arenaCourses.id],
+      fields: [arenaUserCourses.courseId],
+      references: [arenaCourses.id],
     }),
-}));
+  }),
+);
 
 export const showdownsRelations = relations(showdowns, ({ one, many }) => ({
   course: one(arenaCourses, {
@@ -195,23 +209,48 @@ export const feedReactionsRelations = relations(feedReactions, ({ one }) => ({
   }),
 }));
 
-export const forgeSubmissionsRelations = relations(forgeSubmissions, ({ one }) => ({
+export const forgeSubmissionsRelations = relations(
+  forgeSubmissions,
+  ({ one }) => ({
+    course: one(arenaCourses, {
+      fields: [forgeSubmissions.courseId],
+      references: [arenaCourses.id],
+    }),
+    submittedBy: one(arenaUser, {
+      fields: [forgeSubmissions.submittedByArenaUserId],
+      references: [arenaUser.id],
+      relationName: 'forge_submitter',
+    }),
+    reviewedBy: one(arenaUser, {
+      fields: [forgeSubmissions.reviewedByArenaUserId],
+      references: [arenaUser.id],
+      relationName: 'forge_reviewer',
+    }),
+    approvedQuestion: one(arenaQuestions, {
+      fields: [forgeSubmissions.approvedQuestionId],
+      references: [arenaQuestions.id],
+    }),
+  }),
+);
+
+export const arenaResourcesRelations = relations(
+  arenaResources,
+  ({ one, many }) => ({
+    course: one(arenaCourses, {
+      fields: [arenaResources.courseId],
+      references: [arenaCourses.id],
+    }),
+    questions: many(arenaQuestions),
+  }),
+);
+
+export const arenaQuestionsRelations = relations(arenaQuestions, ({ one }) => ({
   course: one(arenaCourses, {
-    fields: [forgeSubmissions.courseId],
+    fields: [arenaQuestions.courseId],
     references: [arenaCourses.id],
   }),
-  submittedBy: one(arenaUser, {
-    fields: [forgeSubmissions.submittedByArenaUserId],
-    references: [arenaUser.id],
-    relationName: "forge_submitter",
-  }),
-  reviewedBy: one(arenaUser, {
-    fields: [forgeSubmissions.reviewedByArenaUserId],
-    references: [arenaUser.id],
-    relationName: "forge_reviewer",
-  }),
-  approvedQuestion: one(arenaQuestions, {
-    fields: [forgeSubmissions.approvedQuestionId],
-    references: [arenaQuestions.id],
+  resource: one(arenaResources, {
+    fields: [arenaQuestions.resourceId],
+    references: [arenaResources.id],
   }),
 }));

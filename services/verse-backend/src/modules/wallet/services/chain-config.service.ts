@@ -89,8 +89,8 @@ export class ChainConfigService {
         rpcUrl: process.env.CELO_RPC ?? '',
         explorerUrl: 'https://celoscan.io',
         nickFactoryVerified: true, // Verified: 69 bytes at 0x4e59b44847b379578588920ca78fbf26c0b4956c
-        rip7212Verified: true,     // Verified: eth_call responsive at 0x100
-        isActive: false,           // Activate after Kernel impl + validator addresses confirmed
+        rip7212Verified: true, // Verified: eth_call responsive at 0x100
+        isActive: false, // Activate after Kernel impl + validator addresses confirmed
         isTestnet: false,
       },
       {
@@ -99,7 +99,7 @@ export class ChainConfigService {
         rpcUrl: process.env.BASE_SEPOLIA_RPC ?? '',
         explorerUrl: 'https://sepolia.basescan.org',
         nickFactoryVerified: false, // ⚠️ Connection timeout — run: cast code 0x4e59b...956c --rpc-url <base-sepolia>
-        rip7212Verified: true,      // Verified: eth_call responsive at 0x100
+        rip7212Verified: true, // Verified: eth_call responsive at 0x100
         isActive: false,
         isTestnet: true,
       },
@@ -109,7 +109,7 @@ export class ChainConfigService {
         rpcUrl: process.env.LISK_SEPOLIA_RPC ?? '',
         explorerUrl: 'https://sepolia-blockscout.lisk.com',
         nickFactoryVerified: true, // Verified: 69 bytes
-        rip7212Verified: true,     // Verified: eth_call responsive at 0x100
+        rip7212Verified: true, // Verified: eth_call responsive at 0x100
         isActive: false,
         isTestnet: true,
       },
@@ -119,17 +119,14 @@ export class ChainConfigService {
         rpcUrl: process.env.CELO_SEPOLIA_RPC ?? '',
         explorerUrl: 'https://alfajores.celoscan.io',
         nickFactoryVerified: false, // ⚠️ DNS failure during verification — needs manual check
-        rip7212Verified: false,     // Assumed same as Celo mainnet — needs verification
+        rip7212Verified: false, // Assumed same as Celo mainnet — needs verification
         isActive: false,
         isTestnet: true,
       },
     ];
 
     for (const chain of chains) {
-      await this.db
-        .insert(supportedChains)
-        .values(chain)
-        .onConflictDoNothing();
+      await this.db.insert(supportedChains).values(chain).onConflictDoNothing();
     }
 
     this.logger.log(`Seeded ${chains.length} chains into supported_chains.`);

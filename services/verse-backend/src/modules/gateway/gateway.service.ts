@@ -1,4 +1,12 @@
-import { BadRequestException, Injectable, Inject, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Inject,
+  ForbiddenException,
+  NotFoundException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { or, eq, sql, inArray, isNotNull, and } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { RegisterDto } from './dto/register';
@@ -13,10 +21,10 @@ import { MailService } from '../mail/mail.service';
 @Injectable()
 export class GatewayService {
   constructor(
-    @Inject("DB") private db: NodePgDatabase<typeof schema>,
+    @Inject('DB') private db: NodePgDatabase<typeof schema>,
     private jwtService: JwtService,
-    private mailService: MailService
-  ) { }
+    private mailService: MailService,
+  ) {}
 
   async registerUser(user: RegisterDto) {
     const cleanUsername = user.username.trim();
@@ -38,7 +46,6 @@ export class GatewayService {
           return eq(users.username, cleanUsername);
         },
       });
-
 
       if (existingUser) {
         throw new BadRequestException(
@@ -80,7 +87,7 @@ export class GatewayService {
         .returning();
       const payload = { sub: newUser.id, username: newUser.username };
       const token = await this.jwtService.signAsync(payload);
-      
+
       return {
         access_token: token,
         user: {
@@ -89,52 +96,59 @@ export class GatewayService {
           email: newUser.email,
         },
         verifyToken,
-        sectors: []
+        sectors: [],
       };
     });
 
     if (result.user.email) {
-      this.mailService.sendWelcomeVerification(result.user.email, result.user.username, result.verifyToken).catch(console.error);
+      this.mailService
+        .sendWelcomeVerification(
+          result.user.email,
+          result.user.username,
+          result.verifyToken,
+        )
+        .catch(console.error);
     }
 
     return {
-        access_token: result.access_token,
-        user: {
-            id: result.user.id,
-            username: result.user.username,
-        },
-        sectors: result.sectors
+      access_token: result.access_token,
+      user: {
+        id: result.user.id,
+        username: result.user.username,
+      },
+      sectors: result.sectors,
     };
   }
 
   async verifyEmail(token: string) {
     if (!token) {
-        throw new BadRequestException('Invalid verification token.');
+      throw new BadRequestException('Invalid verification token.');
     }
 
     const cleanToken = token.trim();
 
     return await this.db.transaction(async (tx) => {
-        const user = await tx.query.users.findFirst({
-            where: (users, { eq }) => eq(users.emailVerifyToken, cleanToken),
-        });
+      const user = await tx.query.users.findFirst({
+        where: (users, { eq }) => eq(users.emailVerifyToken, cleanToken),
+      });
 
-        if (!user) {
-            throw new BadRequestException('Invalid or expired verification token.');
-        }
+      if (!user) {
+        throw new BadRequestException('Invalid or expired verification token.');
+      }
 
-        if (user.emailVerified) {
-            return { message: 'Email already verified.' };
-        }
+      if (user.emailVerified) {
+        return { message: 'Email already verified.' };
+      }
 
-        await tx.update(schema.users)
-            .set({
-                emailVerified: true,
-                emailVerifyToken: null,
-            })
-            .where(eq(schema.users.id, user.id));
+      await tx
+        .update(schema.users)
+        .set({
+          emailVerified: true,
+          emailVerifyToken: null,
+        })
+        .where(eq(schema.users.id, user.id));
 
-        return { message: 'Email verified successfully.' };
+      return { message: 'Email verified successfully.' };
     });
   }
 
@@ -149,28 +163,30 @@ export class GatewayService {
     return !!user;
   }
 
-  async getUniversities(includeSystem:boolean=false): Promise<{ id: string; name: string; slug: string | null }[]> {
+  async getUniversities(
+    includeSystem: boolean = false,
+  ): Promise<{ id: string; name: string; slug: string | null }[]> {
     const universities = await this.db.query.arenaSchools.findMany({
       where: (schools, { ne, and }) => {
-            if (!includeSystem) {
-                return ne(schools.slug, 'arena-core'); 
-            }
-            return undefined;
-        },
-        columns: {
-            id: true,
-            name: true,
-            slug: true
-        },
+        if (!includeSystem) {
+          return ne(schools.slug, 'arena-core');
+        }
+        return undefined;
+      },
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+      },
     });
 
     return universities;
   }
 
   /**
-     * FETCH JOINED SECTORS
-     * Uses the base userId to find the arenaProfile, then returns joined courses.
-     */
+   * FETCH JOINED SECTORS
+   * Uses the base userId to find the arenaProfile, then returns joined courses.
+   */
   async mySectors(userId: string) {
     return await this.db
       .select({
@@ -182,11 +198,11 @@ export class GatewayService {
       .from(schema.arenaUserCourses)
       .innerJoin(
         schema.arenaCourses,
-        eq(schema.arenaUserCourses.courseId, schema.arenaCourses.id)
+        eq(schema.arenaUserCourses.courseId, schema.arenaCourses.id),
       )
       .innerJoin(
         schema.arenaUser,
-        eq(schema.arenaUserCourses.userId, schema.arenaUser.id)
+        eq(schema.arenaUserCourses.userId, schema.arenaUser.id),
       )
       .where(eq(schema.arenaUser.userId, userId));
   }
@@ -216,7 +232,7 @@ export class GatewayService {
         }
         return and(...conditions);
       },
-      columns: { id: true, title: true, code: true, accessKey: true }
+      columns: { id: true, title: true, code: true, accessKey: true },
     });
   }
 
@@ -267,7 +283,9 @@ export class GatewayService {
       });
 
       if (!userProfile) {
-        throw new ForbiddenException('USER_NOT_INITIALIZED: No school affiliation.');
+        throw new ForbiddenException(
+          'USER_NOT_INITIALIZED: No school affiliation.',
+        );
       }
 
       // 3. Institutional Check with Auto-Alignment
@@ -284,7 +302,9 @@ export class GatewayService {
 
           userProfile.schoolId = course.schoolId;
         } else {
-          throw new ForbiddenException('INSTITUTIONAL_MISMATCH: Unauthorized Hub.');
+          throw new ForbiddenException(
+            'INSTITUTIONAL_MISMATCH: Unauthorized Hub.',
+          );
         }
       }
 
@@ -316,23 +336,25 @@ export class GatewayService {
 
   async joinSectorWrapper(userId: string, accessKey: string) {
     const result = await this.joinSector(userId, accessKey);
-    
+
     if (result.userId && result.title && result.code) {
-        try {
-            const user = await this.db.query.users.findFirst({
-                where: (u, { eq }) => eq(u.id, result.userId)
-            });
-            if (user && user.email) {
-                this.mailService.sendCourseJoined(user.email, user.username, result.code).catch(console.error);
-            }
-        } catch (err) {
-            console.error("Failed to send course joined email:", err);
+      try {
+        const user = await this.db.query.users.findFirst({
+          where: (u, { eq }) => eq(u.id, result.userId),
+        });
+        if (user && user.email) {
+          this.mailService
+            .sendCourseJoined(user.email, user.username, result.code)
+            .catch(console.error);
         }
+      } catch (err) {
+        console.error('Failed to send course joined email:', err);
+      }
     }
-    
+
     // Clean up internal fields
     delete (result as any).userId;
-    
+
     return result;
   }
 
@@ -341,11 +363,12 @@ export class GatewayService {
     const cleanIdentity = identity.trim();
 
     const user = await this.db.query.users.findFirst({
-      where: (users, { eq, or }) => or(
-        eq(users.username, cleanIdentity),
-        eq(users.email, cleanIdentity.toLowerCase())
-      ),
-      with:{arenaUser:true}
+      where: (users, { eq, or }) =>
+        or(
+          eq(users.username, cleanIdentity),
+          eq(users.email, cleanIdentity.toLowerCase()),
+        ),
+      with: { arenaUser: true },
     });
 
     if (!user) {
@@ -381,10 +404,9 @@ export class GatewayService {
         username: user.username,
         role: user.arenaUser?.role,
       },
-      sectors: activeSectors
+      sectors: activeSectors,
     };
   }
-
 
   // ── Profile ──────────────────────────────────────────────────────────
 
@@ -394,10 +416,15 @@ export class GatewayService {
       where: (au, { eq }) => eq(au.userId, userId),
       with: { user: true, school: true },
     });
-    if (!arenaProfile) throw new (require('@nestjs/common').NotFoundException)('Profile not found.');
+    if (!arenaProfile)
+      throw new (require('@nestjs/common').NotFoundException)(
+        'Profile not found.',
+      );
 
     const user = arenaProfile.user;
-    const avatarUrl = user.avatar ?? `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(user.username)}`;
+    const avatarUrl =
+      user.avatar ??
+      `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(user.username)}`;
 
     // 2. Joined courses (with score + rank per sector)
     const memberships = await this.db.query.arenaUserCourses.findMany({
@@ -412,7 +439,7 @@ export class GatewayService {
           .select({ count: sql<number>`count(*)` })
           .from(schema.arenaUserCourses)
           .where(
-            sql`${schema.arenaUserCourses.courseId} = ${m.courseId} AND ${schema.arenaUserCourses.score} > ${m.score}`
+            sql`${schema.arenaUserCourses.courseId} = ${m.courseId} AND ${schema.arenaUserCourses.score} > ${m.score}`,
           );
         const rank = Number(higherScoreCount[0]?.count ?? 0) + 1;
         return {
@@ -422,7 +449,7 @@ export class GatewayService {
           score: m.score,
           rank,
         };
-      })
+      }),
     );
 
     // 3. Total points
@@ -431,7 +458,9 @@ export class GatewayService {
     // 4. Level & XP (500 pts per level)
     const POINTS_PER_LEVEL = 500;
     const level = Math.floor(totalPoints / POINTS_PER_LEVEL) + 1;
-    const xp = Math.round(((totalPoints % POINTS_PER_LEVEL) / POINTS_PER_LEVEL) * 100);
+    const xp = Math.round(
+      ((totalPoints % POINTS_PER_LEVEL) / POINTS_PER_LEVEL) * 100,
+    );
 
     // 5. Combat stats from showdown_matches
     //    We need all matches the user participated in, with a decided winner.
@@ -463,7 +492,7 @@ export class GatewayService {
               inArray(schema.showdownMatches.playerBId, participantIds),
             ),
             isNotNull(schema.showdownMatches.winnerId),
-          )
+          ),
         )
         .orderBy(sql`${schema.showdownMatches.completedAt} DESC`);
 
@@ -493,7 +522,8 @@ export class GatewayService {
     }
 
     const totalMatches = wins + losses;
-    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+    const winRate =
+      totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
     // 6. Achievements (computed from stats)
     const ACHIEVEMENTS = [
@@ -552,4 +582,37 @@ export class GatewayService {
     };
   }
 
+  async changePassword(userId: string, body: any) {
+    const { currentPassword, newPassword } = body;
+
+    // 1. Fetch user credentials
+    const storedCreds = await this.db.query.userCredentials.findFirst({
+      where: (uc: any, { eq }: any) => eq(uc.userId, userId),
+    });
+
+    if (!storedCreds) {
+      throw new NotFoundException('Credentials not found');
+    }
+
+    // 2. Verify current password
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      storedCreds.passwordHash,
+    );
+    if (!isMatch) {
+      throw new HttpException(
+        'Incorrect current password',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    // 3. Hash and save new password
+    const hashedNewPass = await bcrypt.hash(newPassword.trim(), 10);
+    await this.db
+      .update(schema.userCredentials)
+      .set({ passwordHash: hashedNewPass })
+      .where(eq(schema.userCredentials.userId, userId));
+
+    return { message: 'Password updated successfully' };
+  }
 }

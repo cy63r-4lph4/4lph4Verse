@@ -148,7 +148,7 @@ export function computeVerseInputSalt(
  * 0x01 = VALIDATION_TYPE_MODULE (sudo/root validator)
  */
 export function encodeValidationId(validatorAddress: Address): Hex {
-  return concat(['0x01', validatorAddress]) as Hex;
+  return concat(['0x01', validatorAddress]);
 }
 
 /**
@@ -176,7 +176,7 @@ export function encodeKernelInitCalldata(params: {
     abi: KERNEL_INITIALIZE_ABI,
     functionName: 'initialize',
     args: [
-      rootValidatorId as `0x${string}`,
+      rootValidatorId,
       '0x0000000000000000000000000000000000000000', // no hook
       validatorData,
       '0x',
@@ -202,7 +202,10 @@ export function computeProxyBytecodeHash(
     [{ type: 'address' }, { type: 'bytes' }],
     [kernelImplAddress, initCalldata],
   );
-  const fullBytecode = concat([ERC1967_PROXY_CREATION_CODE_PREFIX, constructorArgs]);
+  const fullBytecode = concat([
+    ERC1967_PROXY_CREATION_CODE_PREFIX,
+    constructorArgs,
+  ]);
   return keccak256(fullBytecode);
 }
 
@@ -241,7 +244,9 @@ export interface ComputeWalletAddressParams {
  * INV-23: Stable AFTER deployment; changes BEFORE if initial passkey changes.
  * INV-25: Address depends on walletIdentityId AND initial passkey public key.
  */
-export function computeWalletAddress(params: ComputeWalletAddressParams): Address {
+export function computeWalletAddress(
+  params: ComputeWalletAddressParams,
+): Address {
   // 1. Protocol-level input salt
   const verseInputSalt = computeVerseInputSalt(
     params.walletIdentityId,

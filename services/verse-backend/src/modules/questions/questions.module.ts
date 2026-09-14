@@ -4,8 +4,8 @@ import { QuestionController } from './question.controller';
 import { ArenaIdentityService } from '../arena/arena-identity.service';
 
 @Module({
-    controllers: [QuestionController],
-    providers: [QuestionsService, ArenaIdentityService],
-    exports: [QuestionsService],
+  controllers: [QuestionController],
+  providers: [QuestionsService, ArenaIdentityService],
+  exports: [QuestionsService],
 })
-export class QuestionsModule { }
+export class QuestionsModule {}

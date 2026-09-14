@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trophy, Clock, TrendingUp, RotateCcw, Swords, Home, Target, Skull, Zap, PlayCircle, Share2, Video, Hourglass, Bell, BellOff } from "lucide-react";
+import { Trophy, Clock, TrendingUp, RotateCcw, Swords, Home, Target, Skull, Zap, PlayCircle, Share2, Video, Hourglass, Bell, BellOff, BookOpen } from "lucide-react";
 import { cn } from "@verse/ui";
 
 import useAuth from "@verse/arena-web/hooks/useAuth";
@@ -421,8 +421,53 @@ export default function AsyncDuelPage() {
                         </motion.div>
                     )}
 
+                    {/* Post-Match Analysis */}
+                    {bothDone && (
+                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 rounded-2xl p-5 border border-white/10 backdrop-blur-md mt-6 text-left">
+                            <h3 className="font-display font-semibold text-white/80 text-sm mb-4 flex items-center gap-2 uppercase tracking-widest">
+                                <BookOpen size={16} className="text-cyan-400" />
+                                Post-Match Analysis
+                            </h3>
+                            <div className="space-y-6">
+                                {match?.questions?.map((qObj: any, i: number) => {
+                                    const q = qObj.question;
+                                    const myAnswer = qObj.answers?.find((a: any) => a.participantId === myParticipant.id);
+                                    const oppAnswer = qObj.answers?.find((a: any) => a.participantId === opponent.id);
+                                    return (
+                                        <div key={i} className="border-b border-white/10 last:border-0 pb-4 last:pb-0">
+                                            <p className="font-display font-bold text-sm text-white mb-2">Q{i + 1}: {q.content}</p>
+                                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                                <div className="text-[10px] font-mono text-white/50 uppercase">
+                                                    You: <span className={cn("font-bold", myAnswer?.isCorrect ? "text-green-400" : "text-red-400")}>{q.options[myAnswer?.optionIndex] ?? "N/A"}</span>
+                                                </div>
+                                                <div className="text-[10px] font-mono text-white/50 uppercase">
+                                                    Opp: <span className={cn("font-bold", oppAnswer?.isCorrect ? "text-green-400" : "text-red-400")}>{q.options[oppAnswer?.optionIndex] ?? "N/A"}</span>
+                                                </div>
+                                            </div>
+                                            {(q.explanation || q.resourceId) && (
+                                                <div className="bg-black/40 rounded-lg p-3 border border-white/5">
+                                                    {q.explanation && (
+                                                        <p className="text-xs text-white/70 font-mono italic mb-2">"{q.explanation}"</p>
+                                                    )}
+                                                    {q.resourceId && (
+                                                        <button 
+                                                            onClick={() => router.push(`/course/${params.id}/materials?datapad=${q.resourceId}`)} 
+                                                            className="flex items-center gap-1 text-[10px] text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-wider transition-colors"
+                                                        >
+                                                            <BookOpen size={12} /> Read Datapad
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
                     {/* Action Buttons */}
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="space-y-3 pt-4">
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-3 pt-4">
                         {!bothDone ? (
                             <>
                                 <button

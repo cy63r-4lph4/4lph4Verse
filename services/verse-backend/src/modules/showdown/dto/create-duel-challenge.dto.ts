@@ -7,12 +7,19 @@ export class CreateDuelChallengeDto {
   @IsString()
   opponentArenaUserId: string;
 
-  @IsOptional() @IsInt() @Min(1) @Max(10)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10)
   questionsPerMatch?: number;
 
-  @IsOptional() @IsInt() @Min(5) @Max(120)
+  @IsOptional()
+  @IsInt()
+  @Min(5)
+  @Max(120)
   timeLimitSeconds?: number;
 
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   topic?: string;
 }

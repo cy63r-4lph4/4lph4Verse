@@ -35,8 +35,8 @@ export function useForgeReview(courseId: string) {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["forge-pending", courseId] });
   return {
     approve: useMutation({
-      mutationFn: async ({ id, note }: { id: string; note?: string }) =>
-        (await api.post(`/v1/forge/${id}/approve`, { note })).data,
+      mutationFn: async ({ id, note, explanation, resourceId }: { id: string; note?: string; explanation?: string; resourceId?: string }) =>
+        (await api.post(`/v1/forge/${id}/approve`, { note, explanation, resourceId })).data,
       onSuccess: invalidate,
     }),
     reject: useMutation({

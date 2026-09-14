@@ -18,6 +18,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   controllers: [GatewayController],
   providers: [GatewayService, JwtStrategy],
-  exports: [GatewayService,JwtModule],
+  exports: [GatewayService, JwtModule],
 })
-export class GatewayModule { }
+export class GatewayModule {}

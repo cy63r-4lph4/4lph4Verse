@@ -55,9 +55,7 @@ export const walletAccounts = pgTable(
      *   'deploying'  — initCode submitted in a UserOperation, awaiting confirmation
      *   'deployed'   — verified deployed and initialized on-chain
      */
-    deploymentStatus: text('deployment_status')
-      .notNull()
-      .default('predicted'),
+    deploymentStatus: text('deployment_status').notNull().default('predicted'),
 
     /** Timestamp when the account was confirmed deployed on-chain. */
     deployedAt: timestamp('deployed_at', { withTimezone: true }),

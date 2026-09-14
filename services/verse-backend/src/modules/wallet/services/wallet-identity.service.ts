@@ -158,7 +158,9 @@ export class WalletIdentityService {
     }
 
     // Fetch the chain derivation config
-    const chainConf = await this.chainConfig.getDerivationConfig(params.chainId);
+    const chainConf = await this.chainConfig.getDerivationConfig(
+      params.chainId,
+    );
 
     // ⚠️ UNVERIFIED: Proxy bytecode is a placeholder. The address computed here
     // is not confirmed to match any on-chain deployment until testnet verification
@@ -250,7 +252,9 @@ export class WalletIdentityService {
     }
 
     // INV-07 enforcement: confirmed address MUST match the predicted address
-    if (account.address.toLowerCase() !== params.confirmedAddress.toLowerCase()) {
+    if (
+      account.address.toLowerCase() !== params.confirmedAddress.toLowerCase()
+    ) {
       this.logger.error(
         `CRITICAL INVARIANT VIOLATION (INV-07): ` +
           `Predicted address ${account.address} does not match confirmed address ` +

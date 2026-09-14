@@ -14,19 +14,26 @@ export class WalletService {
    */
   async provisionSmartWallet(profileId: string): Promise<any> {
     this.logger.log(`Provisioning smart wallet for profile: ${profileId}`);
-    
+
     // TODO: Integrate with MPC/Passkey provider for key generation
     // TODO: Call Bundler/Paymaster provider to deploy smart account
-    
-    // Mock wallet generation
-    const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
 
-    const [wallet] = await this.db.insert(schema.profileWallets).values({
-      profileId,
-      address: mockAddress,
-      walletType: 'smart_account',
-      supportedChains: '84532,42220', // E.g., Base Sepolia, Celo Alfajores
-    }).returning();
+    // Mock wallet generation
+    const mockAddress =
+      '0x' +
+      Array.from({ length: 40 }, () =>
+        Math.floor(Math.random() * 16).toString(16),
+      ).join('');
+
+    const [wallet] = await this.db
+      .insert(schema.profileWallets)
+      .values({
+        profileId,
+        address: mockAddress,
+        walletType: 'smart_account',
+        supportedChains: '84532,42220', // E.g., Base Sepolia, Celo Alfajores
+      })
+      .returning();
 
     return wallet;
   }
@@ -34,8 +41,14 @@ export class WalletService {
   /**
    * Routes a transaction to the correct chain implicitly.
    */
-  async routeTransaction(profileId: string, txData: any, targetChainId: number) {
-    this.logger.log(`Routing transaction for profile: ${profileId} to chain: ${targetChainId}`);
+  async routeTransaction(
+    profileId: string,
+    txData: any,
+    targetChainId: number,
+  ) {
+    this.logger.log(
+      `Routing transaction for profile: ${profileId} to chain: ${targetChainId}`,
+    );
     // TODO: Provider-agnostic relay logic using Bundler
     return { success: true, txHash: '0xmockhash', targetChainId };
   }
@@ -45,12 +58,15 @@ export class WalletService {
    */
   async linkExternalEOA(profileId: string, address: string) {
     this.logger.log(`Linking external EOA ${address} to profile: ${profileId}`);
-    
-    const [wallet] = await this.db.insert(schema.profileWallets).values({
-      profileId,
-      address,
-      walletType: 'imported_eoa',
-    }).returning();
+
+    const [wallet] = await this.db
+      .insert(schema.profileWallets)
+      .values({
+        profileId,
+        address,
+        walletType: 'imported_eoa',
+      })
+      .returning();
 
     return wallet;
   }

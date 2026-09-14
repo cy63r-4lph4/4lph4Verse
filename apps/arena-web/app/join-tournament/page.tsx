@@ -2,8 +2,10 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Swords, Loader2, ShieldCheck } from "lucide-react";
+import { Swords, Loader2, ShieldCheck, AlertCircle } from "lucide-react";
 import { api } from "@verse/arena-web/lib/api";
+import { cn } from "@verse/ui";
+import { useCodenameAvailability } from "@verse/arena-web/hooks/useCodeNameAvaillability";
 
 function JoinTournamentContent() {
   const params = useSearchParams();
@@ -18,6 +20,7 @@ function JoinTournamentContent() {
   const [form, setForm] = useState({ username: "", password: "", email: "" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { isAvailable, isChecking } = useCodenameAvailability(form.username);
 
   useEffect(() => {
     if (!courseId) return;
@@ -122,13 +125,39 @@ function JoinTournamentContent() {
         </div>
 
         <form onSubmit={authTab === "register" ? handleRegister : handleLogin} className="space-y-3">
-          <input
-            required
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            placeholder="Codename"
-            className="w-full rounded-2xl border border-white/[0.08] bg-black/40 px-4 py-3.5 text-sm text-white outline-none focus:border-primary/40"
-          />
+          <div className="relative">
+            <input
+              required
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="Codename"
+              className={cn(
+                "w-full rounded-2xl border border-white/[0.08] bg-black/40 px-4 py-3.5 text-sm text-white outline-none focus:border-primary/40 transition-all duration-500",
+                authTab === "register" && isAvailable === true && "border-success/50 shadow-[0_0_10px_rgba(34,197,94,0.1)]",
+                authTab === "register" && isAvailable === false && "border-destructive/50 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+              )}
+            />
+            {authTab === "register" && form.username.length > 2 && (
+              <div className="absolute right-3 top-0 bottom-0 my-auto flex items-center h-10 px-3">
+                {isChecking ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin text-primary" />
+                    <span className="text-[9px] font-mono text-primary animate-pulse tracking-tighter">SCANNING...</span>
+                  </div>
+                ) : isAvailable === true ? (
+                  <div className="flex items-center gap-2 animate-fade-scale-in">
+                    <div className="h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_8px_#22c55e]" />
+                    <span className="text-[9px] font-mono text-success tracking-widest font-bold">AVAILABLE</span>
+                  </div>
+                ) : isAvailable === false ? (
+                  <div className="flex items-center gap-2 animate-fade-scale-in">
+                    <AlertCircle size={14} className="text-destructive" />
+                    <span className="text-[9px] font-mono text-destructive tracking-widest font-bold">OCCUPIED</span>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
           {authTab === "register" && (
             <input
               value={form.email}
@@ -150,7 +179,7 @@ function JoinTournamentContent() {
 
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || (authTab === "register" && (isChecking || isAvailable === false))}
             className="w-full py-4 rounded-2xl bg-primary text-black font-display text-xs font-black uppercase tracking-[.2em] disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {busy ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}

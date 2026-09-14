@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Query, Request, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../shared/gurds/jwt-auth.guard';
 import { ForgeService } from './forge.service';
 import { ArenaIdentityService } from '../arena/arena-identity.service';
@@ -34,14 +45,28 @@ export class ForgeController {
 
   @Post(':id/approve')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async approve(@Param('id') id: string, @Body() body: ReviewSubmissionDto, @Request() req) {
+  async approve(
+    @Param('id') id: string,
+    @Body() body: ReviewSubmissionDto,
+    @Request() req,
+  ) {
     const arenaUser = await this.identity.requireInstructorOrAdmin(req.user.id);
-    return this.forgeService.approve(id, arenaUser.id, body.note);
+    return this.forgeService.approve(
+      id,
+      arenaUser.id,
+      body.note,
+      body.explanation,
+      body.resourceId,
+    );
   }
 
   @Post(':id/reject')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async reject(@Param('id') id: string, @Body() body: ReviewSubmissionDto, @Request() req) {
+  async reject(
+    @Param('id') id: string,
+    @Body() body: ReviewSubmissionDto,
+    @Request() req,
+  ) {
     const arenaUser = await this.identity.requireInstructorOrAdmin(req.user.id);
     return this.forgeService.reject(id, arenaUser.id, body.note);
   }

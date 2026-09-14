@@ -76,7 +76,7 @@ export class ConnectedWalletService {
 
     this.logger.log(`Linked EOA ${address} to profile ${verseProfileId}`);
 
-    return linked as ConnectedWalletRow;
+    return linked;
   }
 
   /**

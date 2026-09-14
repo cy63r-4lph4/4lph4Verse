@@ -30,9 +30,15 @@ export class MailService {
     return `"Arena" <${this.configService.get<string>('SMTP_USER')}>`;
   }
 
-  async sendWelcomeVerification(email: string, username: string, token: string) {
+  async sendWelcomeVerification(
+    email: string,
+    username: string,
+    token: string,
+  ) {
     try {
-      const appUrl = this.configService.get<string>('ARENA_FRONTEND_URL') || 'https://arena-community-phi.vercel.app';
+      const appUrl =
+        this.configService.get<string>('ARENA_FRONTEND_URL') ||
+        'https://arena-community-phi.vercel.app';
       const verifyLink = `${appUrl}/verify-email?token=${token}`;
       const html = welcomeTemplate(username, verifyLink);
 
@@ -60,9 +66,14 @@ export class MailService {
         html,
       });
 
-      this.logger.log(`Sent course joined email to ${email} for course ${courseCode}`);
+      this.logger.log(
+        `Sent course joined email to ${email} for course ${courseCode}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send course joined email to ${email}`, error);
+      this.logger.error(
+        `Failed to send course joined email to ${email}`,
+        error,
+      );
     }
   }
 }

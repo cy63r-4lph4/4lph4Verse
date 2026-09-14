@@ -5,6 +5,7 @@ import { Hammer, Check, X, MessageSquare, Flame, BarChart2, ChevronDown, Chevron
 import { cn } from "@verse/ui";
 import ArenaAvatar from "@verse/arena-web/components/ui/ArenaAvatar";
 import { useForgePending, useForgeReview } from "@verse/arena-web/hooks/useForgeSubmissions";
+import { useResources } from "@verse/arena-web/hooks/useResources";
 
 function dicebearUrl(name: string) {
   return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -16,22 +17,28 @@ const DIFF_CFG = {
   hard:   { color: "text-red-400",     bg: "bg-red-500/10 border-red-500/20" },
 };
 
-function SubmissionCard({ submission, onApprove, onReject, isActing }: {
+function SubmissionCard({ submission, onApprove, onReject, isActing, courseId }: {
   submission: any;
-  onApprove: (note: string) => void;
+  onApprove: (note: string, explanation?: string, resourceId?: string) => void;
   onReject: (note: string) => void;
   isActing: boolean;
+  courseId: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [note, setNote] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [resourceId, setResourceId] = useState("");
   const [showNote, setShowNote] = useState(false);
+  const [showApproveOptions, setShowApproveOptions] = useState(false);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
+
+  const { data: resources = [] } = useResources(courseId);
 
   const diff = submission.difficulty as keyof typeof DIFF_CFG ?? "medium";
   const cfg = DIFF_CFG[diff] ?? DIFF_CFG.medium;
 
   const handleAction = (type: "approve" | "reject") => {
-    if (type === "approve") onApprove(note);
+    if (type === "approve") onApprove(note, explanation || undefined, resourceId || undefined);
     else onReject(note);
   };
 
@@ -94,38 +101,79 @@ function SubmissionCard({ submission, onApprove, onReject, isActing }: {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-2 px-4 pb-4">
+      <div className="px-4 pb-4 space-y-3">
+        {/* Extra options for approving */}
+        {showApproveOptions && (
+          <div className="grid grid-cols-2 gap-2 p-3 bg-white/[0.03] border border-emerald-500/10 rounded-xl">
+            <div>
+              <label className="font-display text-[8px] font-black text-white/30 uppercase tracking-[.2em] block mb-1.5">Explanation (optional)</label>
+              <textarea
+                value={explanation}
+                onChange={e => setExplanation(e.target.value)}
+                rows={1}
+                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/80 text-[10px] font-display font-bold outline-none focus:border-emerald-500/40 transition-colors resize-none"
+                placeholder="Explain the answer..."
+              />
+            </div>
+            <div>
+              <label className="font-display text-[8px] font-black text-white/30 uppercase tracking-[.2em] block mb-1.5">Link Datapad (optional)</label>
+              <select
+                value={resourceId}
+                onChange={e => setResourceId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/80 text-[10px] font-display font-bold outline-none focus:border-emerald-500/40 transition-colors"
+              >
+                <option value="">None</option>
+                {resources.map(r => (
+                  <option key={r.id} value={r.id}>{r.title}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Note input */}
         {showNote && (
           <input
             value={note}
             onChange={e => setNote(e.target.value)}
             placeholder="Optional feedback note…"
-            className="flex-1 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/70 text-[10px] font-display font-bold outline-none focus:border-primary/40 transition-colors"
+            className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/70 text-[10px] font-display font-bold outline-none focus:border-primary/40 transition-colors"
           />
         )}
-        <button
-          onClick={() => { setShowNote(s => !s); setActionType(null); }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
-        >
-          <MessageSquare size={11} className="text-white/30" />
-          <span className="font-display text-[8px] font-black text-white/30 uppercase tracking-wider">Note</span>
-        </button>
-        <button
-          onClick={() => handleAction("reject")}
-          disabled={isActing}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/[0.07] hover:bg-red-500/15 font-display text-[9px] font-black text-red-400 uppercase tracking-wider transition-all disabled:opacity-40"
-        >
-          <X size={12} />
-          Reject
-        </button>
-        <button
-          onClick={() => handleAction("approve")}
-          disabled={isActing}
-          className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.1] hover:bg-emerald-500/20 font-display text-[9px] font-black text-emerald-400 uppercase tracking-wider transition-all disabled:opacity-40"
-        >
-          <Check size={12} />
-          Approve
-        </button>
+
+        {/* Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowNote(s => !s); setShowApproveOptions(false); }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+          >
+            <MessageSquare size={11} className="text-white/30" />
+            <span className="font-display text-[8px] font-black text-white/30 uppercase tracking-wider">Note</span>
+          </button>
+          <button
+            onClick={() => handleAction("reject")}
+            disabled={isActing}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/[0.07] hover:bg-red-500/15 font-display text-[9px] font-black text-red-400 uppercase tracking-wider transition-all disabled:opacity-40"
+          >
+            <X size={12} />
+            Reject
+          </button>
+          <button
+            onClick={() => {
+              if (!showApproveOptions) {
+                setShowApproveOptions(true);
+                setShowNote(false);
+              } else {
+                handleAction("approve");
+              }
+            }}
+            disabled={isActing}
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.1] hover:bg-emerald-500/20 font-display text-[9px] font-black text-emerald-400 uppercase tracking-wider transition-all disabled:opacity-40"
+          >
+            <Check size={12} />
+            {showApproveOptions ? "Confirm Approve" : "Approve..."}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -194,8 +242,9 @@ export function ForgeReviewPanel({ courseId }: { courseId: string }) {
           <SubmissionCard
             key={sub.id}
             submission={sub}
+            courseId={courseId}
             isActing={approve.isPending || reject.isPending}
-            onApprove={(note) => approve.mutate({ id: sub.id, note })}
+            onApprove={(note, explanation, resourceId) => approve.mutate({ id: sub.id, note, explanation, resourceId })}
             onReject={(note) => reject.mutate({ id: sub.id, note })}
           />
         ))}

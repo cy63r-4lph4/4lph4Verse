@@ -28,7 +28,9 @@ export class IdentityService {
     });
 
     if (existingContact) {
-      throw new ConflictException(`Contact ${dto.contactValue} is already associated with an account.`);
+      throw new ConflictException(
+        `Contact ${dto.contactValue} is already associated with an account.`,
+      );
     }
 
     // Wrap in a transaction
@@ -38,7 +40,7 @@ export class IdentityService {
         .insert(schema.users)
         .values({
           username: dto.handle,
-          ...(dto.contactType === 'email' ? { email: dto.contactValue } : {})
+          ...(dto.contactType === 'email' ? { email: dto.contactValue } : {}),
         })
         .returning();
 
@@ -53,14 +55,12 @@ export class IdentityService {
         .returning();
 
       // Create Profile Contact
-      await tx
-        .insert(schema.profileContacts)
-        .values({
-          profileId: profile.id,
-          type: dto.contactType,
-          value: dto.contactValue,
-          isPrimary: true,
-        });
+      await tx.insert(schema.profileContacts).values({
+        profileId: profile.id,
+        type: dto.contactType,
+        value: dto.contactValue,
+        isPrimary: true,
+      });
 
       return profile;
     });

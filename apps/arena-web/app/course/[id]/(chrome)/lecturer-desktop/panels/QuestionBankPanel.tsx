@@ -9,6 +9,7 @@ import {
   useQuestionBank, useCreateQuestion, useDeleteQuestion, useUpdateQuestion, useImportQuestionsCsv,
   type Question,
 } from "@verse/arena-web/hooks/useQuestionBank";
+import { useResources } from "@verse/arena-web/hooks/useResources";
 
 const DIFF_CFG = {
   easy:   { label: "Easy",   color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
@@ -74,18 +75,23 @@ function QuestionRow({
 }
 
 function QuestionForm({
-  initial, onSave, onCancel, isSaving,
+  initial, onSave, onCancel, isSaving, courseId
 }: {
   initial?: Partial<Question>;
-  onSave: (data: { prompt: string; options: string[]; correctIndex: number; difficulty: string; category: string }) => void;
+  onSave: (data: { prompt: string; options: string[]; correctIndex: number; difficulty: string; category: string; explanation?: string; resourceId?: string }) => void;
   onCancel: () => void;
   isSaving: boolean;
+  courseId: string;
 }) {
   const [prompt, setPrompt] = useState(initial?.prompt ?? "");
   const [options, setOptions] = useState<string[]>(initial?.options ?? ["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(initial?.correctIndex ?? 0);
   const [difficulty, setDifficulty] = useState<string>(initial?.difficulty ?? "medium");
   const [category, setCategory] = useState(initial?.category ?? "");
+  const [explanation, setExplanation] = useState(initial?.explanation ?? "");
+  const [resourceId, setResourceId] = useState(initial?.resourceId ?? "");
+
+  const { data: resources = [] } = useResources(courseId);
 
   const canSave = prompt.trim() && options.filter(o => o.trim()).length >= 2;
 
@@ -165,10 +171,37 @@ function QuestionForm({
         </div>
       </div>
 
+      {/* Explanation + Datapad */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="font-display text-[8px] font-black text-white/30 uppercase tracking-[.2em] block mb-1.5">Explanation (optional)</label>
+          <textarea
+            value={explanation}
+            onChange={e => setExplanation(e.target.value)}
+            rows={2}
+            className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/80 text-[11px] font-display font-bold outline-none focus:border-primary/40 transition-colors resize-none"
+            placeholder="Explain the answer..."
+          />
+        </div>
+        <div>
+          <label className="font-display text-[8px] font-black text-white/30 uppercase tracking-[.2em] block mb-1.5">Link Datapad (optional)</label>
+          <select
+            value={resourceId}
+            onChange={e => setResourceId(e.target.value)}
+            className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/80 text-[11px] font-display font-bold outline-none focus:border-primary/40 transition-colors"
+          >
+            <option value="">None</option>
+            {resources.map(r => (
+              <option key={r.id} value={r.id}>{r.title}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="flex items-center gap-2 pt-1">
         <button
-          onClick={() => onSave({ prompt, options: options.map(o => o.trim()).filter(Boolean), correctIndex, difficulty, category })}
+          onClick={() => onSave({ prompt, options: options.map(o => o.trim()).filter(Boolean), correctIndex, difficulty, category, explanation: explanation || undefined, resourceId: resourceId || undefined })}
           disabled={!canSave || isSaving}
           className="flex-1 py-2.5 rounded-xl font-display text-[10px] font-black uppercase tracking-wider text-white transition-all disabled:opacity-40"
           style={{ background: "linear-gradient(135deg, hsl(var(--primary)), color-mix(in srgb, hsl(var(--primary)) 70%, black))", boxShadow: "0 4px 20px hsl(var(--primary) / .25)" }}
@@ -196,6 +229,9 @@ export function QuestionBankPanel({ courseId }: { courseId: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Question | null>(null);
   const [importResult, setImportResult] = useState<{ insertedCount: number; errorCount: number } | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importResourceId, setImportResourceId] = useState("");
+  const { data: resources = [] } = useResources(courseId);
 
   const filtered = questions.filter((q: Question) => {
     if (diffFilter !== "all" && q.difficulty !== diffFilter) return false;
@@ -216,8 +252,9 @@ export function QuestionBankPanel({ courseId }: { courseId: string }) {
   const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const result = await importCsv.mutateAsync(file);
+    const result = await importCsv.mutateAsync({ file, resourceId: importResourceId || undefined });
     setImportResult(result);
+    setShowImportModal(false);
     e.target.value = "";
   };
 
@@ -232,9 +269,8 @@ export function QuestionBankPanel({ courseId }: { courseId: string }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCsvImport} />
           <button
-            onClick={() => fileRef.current?.click()}
+            onClick={() => setShowImportModal(true)}
             disabled={importCsv.isPending}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] font-display text-[9px] font-black text-white/60 uppercase tracking-wider transition-all disabled:opacity-40"
           >
@@ -274,7 +310,48 @@ export function QuestionBankPanel({ courseId }: { courseId: string }) {
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditTarget(null); }}
           isSaving={createQ.isPending || updateQ.isPending}
+          courseId={courseId}
         />
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm p-6 rounded-2xl bg-gray-900 border border-white/10 space-y-4 shadow-2xl">
+            <h3 className="font-display text-sm font-black text-white uppercase tracking-wide">Import CSV</h3>
+            <p className="text-xs text-white/50">
+              Optionally link all imported questions to a datapad.
+            </p>
+            <div>
+              <label className="block font-display text-[9px] text-white/40 uppercase tracking-widest mb-1.5">Link Datapad (optional)</label>
+              <select
+                value={importResourceId}
+                onChange={e => setImportResourceId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/80 text-[11px] font-display font-bold outline-none focus:border-primary/40 transition-colors"
+              >
+                <option value="">None</option>
+                {resources.map(r => (
+                  <option key={r.id} value={r.id}>{r.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="px-4 py-2 rounded-lg font-display text-[10px] font-black text-white/50 hover:text-white uppercase tracking-wide"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-display text-[10px] font-black uppercase tracking-wide hover:bg-cyan-500/30"
+              >
+                Select File
+              </button>
+            </div>
+          </div>
+          <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCsvImport} />
+        </div>
       )}
 
       {/* Filters */}

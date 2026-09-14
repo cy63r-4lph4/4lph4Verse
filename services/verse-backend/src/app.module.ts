@@ -12,13 +12,23 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 
-import { IdentityModule } from './modules/identity/identity.module';
-import { WalletModule } from './modules/wallet/wallet.module';
+// import { IdentityModule } from './modules/identity/identity.module'; // deferred — requires 0001_wallet_infrastructure migration
+// import { WalletModule } from './modules/wallet/wallet.module'; // deferred — requires 0001_wallet_infrastructure migration
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), ArenaModule, GatewayModule, HealthModule, DatabaseModule, FeedModule, ForgeModule, ShowdownModule, QuestionsModule, MailModule, IdentityModule, WalletModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ArenaModule,
+    GatewayModule,
+    HealthModule,
+    DatabaseModule,
+    FeedModule,
+    ForgeModule,
+    ShowdownModule,
+    QuestionsModule,
+    MailModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-
-export class AppModule { }
+export class AppModule {}

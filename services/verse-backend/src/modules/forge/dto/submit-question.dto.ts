@@ -1,4 +1,13 @@
-import { ArrayMinSize, IsArray, IsIn, IsInt, IsOptional, IsString, Min, MaxLength } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+} from 'class-validator';
 
 export class SubmitQuestionDto {
   @IsString()

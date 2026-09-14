@@ -1,5 +1,12 @@
 // dto/create-showdown.dto.ts
-import { IsDateString, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateShowdownDto {
   @IsString() courseId: string;

@@ -17,8 +17,10 @@ import { QuestionBankPanel } from "./panels/QuestionBankPanel";
 import { ForgeReviewPanel } from "./panels/ForgeReviewPanel";
 import { TournamentPanel } from "./panels/TournamentPanel";
 import { LeaderboardPanel } from "./panels/LeaderboardPanel";
+import { DatapadsPanel } from "./panels/DatapadsPanel";
+import { BookOpen } from "lucide-react";
 
-export type PanelId = "overview" | "roster" | "bank" | "forge" | "tournaments" | "leaderboard";
+export type PanelId = "overview" | "roster" | "bank" | "forge" | "tournaments" | "leaderboard" | "datapads";
 
 const NAV_ITEMS: {
   id: PanelId;
@@ -34,6 +36,7 @@ const NAV_ITEMS: {
   { id: "forge",        label: "Forge Queue",    icon: Hammer,          accent: "text-orange-400", accentBg: "bg-orange-500/10 border-orange-500/25", badgeKey: "forge" },
   { id: "tournaments",  label: "Tournaments",    icon: Trophy,          accent: "text-amber-400",  accentBg: "bg-amber-500/10 border-amber-500/25" },
   { id: "leaderboard",  label: "Leaderboard",    icon: BarChart3,       accent: "text-emerald-400",accentBg: "bg-emerald-500/10 border-emerald-500/25" },
+  { id: "datapads",     label: "Datapads",       icon: BookOpen,        accent: "text-cyan-400",   accentBg: "bg-cyan-500/10 border-cyan-500/25" },
 ];
 
 interface LecturerDashboardProps {
@@ -265,6 +268,7 @@ export function LecturerDashboard({
           {activePanel === "forge"       && <ForgeReviewPanel   courseId={currentCourse.id} />}
           {activePanel === "tournaments" && <TournamentPanel    courseId={currentCourse.id} />}
           {activePanel === "leaderboard" && <LeaderboardPanel   courseId={currentCourse.id} />}
+          {activePanel === "datapads"    && <DatapadsPanel      courseId={currentCourse.id} />}
         </main>
       </div>
     </div>

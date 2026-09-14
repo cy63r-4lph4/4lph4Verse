@@ -15,6 +15,13 @@
       "when": 1788527136811,
       "tag": "0001_wallet_infrastructure",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789183671672,
+      "tag": "0002_thankful_bug",
+      "breakpoints": true
     }
   ]
 }

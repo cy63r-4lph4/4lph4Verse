@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, desc } from 'drizzle-orm';
 import * as schema from '../../db/schema';
@@ -11,36 +17,50 @@ export class FeedService {
     @Inject('DB') private db: NodePgDatabase<typeof schema>,
     private readonly showdownService: ShowdownService,
     private readonly identity: ArenaIdentityService,
-  ) { }
+  ) {}
 
   // ── Posts ────────────────────────────────────────────────────────────
 
-  async createPost(authorArenaUserId: string, dto: {
-    courseId: string; type: 'thought' | 'question' | 'announcement';
-    content: string; pinned?: boolean;
-  }) {
+  async createPost(
+    authorArenaUserId: string,
+    dto: {
+      courseId: string;
+      type: 'thought' | 'question' | 'announcement';
+      content: string;
+      pinned?: boolean;
+    },
+  ) {
     let pinned = false;
 
     if (dto.type === 'announcement') {
       const author = await this.getArenaUserOrThrow(authorArenaUserId);
       if (author.role !== 'instructor' && author.role !== 'admin') {
-        throw new ForbiddenException('Only instructors or admins can post announcements.');
+        throw new ForbiddenException(
+          'Only instructors or admins can post announcements.',
+        );
       }
       pinned = !!dto.pinned;
     }
 
-    const [post] = await this.db.insert(schema.feedPosts).values({
-      courseId: dto.courseId,
-      authorArenaUserId,
-      type: dto.type,
-      content: dto.content,
-      pinned,
-    }).returning();
+    const [post] = await this.db
+      .insert(schema.feedPosts)
+      .values({
+        courseId: dto.courseId,
+        authorArenaUserId,
+        type: dto.type,
+        content: dto.content,
+        pinned,
+      })
+      .returning();
 
     return this.hydratePost(post.id, authorArenaUserId);
   }
 
-  async editPost(postId: string, requesterArenaUserId: string, content: string) {
+  async editPost(
+    postId: string,
+    requesterArenaUserId: string,
+    content: string,
+  ) {
     const post = await this.getPostOrThrow(postId);
     if (post.authorArenaUserId !== requesterArenaUserId) {
       throw new ForbiddenException('Only the author can edit this post.');
@@ -58,23 +78,34 @@ export class FeedService {
     if (post.authorArenaUserId !== requesterArenaUserId) {
       const requester = await this.getArenaUserOrThrow(requesterArenaUserId);
       if (requester.role !== 'admin' && requester.role !== 'instructor') {
-        throw new ForbiddenException('Only the author, an instructor, or an admin can delete this post.');
+        throw new ForbiddenException(
+          'Only the author, an instructor, or an admin can delete this post.',
+        );
       }
     }
-    await this.db.delete(schema.feedPosts).where(eq(schema.feedPosts.id, postId));
+    await this.db
+      .delete(schema.feedPosts)
+      .where(eq(schema.feedPosts.id, postId));
   }
 
-  async setPinned(postId: string, requesterArenaUserId: string, pinned: boolean) {
+  async setPinned(
+    postId: string,
+    requesterArenaUserId: string,
+    pinned: boolean,
+  ) {
     const post = await this.getPostOrThrow(postId);
     if (post.type !== 'announcement') {
       throw new BadRequestException('Only announcements can be pinned.');
     }
     const requester = await this.getArenaUserOrThrow(requesterArenaUserId);
     if (requester.role !== 'instructor' && requester.role !== 'admin') {
-      throw new ForbiddenException('Only instructors or admins can pin announcements.');
+      throw new ForbiddenException(
+        'Only instructors or admins can pin announcements.',
+      );
     }
 
-    const [updated] = await this.db.update(schema.feedPosts)
+    const [updated] = await this.db
+      .update(schema.feedPosts)
       .set({ pinned })
       .where(eq(schema.feedPosts.id, postId))
       .returning();
@@ -85,11 +116,14 @@ export class FeedService {
 
   async addComment(postId: string, authorArenaUserId: string, content: string) {
     await this.getPostOrThrow(postId); // 404s if the post doesn't exist
-    const [comment] = await this.db.insert(schema.feedComments).values({
-      postId,
-      authorArenaUserId,
-      content,
-    }).returning();
+    const [comment] = await this.db
+      .insert(schema.feedComments)
+      .values({
+        postId,
+        authorArenaUserId,
+        content,
+      })
+      .returning();
     return comment;
   }
 
@@ -108,19 +142,24 @@ export class FeedService {
     await this.getPostOrThrow(postId);
 
     const existing = await this.db.query.feedReactions.findFirst({
-      where: (r, { eq, and }) => and(
-        eq(r.postId, postId),
-        eq(r.arenaUserId, arenaUserId),
-        eq(r.type, type),
-      ),
+      where: (r, { eq, and }) =>
+        and(
+          eq(r.postId, postId),
+          eq(r.arenaUserId, arenaUserId),
+          eq(r.type, type),
+        ),
     });
 
     if (existing) {
-      await this.db.delete(schema.feedReactions).where(eq(schema.feedReactions.id, existing.id));
+      await this.db
+        .delete(schema.feedReactions)
+        .where(eq(schema.feedReactions.id, existing.id));
       return { active: false };
     }
 
-    await this.db.insert(schema.feedReactions).values({ postId, arenaUserId, type });
+    await this.db
+      .insert(schema.feedReactions)
+      .values({ postId, arenaUserId, type });
     return { active: true };
   }
 
@@ -129,11 +168,17 @@ export class FeedService {
   async getFeed(courseId: string, viewerArenaUserId: string) {
     const posts = await this.db.query.feedPosts.findMany({
       where: (p, { eq }) => eq(p.courseId, courseId),
-      orderBy: [desc(schema.feedPosts.pinned), desc(schema.feedPosts.createdAt)],
+      orderBy: [
+        desc(schema.feedPosts.pinned),
+        desc(schema.feedPosts.createdAt),
+      ],
       limit: 30,
       with: {
         author: { with: { user: true } },
-        comments: { with: { author: { with: { user: true } } }, orderBy: (c, { asc }) => [asc(c.createdAt)] },
+        comments: {
+          with: { author: { with: { user: true } } },
+          orderBy: (c, { asc }) => [asc(c.createdAt)],
+        },
         reactions: true,
       },
     });
@@ -144,10 +189,15 @@ export class FeedService {
       postType: p.type,
       pinned: p.pinned,
       content: p.content,
-      author: { name: p.author.user.username, arenaUserId: p.authorArenaUserId },
+      author: {
+        name: p.author.user.username,
+        arenaUserId: p.authorArenaUserId,
+      },
       createdAt: p.createdAt,
       reactionCounts: this.tallyReactions(p.reactions),
-      viewerReactions: p.reactions.filter((r) => r.arenaUserId === viewerArenaUserId).map((r) => r.type),
+      viewerReactions: p.reactions
+        .filter((r) => r.arenaUserId === viewerArenaUserId)
+        .map((r) => r.type),
       commentCount: p.comments.length,
       comments: p.comments.slice(-3).map((c) => ({
         id: c.id,
@@ -157,11 +207,18 @@ export class FeedService {
       })),
     }));
 
-    const { battles, challenges, liveDuels, publicActivity } = await this.showdownService.getFeed(courseId, viewerArenaUserId);
+    const { battles, challenges, liveDuels, publicActivity } =
+      await this.showdownService.getFeed(courseId, viewerArenaUserId);
 
-    const battleItems      = battles.map((b) => ({ ...b, kind: 'battle' as const }));
-    const challengeItems   = challenges.map((c) => ({ ...c, kind: 'challenge' as const }));
-    const liveDuelItems    = (liveDuels || []).map((ld) => ({ ...ld, kind: 'live_duel' as const }));
+    const battleItems = battles.map((b) => ({ ...b, kind: 'battle' as const }));
+    const challengeItems = challenges.map((c) => ({
+      ...c,
+      kind: 'challenge' as const,
+    }));
+    const liveDuelItems = (liveDuels || []).map((ld) => ({
+      ...ld,
+      kind: 'live_duel' as const,
+    }));
     // Public activity: deduplicate against private cards — if the viewer IS a participant they
     // already see the private challenge/live_duel card, so skip the public echo for that showdown.
     const privateShowdownIds = new Set([
@@ -172,8 +229,15 @@ export class FeedService {
       .filter((a) => !privateShowdownIds.has(a.showdownId))
       .map((a) => ({ ...a, kind: 'activity' as const }));
 
-    return [...postItems, ...battleItems, ...challengeItems, ...liveDuelItems, ...activityItems].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    return [
+      ...postItems,
+      ...battleItems,
+      ...challengeItems,
+      ...liveDuelItems,
+      ...activityItems,
+    ].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }
 
@@ -189,7 +253,11 @@ export class FeedService {
   private async hydratePost(postId: string, viewerArenaUserId: string) {
     const post = await this.db.query.feedPosts.findFirst({
       where: (p, { eq }) => eq(p.id, postId),
-      with: { author: { with: { user: true } }, comments: true, reactions: true },
+      with: {
+        author: { with: { user: true } },
+        comments: true,
+        reactions: true,
+      },
     });
     if (!post) throw new NotFoundException('Post not found.');
     return {
@@ -198,10 +266,15 @@ export class FeedService {
       postType: post.type,
       pinned: post.pinned,
       content: post.content,
-      author: { name: post.author.user.username, arenaUserId: post.authorArenaUserId },
+      author: {
+        name: post.author.user.username,
+        arenaUserId: post.authorArenaUserId,
+      },
       createdAt: post.createdAt,
       reactionCounts: this.tallyReactions(post.reactions),
-      viewerReactions: post.reactions.filter((r) => r.arenaUserId === viewerArenaUserId).map((r) => r.type),
+      viewerReactions: post.reactions
+        .filter((r) => r.arenaUserId === viewerArenaUserId)
+        .map((r) => r.type),
       commentCount: post.comments.length,
       comments: [],
     };

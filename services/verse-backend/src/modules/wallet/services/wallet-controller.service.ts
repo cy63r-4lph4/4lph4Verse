@@ -109,7 +109,7 @@ export class WalletControllerService {
       `Recorded ${params.controllerType} controller for wallet ${params.walletId}: ${params.controllerIdentifier}`,
     );
 
-    return controller as ControllerRow;
+    return controller;
   }
 
   /**
@@ -151,7 +151,10 @@ export class WalletControllerService {
    * INV-06: Revoking a controller MUST NOT change walletIdentityId.
    * INV-07: Revoking a controller MUST NOT change the deployed address.
    */
-  async revokeController(walletId: string, controllerId: string): Promise<void> {
+  async revokeController(
+    walletId: string,
+    controllerId: string,
+  ): Promise<void> {
     const controller = await this.db.query.walletControllers.findFirst({
       where: and(
         eq(walletControllers.walletId, walletId),
@@ -180,10 +183,7 @@ export class WalletControllerService {
    * Returns all active (non-revoked) controllers for a wallet.
    * Optionally filtered to only on-chain confirmed controllers.
    */
-  async getActiveControllers(
-    walletId: string,
-    onlyConfirmed = false,
-  ) {
+  async getActiveControllers(walletId: string, onlyConfirmed = false) {
     const conditions = [
       eq(walletControllers.walletId, walletId),
       isNull(walletControllers.revokedAt),
@@ -215,7 +215,10 @@ export class WalletControllerService {
    * INV-16: The backend mirrors on-chain state; it does not define it.
    * INV-17: Entries MUST be reconciled against on-chain state after any change.
    */
-  async reconcileOnChainState(walletId: string, chainId: number): Promise<void> {
+  async reconcileOnChainState(
+    walletId: string,
+    chainId: number,
+  ): Promise<void> {
     // BLOCKED: Implementation requires explicit user approval before proceeding.
     // Do not implement until the user approves moving to that phase.
     this.logger.warn(

@@ -40,7 +40,9 @@ export const supportedChains = pgTable('supported_chains', {
   // ──────────────── Pre-Implementation Verification Flags ────────────────
   /** True if Nick's Factory (0x4e59b44847b379578588920ca78fbf26c0b4956c) is
    *  confirmed present via `cast code` or `eth_getCode`. */
-  nickFactoryVerified: boolean('nick_factory_verified').notNull().default(false),
+  nickFactoryVerified: boolean('nick_factory_verified')
+    .notNull()
+    .default(false),
 
   /** True if RIP-7212 P-256 precompile at 0x100 is confirmed via eth_call. */
   rip7212Verified: boolean('rip7212_verified').notNull().default(false),

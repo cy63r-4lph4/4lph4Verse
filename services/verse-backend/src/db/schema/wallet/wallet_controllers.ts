@@ -88,17 +88,25 @@ export const walletControllers = pgTable(
 
     // ──────────────── Capabilities ────────────────
     /** Whether this controller can sign UserOperations / transactions. */
-    canSignTransactions: boolean('can_sign_transactions').notNull().default(true),
+    canSignTransactions: boolean('can_sign_transactions')
+      .notNull()
+      .default(true),
 
     /** Whether this controller can install/remove other modules (root validator only). */
-    canManageControllers: boolean('can_manage_controllers').notNull().default(false),
+    canManageControllers: boolean('can_manage_controllers')
+      .notNull()
+      .default(false),
 
     /** Whether this controller can initiate a social recovery request. */
-    canInitiateRecovery: boolean('can_initiate_recovery').notNull().default(false),
+    canInitiateRecovery: boolean('can_initiate_recovery')
+      .notNull()
+      .default(false),
 
     // ──────────────── On-Chain Sync State ────────────────
     /** When this controller was first added (off-chain record creation). */
-    addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),
+    addedAt: timestamp('added_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
 
     /** When this controller was revoked. NULL = still active. */
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
@@ -115,10 +123,9 @@ export const walletControllers = pgTable(
   },
   (table) => ({
     // One controller identifier per wallet (prevents duplicates)
-    uniqueWalletController: unique('uq_wallet_controllers_wallet_identifier').on(
-      table.walletId,
-      table.controllerIdentifier,
-    ),
+    uniqueWalletController: unique(
+      'uq_wallet_controllers_wallet_identifier',
+    ).on(table.walletId, table.controllerIdentifier),
     // Enforce the controller type enum
     checkControllerType: check(
       'chk_wallet_controllers_type',

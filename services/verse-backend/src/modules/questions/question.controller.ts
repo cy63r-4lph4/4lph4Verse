@@ -1,7 +1,21 @@
 import {
-  Body, Controller, Delete, Get, Param, Post, Patch, Query, Request,
-  UseGuards, UseInterceptors, UploadedFile, UsePipes, ValidationPipe,
-  ForbiddenException, NotFoundException, Inject,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Query,
+  Request,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  UsePipes,
+  ValidationPipe,
+  ForbiddenException,
+  NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
@@ -32,19 +46,29 @@ export class QuestionController {
 
   @Get('categories')
   async listCategories(@Query('courseId') courseId: string) {
-    if (!courseId) throw new (require('@nestjs/common').BadRequestException)('courseId is required.');
+    if (!courseId)
+      throw new (require('@nestjs/common').BadRequestException)(
+        'courseId is required.',
+      );
     return this.questionsService.listCategories(courseId);
   }
 
   @Get()
   async list(@Query('courseId') courseId: string) {
-    if (!courseId) throw new (require('@nestjs/common').BadRequestException)('courseId is required.');
+    if (!courseId)
+      throw new (require('@nestjs/common').BadRequestException)(
+        'courseId is required.',
+      );
     return this.questionsService.list(courseId);
   }
 
   @Patch(':id')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async update(@Param('id') id: string, @Body() body: UpdateQuestionDto, @Request() req) {
+  async update(
+    @Param('id') id: string,
+    @Body() body: UpdateQuestionDto,
+    @Request() req,
+  ) {
     const arenaUser = await this.identity.requireInstructorOrAdmin(req.user.id);
     const existing = await this.questionsService.getOrThrow(id);
     await this.assertCourseInScope(existing.courseId, arenaUser);
@@ -64,23 +88,39 @@ export class QuestionController {
   async importCsv(
     @UploadedFile() file: Express.Multer.File,
     @Body('courseId') courseId: string,
+    @Body('resourceId') resourceId: string | undefined,
     @Request() req,
   ) {
     const arenaUser = await this.identity.requireInstructorOrAdmin(req.user.id);
-    if (!file) throw new (require('@nestjs/common').BadRequestException)('No file uploaded.');
-    if (!courseId) throw new (require('@nestjs/common').BadRequestException)('courseId is required.');
+    if (!file)
+      throw new (require('@nestjs/common').BadRequestException)(
+        'No file uploaded.',
+      );
+    if (!courseId)
+      throw new (require('@nestjs/common').BadRequestException)(
+        'courseId is required.',
+      );
     await this.assertCourseInScope(courseId, arenaUser);
 
-    return this.questionsService.importCsv(courseId, file.buffer.toString('utf-8'));
+    return this.questionsService.importCsv(
+      courseId,
+      file.buffer.toString('utf-8'),
+      resourceId,
+    );
   }
 
-  private async assertCourseInScope(courseId: string, arenaUser: { role: string | null; schoolId: string }) {
+  private async assertCourseInScope(
+    courseId: string,
+    arenaUser: { role: string | null; schoolId: string },
+  ) {
     const course = await this.db.query.arenaCourses.findFirst({
       where: (c, { eq }) => eq(c.id, courseId),
     });
     if (!course) throw new NotFoundException('Course not found.');
     if (arenaUser.role !== 'admin' && course.schoolId !== arenaUser.schoolId) {
-      throw new ForbiddenException('Cannot manage questions for a course outside your school.');
+      throw new ForbiddenException(
+        'Cannot manage questions for a course outside your school.',
+      );
     }
     return course;
   }

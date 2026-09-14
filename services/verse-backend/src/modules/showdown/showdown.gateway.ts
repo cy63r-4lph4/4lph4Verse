@@ -12,7 +12,10 @@ import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
-import { WsJwtGuard, extractSocketToken } from '../gateway/strategies/ws-jwt.guard';
+import {
+  WsJwtGuard,
+  extractSocketToken,
+} from '../gateway/strategies/ws-jwt.guard';
 import { ShowdownService } from './showdown.service';
 import { ArenaIdentityService } from '../arena/arena-identity.service';
 
@@ -24,7 +27,9 @@ function userRoomFor(arenaUserId: string) {
 }
 
 @WebSocketGateway({ namespace: '/showdown', cors: { origin: '*' } })
-export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ShowdownGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(ShowdownGateway.name);
   /** One timer handle per live duel — prevents duplicate tick loops from concurrent joins. */
@@ -39,7 +44,7 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     private readonly identity: ArenaIdentityService,
     private readonly jwtService: JwtService,
     @Inject('DB') private db: NodePgDatabase<typeof schema>,
-  ) { }
+  ) {}
 
   async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -51,9 +56,12 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       const payload = this.jwtService.verify(token);
       const arenaUser = await this.identity.resolve(payload.sub);
 
-      (client.data as any).user = { id: payload.sub, username: payload.username };
-      (client.data as any).arenaUserId = arenaUser.id;
-      (client.data as any).role = arenaUser.role;
+      client.data.user = {
+        id: payload.sub,
+        username: payload.username,
+      };
+      client.data.arenaUserId = arenaUser.id;
+      client.data.role = arenaUser.role;
 
       await client.join(userRoomFor(arenaUser.id));
     } catch {
@@ -65,7 +73,7 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
     const showdownId = this.clientShowdown.get(client.id);
-    const arenaUserId = (client.data as any)?.arenaUserId;
+    const arenaUserId = client.data?.arenaUserId;
     if (showdownId && arenaUserId) {
       this.duelPresence.get(showdownId)?.delete(arenaUserId);
     }
@@ -84,11 +92,16 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       await client.join(roomFor(payload.showdownId));
       this.clientShowdown.set(client.id, payload.showdownId);
       await this.healStaleDuelQuestion(payload.showdownId);
-      await this.trackDuelPresence(payload.showdownId, this.arenaUserId(client));
+      await this.trackDuelPresence(
+        payload.showdownId,
+        this.arenaUserId(client),
+      );
       const state = await this.showdownService.getFullState(payload.showdownId);
       client.emit('showdown:state', state);
     } catch (err: any) {
-      client.emit('showdown:error', { message: err.message ?? 'Failed to join showdown.' });
+      client.emit('showdown:error', {
+        message: err.message ?? 'Failed to join showdown.',
+      });
     }
   }
 
@@ -101,7 +114,13 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('showdown:build-bracket')
   async handleBuildBracket(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { showdownId: string; arenaUserIds: string[]; courseId?: string; title?: string },
+    @MessageBody()
+    payload: {
+      showdownId: string;
+      arenaUserIds: string[];
+      courseId?: string;
+      title?: string;
+    },
   ) {
     await this.runControlAction(client, payload.showdownId, () =>
       this.showdownService.buildBracket(
@@ -111,7 +130,11 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
       ),
     );
     if (payload.courseId && payload.title) {
-      this.notifyCourseTournamentLive(payload.courseId, payload.showdownId, payload.title);
+      this.notifyCourseTournamentLive(
+        payload.courseId,
+        payload.showdownId,
+        payload.title,
+      );
     }
   }
 
@@ -169,23 +192,38 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: { showdownId: string },
   ) {
     await this.runControlAction(client, payload.showdownId, () =>
-      this.showdownService.advance(payload.showdownId, this.arenaUserId(client)),
+      this.showdownService.advance(
+        payload.showdownId,
+        this.arenaUserId(client),
+      ),
     );
   }
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('showdown:reset')
-  async handleReset(@ConnectedSocket() client: Socket, @MessageBody() payload: { showdownId: string }) {
+  async handleReset(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { showdownId: string },
+  ) {
     await this.runControlAction(client, payload.showdownId, () =>
-      this.showdownService.resetTournament(payload.showdownId, this.arenaUserId(client)),
+      this.showdownService.resetTournament(
+        payload.showdownId,
+        this.arenaUserId(client),
+      ),
     );
   }
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('showdown:cancel')
-  async handleCancel(@ConnectedSocket() client: Socket, @MessageBody() payload: { showdownId: string }) {
+  async handleCancel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { showdownId: string },
+  ) {
     await this.runControlAction(client, payload.showdownId, () =>
-      this.showdownService.cancelTournament(payload.showdownId, this.arenaUserId(client)),
+      this.showdownService.cancelTournament(
+        payload.showdownId,
+        this.arenaUserId(client),
+      ),
     );
   }
 
@@ -195,7 +233,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { showdownId: string; show: boolean },
   ) {
-    this.server.to(roomFor(payload.showdownId)).emit('showdown:qr-toggle', { show: payload.show });
+    this.server
+      .to(roomFor(payload.showdownId))
+      .emit('showdown:qr-toggle', { show: payload.show });
   }
 
   // ── Duel control events (peer-initiated) ──────────────────────────────
@@ -207,7 +247,10 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: { showdownId: string },
   ) {
     try {
-      await this.showdownService.acceptDuelChallenge(payload.showdownId, this.arenaUserId(client));
+      await this.showdownService.acceptDuelChallenge(
+        payload.showdownId,
+        this.arenaUserId(client),
+      );
     } catch (err: any) {
       client.emit('showdown:error', { message: err.message });
       return;
@@ -229,7 +272,10 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: { showdownId: string },
   ) {
     try {
-      await this.showdownService.declineDuelChallenge(payload.showdownId, this.arenaUserId(client));
+      await this.showdownService.declineDuelChallenge(
+        payload.showdownId,
+        this.arenaUserId(client),
+      );
     } catch (err: any) {
       client.emit('showdown:error', { message: err.message });
       return;
@@ -245,7 +291,8 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('showdown:answer')
   async handleAnswer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: {
+    @MessageBody()
+    payload: {
       showdownId: string;
       matchQuestionId: string;
       participantId: string; // must belong to this user — checked below
@@ -257,10 +304,11 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     // Never trust participantId from the payload at face value — confirm
     // it actually maps back to the socket's own arena_user row.
     const participant = await this.db.query.showdownParticipants.findFirst({
-      where: (p, { eq, and }) => and(
-        eq(p.id, payload.participantId),
-        eq(p.arenaUserId, arenaUserId ?? ''),
-      ),
+      where: (p, { eq, and }) =>
+        and(
+          eq(p.id, payload.participantId),
+          eq(p.arenaUserId, arenaUserId ?? ''),
+        ),
     });
     if (!participant) {
       client.emit('showdown:error', { message: 'Not your participant slot.' });
@@ -274,7 +322,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
         payload.optionIndex,
       );
     } catch (err: any) {
-      client.emit('showdown:error', { message: err.message ?? 'Could not submit answer.' });
+      client.emit('showdown:error', {
+        message: err.message ?? 'Could not submit answer.',
+      });
       return;
     }
 
@@ -287,23 +337,34 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   // ── Outbound push (called from ShowdownController, not a socket event) ──
 
-  notifyChallenge(opponentArenaUserId: string, payload: {
-    showdownId: string;
-    courseId: string;
-    fromArenaUserId: string;
-    fromUsername: string;
-  }) {
+  notifyChallenge(
+    opponentArenaUserId: string,
+    payload: {
+      showdownId: string;
+      courseId: string;
+      fromArenaUserId: string;
+      fromUsername: string;
+    },
+  ) {
     // Private push to the opponent (shows accept/decline card)
-    this.server.to(userRoomFor(opponentArenaUserId)).emit('duel:challenge-received', payload);
+    this.server
+      .to(userRoomFor(opponentArenaUserId))
+      .emit('duel:challenge-received', payload);
     // Private push to the challenger (their sent challenges list)
-    this.server.to(userRoomFor(payload.fromArenaUserId)).emit('duel:challenge-sent', payload);
+    this.server
+      .to(userRoomFor(payload.fromArenaUserId))
+      .emit('duel:challenge-sent', payload);
     // Public push to the entire course feed room (everyone sees the activity card)
     this.broadcastCourseActivity(payload.courseId, 'duel:feed-activity');
   }
 
   /** Emits a signal to the course feed room that invalidates feed queries for all members.
    * Used so every fighter in the course sees challenge/accept/live events in real time. */
-  private broadcastCourseActivity(courseId: string, event: string, data?: Record<string, unknown>) {
+  private broadcastCourseActivity(
+    courseId: string,
+    event: string,
+    data?: Record<string, unknown>,
+  ) {
     this.server.to(`feed:${courseId}`).emit(event, data ?? {});
   }
 
@@ -330,15 +391,25 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     if (!activeQ?.endsAt) return;
 
     const delay = new Date(activeQ.endsAt).getTime() - Date.now();
-    setTimeout(() => {
-      this.server.to(roomFor(showdownId)).emit('showdown:time-up', { matchId });
-    }, Math.max(0, delay));
+    setTimeout(
+      () => {
+        this.server
+          .to(roomFor(showdownId))
+          .emit('showdown:time-up', { matchId });
+      },
+      Math.max(0, delay),
+    );
   }
 
-
   // showdown.gateway.ts — add, called from buildBracket's runControlAction success path
-  private notifyCourseTournamentLive(courseId: string, showdownId: string, title: string) {
-    this.server.to(`feed:${courseId}`).emit('tournament:live', { showdownId, title });
+  private notifyCourseTournamentLive(
+    courseId: string,
+    showdownId: string,
+    title: string,
+  ) {
+    this.server
+      .to(`feed:${courseId}`)
+      .emit('tournament:live', { showdownId, title });
   }
 
   /** Duel: reads the currently-active match question and schedules its auto-resolve.
@@ -360,24 +431,31 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     if (existing) clearTimeout(existing);
 
     const delay = new Date(activeQ.endsAt).getTime() - Date.now();
-    const handle = setTimeout(async () => {
-      this.duelTimers.delete(showdownId);
-      await this.showdownService.autoResolveDuelQuestion(showdownId, match.id);
-      await this.broadcastState(showdownId);
-      await this.scheduleDuelTick(showdownId);
-    }, Math.max(0, delay));
+    const handle = setTimeout(
+      async () => {
+        this.duelTimers.delete(showdownId);
+        await this.showdownService.autoResolveDuelQuestion(
+          showdownId,
+          match.id,
+        );
+        await this.broadcastState(showdownId);
+        await this.scheduleDuelTick(showdownId);
+      },
+      Math.max(0, delay),
+    );
     this.duelTimers.set(showdownId, handle);
   }
 
-
   /** Records that this arenaUserId is connected to this duel's room. Once both
- * participants of a duel in ready_check are present, activates the match. */
+   * participants of a duel in ready_check are present, activates the match. */
   private async trackDuelPresence(showdownId: string, arenaUserId: string) {
     const state = await this.showdownService.getFullState(showdownId);
     if (state.showdown.mode !== 'duel') return;
-    if (!['challenge_pending', 'ready_check'].includes(state.showdown.status)) return;
+    if (!['challenge_pending', 'ready_check'].includes(state.showdown.status))
+      return;
 
-    if (!this.duelPresence.has(showdownId)) this.duelPresence.set(showdownId, new Set());
+    if (!this.duelPresence.has(showdownId))
+      this.duelPresence.set(showdownId, new Set());
     this.duelPresence.get(showdownId)!.add(arenaUserId);
 
     if (state.showdown.status !== 'ready_check') return;
@@ -397,7 +475,8 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
    * this showdown we leave it alone to prevent duplicate loops. */
   private async healStaleDuelQuestion(showdownId: string) {
     const state = await this.showdownService.getFullState(showdownId);
-    if (state.showdown.mode !== 'duel' || state.showdown.status !== 'live') return;
+    if (state.showdown.mode !== 'duel' || state.showdown.status !== 'live')
+      return;
 
     const match = state.matches[0];
     const activeQ = match?.questions.at(-1);
@@ -439,7 +518,14 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
           if (!isActive) return q;
           return {
             ...q,
-            answers: q.answers.map(({ optionIndex: _o, isCorrect: _c, pointsAwarded: _p, ...rest }) => rest),
+            answers: q.answers.map(
+              ({
+                optionIndex: _o,
+                isCorrect: _c,
+                pointsAwarded: _p,
+                ...rest
+              }) => rest,
+            ),
           };
         }),
       })),
@@ -450,7 +536,7 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
   // ── Shared helpers ───────────────────────────────────────────────────
 
   private arenaUserId(client: Socket): string {
-    const id = (client.data as any).arenaUserId;
+    const id = client.data.arenaUserId;
     if (!id) throw new Error('Socket has not joined a showdown room yet.');
     return id;
   }
@@ -464,7 +550,9 @@ export class ShowdownGateway implements OnGatewayConnection, OnGatewayDisconnect
     try {
       await action();
     } catch (err: any) {
-      client.emit('showdown:error', { message: err.message ?? 'Action failed.' });
+      client.emit('showdown:error', {
+        message: err.message ?? 'Action failed.',
+      });
       return;
     }
     await this.broadcastState(showdownId);

@@ -1,13 +1,21 @@
 import {
-  WebSocketGateway, WebSocketServer, SubscribeMessage,
-  OnGatewayConnection, OnGatewayDisconnect, MessageBody, ConnectedSocket,
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { UseGuards, Logger, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
-import { WsJwtGuard, extractSocketToken } from '../gateway/strategies/ws-jwt.guard';
+import {
+  WsJwtGuard,
+  extractSocketToken,
+} from '../gateway/strategies/ws-jwt.guard';
 import { ArenaIdentityService } from '../arena/arena-identity.service';
 import { PresenceService } from '../presence/presence.service';
 
@@ -23,7 +31,7 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(FeedGateway.name);
   private heartbeatTimers = new Map<string, NodeJS.Timeout>(); // socket.id -> timer
   private presenceTickers = new Map<string, NodeJS.Timeout>(); // courseId -> tick
-  private courseRefCount  = new Map<string, number>();          // courseId -> # of joined sockets
+  private courseRefCount = new Map<string, number>(); // courseId -> # of joined sockets
 
   private readonly PRESENCE_TICK_MS = 20_000;
 
@@ -40,12 +48,12 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!token) return;
       const payload = this.jwtService.verify(token);
       const arenaUser = await this.identity.resolve(payload.sub);
-      (client.data as any).arenaUserId = arenaUser.id;
+      client.data.arenaUserId = arenaUser.id;
 
       const record = await this.db.query.users.findFirst({
         where: (u, { eq }) => eq(u.id, payload.sub),
       });
-      (client.data as any).username = record?.username ?? 'Unknown';
+      client.data.username = record?.username ?? 'Unknown';
     } catch {
       // unauthenticated socket — presence just won't track it
     }
@@ -57,13 +65,13 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (timer) clearInterval(timer);
     this.heartbeatTimers.delete(client.id);
 
-    const courseId = (client.data as any)?.courseId;
-    const arenaUserId = (client.data as any)?.arenaUserId;
+    const courseId = client.data?.courseId;
+    const arenaUserId = client.data?.arenaUserId;
     if (courseId && arenaUserId) {
       // Mark offline immediately so the next broadcast shows the correct state
-      this.presence.markOffline(courseId, arenaUserId).then(() =>
-        this.broadcastPresence(courseId)
-      );
+      this.presence
+        .markOffline(courseId, arenaUserId)
+        .then(() => this.broadcastPresence(courseId));
 
       // Decrement the ref-count; stop the ticker when no one is in the room
       const count = (this.courseRefCount.get(courseId) ?? 1) - 1;
@@ -87,10 +95,10 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: { courseId: string },
   ) {
     await client.join(courseRoomFor(payload.courseId));
-    (client.data as any).courseId = payload.courseId;
+    client.data.courseId = payload.courseId;
 
-    const arenaUserId = (client.data as any).arenaUserId;
-    const username = (client.data as any).username;
+    const arenaUserId = client.data.arenaUserId;
+    const username = client.data.username;
     if (!arenaUserId) return;
 
     await this.presence.heartbeat(payload.courseId, arenaUserId, username);
@@ -122,7 +130,7 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('presence:refresh')
   async handlePresenceRefresh(@ConnectedSocket() client: Socket) {
-    const courseId = (client.data as any)?.courseId;
+    const courseId = client.data?.courseId;
     if (courseId) await this.broadcastPresence(courseId);
   }
 
@@ -139,10 +147,16 @@ export class FeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('feed:new-comment', { postId, comment });
   }
 
-  notifyReaction(postId: string, payload: { arenaUserId: string; type: string; active: boolean }) {
+  notifyReaction(
+    postId: string,
+    payload: { arenaUserId: string; type: string; active: boolean },
+  ) {
     this.server.emit('feed:reaction', { postId, ...payload });
   }
-  notifyTournamentLive(courseId: string, payload: { showdownId: string; title: string }) {
+  notifyTournamentLive(
+    courseId: string,
+    payload: { showdownId: string; title: string },
+  ) {
     this.server.to(`feed:${courseId}`).emit('tournament:live', payload);
   }
 }
