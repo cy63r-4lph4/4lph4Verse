@@ -238,6 +238,13 @@ export class ShowdownController {
     );
   }
 
+  @Get('async-duel/list')
+  async listAsyncDuels(@Query('courseId') courseId: string, @Request() req) {
+    if (!courseId) throw new BadRequestException('courseId is required.');
+    const arenaUser = await this.identity.resolve(req.user.id);
+    return this.showdownService.getAsyncDuelsList(courseId, arenaUser.id);
+  }
+
   @Get('async-duel/:id')
   async getAsyncDuelState(@Param('id') id: string, @Request() req) {
     const arenaUser = await this.identity.resolve(req.user.id);
@@ -268,13 +275,6 @@ export class ShowdownController {
     }
 
     return state;
-  }
-
-  @Get('async-duel/list')
-  async listAsyncDuels(@Query('courseId') courseId: string, @Request() req) {
-    if (!courseId) throw new BadRequestException('courseId is required.');
-    const arenaUser = await this.identity.resolve(req.user.id);
-    return this.showdownService.getAsyncDuelsList(courseId, arenaUser.id);
   }
 
   @Get('opponents/search')

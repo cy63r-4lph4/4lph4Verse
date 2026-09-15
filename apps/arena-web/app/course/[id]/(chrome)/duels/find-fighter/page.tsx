@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { Search, Radar, Crosshair, User, AlertCircle, ChevronLeft } from "lucide-react";
+import { Search, Radar, Crosshair, User, AlertCircle, ChevronLeft, BookOpen, Tag } from "lucide-react";
 import { useAsyncDuel, OpponentSearchMember } from "@verse/arena-web/hooks/useAsyncDuel";
+import { api } from "@verse/arena-web/lib/api";
+import { cn } from "@verse/ui";
 
 function dicebearUrl(name: string) {
     return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
@@ -26,6 +28,21 @@ export default function FindFighterPage() {
     const [lockedOpponent, setLockedOpponent] = useState<OpponentSearchMember | null>(null);
     const [scannedOpponents, setScannedOpponents] = useState<OpponentSearchMember[]>([]);
     const [scanIndex, setScanIndex] = useState(0);
+
+    const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+    const [topics, setTopics] = useState<{ category: string, count: number }[]>([]);
+    const [topicsLoading, setTopicsLoading] = useState(true);
+    const [showTopicModal, setShowTopicModal] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!courseId) return;
+        setTopicsLoading(true);
+        api
+            .get<{ category: string, count: number }[]>(`/v1/questions/categories?courseId=${courseId}`)
+            .then((res) => setTopics(Array.isArray(res.data) ? res.data : []))
+            .catch(() => setTopics([]))
+            .finally(() => setTopicsLoading(false));
+    }, [courseId]);
 
     // Debounced manual search
     useEffect(() => {
@@ -81,7 +98,7 @@ export default function FindFighterPage() {
                     // Trigger challenge automatically after lock-on
                     setTimeout(() => {
                         if (!mounted) return;
-                        initiateChallenge(target.id);
+                        setShowTopicModal(target.id);
                     }, 1500);
                 }
             }, 150);
@@ -96,7 +113,8 @@ export default function FindFighterPage() {
 
     const initiateChallenge = (opponentId: string) => {
         setLoading(true);
-        createChallenge(opponentId, 10, 20, topic || undefined)
+        setShowTopicModal(null);
+        createChallenge(opponentId, 10, 20, selectedTopic || undefined)
             .then((showdown) => {
                 router.push(`/course/${courseId}/async-duel/${showdown.id}`);
             })
@@ -242,7 +260,7 @@ export default function FindFighterPage() {
                                 </div>
                             </div>
                             <button
-                                onClick={() => initiateChallenge(opponent.id)}
+                                onClick={() => setShowTopicModal(opponent.id)}
                                 disabled={loading}
                                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-cyan-500 text-black font-display font-black text-sm uppercase tracking-widest hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-50 active:scale-95"
                             >
@@ -254,6 +272,73 @@ export default function FindFighterPage() {
                     )}
                 </div>
             </main>
+
+            {/* TOPIC SELECTION MODAL */}
+            {showTopicModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-cyan-950/40 border border-cyan-500/30 rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Radar size={100} className="text-cyan-500" />
+                        </div>
+                        
+                        <div className="relative z-10 space-y-2">
+                            <h2 className="font-display text-2xl text-cyan-400 font-black tracking-widest uppercase">Combat Discipline</h2>
+                            <p className="font-mono text-xs text-white/50 uppercase tracking-widest">Select an intel category for this duel</p>
+                        </div>
+
+                        <div className="relative z-10">
+                            {topicsLoading ? (
+                                <div className="flex gap-2 flex-wrap">
+                                    {[80, 110, 95, 120].map((w, i) => (
+                                        <div key={i} className="h-10 rounded-xl bg-white/[0.04] border border-white/5 animate-pulse" style={{ width: w }} />
+                                    ))}
+                                </div>
+                            ) : topics.length > 0 ? (
+                                <div className="flex flex-wrap gap-3">
+                                    {topics.map((t) => {
+                                        const active = selectedTopic === t.category;
+                                        return (
+                                            <button
+                                                key={t.category}
+                                                onClick={() => setSelectedTopic(active ? null : t.category)}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all active:scale-95 text-left",
+                                                    active
+                                                        ? "bg-cyan-500 border-cyan-400 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+                                                        : "bg-cyan-950/30 border-cyan-500/20 text-cyan-100 hover:bg-cyan-900/50 hover:border-cyan-400/50"
+                                                )}
+                                            >
+                                                <Tag size={14} className={active ? "text-black" : "text-cyan-500/70"} />
+                                                <span className="text-[12px] font-black uppercase tracking-widest">{t.category}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] font-mono text-white/30 uppercase border border-cyan-500/10 rounded-xl px-4 py-3">
+                                    No disciplines available. General combat will be initiated.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-4 pt-4 relative z-10">
+                            <button
+                                onClick={() => setShowTopicModal(null)}
+                                className="flex-1 px-6 py-4 rounded-xl border border-white/10 text-white font-mono text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => initiateChallenge(showTopicModal)}
+                                disabled={loading}
+                                className="flex-1 px-6 py-4 rounded-xl bg-cyan-500 text-black font-display font-black text-sm uppercase tracking-widest hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Radar size={16} className="animate-spin" /> : "Initiate Duel"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

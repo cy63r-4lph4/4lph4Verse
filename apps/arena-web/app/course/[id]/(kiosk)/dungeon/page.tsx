@@ -226,11 +226,11 @@ export default function DungeonPage() {
             </div>
 
             {/* Category Selection */}
-            <div className="w-full max-w-sm space-y-3 mb-8">
+            <div className="w-full max-w-sm space-y-3 mb-8 max-h-[40vh] overflow-y-auto styled-scrollbar pr-2">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200",
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 shrink-0",
                   !selectedCategory
                     ? "border-red-500/60 bg-red-500/15 text-white shadow-[0_0_20px_rgba(239,68,68,0.15)]"
                     : "border-white/[0.08] bg-white/[0.03] text-white/50 hover:border-white/20 hover:text-white/70"
@@ -246,7 +246,7 @@ export default function DungeonPage() {
                   key={cat.category}
                   onClick={() => setSelectedCategory(cat.category)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200",
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 shrink-0",
                     selectedCategory === cat.category
                       ? "border-red-500/60 bg-red-500/15 text-white shadow-[0_0_20px_rgba(239,68,68,0.15)]"
                       : "border-white/[0.08] bg-white/[0.03] text-white/50 hover:border-white/20 hover:text-white/70"
