@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2';
-import { varchar } from 'drizzle-orm/pg-core';
+import { varchar, integer } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { pgTable, pgEnum } from 'drizzle-orm/pg-core';
@@ -27,6 +27,11 @@ export const arenaUser = pgTable('arena_users', {
     .references(() => arenaSchools.id, { onDelete: 'cascade' }),
 
   role: arenaRole('role').default('student'),
+
+  /** Cumulative profile XP — earned from dungeon runs and other non-competitive activities.
+   *  This is SEPARATE from the leaderboard, which uses showdown_answers.pointsAwarded. */
+  xp: integer('xp').default(0).notNull(),
+  level: integer('level').default(1).notNull(),
 
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

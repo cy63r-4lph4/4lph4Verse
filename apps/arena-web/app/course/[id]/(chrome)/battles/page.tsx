@@ -168,6 +168,25 @@ export default function DuelsHub() {
           </button>
         </section>
 
+        {/* PRACTICE DUNGEON */}
+        <section>
+          <button
+            onClick={() => router.push(`${courseBasePath}/dungeon`)}
+            className="w-full relative group overflow-hidden rounded-2xl border border-red-500/30 bg-red-500/5 p-5 transition-all active:scale-95"
+          >
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
+                <Skull size={24} className="text-red-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-sm font-black text-white uppercase tracking-tighter">Practice_Dungeon</h3>
+                <p className="text-[10px] font-mono text-red-400 uppercase tracking-widest">Solo Survival • No Rank Risk</p>
+              </div>
+              <Flame size={16} className="text-red-400 animate-pulse" />
+            </div>
+          </button>
+        </section>
+
         {/* SUPPORT WINGS — unchanged */}
         <section className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6">
           <button onClick={() => router.push(`${courseBasePath}/forge`)} className="flex flex-col items-center gap-2 p-4 md:p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all">

@@ -10,6 +10,7 @@ import { ForgeModule } from 'src/modules/forge/forge.module';
 import { ShowdownModule } from 'src/modules/showdown/showdown.module';
 import { QuestionsModule } from './modules/questions/questions.module';
 import { MailModule } from './modules/mail/mail.module';
+import { DungeonModule } from './modules/dungeon/dungeon.module';
 import { ConfigModule } from '@nestjs/config';
 
 // import { IdentityModule } from './modules/identity/identity.module'; // deferred — requires 0001_wallet_infrastructure migration
@@ -27,6 +28,7 @@ import { ConfigModule } from '@nestjs/config';
     ShowdownModule,
     QuestionsModule,
     MailModule,
+    DungeonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

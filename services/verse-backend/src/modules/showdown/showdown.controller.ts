@@ -23,6 +23,7 @@ import { CreateShowdownDto } from './dto/create-showdown.dto';
 import { BuildBracketDto } from './dto/build-bracket.dto';
 import { CreateDuelChallengeDto } from './dto/create-duel-challenge.dto';
 import { ShowdownGateway } from './showdown.gateway';
+import { MailService } from '../mail/mail.service';
 
 @Controller('v1/showdown')
 @UseGuards(JwtAuthGuard)
@@ -31,6 +32,7 @@ export class ShowdownController {
     private readonly showdownService: ShowdownService,
     private readonly identity: ArenaIdentityService,
     private readonly gateway: ShowdownGateway,
+    private readonly mailService: MailService,
     @Inject('DB') private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
@@ -198,6 +200,14 @@ export class ShowdownController {
       fromUsername: req.user.username,
     });
 
+    // Fire-and-forget email notification to the opponent
+    this.sendDuelChallengeEmail(
+      body.opponentArenaUserId,
+      req.user.username,
+      showdown.courseId,
+      showdown.id,
+    );
+
     return showdown;
   }
 
@@ -280,5 +290,47 @@ export class ShowdownController {
       arenaUser.id,
       query,
     );
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────
+
+  /**
+   * Resolve opponent email from arenaUserId and fire a duel challenge email.
+   * Entirely fire-and-forget — errors are logged but never bubble up.
+   */
+  private async sendDuelChallengeEmail(
+    opponentArenaUserId: string,
+    challengerUsername: string,
+    courseId: string,
+    showdownId: string,
+  ) {
+    try {
+      // Look up opponent's base user (for email + username)
+      const opponentArena = await this.db.query.arenaUser.findFirst({
+        where: (au, { eq }) => eq(au.id, opponentArenaUserId),
+        with: { user: true },
+      });
+      if (!opponentArena?.user?.email) return; // No email on file — skip silently
+
+      // Look up course code for the email body
+      const course = await this.db.query.arenaCourses.findFirst({
+        where: (c, { eq }) => eq(c.id, courseId),
+      });
+
+      const appUrl =
+        process.env.ARENA_FRONTEND_URL ||
+        'https://arena-community-phi.vercel.app';
+      const acceptLink = `${appUrl}/course/${courseId}/duels/challenge/${showdownId}`;
+
+      await this.mailService.sendDuelChallenge(
+        opponentArena.user.email,
+        opponentArena.user.username,
+        challengerUsername,
+        course?.code ?? courseId,
+        acceptLink,
+      );
+    } catch (err) {
+      // Silently absorb — never let email failures affect the duel flow
+    }
   }
 }

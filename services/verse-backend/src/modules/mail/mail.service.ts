@@ -4,6 +4,7 @@ import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { welcomeTemplate } from './templates/welcome';
 import { courseJoinedTemplate } from './templates/course-joined';
+import { duelChallengeTemplate } from './templates/duel-challenge';
 
 @Injectable()
 export class MailService {
@@ -72,6 +73,39 @@ export class MailService {
     } catch (error) {
       this.logger.error(
         `Failed to send course joined email to ${email}`,
+        error,
+      );
+    }
+  }
+
+  async sendDuelChallenge(
+    email: string,
+    targetUsername: string,
+    challengerUsername: string,
+    courseCode: string,
+    acceptLink: string,
+  ) {
+    try {
+      const html = duelChallengeTemplate(
+        challengerUsername,
+        targetUsername,
+        courseCode,
+        acceptLink,
+      );
+
+      await this.transporter.sendMail({
+        from: this.fromAddress,
+        to: email,
+        subject: `⚔️ DUEL CHALLENGE // ${challengerUsername.toUpperCase()} wants to fight`,
+        html,
+      });
+
+      this.logger.log(
+        `Sent duel challenge email to ${email} (challenger: ${challengerUsername})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send duel challenge email to ${email}`,
         error,
       );
     }

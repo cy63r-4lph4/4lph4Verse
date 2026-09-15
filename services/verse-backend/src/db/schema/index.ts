@@ -23,6 +23,9 @@ export * from './feed_comments';
 export * from './feed_reactions';
 export * from './forge_submissions';
 
+export * from './dungeon_runs';
+export * from './dungeon_answers';
+
 export * from './wallet/supported_chains';
 export * from './wallet/wallets';
 export * from './wallet/wallet_accounts';

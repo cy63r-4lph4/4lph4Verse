@@ -13,6 +13,8 @@ import { showdowns } from 'src/db/schema/showdowns';
 import { feedReactions } from 'src/db/schema/feed_reactions';
 import { feedPosts } from 'src/db/schema/feed_posts';
 import { feedComments } from 'src/db/schema/feed_comments';
+import { dungeonRuns } from './dungeon_runs';
+import { dungeonAnswers } from './dungeon_answers';
 import { forgeSubmissions } from 'src/db/schema/forge_submissions';
 import { verseProfiles } from './core/verse_profiles';
 import { profileContacts } from './core/profile_contacts';
@@ -63,6 +65,7 @@ export const arenaUserRelations = relations(arenaUser, ({ one, many }) => ({
     references: [arenaSchools.id],
   }),
   userCourses: many(arenaUserCourses),
+  dungeonRuns: many(dungeonRuns),
 }));
 
 // --- 3. ARENA SCHOOL (HUB) RELATIONS ---
@@ -252,5 +255,29 @@ export const arenaQuestionsRelations = relations(arenaQuestions, ({ one }) => ({
   resource: one(arenaResources, {
     fields: [arenaQuestions.resourceId],
     references: [arenaResources.id],
+  }),
+}));
+
+// --- DUNGEON RELATIONS ---
+export const dungeonRunsRelations = relations(dungeonRuns, ({ one, many }) => ({
+  arenaUser: one(arenaUser, {
+    fields: [dungeonRuns.arenaUserId],
+    references: [arenaUser.id],
+  }),
+  course: one(arenaCourses, {
+    fields: [dungeonRuns.courseId],
+    references: [arenaCourses.id],
+  }),
+  answers: many(dungeonAnswers),
+}));
+
+export const dungeonAnswersRelations = relations(dungeonAnswers, ({ one }) => ({
+  run: one(dungeonRuns, {
+    fields: [dungeonAnswers.runId],
+    references: [dungeonRuns.id],
+  }),
+  question: one(arenaQuestions, {
+    fields: [dungeonAnswers.questionId],
+    references: [arenaQuestions.id],
   }),
 }));
