@@ -51,8 +51,9 @@ function JoinCourseContent() {
   const { join, isVerifying, errorMessage } = useJoinSector();
   
   // 1. Fetching available sectors for radar search
+  const token = typeof window !== "undefined" ? localStorage.getItem("arena_token") : null;
   const { data: availableSectors = [], isLoading: sectorsLoading } = useFetch<ArenaCourse[]>(
-    "/v1/gateway/available-sectors",
+    token ? "/v1/gateway/available-sectors" : null,
     "available-sectors"
   );
 
@@ -62,8 +63,6 @@ function JoinCourseContent() {
       setMode("radar");
       return;
     }
-
-    const token = typeof window !== "undefined" ? localStorage.getItem("arena_token") : null;
 
     if (token) {
       executeDirectJoin(urlAccessKey);
