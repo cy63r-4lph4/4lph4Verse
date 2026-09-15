@@ -24,6 +24,7 @@ type AnswerFeedback = {
   isCorrect: boolean;
   correctIndex: number;
   explanation: string | null;
+  resourceId?: string;
   xpEarned: number;
   streak: number;
   livesRemaining: number;
@@ -445,6 +446,19 @@ export default function DungeonPage() {
                         </div>
                         <p className="text-white/70 text-sm leading-relaxed">{feedback.explanation}</p>
                       </div>
+                    )}
+
+                    {/* Review Intel Link */}
+                    {feedback.resourceId && !feedback.isCorrect && (
+                      <a 
+                        href={`/course/${courseId}/materials?datapad=${feedback.resourceId}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="w-full py-3 rounded-xl flex items-center justify-center gap-2 font-display text-sm uppercase tracking-[.2em] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all active:scale-[0.98]"
+                      >
+                        <BookOpen size={16} />
+                        Review Intel
+                      </a>
                     )}
 
                     {/* Continue button */}

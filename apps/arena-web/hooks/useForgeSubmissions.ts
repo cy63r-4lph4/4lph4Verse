@@ -16,7 +16,7 @@ export function useForgeSubmit(courseId: string) {
   return useMutation({
     mutationFn: async (payload: {
       prompt: string; options: string[]; correctIndex: number;
-      difficulty?: string; category?: string;
+      difficulty?: string; category?: string; resourceId?: string;
     }) => (await api.post("/v1/forge", { courseId, ...payload })).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["forge-mine", courseId] }),
   });

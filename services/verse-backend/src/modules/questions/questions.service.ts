@@ -103,9 +103,14 @@ export class QuestionsService {
     return { deleted: true };
   }
 
-  async list(courseId: string) {
+  async list(courseId: string, resourceId?: string) {
     return this.db.query.arenaQuestions.findMany({
-      where: (q, { eq }) => eq(q.courseId, courseId),
+      where: (q, { eq, and }) => {
+        if (resourceId) {
+          return and(eq(q.courseId, courseId), eq(q.resourceId, resourceId));
+        }
+        return eq(q.courseId, courseId);
+      },
       orderBy: (q, { desc }) => [desc(q.createdAt)],
     });
   }

@@ -9,6 +9,7 @@ export * from './arena_universities';
 export * from './arena_courses';
 export * from './arena_user_courses';
 export * from './arena_resources';
+export * from './arena_resource_progress';
 export * from './relations';
 
 export * from './arena_questions';

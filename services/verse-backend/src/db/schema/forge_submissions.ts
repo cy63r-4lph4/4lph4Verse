@@ -40,6 +40,8 @@ export const forgeSubmissions = pgTable('forge_submissions', {
 
   status: forgeSubmissionStatus('status').default('pending').notNull(),
 
+  resourceId: text('resource_id'),
+
   reviewedByArenaUserId: text('reviewed_by_arena_user_id').references(
     () => arenaUser.id,
     { onDelete: 'set null' },

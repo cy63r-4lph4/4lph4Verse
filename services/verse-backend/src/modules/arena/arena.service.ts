@@ -430,6 +430,52 @@ export class ArenaService {
     return { deleted: true };
   }
 
+  async getUserResourceProgress(arenaUserId: string, courseId: string) {
+    // Get all progress records for resources in this course
+    const resources = await this.getCourseResources(courseId);
+    const resourceIds = resources.map((r) => r.id);
+    if (resourceIds.length === 0) return [];
+
+    return this.db.query.arenaResourceProgress.findMany({
+      where: (p: any, { and, eq, inArray }: any) =>
+        and(
+          eq(p.arenaUserId, arenaUserId),
+          inArray(p.resourceId, resourceIds),
+        ),
+    });
+  }
+
+  async updateResourceProgress(
+    arenaUserId: string,
+    resourceId: string,
+    progress: number,
+  ) {
+    const isCompleted = progress >= 100;
+
+    const [updated] = await this.db
+      .insert(schema.arenaResourceProgress)
+      .values({
+        arenaUserId,
+        resourceId,
+        progress,
+        isCompleted,
+      })
+      .onConflictDoUpdate({
+        target: [
+          schema.arenaResourceProgress.arenaUserId,
+          schema.arenaResourceProgress.resourceId,
+        ],
+        set: {
+          progress,
+          isCompleted,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+
+    return updated;
+  }
+
   // ── Platform stats ───────────────────────────────────────────────────
 
   async getPlatformStats() {

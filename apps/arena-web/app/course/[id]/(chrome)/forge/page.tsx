@@ -6,12 +6,14 @@ import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import { ForgeAnvil } from "@verse/arena-web/components/ui/forge/ForgeAnvil";
 import { SubmissionStatusList } from "@verse/arena-web/components/ui/forge/SubmissionStatusList";
 import { useForgeMine, useForgeSubmit } from "@verse/arena-web/hooks/useForgeSubmissions";
+import { useResources } from "@verse/arena-web/hooks/useResources";
 
 export default function ForgePage() {
   const params = useParams<{ id: string }>();
   const courseId = params.id;
 
   const { data: mine = [], isLoading } = useForgeMine(courseId);
+  const { data: resources } = useResources(courseId);
   const submit = useForgeSubmit(courseId);
 
   const approvedCount = mine.filter((s: any) => s.status === "approved").length;
@@ -37,6 +39,7 @@ export default function ForgePage() {
         <ForgeAnvil
           onSubmit={(payload) => submit.mutate(payload)}
           isSubmitting={submit.isPending}
+          resources={resources}
         />
 
         <div className="space-y-3">

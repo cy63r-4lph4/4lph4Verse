@@ -19,6 +19,7 @@ import { forgeSubmissions } from 'src/db/schema/forge_submissions';
 import { verseProfiles } from './core/verse_profiles';
 import { profileContacts } from './core/profile_contacts';
 import { arenaResources } from './arena_resources';
+import { arenaResourceProgress } from './arena_resource_progress';
 
 // --- 1. CORE USER RELATIONS ---
 export const usersRelations = relations(users, ({ one }) => ({
@@ -66,6 +67,7 @@ export const arenaUserRelations = relations(arenaUser, ({ one, many }) => ({
   }),
   userCourses: many(arenaUserCourses),
   dungeonRuns: many(dungeonRuns),
+  resourceProgress: many(arenaResourceProgress),
 }));
 
 // --- 3. ARENA SCHOOL (HUB) RELATIONS ---
@@ -244,6 +246,7 @@ export const arenaResourcesRelations = relations(
       references: [arenaCourses.id],
     }),
     questions: many(arenaQuestions),
+    progress: many(arenaResourceProgress),
   }),
 );
 
@@ -281,3 +284,17 @@ export const dungeonAnswersRelations = relations(dungeonAnswers, ({ one }) => ({
     references: [arenaQuestions.id],
   }),
 }));
+
+export const arenaResourceProgressRelations = relations(
+  arenaResourceProgress,
+  ({ one }) => ({
+    arenaUser: one(arenaUser, {
+      fields: [arenaResourceProgress.arenaUserId],
+      references: [arenaUser.id],
+    }),
+    resource: one(arenaResources, {
+      fields: [arenaResourceProgress.resourceId],
+      references: [arenaResources.id],
+    }),
+  }),
+);

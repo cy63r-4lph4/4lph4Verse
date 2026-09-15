@@ -183,6 +183,7 @@ export class DungeonService {
       isCorrect,
       correctIndex: question.correctIndex,
       explanation: question.explanation,
+      resourceId: question.resourceId,
       xpEarned,
       streak: newStreak,
       livesRemaining: newLivesRemaining,

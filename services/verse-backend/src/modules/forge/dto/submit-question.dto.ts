@@ -33,4 +33,8 @@ export class SubmitQuestionDto {
   @IsOptional()
   @IsString()
   category?: string;
+
+  @IsOptional()
+  @IsString()
+  resourceId?: string;
 }

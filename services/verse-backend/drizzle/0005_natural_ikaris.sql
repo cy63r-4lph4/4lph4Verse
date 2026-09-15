@@ -1,0 +1,1 @@
+ALTER TABLE "forge_submissions" ADD COLUMN "resource_id" text;

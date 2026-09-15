@@ -77,6 +77,26 @@ export class ArenaController {
     return this.arenaService.getCourseResources(courseId);
   }
 
+  @Get('courses/:id/resources/progress')
+  async getUserResourceProgress(@Param('id') courseId: string, @Request() req) {
+    const arenaUser = await this.identity.resolve(req.user.id);
+    return this.arenaService.getUserResourceProgress(arenaUser.id, courseId);
+  }
+
+  @Patch('courses/:id/resources/:resId/progress')
+  async updateResourceProgress(
+    @Param('resId') resId: string,
+    @Body() body: { progress: number },
+    @Request() req
+  ) {
+    const arenaUser = await this.identity.resolve(req.user.id);
+    return this.arenaService.updateResourceProgress(
+      arenaUser.id,
+      resId,
+      body.progress,
+    );
+  }
+
   @Post('courses/:id/resources')
   async createResource(
     @Param('id') courseId: string,

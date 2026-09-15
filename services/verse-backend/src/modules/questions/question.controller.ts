@@ -54,12 +54,15 @@ export class QuestionController {
   }
 
   @Get()
-  async list(@Query('courseId') courseId: string) {
+  async list(
+    @Query('courseId') courseId: string,
+    @Query('resourceId') resourceId?: string,
+  ) {
     if (!courseId)
       throw new (require('@nestjs/common').BadRequestException)(
         'courseId is required.',
       );
-    return this.questionsService.list(courseId);
+    return this.questionsService.list(courseId, resourceId);
   }
 
   @Patch(':id')

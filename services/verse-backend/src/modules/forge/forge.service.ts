@@ -25,6 +25,7 @@ export class ForgeService {
       correctIndex: number;
       difficulty?: 'easy' | 'medium' | 'hard';
       category?: string;
+      resourceId?: string;
     },
   ) {
     if (dto.correctIndex >= dto.options.length) {
@@ -43,6 +44,7 @@ export class ForgeService {
         correctIndex: dto.correctIndex,
         difficulty: dto.difficulty ?? 'medium',
         category: dto.category,
+        resourceId: dto.resourceId,
       })
       .returning();
 

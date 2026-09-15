@@ -13,8 +13,10 @@ interface ForgeAnvilProps {
   onSubmit: (payload: {
     prompt: string; options: string[]; correctIndex: number;
     difficulty: "easy" | "medium" | "hard"; category?: string;
+    resourceId?: string;
   }) => void;
   isSubmitting?: boolean;
+  resources?: { id: string; title: string }[];
 }
 
 const TYPE_CONFIG: Record<QuestionType, { icon: React.ElementType; label: string; desc: string }> = {
@@ -22,13 +24,14 @@ const TYPE_CONFIG: Record<QuestionType, { icon: React.ElementType; label: string
   "true-false": { icon: ToggleLeft, label: "True / False", desc: "A binary claim to verify" },
 };
 
-export function ForgeAnvil({ onSubmit, isSubmitting }: ForgeAnvilProps) {
+export function ForgeAnvil({ onSubmit, isSubmitting, resources }: ForgeAnvilProps) {
   const [type, setType] = useState<QuestionType | null>(null);
   const [prompt, setPrompt] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [category, setCategory] = useState("");
+  const [resourceId, setResourceId] = useState("");
   const [struck, setStruck] = useState(false);
 
   const options = type ? optionsForType(type, mcqOptions) : [];
@@ -63,6 +66,7 @@ export function ForgeAnvil({ onSubmit, isSubmitting }: ForgeAnvilProps) {
     setCorrectIndex(0);
     setDifficulty("medium");
     setCategory("");
+    setResourceId("");
   }
 
   function strike() {
@@ -75,6 +79,7 @@ export function ForgeAnvil({ onSubmit, isSubmitting }: ForgeAnvilProps) {
         correctIndex,
         difficulty,
         category: category.trim() || undefined,
+        resourceId: resourceId || undefined,
       });
       setStruck(false);
       reset();
@@ -204,7 +209,7 @@ export function ForgeAnvil({ onSubmit, isSubmitting }: ForgeAnvilProps) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as any)}
@@ -221,6 +226,21 @@ export function ForgeAnvil({ onSubmit, isSubmitting }: ForgeAnvilProps) {
                 className="rounded-xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-sm text-white/80 outline-none focus:border-orange-500/40"
               />
             </div>
+            
+            {resources && resources.length > 0 && (
+              <div className="mb-4">
+                <select
+                  value={resourceId}
+                  onChange={(e) => setResourceId(e.target.value)}
+                  className="w-full rounded-xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-sm text-white/80 outline-none focus:border-cyan-500/40"
+                >
+                  <option value="">Associate with a Datapad (Optional)</option>
+                  {resources.map((r) => (
+                    <option key={r.id} value={r.id}>Datapad: {r.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <motion.button
               onClick={strike}
