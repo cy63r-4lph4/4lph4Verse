@@ -84,7 +84,7 @@ export default function DungeonPage() {
 
   // ── Load categories on mount ──────────────────────────────────────────
   useEffect(() => {
-    api.get(`v1/questions/courses/${courseId}/categories`)
+    api.get(`v1/questions/categories?courseId=${courseId}`)
       .then((res) => setCategories(res.data))
       .catch(() => setCategories([]));
   }, [courseId]);

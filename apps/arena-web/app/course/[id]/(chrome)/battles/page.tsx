@@ -203,18 +203,6 @@ export default function DuelsHub() {
           </button>
         </section>
 
-        {/* PRACTICE DUNGEON — link kept, backend not implemented yet */}
-        <section>
-          <button onClick={() => router.push(`${courseBasePath}/practice`)} className="w-full flex items-center gap-4 p-4 md:p-6 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all group">
-            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:rotate-12 transition-transform">
-              <Skull size={20} className="text-red-500" />
-            </div>
-            <div className="flex-1 text-left">
-              <h4 className="text-[11px] font-black text-white uppercase">Practice_Dungeon</h4>
-              <p className="text-[9px] font-mono text-red-500/60 uppercase">Review_Missed_Data</p>
-            </div>
-          </button>
-        </section>
 
         {/* COMBAT DISCIPLINES — fetched live from the question bank categories */}
         <section className="space-y-3">

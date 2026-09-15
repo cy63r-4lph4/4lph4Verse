@@ -1,8 +1,9 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Skull, Flame, ArrowRight, Brain, Zap, Target } from "lucide-react";
+import { Skull, Flame, ArrowLeft, ArrowRight, Brain, Zap, Target } from "lucide-react";
 import { cn } from "@verse/ui";
+import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 
 export default function PracticeHubPage() {
   const params = useParams<{ id: string }>();
@@ -10,7 +11,8 @@ export default function PracticeHubPage() {
   const courseBasePath = `/course/${params.id}`;
 
   return (
-    <div className="min-h-screen w-full pb-40">
+    <EnergyBackground className="h-dvh w-full flex flex-col overflow-hidden" variant="battle">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-40">
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 px-4 h-16 flex items-center justify-between">
         <div className="text-left">
@@ -71,7 +73,8 @@ export default function PracticeHubPage() {
         </section>
 
       </main>
-    </div>
+      </div>
+    </EnergyBackground>
   );
 }
 
