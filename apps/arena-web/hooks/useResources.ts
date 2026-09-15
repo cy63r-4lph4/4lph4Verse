@@ -16,7 +16,7 @@ export function useResources(courseId: string) {
   const query = useQuery({
     queryKey: ["resources", courseId],
     queryFn: async () => {
-      const res = await api.get(`/arena/courses/${courseId}/resources`);
+      const res = await api.get(`/v1/arena/courses/${courseId}/resources`);
       return res.data as ArenaResource[];
     },
     enabled: !!courseId,
@@ -24,7 +24,7 @@ export function useResources(courseId: string) {
 
   const create = useMutation({
     mutationFn: async (data: { title: string; content: string; isPublished: boolean }) => {
-      const res = await api.post(`/arena/courses/${courseId}/resources`, data);
+      const res = await api.post(`/v1/arena/courses/${courseId}/resources`, data);
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["resources", courseId] }),
@@ -32,7 +32,7 @@ export function useResources(courseId: string) {
 
   const update = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; content: string; isPublished: boolean }> }) => {
-      const res = await api.patch(`/arena/courses/${courseId}/resources/${id}`, data);
+      const res = await api.patch(`/v1/arena/courses/${courseId}/resources/${id}`, data);
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["resources", courseId] }),
@@ -40,7 +40,7 @@ export function useResources(courseId: string) {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.delete(`/arena/courses/${courseId}/resources/${id}`);
+      const res = await api.delete(`/v1/arena/courses/${courseId}/resources/${id}`);
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["resources", courseId] }),
@@ -63,7 +63,7 @@ export function useResourceProgress(courseId: string) {
   const query = useQuery({
     queryKey: ["resource-progress", courseId],
     queryFn: async () => {
-      const res = await api.get(`/arena/courses/${courseId}/resources/progress`);
+      const res = await api.get(`/v1/arena/courses/${courseId}/resources/progress`);
       return res.data as ResourceProgress[];
     },
     enabled: !!courseId,
@@ -71,7 +71,7 @@ export function useResourceProgress(courseId: string) {
 
   const updateProgress = useMutation({
     mutationFn: async ({ resourceId, progress }: { resourceId: string; progress: number }) => {
-      const res = await api.patch(`/arena/courses/${courseId}/resources/${resourceId}/progress`, { progress });
+      const res = await api.patch(`/v1/arena/courses/${courseId}/resources/${resourceId}/progress`, { progress });
       return res.data;
     },
     onMutate: async ({ resourceId, progress }) => {

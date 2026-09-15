@@ -51,7 +51,7 @@ export function CodexClient({ courseId }: { courseId: string }) {
   const handleDownloadPdf = async (resId: string, title: string) => {
     setIsDownloading(true);
     try {
-      const res = await api.get(`/arena/courses/${courseId}/resources/${resId}/download`, { responseType: 'blob' });
+      const res = await api.get(`/v1/arena/courses/${courseId}/resources/${resId}/download`, { responseType: 'blob' });
       const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
       a.href = url;

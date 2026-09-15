@@ -48,7 +48,6 @@ export default function DuelsHub() {
 
   const [asyncDuels, setAsyncDuels] = useState<any[]>([]);
   const [duelsLoading, setDuelsLoading] = useState(true);
-  const [duelsLoading, setDuelsLoading] = useState(true);
   const [matchmaking, setMatchmaking] = useState(false);
 
   const loadDuels = useCallback(() => {
