@@ -3,9 +3,46 @@ import { ArenaLogo } from "@verse/arena-web/components/ui/ArenaLogo";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@verse/arena-web/lib/api";
 
 export default function Home() {
   const router = useRouter();
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("arena_token") : null;
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["profile-home"],
+    queryFn: async () => {
+      const res = await api.get('/v1/gateway/profile');
+      return res.data;
+    },
+    enabled: !!token,
+    retry: false
+  });
+
+  useEffect(() => {
+    if (profile) {
+      if (profile.role === "admin") {
+        router.push("/su");
+        return;
+      }
+      const sectors = profile.sectors || [];
+      if (sectors.length === 1) {
+        router.push(`/course/${sectors[0].id}`);
+      } else {
+        router.push("/lobby");
+      }
+    }
+  }, [profile, router]);
+
+  if (isLoading && token) {
+    return (
+      <EnergyBackground className="flex flex-col items-center justify-center fixed inset-0 h-screen">
+        <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+      </EnergyBackground>
+    );
+  }
 
   return (
     <EnergyBackground className="flex flex-col items-center justify-center fixed inset-0 h-screen pt-4 pb-12 w-full">
