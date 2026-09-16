@@ -481,8 +481,8 @@ export default function DungeonPage() {
 
         {/* ── RUN OVER ──────────────────────────────────────────────── */}
         {phase === "over" && (
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-            <div className="text-center max-w-sm">
+          <div className="flex-1 flex flex-col items-center px-6 py-8 overflow-y-auto styled-scrollbar w-full">
+            <div className="text-center max-w-sm w-full my-auto">
               {/* Death icon */}
               <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-6">
                 <Skull size={36} className="text-red-400" />
