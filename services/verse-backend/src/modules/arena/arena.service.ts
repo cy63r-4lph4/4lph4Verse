@@ -321,8 +321,10 @@ export class ArenaService {
       .map((m: any) => ({
         userId: m.user.id,
         score: prevScoreMap.get(m.user.id) || 0,
+        hasDueled: prevScoreMap.has(m.user.id),
         joinedAt: m.joinedAt,
       }))
+      .filter((m: any) => m.score > 0 || m.hasDueled)
       .sort(
         (a, b) =>
           b.score - a.score || a.joinedAt.getTime() - b.joinedAt.getTime(),
@@ -338,7 +340,9 @@ export class ArenaService {
       .map((m: any) => ({
         ...m,
         computedWeeklyScore: currentScoreMap.get(m.user.id) || 0,
+        hasDueled: currentScoreMap.has(m.user.id),
       }))
+      .filter((m: any) => m.computedWeeklyScore > 0 || m.hasDueled)
       .sort(
         (a, b) =>
           b.computedWeeklyScore - a.computedWeeklyScore ||
