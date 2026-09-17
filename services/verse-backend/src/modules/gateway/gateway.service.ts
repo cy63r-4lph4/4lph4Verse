@@ -549,7 +549,7 @@ export class GatewayService {
         icon: '👑',
         name: 'Top Tier',
         description: 'Reach top 3 in a sector',
-        unlocked: sectorsWithRank.some((s) => s.rank <= 3),
+        unlocked: sectorsWithRank.some((s) => s.rank <= 3 && s.score > 0),
       },
       {
         icon: '🛡️',

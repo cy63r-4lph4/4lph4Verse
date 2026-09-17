@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, asc, inArray } from 'drizzle-orm';
+import { eq, asc, inArray, and, or, isNotNull } from 'drizzle-orm';
 import * as schema from '../../db/schema';
 import { buildFirstRound } from './bracket.util';
 import { QuestionsService } from 'src/modules/questions/questions.service';
@@ -1142,13 +1142,62 @@ export class ShowdownService {
       );
     }
 
-    return filtered.map((m) => ({
-      id: m.id,
-      username: m.user.username,
-      // Using a mock rank/win rate since this isn't implemented in schema yet
-      rank: 1,
-      winRate: 50,
-    }));
+    const filteredIds = filtered.map((m) => m.id);
+    const statsMap = new Map<string, { wins: number; matches: number }>();
+    for (const id of filteredIds) statsMap.set(id, { wins: 0, matches: 0 });
+
+    if (filteredIds.length > 0) {
+      const participants = await this.db.query.showdownParticipants.findMany({
+        where: (sp, { inArray }) => inArray(sp.arenaUserId, filteredIds),
+        columns: { id: true, arenaUserId: true },
+      });
+
+      const participantMap = new Map<string, string>();
+      for (const p of participants) participantMap.set(p.id, p.arenaUserId);
+      const pIds = participants.map((p) => p.id);
+
+      if (pIds.length > 0) {
+        const matches = await this.db
+          .select({
+            winnerId: schema.showdownMatches.winnerId,
+            playerAId: schema.showdownMatches.playerAId,
+            playerBId: schema.showdownMatches.playerBId,
+          })
+          .from(schema.showdownMatches)
+          .where(
+            and(
+              or(
+                inArray(schema.showdownMatches.playerAId, pIds),
+                inArray(schema.showdownMatches.playerBId, pIds),
+              ),
+              isNotNull(schema.showdownMatches.winnerId),
+            ),
+          );
+
+        for (const m of matches) {
+          if (m.playerAId && participantMap.has(m.playerAId)) {
+            const uId = participantMap.get(m.playerAId)!;
+            statsMap.get(uId)!.matches++;
+            if (m.winnerId === m.playerAId) statsMap.get(uId)!.wins++;
+          }
+          if (m.playerBId && participantMap.has(m.playerBId)) {
+            const uId = participantMap.get(m.playerBId)!;
+            statsMap.get(uId)!.matches++;
+            if (m.winnerId === m.playerBId) statsMap.get(uId)!.wins++;
+          }
+        }
+      }
+    }
+
+    return filtered.map((m) => {
+      const stats = statsMap.get(m.id)!;
+      return {
+        id: m.id,
+        username: m.user.username,
+        rank: 1, // Still mocked until a proper leaderboard cache exists
+        winRate: stats.matches > 0 ? Math.round((stats.wins / stats.matches) * 100) : 0,
+      };
+    });
   }
 
   async getAsyncDuelsList(courseId: string, arenaUserId: string) {
