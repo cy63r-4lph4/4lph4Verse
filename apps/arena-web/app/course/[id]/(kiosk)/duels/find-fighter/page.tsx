@@ -286,17 +286,17 @@ export default function FindFighterPage() {
             {/* TOPIC SELECTION MODAL */}
             {showTopicModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
-                    <div className="bg-cyan-950/40 border border-cyan-500/30 rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <div className="bg-cyan-950/40 border border-cyan-500/30 rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                             <Radar size={100} className="text-cyan-500" />
                         </div>
                         
-                        <div className="relative z-10 space-y-2">
+                        <div className="relative z-10 space-y-2 shrink-0 mb-6">
                             <h2 className="font-display text-2xl text-cyan-400 font-black tracking-widest uppercase">Combat Discipline</h2>
                             <p className="font-mono text-xs text-white/50 uppercase tracking-widest">Select an intel category for this duel</p>
                         </div>
 
-                        <div className="relative z-10">
+                        <div className="relative z-10 overflow-y-auto flex-1 min-h-0 pr-2 pb-2 custom-scrollbar">
                             {topicsLoading ? (
                                 <div className="flex gap-2 flex-wrap">
                                     {[80, 110, 95, 120].map((w, i) => (
@@ -318,8 +318,8 @@ export default function FindFighterPage() {
                                                         : "bg-cyan-950/30 border-cyan-500/20 text-cyan-100 hover:bg-cyan-900/50 hover:border-cyan-400/50"
                                                 )}
                                             >
-                                                <Tag size={14} className={active ? "text-black" : "text-cyan-500/70"} />
-                                                <span className="text-[12px] font-black uppercase tracking-widest">{t.category}</span>
+                                                <Tag size={14} className={active ? "text-black shrink-0" : "text-cyan-500/70 shrink-0"} />
+                                                <span className="text-[12px] font-black uppercase tracking-widest leading-none">{t.category}</span>
                                             </button>
                                         );
                                     })}
@@ -331,7 +331,7 @@ export default function FindFighterPage() {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-4 pt-4 relative z-10">
+                        <div className="flex items-center gap-4 pt-6 relative z-10 shrink-0 mt-auto">
                             <button
                                 onClick={() => setShowTopicModal(null)}
                                 className="flex-1 px-6 py-4 rounded-xl border border-white/10 text-white font-mono text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
