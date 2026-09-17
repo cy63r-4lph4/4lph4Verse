@@ -190,33 +190,35 @@ export default function FindFighterPage() {
         <div className="min-h-screen w-full bg-black relative pb-40 overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#06b6d41a,transparent_70%)] z-0"></div>
 
-            <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-cyan-500/20 px-4 h-20 flex items-center gap-4">
-                <button onClick={() => router.back()} className="flex items-center gap-2 text-cyan-500/70 hover:text-cyan-400 transition-colors group">
-                    <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/20 group-hover:bg-cyan-900/50 group-hover:border-cyan-400/50 transition-all">
-                        <ChevronLeft size={20} />
+            <header className="sticky top-0 z-50 px-6 py-6 flex items-center justify-between">
+                <div className="flex items-center gap-5">
+                    <button onClick={() => router.back()} className="flex items-center justify-center w-11 h-11 rounded-full bg-white/5 border border-white/10 hover:bg-cyan-500/20 hover:border-cyan-400/50 hover:text-cyan-400 transition-all group">
+                        <ChevronLeft size={20} className="text-white/70 group-hover:text-cyan-400 transition-colors" />
+                    </button>
+                    <div>
+                        <h1 className="font-display text-2xl text-white font-black tracking-widest uppercase flex items-center gap-3">
+                            <Radar className="w-6 h-6 text-cyan-400" />
+                            Fighter Search
+                        </h1>
+                        <p className="text-[10px] font-mono text-cyan-500/60 uppercase tracking-[0.25em] mt-1">Global_Registry // Connect to peers</p>
                     </div>
-                </button>
-                <div className="flex-1">
-                    <p className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-[0.3em]">Global_Registry</p>
-                    <h1 className="font-display text-xl text-white font-black tracking-widest uppercase mt-1">Fighter Search</h1>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
-                    <Radar className="w-5 h-5 text-cyan-400" />
                 </div>
             </header>
 
             <main className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 pt-12 space-y-8 relative z-10">
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                        <Search className="w-6 h-6 text-cyan-500/50 group-focus-within:text-cyan-400 transition-colors" />
+                <div className="flex justify-center mb-10">
+                    <div className="relative group w-full max-w-lg">
+                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                            <Search className="w-5 h-5 text-cyan-500/40 group-focus-within:text-cyan-400 transition-colors" />
+                        </div>
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Identify target alias..."
+                            className="w-full bg-black/60 border border-white/10 rounded-full py-4 pl-14 pr-6 text-white font-mono text-sm tracking-wide placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:bg-cyan-950/20 focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.5)] uppercase"
+                        />
                     </div>
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="SEARCH BY ALIAS..."
-                        className="w-full bg-cyan-950/20 border border-cyan-500/30 rounded-3xl py-6 pl-16 pr-6 text-white font-display text-lg tracking-widest placeholder:text-cyan-500/30 focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/40 focus:ring-4 focus:ring-cyan-500/10 transition-all backdrop-blur-md uppercase"
-                    />
                 </div>
 
                 <div className="space-y-4 mt-8">
@@ -241,32 +243,38 @@ export default function FindFighterPage() {
                     {!loading && results.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {results.map((opponent) => (
-                                <div key={opponent.id} className="flex flex-col sm:flex-row items-center justify-between p-6 rounded-3xl border border-cyan-500/20 bg-cyan-950/20 hover:border-cyan-400 hover:bg-cyan-900/30 transition-all backdrop-blur-sm group gap-6 sm:gap-4">
-                            <div className="flex items-center gap-6 w-full sm:w-auto">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full group-hover:bg-cyan-400/30 transition-colors"></div>
-                                    <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-20 h-20 rounded-2xl bg-black border-2 border-cyan-500/50 relative z-10" />
-                                </div>
-                                <div>
-                                    <p className="font-display font-black text-2xl text-white uppercase tracking-wider">{opponent.username}</p>
-                                    <div className="flex items-center gap-4 mt-2">
-                                        <div className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-                                            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Rank: {opponent.rank}</span>
+                                <div key={opponent.id} className="relative group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-cyan-500/30 transition-all p-5 flex items-center justify-between gap-4">
+                                    {/* Hover gradient effect */}
+                                    <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -skew-x-12 -translate-x-full group-hover:translate-x-[-20%]"></div>
+                                    
+                                    <div className="flex items-center gap-5 z-10">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-cyan-500/20 blur-md rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-16 h-16 rounded-full bg-black border border-white/20 group-hover:border-cyan-400/50 transition-colors relative z-10 shadow-lg object-cover" />
                                         </div>
-                                        <div className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-                                            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Win: {opponent.winRate}%</span>
+                                        <div>
+                                            <p className="font-display font-bold text-lg text-white uppercase tracking-wider group-hover:text-cyan-300 transition-colors">{opponent.username}</p>
+                                            <div className="flex items-center gap-3 mt-1.5">
+                                                <div className="flex items-center gap-1.5 opacity-70">
+                                                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Rank</span>
+                                                    <span className="text-[11px] font-bold text-white">{opponent.rank}</span>
+                                                </div>
+                                                <div className="w-1 h-1 rounded-full bg-white/20"></div>
+                                                <div className="flex items-center gap-1.5 opacity-70">
+                                                    <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Win</span>
+                                                    <span className="text-[11px] font-bold text-white">{opponent.winRate}%</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={() => setShowTopicModal(opponent.id)}
+                                        disabled={loading}
+                                        className="relative z-10 px-6 py-2.5 rounded-full border border-cyan-500/30 text-cyan-400 font-display font-bold text-xs uppercase tracking-widest hover:bg-cyan-500 hover:text-black hover:border-cyan-500 transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(6,182,212,0)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+                                    >
+                                        Duel
+                                    </button>
                                 </div>
-                            </div>
-                            <button
-                                onClick={() => setShowTopicModal(opponent.id)}
-                                disabled={loading}
-                                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-cyan-500 text-black font-display font-black text-sm uppercase tracking-widest hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-50 active:scale-95"
-                            >
-                                Challenge
-                            </button>
-                        </div>
                             ))}
                         </div>
                     )}
