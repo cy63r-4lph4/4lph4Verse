@@ -243,26 +243,28 @@ export default function FindFighterPage() {
                     {!loading && results.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {results.map((opponent) => (
-                                <div key={opponent.id} className="relative group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-cyan-500/30 transition-all p-5 flex items-center justify-between gap-4">
+                                <div key={opponent.id} className="relative group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-cyan-500/30 transition-all p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     {/* Hover gradient effect */}
                                     <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -skew-x-12 -translate-x-full group-hover:translate-x-[-20%]"></div>
                                     
-                                    <div className="flex items-center gap-5 z-10">
-                                        <div className="relative">
+                                    <div className="flex items-center gap-4 z-10 min-w-0">
+                                        <div className="relative shrink-0">
                                             <div className="absolute inset-0 bg-cyan-500/20 blur-md rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-16 h-16 rounded-full bg-black border border-white/20 group-hover:border-cyan-400/50 transition-colors relative z-10 shadow-lg object-cover" />
+                                            <div className="w-12 h-12 rounded-full bg-cyan-950/50 border border-white/20 group-hover:border-cyan-400/50 transition-colors relative z-10 shadow-lg flex items-center justify-center overflow-hidden">
+                                                <img src={dicebearUrl(opponent.username)} alt={opponent.username} className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-display font-bold text-lg text-white uppercase tracking-wider group-hover:text-cyan-300 transition-colors">{opponent.username}</p>
-                                            <div className="flex items-center gap-3 mt-1.5">
+                                        <div className="min-w-0">
+                                            <p className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cyan-300 transition-colors truncate">{opponent.username}</p>
+                                            <div className="flex items-center gap-3 mt-1">
                                                 <div className="flex items-center gap-1.5 opacity-70">
-                                                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Rank</span>
-                                                    <span className="text-[11px] font-bold text-white">{opponent.rank}</span>
+                                                    <span className="text-[9px] font-mono text-cyan-400 uppercase tracking-widest">Rank</span>
+                                                    <span className="text-[10px] font-bold text-white">{opponent.rank}</span>
                                                 </div>
                                                 <div className="w-1 h-1 rounded-full bg-white/20"></div>
                                                 <div className="flex items-center gap-1.5 opacity-70">
-                                                    <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Win</span>
-                                                    <span className="text-[11px] font-bold text-white">{opponent.winRate}%</span>
+                                                    <span className="text-[9px] font-mono text-amber-400 uppercase tracking-widest">Win</span>
+                                                    <span className="text-[10px] font-bold text-white">{opponent.winRate}%</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -270,7 +272,7 @@ export default function FindFighterPage() {
                                     <button
                                         onClick={() => setShowTopicModal(opponent.id)}
                                         disabled={loading}
-                                        className="relative z-10 px-6 py-2.5 rounded-full border border-cyan-500/30 text-cyan-400 font-display font-bold text-xs uppercase tracking-widest hover:bg-cyan-500 hover:text-black hover:border-cyan-500 transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(6,182,212,0)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+                                        className="relative z-10 w-full sm:w-auto px-6 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 font-display font-bold text-[10px] sm:text-xs uppercase tracking-widest hover:bg-cyan-500 hover:text-black hover:border-cyan-500 transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(6,182,212,0)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
                                     >
                                         Duel
                                     </button>
