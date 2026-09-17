@@ -4,7 +4,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Download, Target } from "lucide-react";
+import { ArrowLeft, Download, Target, AlertTriangle } from "lucide-react";
 import { useResources, useResourceProgress } from "@verse/arena-web/hooks/useResources";
 import { api } from "@verse/arena-web/lib/api";
 import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
@@ -30,6 +30,7 @@ export default function DatapadReaderPage() {
 
   const [displayProgress, setDisplayProgress] = useState(storedProgress);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Highest value we've committed to the server this session. Progress only
@@ -107,7 +108,7 @@ export default function DatapadReaderPage() {
       URL.revokeObjectURL(url);
     } catch (e) {
       console.error(e);
-      alert("The download didn't complete. Try again in a moment.");
+      setDownloadError(true);
     } finally {
       setIsDownloading(false);
     }
@@ -222,6 +223,33 @@ export default function DatapadReaderPage() {
           <DatapadToc content={body} containerRef={scrollRef} />
         </div>
       </div>
+
+      {downloadError && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-black border border-red-500/30 rounded-2xl max-w-md w-full p-6 shadow-[0_0_40px_rgba(239,68,68,0.15)] animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-4 text-red-400">
+              <div className="p-3 bg-red-500/10 rounded-xl">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-black uppercase tracking-wide">Download Failed</h3>
+                <p className="font-mono text-[10px] text-red-400/60 uppercase tracking-widest">SYSTEM ERROR</p>
+              </div>
+            </div>
+            <p className="font-sans text-sm text-white/70 mb-8">
+              The codex file could not be retrieved from the server at this time. Please check your connection and try again.
+            </p>
+            <div className="flex items-center justify-end">
+              <button
+                onClick={() => setDownloadError(false)}
+                className="px-6 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-all font-display text-[10px] font-black uppercase tracking-wide"
+              >
+                Acknowledge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { BookOpen, Plus, Trash2, Edit2, CheckCircle, XCircle, FileText } from "lucide-react";
+import { BookOpen, Plus, Trash2, Edit2, CheckCircle, XCircle, FileText, Eye, AlertTriangle } from "lucide-react";
 import { cn } from "@verse/ui";
 import { useResources, ArenaResource } from "@verse/arena-web/hooks/useResources";
 
 export function DatapadsPanel({ courseId }: { courseId: string }) {
   const { data: resources = [], isLoading, create, update, remove } = useResources(courseId);
   const [isEditing, setIsEditing] = useState<Partial<ArenaResource> | null>(null);
+  const [datapadToDelete, setDatapadToDelete] = useState<string | null>(null);
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,15 +138,20 @@ export function DatapadsPanel({ courseId }: { courseId: string }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => window.open(`/course/${courseId}/materials/${res.id}`, "_blank")}
+                    className="p-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30"
+                    title="View Rendered Datapad"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button
                     onClick={() => setIsEditing(res)}
                     className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all"
                   >
                     <Edit2 size={14} />
                   </button>
                   <button
-                    onClick={() => {
-                      if (confirm("Delete this datapad?")) remove.mutate(res.id);
-                    }}
+                    onClick={() => setDatapadToDelete(res.id)}
                     className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all border border-transparent hover:border-red-500/20"
                   >
                     <Trash2 size={14} />
@@ -154,6 +160,42 @@ export function DatapadsPanel({ courseId }: { courseId: string }) {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {datapadToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-black border border-red-500/30 rounded-2xl max-w-md w-full p-6 shadow-[0_0_40px_rgba(239,68,68,0.15)] animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-4 text-red-400">
+              <div className="p-3 bg-red-500/10 rounded-xl">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-black uppercase tracking-wide">Confirm Deletion</h3>
+                <p className="font-mono text-[10px] text-red-400/60 uppercase tracking-widest">IRREVERSIBLE ACTION</p>
+              </div>
+            </div>
+            <p className="font-sans text-sm text-white/70 mb-8">
+              Are you sure you want to permanently delete this datapad? All sync progress and associated data will be purged from the archive.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setDatapadToDelete(null)}
+                className="px-4 py-2 rounded-lg font-display text-[10px] font-black text-white/50 hover:text-white uppercase tracking-wide transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  remove.mutate(datapadToDelete);
+                  setDatapadToDelete(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-all font-display text-[10px] font-black uppercase tracking-wide"
+              >
+                Execute Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
