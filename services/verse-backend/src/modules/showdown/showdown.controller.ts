@@ -22,6 +22,7 @@ import { ArenaIdentityService } from '../arena/arena-identity.service';
 import { CreateShowdownDto } from './dto/create-showdown.dto';
 import { BuildBracketDto } from './dto/build-bracket.dto';
 import { CreateDuelChallengeDto } from './dto/create-duel-challenge.dto';
+import { CreateSimulationChallengeDto } from './dto/create-simulation-challenge.dto';
 import { ShowdownGateway } from './showdown.gateway';
 import { MailService } from '../mail/mail.service';
 
@@ -214,7 +215,7 @@ export class ShowdownController {
   @Post('simulation/challenge')
   @UsePipes(new ValidationPipe({ transform: true }))
   async simulationChallenge(
-    @Body() body: CreateDuelChallengeDto,
+    @Body() body: CreateSimulationChallengeDto,
     @Request() req,
   ) {
     const arenaUser = await this.identity.resolve(req.user.id);
