@@ -230,7 +230,10 @@ export class ArenaService {
     });
 
     return memberships
-      .filter((m: any) => m.user?.user)
+      .filter(
+        (m: any) =>
+          m.user?.user && m.user.user.username !== 'Combat_Simulator_AI',
+      )
       .map((m: any) => ({
         arenaUserId: m.user.id,
         username: m.user.user.username,
@@ -317,7 +320,12 @@ export class ArenaService {
 
     // Calculate previous ranks
     const prevRanked = memberships
-      .filter((m: any) => m.user?.user && m.user.role === 'student')
+      .filter(
+        (m: any) =>
+          m.user?.user &&
+          m.user.role === 'student' &&
+          m.user.user.username !== 'Combat_Simulator_AI',
+      )
       .map((m: any) => ({
         userId: m.user.id,
         score: prevScoreMap.get(m.user.id) || 0,
@@ -336,7 +344,12 @@ export class ArenaService {
 
     // Calculate current ranks
     const currentRanked = memberships
-      .filter((m: any) => m.user?.user && m.user.role === 'student')
+      .filter(
+        (m: any) =>
+          m.user?.user &&
+          m.user.role === 'student' &&
+          m.user.user.username !== 'Combat_Simulator_AI',
+      )
       .map((m: any) => ({
         ...m,
         computedWeeklyScore: currentScoreMap.get(m.user.id) || 0,
