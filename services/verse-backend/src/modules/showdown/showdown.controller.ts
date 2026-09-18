@@ -211,6 +211,21 @@ export class ShowdownController {
     return showdown;
   }
 
+  @Post('simulation/challenge')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async simulationChallenge(
+    @Body() body: CreateDuelChallengeDto,
+    @Request() req,
+  ) {
+    const arenaUser = await this.identity.resolve(req.user.id);
+    const showdown = await this.showdownService.createSimulationDuel(
+      arenaUser.id,
+      body,
+    );
+
+    return showdown;
+  }
+
   @Post('async-duel/:id/accept')
   async acceptAsyncDuelChallenge(@Param('id') id: string, @Request() req) {
     const arenaUser = await this.identity.resolve(req.user.id);

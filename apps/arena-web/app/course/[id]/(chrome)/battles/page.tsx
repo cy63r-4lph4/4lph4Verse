@@ -42,7 +42,7 @@ export default function DuelsHub() {
   const courseBasePath = "/" + segments.slice(0, 2).join("/");
   const courseId = segments[1];
 
-  const { getDuelsList } = useAsyncDuel(courseId);
+  const { getDuelsList, createSimulationDuel } = useAsyncDuel(courseId);
   const activeTournament = useActiveTournament(courseId);
   const scheduledTournament = useScheduledTournament(courseId);
 
@@ -147,6 +147,34 @@ export default function DuelsHub() {
                 <p className="text-[10px] font-mono text-primary uppercase tracking-widest">Search &amp; Send Uplink</p>
               </div>
               <Users size={16} className="text-primary" />
+            </div>
+          </button>
+        </section>
+
+        {/* COMBAT SIMULATION */}
+        <section>
+          <button
+            onClick={async () => {
+              try {
+                 setMatchmaking(true);
+                 const duel = await createSimulationDuel(5, 20);
+                 router.push(`${courseBasePath}/async-duel/${duel.id}`);
+              } catch (e) {
+                 console.error(e);
+                 setMatchmaking(false);
+              }
+            }}
+            disabled={matchmaking}
+            className="w-full relative group overflow-hidden rounded-2xl border border-blue-500/30 bg-blue-500/5 p-5 transition-all active:scale-95 disabled:opacity-60"
+          >
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <Target size={24} className="text-blue-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-sm font-black text-white uppercase tracking-tighter">Combat_Simulation</h3>
+                <p className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">Bot Match • Safe Training</p>
+              </div>
             </div>
           </button>
         </section>

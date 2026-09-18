@@ -1,0 +1,1 @@
+ALTER TABLE "showdowns" ADD COLUMN "is_ranked" boolean DEFAULT true NOT NULL;

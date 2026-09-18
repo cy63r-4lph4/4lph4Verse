@@ -43,6 +43,13 @@
       "when": 1789487427538,
       "tag": "0005_natural_ikaris",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789721799536,
+      "tag": "0006_hesitant_marauders",
+      "breakpoints": true
     }
   ]
 }

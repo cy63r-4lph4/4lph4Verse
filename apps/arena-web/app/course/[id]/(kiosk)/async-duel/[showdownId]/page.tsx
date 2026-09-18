@@ -140,8 +140,8 @@ export default function AsyncDuelPage() {
                 {/* Floating VS Layout */}
                 <div className="w-full max-w-lg md:max-w-4xl z-10 space-y-12">
                     <div className="space-y-4 mb-8">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur-md">
-                            Async Match Initiated
+                        <div className={cn("inline-block px-4 py-1.5 rounded-full border font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur-md", showdown.isRanked === false ? "bg-blue-500/10 border-blue-500/30 text-blue-400" : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400")}>
+                            {showdown.isRanked === false ? "Simulation Initiated" : "Async Match Initiated"}
                         </div>
                         <p className="font-mono text-xs text-white/40 uppercase tracking-[0.2em]">{showdown.questionsPerMatch} Questions • {showdown.timeLimitSeconds}s / Q</p>
                     </div>
@@ -227,7 +227,9 @@ export default function AsyncDuelPage() {
             <div className="h-dvh w-full bg-black text-white flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-lg md:max-w-3xl space-y-8">
                     <div className="flex justify-between items-center border-b border-cyan-500/20 pb-4">
-                        <p className="font-mono text-xs text-cyan-500 uppercase tracking-widest">Async Match</p>
+                        <p className="font-mono text-xs text-cyan-500 uppercase tracking-widest">
+                            {showdown.isRanked === false ? <span className="text-blue-400">Combat Simulation</span> : "Async Match"}
+                        </p>
                         <p className="font-mono text-xs text-white/50 uppercase">Q {activeIndex + 1} / {match.questions.length}</p>
                     </div>
 
@@ -411,7 +413,7 @@ export default function AsyncDuelPage() {
                     </motion.div>
 
                     {/* Rank Change */}
-                    {bothDone && !isDraw && (
+                    {bothDone && !isDraw && showdown.isRanked !== false && (
                         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="bg-white/5 rounded-2xl p-4 text-center border border-white/10 backdrop-blur-md">
                             <TrendingUp size={20} className={cn("mx-auto mb-2", rankChange > 0 ? "text-green-500" : "text-red-500")} />
                             <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Rank Change</p>

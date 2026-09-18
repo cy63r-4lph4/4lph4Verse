@@ -979,6 +979,147 @@ export class ShowdownService {
     });
   }
 
+  async ensureCombatSimulatorBot(courseId: string) {
+    const username = 'Combat_Simulator_AI';
+    let user = await this.db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.username, username),
+    });
+    if (!user) {
+      const [newUser] = await this.db.insert(schema.users).values({
+        username,
+        email: 'bot@4lph4verse.local',
+        firstName: 'Combat',
+        lastName: 'Simulator',
+      }).returning();
+      user = newUser;
+    }
+    
+    let arenaProfile = await this.db.query.arenaUser.findFirst({
+      where: (au, { eq }) => eq(au.userId, user.id),
+    });
+    if (!arenaProfile) {
+      const [newProfile] = await this.db.insert(schema.arenaUser).values({
+        userId: user.id,
+      }).returning();
+      arenaProfile = newProfile;
+    }
+    
+    // ensure course enrollment
+    let courseEnrollment = await this.db.query.arenaUserCourses.findFirst({
+      where: (auc, { eq, and }) => and(eq(auc.userId, arenaProfile.id), eq(auc.courseId, courseId)),
+    });
+    if (!courseEnrollment) {
+      await this.db.insert(schema.arenaUserCourses).values({
+        userId: arenaProfile.id,
+        courseId,
+        score: 0,
+      });
+    }
+
+    return arenaProfile;
+  }
+
+  async createSimulationDuel(
+    initiatorArenaUserId: string,
+    dto: {
+      courseId: string;
+      questionsPerMatch?: number;
+      timeLimitSeconds?: number;
+      topic?: string;
+    },
+  ) {
+    const bot = await this.ensureCombatSimulatorBot(dto.courseId);
+
+    return this.db.transaction(async (tx) => {
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 48); // default 48h expiry
+
+      const [showdown] = await tx
+        .insert(schema.showdowns)
+        .values({
+          courseId: dto.courseId,
+          createdBy: initiatorArenaUserId,
+          title: dto.topic ? `Combat Simulation: ${dto.topic}` : 'Combat Simulation',
+          mode: 'async_duel',
+          status: 'live', // active immediately
+          isRanked: false,
+          questionsPerMatch: dto.questionsPerMatch ?? 10,
+          timeLimitSeconds: dto.timeLimitSeconds ?? 20,
+          matchCountdownMs: 0,
+          totalRounds: 1,
+          expiresAt,
+        })
+        .returning();
+
+      const participants = await tx
+        .insert(schema.showdownParticipants)
+        .values([
+          { showdownId: showdown.id, arenaUserId: initiatorArenaUserId },
+          { 
+             showdownId: showdown.id, 
+             arenaUserId: bot.id,
+             completedAt: new Date(),
+             asyncScore: 0 // Will update below
+          },
+        ])
+        .returning();
+
+      const [match] = await tx
+        .insert(schema.showdownMatches)
+        .values({
+          showdownId: showdown.id,
+          round: 0,
+          matchIndex: 0,
+          playerAId: participants[0].id,
+          playerBId: participants[1].id,
+          status: 'active',
+          startedAt: new Date(),
+        })
+        .returning();
+
+      // Pre-select questions — use however many the bank has, up to the requested amount
+      const bank = await tx.query.arenaQuestions.findMany({
+        where: (q, { eq, and }) =>
+          dto.topic
+            ? and(eq(q.courseId, showdown.courseId), eq(q.category, dto.topic))
+            : eq(q.courseId, showdown.courseId),
+      });
+      // Clamp to bank size so we never throw if bank is smaller than requested
+      const actualLimit = Math.min(showdown.questionsPerMatch, bank.length);
+      if (actualLimit === 0) {
+        throw new BadRequestException(
+          'No questions available in the course bank.',
+        );
+      }
+      const picked = bank.sort(() => Math.random() - 0.5).slice(0, actualLimit);
+
+      await tx.insert(schema.showdownMatchQuestions).values(
+        picked.map((q, i) => ({
+          matchId: match.id,
+          questionId: q.id,
+          questionNumber: i + 1,
+          timeLimitSeconds: showdown.timeLimitSeconds,
+        })),
+      );
+
+      if (actualLimit !== showdown.questionsPerMatch) {
+        await tx
+          .update(schema.showdowns)
+          .set({ questionsPerMatch: actualLimit })
+          .where(eq(schema.showdowns.id, showdown.id));
+        showdown.questionsPerMatch = actualLimit;
+      }
+
+      // Update bot score
+      const botScore = Math.floor((Math.random() * 0.4 + 0.5) * actualLimit * 100);
+      await tx.update(schema.showdownParticipants)
+        .set({ asyncScore: botScore })
+        .where(eq(schema.showdownParticipants.id, participants[1].id));
+
+      return showdown;
+    });
+  }
+
   async acceptAsyncDuelChallenge(
     showdownId: string,
     requesterArenaUserId: string,

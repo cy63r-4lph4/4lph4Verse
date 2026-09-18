@@ -485,6 +485,10 @@ export class GatewayService {
           completedAt: schema.showdownMatches.completedAt,
         })
         .from(schema.showdownMatches)
+        .innerJoin(
+          schema.showdowns,
+          eq(schema.showdownMatches.showdownId, schema.showdowns.id)
+        )
         .where(
           and(
             or(
@@ -492,6 +496,7 @@ export class GatewayService {
               inArray(schema.showdownMatches.playerBId, participantIds),
             ),
             isNotNull(schema.showdownMatches.winnerId),
+            eq(schema.showdowns.isRanked, true)
           ),
         )
         .orderBy(sql`${schema.showdownMatches.completedAt} DESC`);

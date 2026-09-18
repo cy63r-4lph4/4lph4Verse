@@ -32,6 +32,16 @@ export function useAsyncDuel(courseId: string) {
         return res.data;
     }, [courseId]);
 
+    const createSimulationDuel = useCallback(async (questionsPerMatch = 10, timeLimitSeconds = 20, topic?: string) => {
+        const res = await api.post('/v1/showdown/simulation/challenge', {
+            courseId,
+            questionsPerMatch,
+            timeLimitSeconds,
+            ...(topic && { topic }),
+        });
+        return res.data;
+    }, [courseId]);
+
     const getDuelsList = useCallback(async () => {
         try {
             const res = await api.get(`/v1/showdown/async-duel/list?courseId=${courseId}`);
@@ -65,6 +75,7 @@ export function useAsyncDuel(courseId: string) {
     return {
         searchOpponents,
         createChallenge,
+        createSimulationDuel,
         getDuelsList,
         getDuelState,
         submitAnswers,

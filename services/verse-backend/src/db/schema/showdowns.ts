@@ -5,6 +5,7 @@ import {
   timestamp,
   smallint,
   integer,
+  boolean,
   pgEnum,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
@@ -44,6 +45,7 @@ export const showdowns = pgTable('showdowns', {
   title: text('title').notNull(),
   status: showdownStatus('status').default('draft').notNull(),
   mode: showdownMode('mode').default('tournament').notNull(),
+  isRanked: boolean('is_ranked').default(true).notNull(),
 
   questionsPerMatch: smallint('questions_per_match').default(3).notNull(),
   timeLimitSeconds: smallint('time_limit_seconds').default(20).notNull(),
