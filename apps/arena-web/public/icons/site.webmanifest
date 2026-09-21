@@ -7,6 +7,8 @@
   "orientation": "portrait",
   "theme_color": "#09132a",
   "background_color": "#09132a",
+  "prefer_related_applications": false,
+  "categories": ["education", "games"],
   "icons": [
     {
       "src": "/icons/android-chrome-192x192.png",
@@ -23,6 +25,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Courses",
+      "short_name": "Courses",
+      "description": "Go to your course lobby",
+      "url": "/lobby",
+      "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

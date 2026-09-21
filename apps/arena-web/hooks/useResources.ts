@@ -20,6 +20,10 @@ export function useResources(courseId: string) {
       return res.data as ArenaResource[];
     },
     enabled: !!courseId,
+    // Datapads are long-lived content — keep them fresh for 30 min and
+    // in cache for 48 hours so offline reads work without a network call.
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60 * 48,
   });
 
   const create = useMutation({
@@ -67,6 +71,8 @@ export function useResourceProgress(courseId: string) {
       return res.data as ResourceProgress[];
     },
     enabled: !!courseId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 24,
   });
 
   const updateProgress = useMutation({
