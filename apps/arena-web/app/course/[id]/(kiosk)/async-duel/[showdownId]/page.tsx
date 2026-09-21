@@ -234,7 +234,7 @@ export default function AsyncDuelPage() {
                     </div>
 
                     <div className="min-h-[120px] flex items-center">
-                        <h2 className="text-xl md:text-2xl font-bold leading-relaxed">{currentQ.content}</h2>
+                        <h2 className="text-xl md:text-2xl font-bold leading-relaxed">{currentQ.prompt}</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -247,6 +247,15 @@ export default function AsyncDuelPage() {
                                 {opt}
                             </button>
                         ))}
+                    </div>
+
+                    <div className="pt-8 text-center">
+                        <button 
+                            onClick={() => submitAndFinish(answers)}
+                            className="text-red-500/50 hover:text-red-400 font-mono text-[10px] uppercase tracking-widest transition-colors"
+                        >
+                            [ Surrender Match ]
+                        </button>
                     </div>
                 </div>
             </div>
@@ -437,7 +446,7 @@ export default function AsyncDuelPage() {
                                     const oppAnswer = qObj.answers?.find((a: any) => a.participantId === opponent.id);
                                     return (
                                         <div key={i} className="border-b border-white/10 last:border-0 pb-4 last:pb-0">
-                                            <p className="font-display font-bold text-sm text-white mb-2">Q{i + 1}: {q.content}</p>
+                                            <p className="font-display font-bold text-sm text-white mb-2">Q{i + 1}: {q.prompt}</p>
                                             <div className="grid grid-cols-2 gap-2 mb-3">
                                                 <div className="text-[10px] font-mono text-white/50 uppercase">
                                                     You: <span className={cn("font-bold", myAnswer?.isCorrect ? "text-green-400" : "text-red-400")}>{q.options[myAnswer?.optionIndex] ?? "N/A"}</span>

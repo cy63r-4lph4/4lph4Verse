@@ -579,7 +579,11 @@ export class ShowdownService {
   async getFeed(courseId: string, viewerArenaUserId: string) {
     const recentCompleted = await this.db.query.showdowns.findMany({
       where: (s, { eq, and }) =>
-        and(eq(s.courseId, courseId), eq(s.status, 'complete')),
+        and(
+          eq(s.courseId, courseId),
+          eq(s.status, 'complete'),
+          eq(s.isRanked, true),
+        ),
       orderBy: (s, { desc }) => [desc(s.updatedAt)],
       limit: 10,
       with: {
@@ -675,6 +679,7 @@ export class ShowdownService {
       where: (s, { eq: eqFn, and, inArray: inArr }) =>
         and(
           eqFn(s.courseId, courseId),
+          eqFn(s.isRanked, true),
           inArr(s.mode, ['duel', 'async_duel'] as any),
           inArr(s.status, ['challenge_pending', 'ready_check', 'live'] as any),
         ),
@@ -988,8 +993,6 @@ export class ShowdownService {
       const [newUser] = await this.db.insert(schema.users).values({
         username,
         email: 'bot@4lph4verse.local',
-        firstName: 'Combat',
-        lastName: 'Simulator',
       }).returning();
       user = newUser;
     }
@@ -998,8 +1001,14 @@ export class ShowdownService {
       where: (au, { eq }) => eq(au.userId, user.id),
     });
     if (!arenaProfile) {
+      const school = await this.db.query.arenaSchools.findFirst();
+      if (!school) {
+        throw new Error('No schools exist in the database.');
+      }
+
       const [newProfile] = await this.db.insert(schema.arenaUser).values({
         userId: user.id,
+        schoolId: school.id,
       }).returning();
       arenaProfile = newProfile;
     }
