@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Delete,
   ParseIntPipe,
   HttpCode,
@@ -13,6 +14,7 @@ import {
 import { WalletIdentityService } from './services/wallet-identity.service';
 import { WalletControllerService } from './services/wallet-controller.service';
 import { ConnectedWalletService } from './services/connected-wallet.service';
+import { BundlerService } from './services/bundler.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { ComputeAddressDto } from './dto/compute-address.dto';
 import { AddControllerDto } from './dto/add-controller.dto';
@@ -36,6 +38,7 @@ export class WalletController {
     private readonly walletIdentity: WalletIdentityService,
     private readonly walletControllerSvc: WalletControllerService,
     private readonly connectedWallets: ConnectedWalletService,
+    private readonly bundler: BundlerService,
   ) {}
 
   // ──────────────────────────────────────────────────────────
@@ -86,6 +89,52 @@ export class WalletController {
     }
 
     return { wallet };
+  }
+
+  /**
+   * POST /wallet/authenticate
+   * Authenticates a user using their WebAuthn Passkey credential ID.
+   * Returns their Wallet Identity and all chain accounts.
+   */
+  @Post('authenticate')
+  @HttpCode(HttpStatus.OK)
+  async authenticateWallet(@Body() body: { passkeyCredentialId: string }) {
+    const wallet = await this.walletIdentity.authenticatePasskey(body.passkeyCredentialId);
+    return { wallet };
+  }
+
+  /**
+   * GET /wallet/nonce?address=0x...&chainId=42220
+   * Returns the ERC-4337 nonce for an account from the EntryPoint contract.
+   * Used client-side to build the UserOperation before signing.
+   */
+  @Get('nonce')
+  async getWalletNonce(
+    @Query('address') address: string,
+    @Query('chainId') chainId: string,
+  ) {
+    const nonce = await this.bundler.getNonce(address as `0x${string}`, Number(chainId));
+    return { nonce: nonce.toString() };
+  }
+
+  /**
+   * POST /wallet/send-userop
+   * Submits a signed ERC-4337 UserOperation to the bundler.
+   * The signature must be a WebAuthn P-256 assertion over the UserOp hash.
+   *
+   * Security: this endpoint NEVER handles private keys.
+   * Signing is done client-side in the Secure Enclave via WebAuthn.
+   */
+  @Post('send-userop')
+  @HttpCode(HttpStatus.OK)
+  async sendUserOperation(
+    @Body() body: { userOp: Record<string, any>; chainId: number },
+  ) {
+    const userOpHash = await this.bundler.sendUserOperation(
+      body.userOp,
+      body.chainId,
+    );
+    return { userOpHash };
   }
 
   // ──────────────────────────────────────────────────────────

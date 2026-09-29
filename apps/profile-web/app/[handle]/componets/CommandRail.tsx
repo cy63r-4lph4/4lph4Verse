@@ -39,8 +39,8 @@ export function CommandRail({ active, onChange }: CommandRailProps) {
   return (
     <>
       {/* Desktop Left Rail */}
-      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-[72px] md:flex-col md:items-center md:justify-center">
-        <div className="flex flex-col gap-4 rounded-full border border-white/10 bg-black/40 p-2 backdrop-blur-xl shadow-[0_0_40px_rgba(80,150,255,0.15)]">
+      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-[88px] md:flex-col md:items-center md:justify-center border-r border-alpha-cyan/20 bg-black/80 backdrop-blur-xl">
+        <div className="flex flex-col gap-6 w-full px-2">
           {COMMANDS.map(({ id, label, icon: Icon, danger }) => {
             const isActive = active === id;
             return (
@@ -48,42 +48,40 @@ export function CommandRail({ active, onChange }: CommandRailProps) {
                 key={id}
                 onClick={() => onChange(id)}
                 className={cn(
-                  "relative flex h-12 w-12 items-center justify-center rounded-full transition-all",
+                  "relative flex h-16 w-full items-center justify-center transition-all group overflow-hidden border",
                   isActive
                     ? danger
-                      ? "bg-red-500/20"
-                      : "bg-cyan-500/20"
-                    : "hover:bg-white/10"
+                      ? "bg-alpha-magenta/10 border-alpha-magenta box-glow-magenta"
+                      : "bg-alpha-cyan/10 border-alpha-cyan box-glow"
+                    : "bg-transparent border-transparent hover:border-alpha-cyan/30 hover:bg-white/5"
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="rail-active"
                     className={cn(
-                      "absolute inset-0 rounded-full",
-                      danger
-                        ? "shadow-[0_0_20px_rgba(255,80,80,0.6)]"
-                        : "shadow-[0_0_20px_rgba(80,200,255,0.6)]"
+                      "absolute left-0 top-0 bottom-0 w-1",
+                      danger ? "bg-alpha-magenta" : "bg-alpha-cyan"
                     )}
                   />
                 )}
 
                 <Icon
                   className={cn(
-                    "relative z-10 h-5 w-5",
+                    "relative z-10 h-6 w-6 transition-all duration-300",
                     danger
                       ? isActive
-                        ? "text-red-400"
-                        : "text-red-300"
+                        ? "text-alpha-magenta"
+                        : "text-red-400 group-hover:text-alpha-magenta"
                       : isActive
-                      ? "text-cyan-400"
-                      : "text-slate-300"
+                      ? "text-alpha-cyan"
+                      : "text-slate-400 group-hover:text-alpha-cyan"
                   )}
                 />
 
                 {/* Tooltip */}
-                <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-xs text-white opacity-0 shadow transition-opacity group-hover:opacity-100">
-                  {label}
+                <span className="pointer-events-none absolute left-full ml-4 whitespace-nowrap bg-black border border-alpha-cyan/50 px-3 py-1 font-mono text-xs uppercase tracking-widest text-alpha-cyan opacity-0 shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-opacity group-hover:opacity-100 z-50">
+                  [{label}]
                 </span>
               </button>
             );
@@ -92,8 +90,8 @@ export function CommandRail({ active, onChange }: CommandRailProps) {
       </div>
 
       {/* Mobile Bottom Dock */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-center md:hidden">
-        <div className="mx-4 mb-4 flex w-full max-w-md items-center justify-between rounded-2xl border border-white/10 bg-black/50 p-2 backdrop-blur-xl shadow-[0_0_30px_rgba(80,150,255,0.15)]">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-center md:hidden bg-black/80 backdrop-blur-xl border-t border-alpha-cyan/20">
+        <div className="flex w-full items-center justify-around p-2">
           {COMMANDS.map(({ id, icon: Icon, danger }) => {
             const isActive = active === id;
             return (
@@ -101,35 +99,24 @@ export function CommandRail({ active, onChange }: CommandRailProps) {
                 key={id}
                 onClick={() => onChange(id)}
                 className={cn(
-                  "relative flex h-12 w-12 items-center justify-center rounded-xl transition-all",
+                  "relative flex h-14 flex-1 items-center justify-center transition-all overflow-hidden border-t-2",
                   isActive
                     ? danger
-                      ? "bg-red-500/20"
-                      : "bg-cyan-500/20"
-                    : "hover:bg-white/10"
+                      ? "border-alpha-magenta bg-alpha-magenta/10 box-glow-magenta"
+                      : "border-alpha-cyan bg-alpha-cyan/10 box-glow"
+                    : "border-transparent hover:bg-white/5"
                 )}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="dock-active"
-                    className={cn(
-                      "absolute inset-0 rounded-xl",
-                      danger
-                        ? "shadow-[0_0_16px_rgba(255,80,80,0.6)]"
-                        : "shadow-[0_0_16px_rgba(80,200,255,0.6)]"
-                    )}
-                  />
-                )}
                 <Icon
                   className={cn(
-                    "relative z-10 h-5 w-5",
+                    "relative z-10 h-6 w-6",
                     danger
                       ? isActive
-                        ? "text-red-400"
-                        : "text-red-300"
+                        ? "text-alpha-magenta"
+                        : "text-red-400"
                       : isActive
-                      ? "text-cyan-400"
-                      : "text-slate-300"
+                      ? "text-alpha-cyan"
+                      : "text-slate-400"
                   )}
                 />
               </button>

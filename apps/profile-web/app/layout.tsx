@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import { Web3Provider } from "@verse/providers/index";
 import ParticleField from "@verse/profile-web/components/particles";
+import { ClientWeb3Provider } from "@verse/profile-web/components/ClientWeb3Provider";
 import { Navbar } from "@verse/profile-web/components/NavBar";
+import { GridBackground } from "@verse/profile-web/components/GridBackground";
 export const metadata: Metadata = {
   title: "Verse Profile",
   description: "The Identity Hub for the 4lph4Verse",
@@ -18,42 +19,48 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased bg-black`}
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased bg-[#010103]`}
       >
-        <Web3Provider>
-          <main className="relative min-h-screen bg-[#03040a] text-white tracking-wide">
-            {/* particle background */}
-            <div className="pointer-events-none">
-              <ParticleField />
-            </div>
-            {/* enhanced nebula gradients */}
-            <div className="absolute inset-0 pointer-events-none -z-10 opacity-60">
+        <ClientWeb3Provider>
+          <main className="relative min-h-screen text-white tracking-wide overflow-hidden selection:bg-alpha-magenta/40 selection:text-white">
+            
+            {/* Base Layer */}
+            <div className="absolute inset-0 bg-[#010103] -z-50" />
+            
+            {/* Deep Space Vignette / Glow (Bottom-most to not wash out grid) */}
+            <div className="absolute inset-0 pointer-events-none -z-40 opacity-50">
               <div
                 className="absolute inset-0"
                 style={{
                   background:
-                    "radial-gradient(circle at 25% 35%, rgba(70,150,255,0.25), transparent 55%), radial-gradient(circle at 80% 65%, rgba(180,80,255,0.22), transparent 40%)",
-                  filter: "blur(65px)",
+                    "radial-gradient(circle at 50% -10%, rgba(0,240,255,0.15), transparent 60%), radial-gradient(circle at 10% 90%, rgba(176,38,255,0.15), transparent 50%)",
+                  filter: "blur(60px)",
                 }}
               />
             </div>
 
-            {/* bright cosmic streak */}
-            <div
-              className="absolute inset-0 -z-10 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(115deg, rgba(0,255,255,0.04), rgba(255,0,255,0.05))",
-                opacity: 0.15,
-              }}
-            />
+            {/* Grid Animation */}
+            <div className="absolute inset-0 pointer-events-none -z-30 opacity-80">
+               <GridBackground />
+            </div>
+
+            {/* Particle Field Background */}
+            <div className="absolute inset-0 pointer-events-none -z-20 opacity-60">
+              <ParticleField />
+            </div>
+
+            {/* Scanline Overlay */}
+            <div className="scanline" />
 
             {/* Header */}
             <Navbar />
 
-            {children}
+            {/* Page Content */}
+            <div className="relative z-10 pt-20">
+              {children}
+            </div>
           </main>
-        </Web3Provider>
+        </ClientWeb3Provider>
         <div id="modal-root" />
       </body>
     </html>

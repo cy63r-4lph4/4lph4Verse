@@ -4,14 +4,17 @@ import withPWAInit from "@ducanh2912/next-pwa";
 const withPWA = withPWAInit({
   dest: "public",
   cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // aggressiveFrontEndNavCaching is intentionally OFF — it intercepts every
+  // navigation request and serves offline.html when the network is gone, even
+  // for pages the user is already on. This blocks React Router from doing its
+  // client-side navigation entirely.
+  aggressiveFrontEndNavCaching: false,
   reloadOnOnline: true,
   // Don't activate SW during development — keeps HMR working cleanly
   disable: process.env.NODE_ENV === "development",
-  fallbacks: {
-    // Served when a user navigates to a page that isn't cached
-    document: "/offline.html",
-  },
+  // NO document fallback — let React handle navigation offline via the cached
+  // JS bundle + TanStack Query persistence. The OfflineStatusBanner informs
+  // users they're offline without killing the whole app.
   workboxOptions: {
     cleanupOutdatedCaches: true,
     skipWaiting: true,

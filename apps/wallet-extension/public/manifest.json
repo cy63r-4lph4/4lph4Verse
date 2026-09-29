@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Verse Wallet",
+  "version": "1.0.0",
+  "description": "The official smart wallet for the 4lph4verse. Passkey-secured, cross-chain, ERC-4337.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Open Verse Wallet"
+  },
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.4lph4verse.com/*",
+    "http://localhost/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["assets/content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/inpage.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

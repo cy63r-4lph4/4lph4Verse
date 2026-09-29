@@ -372,7 +372,8 @@ export function useVerseProfileWizard() {
       }
       setProgress("writing");
       const tx = await writeContract(config, {
-        chain: chain,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        chain: chain as any,
         address: contractMeta.address,
         abi: contractMeta.abi,
         functionName: "createProfile",

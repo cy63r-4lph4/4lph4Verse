@@ -1,86 +1,36 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-/// @title IVerseProfile
-/// @notice Interface for interacting with the VerseProfile identity contract.
+/**
+ * @title IVerseProfile
+ * @notice Minimal interface consumed by external modules (guardian recovery,
+ *         human verification, proof-of-owner). `commitment` replaces the old
+ *         `dochash`: it is salted per-profile so it can no longer be
+ *         precomputed offline from public biographical facts (see recovery
+ *         design doc, Section 6).
+ */
 interface IVerseProfile {
-    struct Profile {
-        address owner; // wallet or smart account
-        string handle; // globally unique, normalized lowercase
-        string metadataURI; // ipfs://... or https://...
-        string purpose; // human-readable purpose
-        address delegate; // optional manager/guardian
-        uint64 createdAt; // block.timestamp
-        uint8 version; // schema version
-        bytes32 dochash; // proof of verification
-    }
-    struct ProfileSum {
-        address owner;
-        string handle;
-        string metadataURI;
-        string purpose;
-        address delegate;
-        uint64 createdAt;
-        uint8 version;
-        bool verified;
-    }
-
-    // -------- Views --------
-    function getProfile(uint256 verseId) external view returns (Profile memory);
-
-    function getDochash(uint256 verseId) external view returns (bytes32);
-
-    function verseIdByHandle(
-        string calldata handle
-    ) external view returns (uint256);
-
-    function verseIdOfOwner(address owner) external view returns (uint256);
-
-    function getAppNickname(
-        uint256 verseId,
-        bytes32 appId
-    ) external view returns (string memory);
-
-    function verseIdByAppNickname(
-        bytes32 appId,
-        string calldata nickname
-    ) external view returns (uint256);
+    function ownerOf(uint256 verseId) external view returns (address);
 
     function hasProfile(address user) external view returns (bool);
 
-    function getDisplayHandle(
-        uint256 verseId,
-        bytes32 appId
-    ) external view returns (string memory);
+    function verseIdOfOwner(address owner) external view returns (uint256);
 
-    function profileOf(address user) external view returns (uint256);
-
-    // -------- Mutative --------
-    function createProfile(
-        string calldata verseHandle,
-        string calldata metadataURI,
-        bytes32 ensNamehash
-    ) external returns (uint256 verseId);
-
-    function setVerseHandle(
-        uint256 verseId,
-        string calldata newHandle
-    ) external;
-
+    /// @dev Restricted to RECOVERY_ROLE holders (e.g. GuardianRecoveryModule).
     function recoverySetOwner(uint256 verseId, address newOwner) external;
 
-    function setHumanVerified(address subject, bytes32 dochash) external;
+    /// @notice Salted commitment of the subject's verified demographic proof.
+    function getCommitment(uint256 verseId) external view returns (bytes32);
 
-    function setMetadataURI(uint256 verseId, string calldata newURI) external;
+    /// @notice Per-profile salt used to compute `commitment`. Not itself a
+    ///         secret -- knowing it does not let anyone forge a matching
+    ///         Self proof -- but keeping it non-trivial to enumerate is
+    ///         still good hygiene.
+    function getRecoverySalt(uint256 verseId) external view returns (bytes32);
 
-    function transferOwnershipOfProfile(
-        uint256 verseId,
-        address newOwner
-    ) external;
-
-    function setAppNickname(
-        uint256 verseId,
-        bytes32 appId,
-        string calldata nickname
+    /// @dev Restricted to VERIFIER_ROLE holders (e.g. HumanVerificationModule).
+    function setHumanVerifiedCommitment(
+        address subject,
+        bytes32 commitment
     ) external;
 }

@@ -6,6 +6,23 @@ pragma solidity ^0.8.24;
  * @notice Root identity for the 4lph4Verse. Soulbound VerseID per wallet.
  *         Minimal on-chain state; rich off-chain metadata. Modules extend behavior.
  *
+ * ---------------------------------------------------------------------------
+ * ARCHITECTURE NOTE (v2): commitment replaces dochash
+ * ---------------------------------------------------------------------------
+ * The old `dochash` was a bare hash of demographic facts (name, nationality,
+ * DOB, gender, issuing state). Those facts are not secret, so the hash was
+ * precomputable off-chain by anyone who knew them -- and because it was also
+ * used as a bearer credential for recovery, that made it a permanent,
+ * non-expiring attack surface.
+ *
+ * `commitment` fixes this by folding in a per-profile `recoverySalt`,
+ * generated once at profile creation from unpredictable on-chain entropy.
+ * The salt is not itself secret (knowing it doesn't let anyone forge a
+ * matching Self proof), but it removes the ability to precompute a matching
+ * commitment purely from public biographical facts. See the recovery design
+ * doc, Section 6.
+ * ---------------------------------------------------------------------------
+ *
  * Key features:
  *  - One profile per wallet (soulbound; no transfers)
  *  - Global unique handle (case-insensitive via normalization)
@@ -15,10 +32,6 @@ pragma solidity ^0.8.24;
  *  - UUPS upgradeability + roles + pausable
  *  - EIP-712 meta-transactions for gasless updates
  *  - Module system with per-hook subscriptions and cheap dispatch
- *
- * Notes:
- *  - ENS linkage intentionally removed (can live in metadata or a module)
- *  - App-specific nicknames moved to a module to keep core slim
  */
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -30,19 +43,6 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
 interface IVerseModule {
-    /**
-     * @dev Generic hook for Verse lifecycle events.
-     * @param hook   keccak256("onProfileCreated"), keccak256("onHandleChanged"), etc.
-     * @param verseId The VerseID the event pertains to
-     * @param data   ABI-encoded aux data, schema per hook
-     *
-     * Expected signatures (examples):
-     *   - onProfileCreated: abi.encode(address owner, string handle, string purpose)
-     *   - onHandleChanged:  abi.encode(string oldHandle, string newHandle)
-     *   - onPurposeUpdated: abi.encode(string newPurpose)
-     *   - onMetadataSet:    abi.encode(string newURI)
-     *   - onDelegateSet:    abi.encode(address newDelegate)
-     */
     function onVerseEvent(
         bytes32 hook,
         uint256 verseId,
@@ -63,11 +63,15 @@ contract VerseProfile is
     bytes32 public constant PROFILE_ADMIN_ROLE =
         keccak256("PROFILE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    /// @dev Granted to recovery modules (e.g. GuardianRecoveryModule) that
+    ///      are allowed to call `recoverySetOwner`. Never granted to a
+    ///      proof-of-owner module directly -- see design doc Section 3.
     bytes32 public constant RECOVERY_ROLE = keccak256("RECOVERY_ROLE");
+    /// @dev Granted to verification modules (e.g. HumanVerificationModule)
+    ///      that are allowed to write a new commitment.
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
     // -------------------- Hook IDs --------------------
-    // (pre-computed constants to save a tiny bit of gas vs keccak at runtime)
     bytes32 public constant HOOK_ON_PROFILE_CREATED =
         keccak256("onProfileCreated");
     bytes32 public constant HOOK_ON_HANDLE_CHANGED =
@@ -86,7 +90,7 @@ contract VerseProfile is
         address delegate; // optional manager/guardian
         uint64 createdAt; // block.timestamp
         uint8 version; // schema version
-        bytes32 dochash; // proof of verification
+        bytes32 commitment; // salted proof-of-verification commitment (was `dochash`)
     }
     struct ProfileSum {
         address owner;
@@ -104,6 +108,11 @@ contract VerseProfile is
     mapping(uint256 => Profile) private _profiles; // verseId => Profile
     mapping(address => uint256) public profileOf; // wallet  => verseId
     mapping(bytes32 => uint256) private _handleToId; // keccak256(handleLower) => verseId
+
+    /// @notice Per-profile salt, set once at creation. Folded into
+    ///         `commitment` so it can never be precomputed from public
+    ///         biographical facts alone.
+    mapping(uint256 => bytes32) private _recoverySalt; // verseId => salt
 
     // EIP-712 nonces (per verseId)
     mapping(uint256 => uint256) public nonces;
@@ -154,6 +163,7 @@ contract VerseProfile is
         address indexed oldDelegate
     );
     event HumanVerified(uint256 indexed verseId);
+    event HumanVerificationRevoked(uint256 indexed verseId);
 
     // -------------------- UUPS: disable impl init --------------------
     constructor() {
@@ -167,7 +177,7 @@ contract VerseProfile is
         __UUPSUpgradeable_init();
         __Pausable_init();
         __AccessControl_init();
-        __EIP712_init("VerseProfile", "0.1"); // bump if EIP-712 structs change
+        __EIP712_init("VerseProfile", "0.2"); // bumped: EIP-712 struct set unchanged, but commitment scheme changed
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(PROFILE_ADMIN_ROLE, admin);
@@ -186,7 +196,6 @@ contract VerseProfile is
         uint256 verseId
     ) external view returns (Profile memory) {
         require(_profiles[verseId].owner != address(0), "Invalid profile");
-
         return _profiles[verseId];
     }
 
@@ -198,8 +207,21 @@ contract VerseProfile is
         return _profiles[verseId];
     }
 
-    function getDochash(uint256 verseId) external view returns (bytes32) {
-        return _profiles[verseId].dochash;
+    /// @notice Salted commitment for a profile's human-verification proof.
+    ///         Replaces the old `getDochash`. Not sensitive by itself --
+    ///         recovering ownership still requires an actual verified proof,
+    ///         not just knowledge of the commitment or salt -- but modules
+    ///         should treat it as internal plumbing, not a public credential.
+    function getCommitment(uint256 verseId) external view returns (bytes32) {
+        return _profiles[verseId].commitment;
+    }
+
+    /// @notice Per-profile salt used to compute `commitment`. Exposed so
+    ///         authorized verification modules can recompute the commitment
+    ///         to compare against a fresh proof.
+    function getRecoverySalt(uint256 verseId) external view returns (bytes32) {
+        require(_profiles[verseId].owner != address(0), "Invalid profile");
+        return _recoverySalt[verseId];
     }
 
     function verseIdByHandle(
@@ -214,7 +236,6 @@ contract VerseProfile is
 
     function ownerOf(uint256 verseId) external view returns (address) {
         require(_profiles[verseId].owner != address(0), "Invalid profile");
-
         return _profiles[verseId].owner;
     }
 
@@ -228,7 +249,6 @@ contract VerseProfile is
         require(_profiles[verseId].owner != address(0), "Invalid profile");
 
         Profile memory p = _profiles[verseId];
-        require(p.owner != address(0), "Invalid profile");
 
         return
             ProfileSum({
@@ -239,7 +259,7 @@ contract VerseProfile is
                 delegate: p.delegate,
                 createdAt: p.createdAt,
                 version: p.version,
-                verified: p.dochash != bytes32(0)
+                verified: p.commitment != bytes32(0)
             });
     }
 
@@ -285,7 +305,6 @@ contract VerseProfile is
         address sender = _msgSender();
         require(profileOf[sender] == 0, "already have profile");
 
-        // Normalize & claim handle
         string memory norm = _normalize(handle);
         require(bytes(norm).length != 0, "empty handle");
 
@@ -302,15 +321,15 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32(0)
+            commitment: bytes32(0)
         });
         profileOf[sender] = verseId;
-
         _handleToId[key] = verseId;
+
+        _recoverySalt[verseId] = _generateSalt(verseId, sender);
 
         emit ProfileCreated(verseId, sender, norm, purpose, metadataURI);
 
-        // Minimal synchronous hooks (keep subscriber list short)
         _trigger(
             HOOK_ON_PROFILE_CREATED,
             verseId,
@@ -332,7 +351,6 @@ contract VerseProfile is
         uint256 existing = _handleToId[key];
         require(existing == 0 || existing == verseId, "handle taken");
 
-        // free old
         string memory old = _profiles[verseId].handle;
         if (bytes(old).length != 0) {
             _handleToId[_handleKey(old)] = 0;
@@ -352,8 +370,6 @@ contract VerseProfile is
         _requireOwnerOrDelegate(verseId);
         _profiles[verseId].metadataURI = newURI;
         emit MetadataURISet(verseId, newURI);
-
-        // Prefer event-only for most modules; still provide hook for those that opt-in.
         _trigger(HOOK_ON_METADATA_SET, verseId, abi.encode(newURI));
     }
 
@@ -364,7 +380,6 @@ contract VerseProfile is
         _requireOwnerOrDelegate(verseId);
         _profiles[verseId].purpose = newPurpose;
         emit PurposeUpdated(verseId, newPurpose);
-
         _trigger(HOOK_ON_PURPOSE_UPDATED, verseId, abi.encode(newPurpose));
     }
 
@@ -375,7 +390,6 @@ contract VerseProfile is
         _requireOwnerOrDelegate(verseId);
         _profiles[verseId].delegate = newDelegate;
         emit DelegateSet(verseId, newDelegate);
-
         _trigger(HOOK_ON_DELEGATE_SET, verseId, abi.encode(newDelegate));
     }
 
@@ -436,13 +450,12 @@ contract VerseProfile is
             delegate: address(0),
             createdAt: uint64(block.timestamp),
             version: 2,
-            dochash: bytes32(0)
+            commitment: bytes32(0)
         });
 
         profileOf[op.owner] = verseId;
-        if (bytes(norm).length != 0) {
-            _handleToId[_handleKey(norm)] = verseId;
-        }
+        _handleToId[key] = verseId;
+        _recoverySalt[verseId] = _generateSalt(verseId, op.owner);
 
         emit ProfileCreated(
             verseId,
@@ -458,15 +471,26 @@ contract VerseProfile is
         );
     }
 
-    function setHumanVerified(
+    /**
+     * @notice Set (or update) the human-verification commitment for a
+     *         subject's profile. Callable only by VERIFIER_ROLE holders
+     *         (e.g. HumanVerificationModule), which are responsible for
+     *         deciding whether this is a first-time verification or an
+     *         owner-authenticated renewal before calling this.
+     */
+    function setHumanVerifiedCommitment(
         address subject,
-        bytes32 dochash
+        bytes32 commitment
     ) external onlyRole(VERIFIER_ROLE) {
         uint256 verseId = profileOf[subject];
         require(verseId != 0, "VerseProfile: no profile");
         Profile storage p = _profiles[verseId];
-        p.dochash = dochash;
-        emit HumanVerified(verseId);
+        p.commitment = commitment;
+        if (commitment == bytes32(0)) {
+            emit HumanVerificationRevoked(verseId);
+        } else {
+            emit HumanVerified(verseId);
+        }
     }
 
     struct SetURIWithSig {
@@ -670,14 +694,27 @@ contract VerseProfile is
     }
 
     /**
-     * @notice Grant recovery permissions to a GuardianRecoveryModule (or similar).
-     * @dev Callable by PROFILE_ADMIN_ROLE. You can call this multiple times for new modules.
+     * @notice Grant RECOVERY_ROLE to a GuardianRecoveryModule (or similar).
+     * @dev Callable by PROFILE_ADMIN_ROLE. You can call this multiple times
+     *      for new modules. NEVER grant this to a proof-of-owner module
+     *      directly -- only to the module that enforces the delayed,
+     *      cancelable recovery state machine.
      */
     function grantRecoveryModule(
         address module
     ) external onlyRole(PROFILE_ADMIN_ROLE) {
         require(module != address(0), "VerseProfile: zero module");
         _grantRole(RECOVERY_ROLE, module);
+    }
+
+    /**
+     * @notice Grant VERIFIER_ROLE to a HumanVerificationModule (or similar).
+     */
+    function grantVerifierModule(
+        address module
+    ) external onlyRole(PROFILE_ADMIN_ROLE) {
+        require(module != address(0), "VerseProfile: zero module");
+        _grantRole(VERIFIER_ROLE, module);
     }
 
     function subscribeHook(
@@ -716,12 +753,9 @@ contract VerseProfile is
 
     /**
      * @notice Set a new owner for a VerseID during recovery.
-     * @dev Only callable by an address with RECOVERY_ROLE (typically GuardianRecoveryModule).
-     *
-     * Requirements:
-     * - verseId must exist
-     * - newOwner must be non-zero
-     * - newOwner must not already have a profile
+     * @dev Only callable by an address with RECOVERY_ROLE (the
+     *      GuardianRecoveryModule -- and ONLY that module; proof-of-owner
+     *      modules must never hold this role, see design doc Section 3).
      */
     function recoverySetOwner(
         uint256 verseId,
@@ -760,10 +794,6 @@ contract VerseProfile is
     }
 
     // -------------------- Internal: Hook Dispatch (cheap) --------------------
-    /**
-     * @dev Cheap dispatch: only call subscribed modules for this hook.
-     * Uses a small gas stipend to avoid griefing; ignore failures.
-     */
     function _trigger(
         bytes32 hook,
         uint256 verseId,
@@ -800,30 +830,50 @@ contract VerseProfile is
     }
 
     function _normalize(string memory s) internal pure returns (string memory) {
-        // ASCII lowercase normalization; extendable to full unicode if needed.
         bytes memory b = bytes(s);
         for (uint256 i; i < b.length; ++i) {
             uint8 c = uint8(b[i]);
             if (c >= 65 && c <= 90) {
-                // 'A'..'Z'
                 b[i] = bytes1(c + 32);
             }
         }
         return string(b);
     }
 
+    /// @dev Salt source uses prevrandao + timestamp + verseId + owner. Not
+    ///      adversarially unpredictable against a validator-level attacker,
+    ///      but that's fine here: the salt's job is only to prevent
+    ///      *offline precomputation from public biographical facts*, not to
+    ///      resist a miner/validator targeting one specific profile. If a
+    ///      stronger guarantee is later required, swap in a VRF.
+    function _generateSalt(
+        uint256 verseId,
+        address owner_
+    ) internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    verseId,
+                    owner_,
+                    block.prevrandao,
+                    block.timestamp,
+                    address(this)
+                )
+            );
+    }
+
     // Resolve EOA vs Smart Account (EIP-1271)
     function _resolveSigner(
-        address owner,
+        address owner_,
         bytes32 digest,
         bytes calldata sig
     ) internal view returns (address) {
-        if (owner.code.length == 0) {
+        if (owner_.code.length == 0) {
             return ECDSA.recover(digest, sig);
         } else {
-            bytes4 ok = IERC1271(owner).isValidSignature(digest, sig);
+            bytes4 ok = IERC1271(owner_).isValidSignature(digest, sig);
             require(ok == _ERC1271_MAGIC, "bad 1271 sig");
-            return owner;
+            return owner_;
         }
     }
 
@@ -835,5 +885,5 @@ contract VerseProfile is
     }
 
     // -------------------- Storage gap --------------------
-    uint256[44] private __gap;
+    uint256[43] private __gap;
 }

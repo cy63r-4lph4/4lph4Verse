@@ -29,76 +29,86 @@ export default function PublicView({ profile }: any) {
     );
   }
   return (
-    <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 space-y-12">
+    <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 space-y-8">
       {/* TOP SECTION */}
-      <Card className="p-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(80,150,255,0.15)]">
+      <div className="p-10 hud-panel border-b border-alpha-cyan/30 box-glow bg-black/40 relative">
         <div className="flex flex-col md:flex-row md:items-center gap-10">
-          {" "}
           {/* AVATAR */}
-          <div className="w-32 h-32 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center overflow-hidden">
+          <div className="relative w-32 h-32 bg-black/40 border border-alpha-cyan/30 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,240,255,0.2)]">
             {profile.avatar ? (
               renderAvatar(profile)
             ) : (
-              <User size={48} className="text-neutral-600" />
+              <User size={48} className="text-alpha-cyan/50" />
             )}
           </div>
           {/* MAIN INFO */}
           <div className="space-y-3 flex-1">
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-display font-mono font-bold text-glow text-alpha-cyan tracking-tight">
               {profile.displayName || `@${profile.handle}`}
             </h1>
 
-            <p className="text-cyan-400 text-sm">@{profile.handle}</p>
+            <p className="text-alpha-cyan text-xl font-mono tracking-widest uppercase">
+              <span className="opacity-50">@</span>{profile.handle}
+            </p>
 
             {profile.verified && (
-              <div className="flex items-center gap-2 text-green-400">
-                <ShieldCheck size={20} />
-                <span className="font-medium">Verified Identity</span>
+              <div className="flex items-center gap-2 text-alpha-cyan font-mono text-sm uppercase tracking-widest mt-2 drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
+                <ShieldCheck size={18} />
+                <span>Verified Identity</span>
               </div>
             )}
 
-            <p className="text-neutral-400 text-sm">
-              Verse ID: {profile.verseId}
+            <p className="text-slate-400 font-mono text-xs tracking-wider mt-2">
+              [ VERSE_ID :: {profile.verseId} ]
             </p>
 
             {profile.location && (
-              <div className="flex items-center gap-2 text-neutral-400 text-sm">
+              <div className="flex items-center gap-2 text-alpha-cyan font-mono text-sm uppercase tracking-widest mt-2">
                 <MapPin size={16} />
-                {profile.location}
+                [ {profile.location} ]
               </div>
             )}
           </div>
         </div>
-      </Card>
+      </div>
+      
       {/* BIO CARD */}
       {profile.bio && (
-        <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(80,150,255,0.12)]">
-          <h2 className="text-xl font-semibold mb-3">Bio</h2>
-          <p className="text-neutral-300 leading-relaxed">{profile.bio}</p>
-        </Card>
+        <div className="hud-panel p-8 border border-alpha-cyan/20 bg-black/40">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-alpha-cyan mb-4 flex items-center gap-2">
+            <span className="text-slate-500">{'>>'}</span> SYS.LOG: Bio
+          </h2>
+          <p className="text-sm text-slate-300 font-mono leading-relaxed">
+            {profile.bio}
+          </p>
+        </div>
       )}
 
       {/* INTERESTS */}
       {profile.interests?.length > 0 && (
-        <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
-          <h2 className="text-xl font-semibold mb-4">Interests</h2>
+        <div className="hud-panel p-8 border border-alpha-cyan/20 bg-black/40">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-alpha-cyan mb-4 flex items-center gap-2">
+            <Star className="w-4 h-4" /> [ Interests ]
+          </h2>
           <div className="flex flex-wrap gap-2">
             {profile.interests.map((i: string) => (
               <span
                 key={i}
-                className="px-3 py-1 bg-cyan-500/20 border border-cyan-500 text-cyan-300 rounded-full text-xs flex items-center gap-1"
+                className="text-xs font-mono text-slate-300 bg-alpha-cyan/10 border border-alpha-cyan/30 px-2 py-1"
               >
-                <Star size={12} /> {i}
+                {i}
               </span>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* SOCIAL LINKS */}
       {Object.values(profile.links).some((v) => Boolean(v)) && (
-        <Card className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
-          <h2 className="text-xl font-semibold mb-4">Links</h2>
+        <div className="hud-panel p-8 border border-alpha-cyan/20 bg-black/40">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-alpha-cyan mb-6 flex items-center gap-2">
+            <Network className="w-4 h-4" /> [ Linked Transmissions ]
+          </h2>
 
           <div className="flex gap-4 flex-wrap">
             {Object.entries(profile.links).map(([key, value]: any) =>
@@ -108,14 +118,14 @@ export default function PublicView({ profile }: any) {
                   href={value.startsWith("http") ? value : `https://${value}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"
+                  className="p-3 bg-alpha-cyan/5 border border-alpha-cyan/30 hover:bg-alpha-cyan/20 transition hover:border-alpha-cyan shadow-[0_0_10px_rgba(0,240,255,0)] hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]"
                 >
                   {socialIcons[key]}
                 </a>
               ) : null
             )}
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

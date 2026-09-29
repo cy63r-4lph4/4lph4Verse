@@ -3,6 +3,8 @@ export * from './core/user_credentials';
 export * from './core/verse_profiles';
 export * from './core/profile_contacts';
 export * from './core/profile_wallets';
+export * from './core/verse_guardians';
+export * from './core/verse_recovery_requests';
 
 export * from './arena_users';
 export * from './arena_universities';

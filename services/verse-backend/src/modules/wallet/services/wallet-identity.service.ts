@@ -283,4 +283,37 @@ export class WalletIdentityService {
       `Wallet ${params.walletId} marked deployed on chain ${params.chainId} at block ${params.deployedAtBlock}`,
     );
   }
+  /**
+   * Authenticates a user via Passkey credential ID and returns their wallet.
+   * Finds the controller by passkeyCredentialId, then fetches the wallet and accounts.
+   */
+  async authenticatePasskey(passkeyCredentialId: string) {
+    const controller = await this.db.query.walletControllers.findFirst({
+      where: and(
+        eq(walletControllers.controllerIdentifier, passkeyCredentialId),
+        eq(walletControllers.controllerType, 'passkey'),
+        isNull(walletControllers.revokedAt)
+      ),
+    });
+
+    if (!controller) {
+      throw new NotFoundException(`Wallet not found for this passkey.`);
+    }
+
+    const wallet = await this.db.query.wallets.findFirst({
+      where: eq(wallets.id, controller.walletId),
+      with: {
+        accounts: true,
+        controllers: {
+          where: isNull(walletControllers.revokedAt),
+        },
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException(`Wallet identity not found.`);
+    }
+
+    return wallet;
+  }
 }

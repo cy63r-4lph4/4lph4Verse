@@ -4,12 +4,15 @@ import * as schema from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { WalletIdentityService } from '../wallet/services/wallet-identity.service';
+import { RelayerService } from '../relayer/relayer.service';
+import { parseAbiItem, encodeFunctionData } from 'viem';
 
 @Injectable()
 export class IdentityService {
   constructor(
     @Inject('DB') private db: NodePgDatabase<typeof schema>,
     private readonly walletIdentity: WalletIdentityService,
+    private readonly relayer: RelayerService,
   ) {}
 
   async createProfile(dto: CreateProfileDto) {
@@ -73,8 +76,45 @@ export class IdentityService {
     // INV-04: walletIdentitySeed is generated and immediately discarded.
     await this.walletIdentity.createWalletIdentity(newProfile.id);
 
-    // TODO: Trigger gasless relay to mint NFT and assign owner (Smart Contract Alignment)
+    // TODO: The actual NFT minting is now deferred until the user registers a passkey 
+    // and their smart account address is computed. See `mintProfileNFT`.
 
     return newProfile;
+  }
+
+  /**
+   * Mints the Verse Profile NFT to the user's smart account address.
+   * Called after the passkey is registered and the address is computed on Celo.
+   */
+  async mintProfileNFT(profileId: string, walletAddress: string, chainId: number) {
+    // 1. Fetch profile
+    const profile = await this.db.query.verseProfiles.findFirst({
+      where: eq(schema.verseProfiles.id, profileId),
+    });
+
+    if (!profile) {
+      throw new ConflictException(`Profile ${profileId} not found.`);
+    }
+
+    // 2. Encode mint transaction
+    // Mock Verse Profile NFT address for Celo
+    const VERSE_PROFILE_NFT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Replace with actual address
+    const mintAbi = [
+      parseAbiItem('function mint(address to, string memory handle) external')
+    ];
+
+    const calldata = encodeFunctionData({
+      abi: mintAbi,
+      functionName: 'mint',
+      args: [walletAddress as `0x${string}`, profile.handle]
+    });
+
+    // 3. Send via relayer
+    const receipt = await this.relayer.sendTransaction({
+      to: VERSE_PROFILE_NFT_ADDRESS as `0x${string}`,
+      data: calldata,
+    });
+
+    return receipt;
   }
 }

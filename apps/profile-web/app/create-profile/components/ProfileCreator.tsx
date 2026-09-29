@@ -1,89 +1,111 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ProfileForm from "./ProfileForm";
 import ProfilePreview from "./ProfilePreview";
+import { VerseWalletSetupStep } from "./VerseWalletSetupStep";
 import { Button } from "@verse/ui/components/ui/button";
-import { useVerseProfileWizard } from "@verse/sdk";
 import { useCheckHandle } from "@verse/sdk/hooks/useCheckHandle";
-import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import TxErrorCard from "@verse/ui/components/ErrorCard";
-import { useVerseProfile } from "@verse/sdk/hooks/useVerseProfile";
-import { useRouter } from "next/navigation";
+import { useV6ProfileWizard } from "../../../hooks/useV6ProfileWizard";
 
 export default function ProfileCreator() {
   const {
-    profile,
+    profileDraft,
     updateProfile,
-    setAvatarFromFile,
     submitProfile,
     submitting,
     progress,
     error,
-    retrySubmit,
-  } = useVerseProfileWizard();
-  const { refetch } = useVerseProfile();
-  const { status } = useCheckHandle(profile.handle);
+    walletAddresses,
+  } = useV6ProfileWizard();
+
+  const { status } = useCheckHandle(profileDraft.handle);
   const [ready, setReady] = useState(false);
   const router = useRouter();
 
-  async function handleSubmit() {
-    const success = await submitProfile();
-    const url = `/${profile.handle}`;
-    if (!success) return;
-    refetch();
-    router.push(url);
-  }
   useEffect(() => {
-    if (status == "available" && profile.displayName.length >= 3) {
+    if (
+      status === "available" &&
+      profileDraft.displayName.length >= 3 &&
+      profileDraft.email.length >= 5
+    ) {
       setReady(true);
-    } else setReady(false);
-  }, [status, profile.displayName]);
+    } else {
+      setReady(false);
+    }
+  }, [status, profileDraft.displayName, profileDraft.email]);
+
+  // Navigate to profile page after done
+  useEffect(() => {
+    if (progress === "done" && profileDraft.handle) {
+      const timer = setTimeout(() => {
+        router.push(`/${profileDraft.handle}`);
+      }, 3000); // brief pause so user can see their addresses
+      return () => clearTimeout(timer);
+    }
+  }, [progress, profileDraft.handle, router]);
+
+  const handleInitiate = async () => {
+    await submitProfile();
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-24">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Left: Profile Form */}
         <div>
-          <ProfileForm
-            form={profile}
-            updateProfile={updateProfile}
-            setAvatarFromFile={setAvatarFromFile}
-          />{" "}
+          <ProfileForm form={profileDraft} updateProfile={updateProfile} />
         </div>
 
+        {/* Right: Preview + Wallet Setup */}
         <div className="relative">
           <div className="sticky top-28 space-y-6">
-            <ProfilePreview form={profile} />
+            <ProfilePreview form={{ ...profileDraft, avatarPreview: "" }} />
 
-            <Button
-              className="w-full py-6 text-lg bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition flex items-center justify-center gap-3"
-              disabled={!ready || submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-black">
-                    {progress === "uploading-avatar" && "Uploading avatar…"}
-                    {progress === "uploading-metadata" && "Syncing metadata…"}
-                    {progress === "signing" && "Waiting for signature…"}
-                    {progress === "relaying" && "Relaying…"}
-                    {progress === "writing" && "Writing on-chain…"}
-                    {progress === "done" && "Finalizing…"}
-                    {progress === "idle" && "Submitting…"}
-                  </span>
-                </>
-              ) : (
-                <span>Create Profile</span>
-              )}
-            </Button>
-            {error && (
-              <TxErrorCard
-                error={error}
-                expectedChain="Base"
-                onRetry={retrySubmit}
-              />
+            {/* Verse Wallet Setup Step */}
+            <VerseWalletSetupStep
+              progress={progress}
+              error={error}
+              walletAddresses={walletAddresses}
+              submitting={submitting}
+              onInitiate={handleInitiate}
+            />
+
+            {/* Primary submit button — only shown when idle and form is valid */}
+            {progress === "idle" && (
+              <Button
+                className="w-full py-6 text-lg bg-alpha-cyan/20 text-alpha-cyan border border-alpha-cyan hover:bg-alpha-cyan/40 hover:text-white transition flex items-center justify-center gap-3 font-mono tracking-widest uppercase rounded-none"
+                disabled={!ready || submitting}
+                onClick={handleInitiate}
+              >
+                <span>[ INITIALIZE IDENTITY ]</span>
+              </Button>
             )}
+
+            {/* During wizard: show a slim status bar instead */}
+            {progress !== "idle" && progress !== "done" && progress !== "error" && (
+              <div className="flex items-center justify-center gap-3 py-3 border border-alpha-cyan/20 bg-alpha-cyan/5 font-mono text-xs text-alpha-cyan uppercase tracking-widest">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>
+                  {progress === "creating-profile"    && "Creating profile..."}
+                  {progress === "registering-passkey"  && "Awaiting biometric..."}
+                  {progress === "creating-wallet"     && "Generating wallet..."}
+                  {progress === "computing-address"   && "Computing addresses..."}
+                  {progress === "minting-nft"         && "Minting NFT..."}
+                </span>
+              </div>
+            )}
+
+            {/* Done: redirect notice */}
+            {progress === "done" && (
+              <div className="py-3 border border-alpha-cyan/50 bg-alpha-cyan/10 font-mono text-xs text-alpha-cyan uppercase tracking-widest text-center">
+                ✓ Identity online · Redirecting to profile...
+              </div>
+            )}
+
+            {/* Error handled inside VerseWalletSetupStep */}
           </div>
         </div>
       </div>

@@ -18,35 +18,42 @@ export default function ProfilePreview({ form }: any) {
     farcaster: <Network className="w-5 h-5 text-cyan-400" />,
   };
   return (
-    <Card className="p-10 bg-white/5 border-white/10 backdrop-blur-xl shadow-xl max-h-[80vh]">
+    <div className="p-10 hud-panel bg-black/40 border border-alpha-cyan/30 box-glow max-h-[80vh] relative overflow-y-auto">
+      {/* Corner markers */}
+      <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-alpha-cyan" />
+      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-alpha-cyan" />
+
       <div className="flex flex-col items-center">
         {/* Avatar */}
-        <Avatar className="h-32 w-32 border-2 border-cyan-400 mb-6">
+        <div className="h-32 w-32 border-2 border-alpha-cyan/50 mb-6 bg-black flex items-center justify-center relative">
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(0,240,255,0.1)_1px,transparent_1px)] bg-[size:100%_4px]" />
           {form.avatar ? (
-            <AvatarImage src={form.avatarPreview} />
+            <img src={form.avatarPreview} className="w-full h-full object-cover" />
           ) : (
-            <AvatarFallback className="bg-white/10">VP</AvatarFallback>
+            <span className="font-mono text-alpha-cyan/30">VP</span>
           )}
-        </Avatar>
+        </div>
 
         {/* Display Name */}
-        <h2 className="text-2xl font-bold text-white">
-          {form.displayName || "Display Name"}
+        <h2 className="text-2xl font-mono font-bold text-glow text-alpha-cyan uppercase tracking-wider">
+          {form.displayName || "DISPLAY NAME"}
         </h2>
 
         {/* Handle */}
-        <p className="text-cyan-400 mt-1">
-          {form.handle ? `@${form.handle}` : "@handle"}
+        <p className="text-alpha-magenta font-mono text-sm tracking-widest mt-1">
+          {form.handle ? `@${form.handle}` : "@HANDLE"}
         </p>
 
         {/* Bio */}
-        <p className="text-white/70 text-center mt-4">
-          {form.bio || "Your bio will appear here..."}
+        <p className="text-slate-400 text-center mt-6 font-mono text-sm">
+          {form.bio ? `> ${form.bio}` : "> SYS.LOG // BIO WILL APPEAR HERE"}
         </p>
 
         {/* Location */}
         {form.location && (
-          <p className="mt-4 text-sm text-white/60">📍 {form.location}</p>
+          <p className="mt-4 text-xs font-mono uppercase text-slate-400 flex items-center gap-2">
+            <span className="text-alpha-magenta">LOC:</span> {form.location}
+          </p>
         )}
 
         {/* Interests */}
@@ -55,7 +62,7 @@ export default function ProfilePreview({ form }: any) {
             {form.interests.map((i: string) => (
               <span
                 key={i}
-                className="px-3 py-1 bg-cyan-500/20 border border-cyan-500 text-cyan-300 rounded-full text-xs"
+                className="px-3 py-1 bg-alpha-cyan/10 border border-alpha-cyan/50 text-alpha-cyan font-mono uppercase tracking-wider text-xs"
               >
                 {i}
               </span>
@@ -72,7 +79,7 @@ export default function ProfilePreview({ form }: any) {
                 href={value.startsWith("http") ? value : `https://${value}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"
+                className="p-3 bg-alpha-cyan/5 border border-alpha-cyan/30 hover:bg-alpha-cyan/20 transition hover:border-alpha-cyan shadow-[0_0_10px_rgba(0,240,255,0)] hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]"
               >
                 {socialIcons[key]}
               </a>
@@ -80,6 +87,6 @@ export default function ProfilePreview({ form }: any) {
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

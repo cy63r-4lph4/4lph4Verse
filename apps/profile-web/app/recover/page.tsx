@@ -24,68 +24,79 @@ export default function RecoveryRootPage() {
   return (
     <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 space-y-14">
       {/* HEADER */}
-      <div className="text-center space-y-4">
-        <h1 className="text-5xl font-bold tracking-tight text-red-400">
+      <div className="text-center space-y-4 max-w-3xl mx-auto">
+        <div className="flex items-center justify-center gap-3 mb-2 text-red-500 font-mono tracking-widest text-sm uppercase">
+          <span className="w-12 h-px bg-red-500/50" />
+          [ SYSTEM OVERRIDE ]
+          <span className="w-12 h-px bg-red-500/50" />
+        </div>
+        <h1 className="text-4xl font-mono font-bold uppercase tracking-widest text-glow text-red-500">
           Profile Recovery
         </h1>
-        <p className="max-w-2xl mx-auto text-slate-400 leading-relaxed">
-          Recovery is a <span className="text-white font-medium">serious, irreversible action</span>. 
-          Only initiate recovery if you are the rightful owner of the Verse identity.
+        <p className="text-slate-400 font-mono text-sm leading-relaxed max-w-2xl mx-auto pt-4">
+          {`> RECOVERY IS A `}<span className="text-white font-bold">SERIOUS, IRREVERSIBLE ACTION</span>{`. 
+          ONLY INITIATE RECOVERY IF YOU ARE THE RIGHTFUL OWNER OF THE VERSE IDENTITY.`}
         </p>
       </div>
 
       {/* WARNING BLOCK */}
-      <Card className="p-10 rounded-3xl border border-red-500/20 bg-red-500/5 backdrop-blur-xl shadow-[0_0_60px_rgba(239,68,68,0.25)]">
+      <div className="p-10 hud-panel bg-red-950/20 border border-red-500/30 box-glow shadow-[0_0_30px_rgba(239,68,68,0.15)] relative max-w-3xl mx-auto">
+        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-500" />
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-500" />
+        
         <div className="space-y-6">
-          <div className="flex items-center gap-3 text-red-400">
-            <AlertTriangle size={26} />
-            <h2 className="text-2xl font-semibold">Warnings & Consequences</h2>
+          <div className="flex items-center gap-3 text-red-500 border-b border-red-500/20 pb-4">
+            <AlertTriangle size={22} className="animate-pulse" />
+            <h2 className="text-lg font-mono uppercase tracking-widest font-bold text-glow text-red-500">Critical Warnings & Consequences</h2>
           </div>
 
-          <ul className="space-y-4 text-sm text-slate-300">
-            <li className="flex gap-3">
-              <ShieldAlert className="text-red-400 mt-1" size={18} />
+          <ul className="space-y-4 text-xs font-mono text-slate-300">
+            <li className="flex gap-4">
+              <ShieldAlert className="text-red-500 mt-0.5 shrink-0" size={16} />
               <span>
-                Initiating recovery on a profile you do <strong>not own</strong> is treated as a hostile action.
+                Initiating recovery on a profile you do <span className="text-red-400 font-bold">NOT OWN</span> is treated as a hostile network action.
               </span>
             </li>
 
-            <li className="flex gap-3">
-              <Scale className="text-yellow-400 mt-1" size={18} />
+            <li className="flex gap-4">
+              <Scale className="text-yellow-400 mt-0.5 shrink-0" size={16} />
               <span>
-                Failed or malicious recovery attempts result in <strong>aura reduction</strong>, reputation penalties,
+                Failed or malicious recovery attempts result in <span className="text-yellow-400 font-bold">AURA REDUCTION</span>, reputation penalties,
                 and may permanently flag your wallet.
               </span>
             </li>
 
-            <li className="flex gap-3">
-              <ShieldAlert className="text-purple-400 mt-1" size={18} />
+            <li className="flex gap-4">
+              <ShieldAlert className="text-alpha-magenta mt-0.5 shrink-0" size={16} />
               <span>
-                Identity verification is cryptographically recorded and cannot be undone once submitted.
+                Identity verification is cryptographically recorded and <span className="text-white font-bold">CANNOT BE UNDONE</span> once submitted.
               </span>
             </li>
           </ul>
         </div>
-      </Card>
+      </div>
 
       {/* SEARCH SECTION */}
-      <Card className="p-10 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
+      <div className="p-10 hud-panel bg-black/60 border border-alpha-magenta/30 box-glow relative max-w-3xl mx-auto">
+        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-alpha-magenta" />
+        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-alpha-magenta" />
+        
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-semibold">Enter Profile Handle</h3>
-            <p className="text-sm text-slate-400">
-              Type the Verse handle you wish to recover. You will be redirected to the recovery process.
+          <div className="space-y-2 border-b border-alpha-magenta/20 pb-4">
+            <h3 className="text-xl font-mono uppercase tracking-widest font-bold text-glow text-alpha-magenta">Target Identification</h3>
+            <p className="text-xs font-mono text-slate-400">
+              {`> ENTER THE TARGET VERSE HANDLE YOU WISH TO RECOVER`}
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-alpha-magenta font-mono">{'>'}</span>
               <Input
-                placeholder="e.g. cy63r_4lph4"
+                placeholder="HANDLE"
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
-                className="pl-11 h-12 text-lg"
+                className="pl-8 h-12 text-sm font-mono uppercase tracking-widest bg-black/40 border-0 border-b border-alpha-magenta/50 rounded-none focus-visible:ring-0 focus-visible:border-alpha-magenta text-white"
                 onKeyDown={(e) => e.key === "Enter" && proceed()}
               />
             </div>
@@ -94,17 +105,17 @@ export default function RecoveryRootPage() {
               size="lg"
               disabled={!handle}
               onClick={proceed}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-alpha-magenta/20 border border-alpha-magenta text-alpha-magenta hover:bg-alpha-magenta/40 hover:text-white transition rounded-none font-mono tracking-widest uppercase"
             >
-              Continue to Recovery
+              [ INITIATE UPLINK ]
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* FOOTER NOTE */}
-      <p className="text-center text-xs text-slate-500">
-        Abuse of the recovery system undermines trust in the Verse identity network.
+      <p className="text-center text-[11px] font-mono tracking-widest uppercase text-slate-500 border-t border-red-500/10 pt-8 max-w-lg mx-auto">
+        {`> SYS.WARN: ABUSE OF THE RECOVERY SYSTEM UNDERMINES TRUST AND WILL BE PENALIZED.`}
       </p>
     </div>
   );

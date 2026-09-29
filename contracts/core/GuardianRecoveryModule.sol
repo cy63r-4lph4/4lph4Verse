@@ -13,6 +13,20 @@ pragma solidity ^0.8.24;
  *   - Recovery proposals and execution
  *   - Meta nonce epoch bumps (for invalidating signed meta tx)
  *
+ * ---------------------------------------------------------------------------
+ * ARCHITECTURE NOTE (v2): unified recovery pipeline
+ * ---------------------------------------------------------------------------
+ * There is exactly ONE state machine that can change profile ownership:
+ * `RecoveryState`. Guardian-quorum recovery and proof-of-owner (biometric)
+ * recovery are two different ENTRY POINTS into that same state machine --
+ * neither one calls VerseProfile.recoverySetOwner directly, and both are
+ * subject to the same freeze checks, the same cancellation rights, and the
+ * same execution path. This is deliberate: a system is only as strong as its
+ * weakest door, so there must only ever be one door, with multiple locks.
+ *
+ * See the recovery design doc for the full threat model and rationale.
+ * ---------------------------------------------------------------------------
+ *
  * Design:
  * - Upgradeable via UUPS
  * - Governed via AccessControl (same pattern as VerseProfile)
@@ -49,6 +63,12 @@ contract GuardianRecoveryModule is
 
     bytes32 public constant MODULE_ADMIN_ROLE = keccak256("MODULE_ADMIN_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+
+    /// @notice Granted only to a trusted ProofOfOwnerModule contract address.
+    ///         Holding this role permits ONLY `initiateRecoveryViaProof` --
+    ///         it never grants the ability to execute or bypass freeze/delay.
+    bytes32 public constant PROOF_INITIATOR_ROLE = keccak256("PROOF_INITIATOR_ROLE");
+
     // ------------------------------------------------------------------------
     // EIP-712: guardian approvals
     // ------------------------------------------------------------------------
@@ -79,14 +99,31 @@ contract GuardianRecoveryModule is
     // How long before guardian add/remove proposals can be applied (e.g. 7 days)
     uint64 public constant GUARDIAN_DELAY = 7 days;
 
-    // How long between recovery initiation and execution (e.g. 72 hours)
+    // How long between guardian-quorum recovery initiation and execution.
     uint64 public constant RECOVERY_DELAY = 72 hours;
+
+    // How long between proof-of-owner (biometric) recovery initiation and
+    // execution, when the profile is not in a recently-suspicious state.
+    // Shorter than RECOVERY_DELAY because this path targets the common
+    // "lost my key, no adversary present" case -- but never zero.
+    uint64 public constant PROOF_RECOVERY_DELAY = 36 hours;
 
     // Soft freeze duration (e.g. 24 hours)
     uint64 public constant SOFT_FREEZE_DURATION = 24 hours;
 
     // Minimum number of active guardians required (quorum floor)
     uint8 public constant MIN_GUARDIANS = 2;
+
+    // After a proof-sourced recovery is canceled (by owner or guardians),
+    // block re-initiation via the proof path for this long -- anti-retry
+    // against a probabilistic liveness/face-match check.
+    uint64 public constant PROOF_COOLDOWN_AFTER_CANCEL = 7 days;
+
+    // After a hard freeze is lifted, disable the FAST proof-recovery lane
+    // for this long; proof-initiated recovery during this window falls back
+    // to the slower RECOVERY_DELAY. A recently-frozen profile was recently
+    // suspected of compromise.
+    uint64 public constant POST_UNFREEZE_PROOF_COOLDOWN = 14 days;
 
     // ------------------------------------------------------------------------
     // Structs
@@ -105,11 +142,17 @@ contract GuardianRecoveryModule is
         uint64 expiresAt; // optional expiry for the proposal
     }
 
+    enum RecoverySource {
+        GUARDIAN_QUORUM,
+        PROOF_OF_OWNER
+    }
+
     struct RecoveryState {
         address pendingNewOwner; // proposed new owner
         uint64 eta; // earliest time when executeRecovery is allowed
         uint256 nonce; // incremented for each new recovery attempt
         bool active; // whether a recovery is currently in progress
+        RecoverySource source; // which door opened this case
     }
 
     // ------------------------------------------------------------------------
@@ -132,6 +175,10 @@ contract GuardianRecoveryModule is
 
     // Meta-tx safety: epoch per verseId (for EIP-712 domain separation / invalidation)
     mapping(uint256 => uint64) public metaNonceEpoch; // verseId => epoch
+
+    // Anti-grief cooldowns for the proof-of-owner recovery path
+    mapping(uint256 => uint64) public proofCooldownUntil; // verseId => timestamp before which proof-path initiation is blocked
+    mapping(uint256 => uint64) public lastUnfrozenAt; // verseId => timestamp hard freeze was last lifted
 
     // ------------------------------------------------------------------------
     // Events
@@ -163,14 +210,20 @@ contract GuardianRecoveryModule is
         uint256 indexed verseId,
         address indexed pendingNewOwner,
         uint64 eta,
-        uint256 recoveryNonce
+        uint256 recoveryNonce,
+        RecoverySource source
     );
-    event RecoveryCanceled(uint256 indexed verseId, uint256 recoveryNonce);
+    event RecoveryCanceled(
+        uint256 indexed verseId,
+        uint256 recoveryNonce,
+        address indexed canceledBy
+    );
     event RecoveryExecuted(
         uint256 indexed verseId,
         address indexed oldOwner,
         address indexed newOwner,
-        uint256 recoveryNonce
+        uint256 recoveryNonce,
+        RecoverySource source
     );
 
     // Meta nonce epoch
@@ -189,6 +242,12 @@ contract GuardianRecoveryModule is
     {
         GuardianSet storage set = guardians[verseId];
         return (set.active, set.threshold, set.epoch);
+    }
+
+    function getRecovery(
+        uint256 verseId
+    ) external view returns (RecoveryState memory) {
+        return recovery[verseId];
     }
 
     // ------------------------------------------------------------------------
@@ -259,6 +318,7 @@ contract GuardianRecoveryModule is
         require(!hardFrozen[verseId], "GuardianModule: profile hard frozen");
         _;
     }
+
     modifier notFrozen(uint256 verseId) {
         // soft or hard freeze both block this
         if (softFreezeUntil[verseId] > block.timestamp) {
@@ -270,6 +330,18 @@ contract GuardianRecoveryModule is
         _;
     }
 
+    /// @dev Guardian-set changes must never happen while a recovery is in
+    ///      flight -- otherwise whoever controls (or has compromised) the
+    ///      owner key could swap out the guardians who'd cancel a malicious
+    ///      recovery, mid-window.
+    modifier notDuringRecovery(uint256 verseId) {
+        require(
+            !recovery[verseId].active,
+            "GuardianModule: recovery in progress"
+        );
+        _;
+    }
+
     // ------------------------------------------------------------------------
     // Guardian configuration: propose + apply
     // ------------------------------------------------------------------------
@@ -278,13 +350,20 @@ contract GuardianRecoveryModule is
      * @notice Propose a new full guardian set for a VerseID.
      *         Does NOT take effect immediately. Must be applied after GUARDIAN_DELAY.
      *
-     * @dev Only the current VerseProfile owner can propose a change.
+     * @dev Only the current VerseProfile owner can propose a change. Blocked
+     *      entirely while a recovery is active (see `notDuringRecovery`).
      */
     function proposeGuardians(
         uint256 verseId,
         address[] calldata newGuardians,
         uint8 newThreshold
-    ) external onlyProfileOwner(verseId) notHardFrozen(verseId) whenNotPaused {
+    )
+        external
+        onlyProfileOwner(verseId)
+        notHardFrozen(verseId)
+        notDuringRecovery(verseId)
+        whenNotPaused
+    {
         uint256 len = newGuardians.length;
         require(len >= MIN_GUARDIANS, "GuardianModule: too few guardians");
         require(
@@ -329,44 +408,14 @@ contract GuardianRecoveryModule is
         );
     }
 
-    // ------------------------------------------------------------------------
-    // Pause Controls (optional, module-level)
-    // ------------------------------------------------------------------------
-
-    function pause() external onlyRole(MODULE_ADMIN_ROLE) {
-        _pause();
-    }
-
-    function unpause() external onlyRole(MODULE_ADMIN_ROLE) {
-        _unpause();
-    }
-
-    // ------------------------------------------------------------------------
-    // UUPS upgrade authorization
-    // ------------------------------------------------------------------------
-
-    function _authorizeUpgrade(
-        address
-    ) internal override onlyRole(UPGRADER_ROLE) {}
-
-    // ------------------------------------------------------------------------
-    // STEP 1C COMPLETE: upgradeable, role-based, Verse-style skeleton.
-    // ------------------------------------------------------------------------
-    // Next steps (we'll add incrementally):
-    // - Functions to propose/apply guardian sets (with delays + epoch bumps)
-    // - Functions to soft/hard freeze and unfreeze
-    // - Functions to initiate/cancel/execute recovery
-    // - Functions to bump metaNonceEpoch
-    // - Signature verification (EIP-712) for guardian approvals
-    // - Restricted call into VerseProfile to change owner on successful recovery
-
     /**
      * @notice Apply a previously proposed guardian set after the delay has passed.
      * @dev Anyone can call this once the proposal is mature and not expired.
+     *      Blocked entirely while a recovery is active.
      */
     function applyGuardians(
         uint256 verseId
-    ) external notHardFrozen(verseId) whenNotPaused {
+    ) external notHardFrozen(verseId) notDuringRecovery(verseId) whenNotPaused {
         GuardianChange storage op = guardianOps[verseId];
         require(op.applyAfter != 0, "GuardianModule: no pending change");
         require(block.timestamp >= op.applyAfter, "GuardianModule: too early");
@@ -404,6 +453,26 @@ contract GuardianRecoveryModule is
     }
 
     // ------------------------------------------------------------------------
+    // Pause Controls (optional, module-level)
+    // ------------------------------------------------------------------------
+
+    function pause() external onlyRole(MODULE_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(MODULE_ADMIN_ROLE) {
+        _unpause();
+    }
+
+    // ------------------------------------------------------------------------
+    // UUPS upgrade authorization
+    // ------------------------------------------------------------------------
+
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(UPGRADER_ROLE) {}
+
+    // ------------------------------------------------------------------------
     // Internal: guardian helpers
     // ------------------------------------------------------------------------
 
@@ -423,12 +492,6 @@ contract GuardianRecoveryModule is
 
     /**
      * @dev Verify guardian EIP-712 signatures for a specific action.
-     * @param verseId Verse profile ID the action targets
-     * @param action  One of the ACTION_* constants
-     * @param paramsHash keccak256-encoded extra params (e.g. newOwner)
-     * @param recoveryNonce  Recovery nonce (0 for non-recovery actions)
-     * @param deadline  Timestamp after which signatures are invalid
-     * @param approvals  Guardians + their signatures
      * @return validCount  Number of valid, unique guardian approvals
      */
     function _verifyGuardianApprovalsTyped(
@@ -470,11 +533,9 @@ contract GuardianRecoveryModule is
 
         for (uint256 i; i < approvals.length; ++i) {
             address claimedGuardian = approvals[i].guardian;
-            // Recover signer from signature
             address signer = digest.recover(approvals[i].signature);
             if (signer != claimedGuardian) continue;
 
-            // Check that this address is an active guardian and not counted yet
             for (uint256 j; j < lenSet; ++j) {
                 if (set.active[j] == claimedGuardian && !seen[j]) {
                     seen[j] = true;
@@ -515,8 +576,12 @@ contract GuardianRecoveryModule is
         _;
     }
 
+    // ------------------------------------------------------------------------
+    // Recovery: entry point A -- guardian quorum
+    // ------------------------------------------------------------------------
+
     /**
-     * @notice Start a recovery flow proposing a new owner.
+     * @notice Start a recovery flow proposing a new owner, via guardian quorum.
      * @dev Requires guardian quorum approval. Starts RECOVERY_DELAY timer.
      */
     function initiateRecovery(
@@ -530,9 +595,7 @@ contract GuardianRecoveryModule is
         RecoveryState storage r = recovery[verseId];
         require(!r.active, "GuardianModule: recovery already active");
 
-        // Next recovery nonce (we sign over this)
         uint256 nextNonce = r.nonce + 1;
-
         bytes32 paramsHash = keccak256(abi.encodePacked(newOwner));
 
         _requireGuardianThreshold(
@@ -545,21 +608,104 @@ contract GuardianRecoveryModule is
         );
 
         // Freeze during recovery for the full RECOVERY_DELAY
-        softFreezeUntil[verseId] = uint64(
-            block.timestamp + RECOVERY_DELAY
-        );
+        softFreezeUntil[verseId] = uint64(block.timestamp + RECOVERY_DELAY);
+
+        uint64 eta = uint64(block.timestamp + RECOVERY_DELAY);
 
         r.pendingNewOwner = newOwner;
-        r.eta = uint64(block.timestamp + RECOVERY_DELAY);
+        r.eta = eta;
         r.nonce = nextNonce;
         r.active = true;
+        r.source = RecoverySource.GUARDIAN_QUORUM;
 
-        emit RecoveryInitiated(verseId, newOwner, r.eta, r.nonce);
+        emit RecoveryInitiated(
+            verseId,
+            newOwner,
+            eta,
+            r.nonce,
+            RecoverySource.GUARDIAN_QUORUM
+        );
     }
 
+    // ------------------------------------------------------------------------
+    // Recovery: entry point B -- proof of owner (biometric)
+    // ------------------------------------------------------------------------
+
     /**
-     * @notice Complete a recovery after delay has passed.
-     * @dev Requires guardian quorum. Calls VerseProfile to set new owner.
+     * @notice Open a proof-sourced recovery case. Callable only by the
+     *         trusted ProofOfOwnerModule (holds PROOF_INITIATOR_ROLE), which
+     *         must already have verified a matching Self proof AND a
+     *         liveness/face-match attestation before calling this.
+     * @dev This function NEVER sets ownership -- it only opens the same
+     *      delayed, cancelable window guardian-initiated recovery uses. The
+     *      delay is shorter (PROOF_RECOVERY_DELAY) unless the profile was
+     *      recently unfrozen, in which case it falls back to the slower
+     *      RECOVERY_DELAY, because a recently-frozen profile was recently
+     *      under suspicion.
+     */
+    function initiateRecoveryViaProof(
+        uint256 verseId,
+        address newOwner
+    )
+        external
+        onlyRole(PROOF_INITIATOR_ROLE)
+        whenNotPaused
+        notHardFrozen(verseId)
+    {
+        require(newOwner != address(0), "GuardianModule: zero new owner");
+        require(
+            verseProfile.hasProfile(newOwner) == false,
+            "GuardianModule: newOwner already has profile"
+        );
+
+        RecoveryState storage r = recovery[verseId];
+        require(!r.active, "GuardianModule: recovery already active");
+        require(
+            block.timestamp >= proofCooldownUntil[verseId],
+            "GuardianModule: proof recovery in cooldown"
+        );
+
+        uint64 delay = PROOF_RECOVERY_DELAY;
+        if (block.timestamp < lastUnfrozenAt[verseId] + POST_UNFREEZE_PROOF_COOLDOWN) {
+            // Recently under suspicion -- fall back to the slow lane instead
+            // of refusing outright, so a genuinely locked-out owner still has
+            // a path back in.
+            delay = RECOVERY_DELAY;
+        }
+
+        uint64 eta = uint64(block.timestamp + delay);
+        uint256 nextNonce = r.nonce + 1;
+
+        r.pendingNewOwner = newOwner;
+        r.eta = eta;
+        r.nonce = nextNonce;
+        r.active = true;
+        r.source = RecoverySource.PROOF_OF_OWNER;
+
+        emit RecoveryInitiated(
+            verseId,
+            newOwner,
+            eta,
+            nextNonce,
+            RecoverySource.PROOF_OF_OWNER
+        );
+    }
+
+    // ------------------------------------------------------------------------
+    // Recovery: shared execution path
+    // ------------------------------------------------------------------------
+
+    /**
+     * @notice Complete a recovery after its delay has passed, regardless of
+     *         which door opened it.
+     * @dev Freeze state is re-checked HERE, not just at initiation, so
+     *      guardians can block an in-flight recovery by hard-freezing after
+     *      seeing the RecoveryInitiated event. Guardian-quorum-sourced
+     *      recoveries additionally require a second round of threshold
+     *      signatures over ACTION_RECOVERY_EXEC; proof-sourced recoveries do
+     *      not, since their authorization was already fully established at
+     *      initiation and their safety comes from the delay + cancel rights,
+     *      not from a second signature round.
      */
     function executeRecovery(
         uint256 verseId,
@@ -573,33 +719,118 @@ contract GuardianRecoveryModule is
             "GuardianModule: recovery delay not over"
         );
 
-        bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
-
-        _requireGuardianThreshold(
-            verseId,
-            ACTION_RECOVERY_EXEC,
-            paramsHash,
-            r.nonce,
-            deadline,
-            approvals
-        );
+        if (r.source == RecoverySource.GUARDIAN_QUORUM) {
+            bytes32 paramsHash = keccak256(
+                abi.encodePacked(r.pendingNewOwner)
+            );
+            _requireGuardianThreshold(
+                verseId,
+                ACTION_RECOVERY_EXEC,
+                paramsHash,
+                r.nonce,
+                deadline,
+                approvals
+            );
+        }
+        // PROOF_OF_OWNER source: no additional signature required here --
+        // permissionless "anyone can trigger execution" once eta has passed
+        // and the profile is still unfrozen, mirroring applyGuardians.
 
         address oldOwner = verseProfile.ownerOf(verseId);
         address newOwner = r.pendingNewOwner;
         require(newOwner != address(0), "GuardianModule: no pending owner");
 
-        verseProfile.recoverySetOwner(verseId, newOwner);
+        RecoverySource source = r.source;
+        uint256 nonce = r.nonce;
 
+        // Effects before the external call (checks-effects-interactions).
         r.active = false;
         r.pendingNewOwner = address(0);
 
-        emit RecoveryExecuted(verseId, oldOwner, newOwner, r.nonce);
+        verseProfile.recoverySetOwner(verseId, newOwner);
+
+        emit RecoveryExecuted(verseId, oldOwner, newOwner, nonce, source);
 
         // Unfreeze after successful recovery
         hardFrozen[verseId] = false;
         softFreezeUntil[verseId] = 0;
         emit Unfrozen(verseId);
     }
+
+    // ------------------------------------------------------------------------
+    // Recovery: cancellation (three independent kill switches)
+    // ------------------------------------------------------------------------
+
+    /**
+     * @notice The current profile owner can instantly cancel any in-flight
+     *         recovery -- no guardian quorum needed. This is the primary
+     *         defense against a stolen-document / proof-of-owner attack when
+     *         the legitimate owner is still reachable: presence of the real
+     *         owner always wins.
+     */
+    function ownerCancelRecovery(uint256 verseId) external {
+        require(
+            verseProfile.ownerOf(verseId) == _msgSender(),
+            "GuardianModule: not owner"
+        );
+        RecoveryState storage r = recovery[verseId];
+        require(r.active, "GuardianModule: no active recovery");
+
+        RecoverySource source = r.source;
+        uint256 nonce = r.nonce;
+        r.active = false;
+
+        if (source == RecoverySource.PROOF_OF_OWNER) {
+            proofCooldownUntil[verseId] = uint64(
+                block.timestamp + PROOF_COOLDOWN_AFTER_CANCEL
+            );
+        }
+
+        emit RecoveryCanceled(verseId, nonce, _msgSender());
+    }
+
+    /**
+     * @notice Guardian-quorum cancellation. Works regardless of which door
+     *         opened the recovery (guardian-quorum or proof-of-owner).
+     * @dev We do not allow unilateral owner cancellation to be the ONLY
+     *      cancellation path (a compromised owner key could otherwise be
+     *      used to indefinitely block a legitimate guardian-driven recovery)
+     *      -- this function is the guardians' independent kill switch.
+     */
+    function cancelRecovery(
+        uint256 verseId,
+        uint256 deadline,
+        GuardianSignature[] calldata approvals
+    ) external whenNotPaused {
+        RecoveryState storage r = recovery[verseId];
+        require(r.active, "GuardianModule: no active recovery");
+
+        bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
+        _requireGuardianThreshold(
+            verseId,
+            ACTION_RECOVERY_CANCEL,
+            paramsHash,
+            r.nonce,
+            deadline,
+            approvals
+        );
+
+        RecoverySource source = r.source;
+        uint256 nonce = r.nonce;
+        r.active = false;
+
+        if (source == RecoverySource.PROOF_OF_OWNER) {
+            proofCooldownUntil[verseId] = uint64(
+                block.timestamp + PROOF_COOLDOWN_AFTER_CANCEL
+            );
+        }
+
+        emit RecoveryCanceled(verseId, nonce, _msgSender());
+    }
+
+    // ------------------------------------------------------------------------
+    // Misc
+    // ------------------------------------------------------------------------
 
     function bumpMetaNonceEpoch(
         uint256 verseId
@@ -614,23 +845,30 @@ contract GuardianRecoveryModule is
 
     /**
      * @notice Soft-freeze a profile for a limited time.
-     * @dev Any active guardian can call this.
-     *      Soft freeze auto-expires after SOFT_FREEZE_DURATION.
+     * @dev Any single active guardian can call this -- a fast, unilateral
+     *      "something's wrong, pause things" button. To prevent one bad or
+     *      compromised guardian from griefing recovery indefinitely, a lone
+     *      guardian may trigger this ONCE; it cannot be renewed or extended
+     *      by a single guardian while already active. Extending protection
+     *      beyond SOFT_FREEZE_DURATION requires escalating to hardFreeze,
+     *      which needs threshold signatures.
      */
     function softFreeze(
         uint256 verseId
     ) external onlyGuardian(verseId) whenNotPaused {
-        uint64 until = uint64(block.timestamp + SOFT_FREEZE_DURATION);
+        require(!hardFrozen[verseId], "GuardianModule: already hard frozen");
+        require(
+            softFreezeUntil[verseId] <= block.timestamp,
+            "GuardianModule: soft freeze already active"
+        );
 
-        // If there is already a soft freeze further in the future, don't shorten it.
-        if (until > softFreezeUntil[verseId]) {
-            softFreezeUntil[verseId] = until;
-            emit SoftFrozen(verseId, until);
-        }
+        uint64 until = uint64(block.timestamp + SOFT_FREEZE_DURATION);
+        softFreezeUntil[verseId] = until;
+        emit SoftFrozen(verseId, until);
     }
 
     /**
-     * @notice Permanently freeze a profile until unfreezed by guardian quorum.
+     * @notice Permanently freeze a profile until unfrozen by guardian quorum.
      * @dev Requires threshold approval. Emits HardFrozen event.
      */
     function hardFreeze(
@@ -642,8 +880,8 @@ contract GuardianRecoveryModule is
         _requireGuardianThreshold(
             verseId,
             ACTION_HARD_FREEZE,
-            bytes32(0), // no extra params
-            0, // no recovery nonce involved
+            bytes32(0),
+            0,
             deadline,
             approvals
         );
@@ -654,7 +892,9 @@ contract GuardianRecoveryModule is
 
     /**
      * @notice Lift a hard freeze after investigation.
-     * @dev Requires guardian threshold approvals.
+     * @dev Requires guardian threshold approvals. Starts the
+     *      POST_UNFREEZE_PROOF_COOLDOWN window during which proof-of-owner
+     *      recovery falls back to the slow lane.
      */
     function unfreeze(
         uint256 verseId,
@@ -674,43 +914,22 @@ contract GuardianRecoveryModule is
 
         hardFrozen[verseId] = false;
         softFreezeUntil[verseId] = 0;
+        lastUnfrozenAt[verseId] = uint64(block.timestamp);
         emit Unfrozen(verseId);
-    }
-
-    function cancelRecovery(
-        uint256 verseId,
-        uint256 deadline,
-        GuardianSignature[] calldata approvals
-    ) external whenNotPaused {
-        RecoveryState storage r = recovery[verseId];
-        require(r.active, "GuardianModule: no active recovery");
-
-        // Require guardian threshold to cancel.
-        // We do not allow unilateral owner cancellation because a compromised
-        // key could be used by an attacker to indefinitely block their own recovery.
-        bytes32 paramsHash = keccak256(abi.encodePacked(r.pendingNewOwner));
-        _requireGuardianThreshold(
-            verseId,
-            ACTION_RECOVERY_CANCEL,
-            paramsHash,
-            r.nonce,
-            deadline,
-            approvals
-        );
-
-        r.active = false;
-        emit RecoveryCanceled(verseId, r.nonce);
     }
 
     /**
      * @notice Clear both soft and hard freeze state for a profile.
-     * @dev Callable by module admin. Use with care.
+     * @dev Callable by module admin. Use with care -- ideally this role sits
+     *      behind a multisig/timelock, not a single EOA (see design doc,
+     *      residual risks).
      */
     function forceUnfreeze(
         uint256 verseId
     ) external onlyRole(MODULE_ADMIN_ROLE) {
         softFreezeUntil[verseId] = 0;
         hardFrozen[verseId] = false;
+        lastUnfrozenAt[verseId] = uint64(block.timestamp);
         emit Unfrozen(verseId);
     }
 
@@ -723,5 +942,5 @@ contract GuardianRecoveryModule is
     // ------------------------------------------------------------------------
     // Storage gap for future upgrades
     // ------------------------------------------------------------------------
-    uint256[44] private __gap;
+    uint256[40] private __gap;
 }

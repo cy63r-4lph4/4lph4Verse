@@ -11,6 +11,9 @@ import { eq, and, isNull } from 'drizzle-orm';
 import * as schema from '../../../db/schema';
 import { walletControllers } from '../../../db/schema/wallet/wallet_controllers';
 import { wallets } from '../../../db/schema/wallet/wallets';
+import { walletAccounts } from '../../../db/schema/wallet/wallet_accounts';
+import { RelayerService } from '../../relayer/relayer.service';
+import { parseAbiItem } from 'viem';
 
 type ControllerRow = typeof walletControllers.$inferSelect;
 
@@ -48,7 +51,10 @@ export interface AddControllerParams {
 export class WalletControllerService {
   private readonly logger = new Logger(WalletControllerService.name);
 
-  constructor(@Inject('DB') private db: NodePgDatabase<typeof schema>) {}
+  constructor(
+    @Inject('DB') private db: NodePgDatabase<typeof schema>,
+    private readonly relayer: RelayerService
+  ) {}
 
   /**
    * Records a new controller for a wallet.
@@ -219,16 +225,60 @@ export class WalletControllerService {
     walletId: string,
     chainId: number,
   ): Promise<void> {
-    // BLOCKED: Implementation requires explicit user approval before proceeding.
-    // Do not implement until the user approves moving to that phase.
-    this.logger.warn(
-      `reconcileOnChainState is a stub. On-chain verification for wallet ${walletId} ` +
-        `on chain ${chainId} has not been implemented yet. ` +
-        `This requires viem client infrastructure and Kernel module query ABI.`,
-    );
-    // TODO: Implement after viem client infrastructure is set up
-    // 1. Get wallet_accounts.address for this chainId
-    // 2. Call Kernel.isModuleInstalled(MODULE_TYPE_VALIDATOR, validatorAddr, '') for each controller
-    // 3. Update confirmedOnChain accordingly
+    this.logger.log(`Reconciling on-chain state for wallet ${walletId} on chain ${chainId}`);
+
+    // 1. Get wallet account address for this chain
+    const account = await this.db.query.walletAccounts.findFirst({
+      where: and(
+        eq(walletAccounts.walletId, walletId),
+        eq(walletAccounts.chainId, chainId)
+      )
+    });
+
+    if (!account || account.deploymentStatus !== 'deployed') {
+      this.logger.warn(`Wallet ${walletId} is not deployed on chain ${chainId}. Skipping reconciliation.`);
+      return;
+    }
+
+    // 2. Fetch all controllers for this wallet
+    const controllers = await this.db.query.walletControllers.findMany({
+      where: and(
+        eq(walletControllers.walletId, walletId),
+        isNull(walletControllers.revokedAt)
+      )
+    });
+
+    // 3. Setup viem client and ABI
+    const client = this.relayer.client;
+    // For Kernel v3, isModuleInstalled(uint256 moduleType, address module, bytes additionalContext)
+    const isModuleInstalledAbi = parseAbiItem('function isModuleInstalled(uint256 moduleType, address module, bytes additionalContext) external view returns (bool)');
+    const VALIDATOR_TYPE = 1n;
+
+    for (const controller of controllers) {
+      if (!controller.validatorContractAddress) continue; // Skip if no contract defined
+
+      try {
+        const isInstalled = await client.readContract({
+          address: account.address as `0x${string}`,
+          abi: [isModuleInstalledAbi],
+          functionName: 'isModuleInstalled',
+          args: [VALIDATOR_TYPE, controller.validatorContractAddress as `0x${string}`, '0x']
+        });
+
+        if (isInstalled && !controller.confirmedOnChain) {
+          // Confirm it
+          await this.db.update(walletControllers)
+            .set({ confirmedOnChain: true })
+            .where(eq(walletControllers.id, controller.id));
+          this.logger.log(`Controller ${controller.id} confirmed on-chain for wallet ${walletId}.`);
+        } else if (!isInstalled && controller.confirmedOnChain) {
+          // Off-chain says confirmed, but on-chain it's missing (needs review/sync)
+          // For now, we'll log it as a sync issue
+          this.logger.warn(`Controller ${controller.id} is marked confirmed off-chain, but is not installed on-chain!`);
+        }
+      } catch (err) {
+        this.logger.error(`Failed to read Kernel state for controller ${controller.id}: ${err.message}`);
+      }
+    }
   }
 }

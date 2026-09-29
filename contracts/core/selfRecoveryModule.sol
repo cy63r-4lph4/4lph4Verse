@@ -98,7 +98,7 @@ contract selfRecoveryModule is AccessControl, SelfVerificationRoot {
         uint256 verseId = vp.verseIdOfOwner(subject);
         require(verseId != 0, "NO_PROFILE_FOR_SUBJECT");
 
-        bytes32 verifiedHash = vp.getDochash(verseId);
+        bytes32 verifiedHash = vp.getCommitment(verseId);
         require(verifiedHash != bytes32(""), "PROFILE_NOT_VERIFIED");
 
         require(verifiedHash == dochash, "DOCHASH_MISMATCH");

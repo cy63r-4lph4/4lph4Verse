@@ -13,9 +13,9 @@ import { MailModule } from './modules/mail/mail.module';
 import { DungeonModule } from './modules/dungeon/dungeon.module';
 import { ConfigModule } from '@nestjs/config';
 
-// import { IdentityModule } from './modules/identity/identity.module'; // deferred — requires 0001_wallet_infrastructure migration
-// import { WalletModule } from './modules/wallet/wallet.module'; // deferred — requires 0001_wallet_infrastructure migration
-
+import { IdentityModule } from './modules/identity/identity.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { RelayerModule } from './modules/relayer/relayer.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -29,6 +29,9 @@ import { ConfigModule } from '@nestjs/config';
     QuestionsModule,
     MailModule,
     DungeonModule,
+    IdentityModule,
+    WalletModule,
+    RelayerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

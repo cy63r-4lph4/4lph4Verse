@@ -4,6 +4,7 @@ export * from "./hooks/useProfileById";
 export * from "./hooks/useVerseProfileWizard";
 export * from "./hooks/useCheckHandle";
 export * from "./hooks/useCheckAccount";
+export * from "./hooks/useVersePasskey";
 
 export * from "./utils/builders/permitTypedData";
 export * from "./utils/builders/profileTypedData";
@@ -19,5 +20,6 @@ export * from "./config/pinataConfig";
 
 export * from "./utils/profile";
 
-// Verse Wallet Infrastructure (v6) — address derivation utilities
-export * from "./wallet";export * from "./core/guardian-signatures";
+// Verse Wallet Infrastructure (v6) — address derivation + passkey utilities
+export * from "./wallet";
+export * from "./core/guardian-signatures";

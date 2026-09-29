@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../db/db.module';
+import { RelayerModule } from '../relayer/relayer.module';
 import { WalletController } from './wallet.controller';
 import { WalletIdentityService } from './services/wallet-identity.service';
 import { WalletControllerService } from './services/wallet-controller.service';
 import { ConnectedWalletService } from './services/connected-wallet.service';
 import { ChainConfigService } from './services/chain-config.service';
+import { BundlerService } from './services/bundler.service';
+import { WalletService } from './wallet.service';
 
 /**
  * WalletModule — Verse Wallet Infrastructure (v6)
@@ -19,19 +22,23 @@ import { ChainConfigService } from './services/chain-config.service';
  * during profile creation (auto-provisioning).
  */
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, RelayerModule],
   controllers: [WalletController],
   providers: [
     ChainConfigService,
     WalletIdentityService,
     WalletControllerService,
     ConnectedWalletService,
+    BundlerService,
+    WalletService,
   ],
   exports: [
     ChainConfigService,
     WalletIdentityService,
     WalletControllerService,
     ConnectedWalletService,
+    BundlerService,
+    WalletService,
   ],
 })
 export class WalletModule {}

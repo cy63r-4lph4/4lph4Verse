@@ -4,9 +4,12 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
-    "@verse/providers": "workspace:*"
+    "@verse/providers": "workspace:*",
+    "viem": "^2.56.9"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean"

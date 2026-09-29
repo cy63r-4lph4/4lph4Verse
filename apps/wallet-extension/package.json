@@ -1,0 +1,28 @@
+{
+  "name": "@verse/wallet-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@verse/ui": "workspace:*",
+    "@verse/sdk": "workspace:*",
+    "@verse/providers": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@types/chrome": "^0.0.268",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.0.2",
+    "vite": "^5.0.0"
+  }
+}

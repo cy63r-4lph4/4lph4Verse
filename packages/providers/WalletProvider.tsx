@@ -14,6 +14,7 @@ import {
   rainbowWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+import { verseWallet } from "./VerseWalletConnector";
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID!;
 
@@ -22,6 +23,7 @@ const connectors = connectorsForWallets(
     {
       groupName: "Recommended",
       wallets: [
+        verseWallet,
         metaMaskWallet,
         coinbaseWallet,
         ledgerWallet,
