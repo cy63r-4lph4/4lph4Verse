@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Loader2, AlertCircle, Fingerprint, ArrowRight, ArrowLeft } from "lucide-react";
 import { cn } from "@verse/ui";
@@ -10,7 +10,9 @@ import { InputField } from "@verse/arena-web/components/ui/InputField";
 import useLogin from "@verse/arena-web/hooks/useLogin";
 import { api } from "@verse/arena-web/lib/api";
 
-export default function Login() {
+// Inner component — separated so useSearchParams() is inside a Suspense boundary,
+// which Next.js requires for static page generation.
+function LoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
@@ -211,5 +213,25 @@ export default function Login() {
         </p>
       </div>
     </EnergyBackground>
+  );
+}
+
+// The Suspense boundary is required by Next.js when useSearchParams() is used
+// inside a statically pre-rendered page. The fallback matches the auth-checking
+// loader so there's no layout shift.
+export default function Login() {
+  return (
+    <Suspense
+      fallback={
+        <EnergyBackground className="flex flex-col h-dvh items-center justify-center">
+          <Loader2 size={24} className="animate-spin text-primary/50" />
+          <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground animate-pulse">
+            Verifying uplink…
+          </p>
+        </EnergyBackground>
+      }
+    >
+      <LoginInner />
+    </Suspense>
   );
 }
