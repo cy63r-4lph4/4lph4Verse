@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Loader2, AlertCircle, Fingerprint, ArrowRight, ArrowLeft } from "lucide-react";
 import { cn } from "@verse/ui";
 
@@ -8,13 +8,57 @@ import EnergyBackground from "@verse/arena-web/components/ui/EnergyBackground";
 import NeonButton from "@verse/arena-web/components/ui/NeonButton";
 import { InputField } from "@verse/arena-web/components/ui/InputField";
 import useLogin from "@verse/arena-web/hooks/useLogin";
+import { api } from "@verse/arena-web/lib/api";
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [authChecking, setAuthChecking] = useState(true);
 
   const { login, isLoggingIn, errorMessage } = useLogin();
+
+  // On mount, check for an existing valid token. If found, redirect immediately
+  // so authenticated users never have to see the login page again.
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("arena_token") : null;
+
+    if (!token) {
+      setAuthChecking(false);
+      return;
+    }
+
+    api
+      .get("/v1/gateway/me")
+      .then(({ data }) => {
+        // Mirror the post-login redirect logic from useLogin
+        const returnTo = searchParams.get("returnTo");
+        if (returnTo) {
+          router.replace(decodeURIComponent(returnTo));
+          return;
+        }
+        if (data?.role === "admin") {
+          router.replace("/su");
+          return;
+        }
+        // Re-use the /v1/gateway/me response to get sectors if included,
+        // otherwise fall back to the lobby.
+        const sectors = data?.sectors ?? [];
+        if (sectors.length === 1) {
+          router.replace(`/course/${sectors[0].id}`);
+        } else {
+          router.replace("/lobby");
+        }
+      })
+      .catch(() => {
+        // Token is invalid / expired — clear it and show the login form.
+        localStorage.removeItem("arena_token");
+        setAuthChecking(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -28,6 +72,20 @@ export default function Login() {
   };
 
   const isFormValid = username.length >= 3 && password.length >= 6;
+
+  // Show a minimal loader while we verify the existing token.
+  // This prevents the login form from flashing before the redirect fires.
+  if (authChecking) {
+    return (
+      <EnergyBackground className="flex flex-col h-dvh items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-primary/50" />
+        <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground animate-pulse">
+          Verifying uplink…
+        </p>
+      </EnergyBackground>
+    );
+  }
+
 
   return (
     <EnergyBackground className="flex flex-col h-dvh overflow-hidden">
