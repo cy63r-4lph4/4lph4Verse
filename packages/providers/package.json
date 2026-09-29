@@ -7,7 +7,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -b tsconfig.json"
   },
   "dependencies": {
     "viem": "^2.56.9"

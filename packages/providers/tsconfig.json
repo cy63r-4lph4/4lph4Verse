@@ -13,8 +13,5 @@
     "types": ["node"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../sdk" }
-  ]
+  "exclude": ["node_modules", "dist"]
 }
