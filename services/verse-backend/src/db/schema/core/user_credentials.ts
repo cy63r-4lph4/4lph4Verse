@@ -15,6 +15,9 @@ export const userCredentials = pgTable('user_credentials', {
 
   passwordHash: text('password_hash').notNull(),
 
+  resetToken: text('reset_token'),
+  resetTokenExpiry: timestamp('reset_token_expiry', { withTimezone: true }),
+
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .notNull()

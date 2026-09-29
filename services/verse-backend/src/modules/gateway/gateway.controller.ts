@@ -17,6 +17,8 @@ import { RegisterDto } from './dto/register';
 import { JwtAuthGuard } from '../../shared/gurds/jwt-auth.guard';
 import { JoinSectorDto } from './dto/joinSector';
 import { LoginDto } from './dto/login';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Controller('v1/gateway')
 export class GatewayController {
@@ -64,6 +66,18 @@ export class GatewayController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async login(@Body() body: LoginDto) {
     return await this.gatewayService.login(body);
+  }
+
+  @Post('auth/forgot-password')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return await this.gatewayService.forgotPassword(body);
+  }
+
+  @Post('auth/reset-password')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return await this.gatewayService.resetPassword(body);
   }
 
   @Get('check-username/:username')

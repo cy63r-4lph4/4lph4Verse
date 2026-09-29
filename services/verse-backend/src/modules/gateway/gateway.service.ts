@@ -16,6 +16,8 @@ import * as crypto from 'crypto';
 
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
@@ -406,6 +408,91 @@ export class GatewayService {
       },
       sectors: activeSectors,
     };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { username } = dto;
+    const cleanIdentity = username.trim();
+
+    const user = await this.db.query.users.findFirst({
+      where: (users, { eq, or }) =>
+        or(
+          eq(users.username, cleanIdentity),
+          eq(users.email, cleanIdentity.toLowerCase()),
+        ),
+    });
+
+    if (!user) {
+      // Don't leak whether the user exists or not
+      return { message: 'If the username exists, a recovery code has been generated.', code: null };
+    }
+
+    // Generate a simple 6-character alphanumeric code for recovery
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins from now
+
+    await this.db
+      .update(schema.userCredentials)
+      .set({
+        resetToken: code,
+        resetTokenExpiry: expiry,
+      })
+      .where(eq(schema.userCredentials.userId, user.id));
+
+    if (user.email) {
+      await this.mailService.sendPasswordRecovery(
+        user.email,
+        user.username,
+        code,
+      );
+    }
+
+    // Return success message
+    return {
+      message: 'If the username exists, a recovery code has been generated.',
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const { username, token, newPassword } = dto;
+    const cleanIdentity = username.trim();
+
+    const user = await this.db.query.users.findFirst({
+      where: (users, { eq, or }) =>
+        or(
+          eq(users.username, cleanIdentity),
+          eq(users.email, cleanIdentity.toLowerCase()),
+        ),
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid recovery details.');
+    }
+
+    const creds = await this.db.query.userCredentials.findFirst({
+      where: (uc, { eq }) => eq(uc.userId, user.id),
+    });
+
+    if (!creds || !creds.resetToken || creds.resetToken !== token) {
+      throw new BadRequestException('Invalid or expired recovery code.');
+    }
+
+    if (!creds.resetTokenExpiry || creds.resetTokenExpiry < new Date()) {
+      throw new BadRequestException('Recovery code has expired.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.db
+      .update(schema.userCredentials)
+      .set({
+        passwordHash,
+        resetToken: null,
+        resetTokenExpiry: null,
+      })
+      .where(eq(schema.userCredentials.userId, user.id));
+
+    return { message: 'Password has been successfully reset. You may now login.' };
   }
 
   // ── Profile ──────────────────────────────────────────────────────────

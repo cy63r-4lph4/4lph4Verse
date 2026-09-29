@@ -154,6 +154,7 @@ function LoginInner() {
               />
               <button
                 type="button"
+                onClick={() => router.push("/forgot-password")}
                 className="absolute right-4 bottom-3 text-[8px] font-mono text-primary/40 hover:text-primary uppercase tracking-tighter"
               >
                 Forgot?
@@ -216,9 +217,6 @@ function LoginInner() {
   );
 }
 
-// The Suspense boundary is required by Next.js when useSearchParams() is used
-// inside a statically pre-rendered page. The fallback matches the auth-checking
-// loader so there's no layout shift.
 export default function Login() {
   return (
     <Suspense
@@ -235,3 +233,7 @@ export default function Login() {
     </Suspense>
   );
 }
+
+// The Suspense boundary is required by Next.js when useSearchParams() is used
+// inside a statically pre-rendered page. The fallback matches the auth-checking
+// loader so there's no layout shift.

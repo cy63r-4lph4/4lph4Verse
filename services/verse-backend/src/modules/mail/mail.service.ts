@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { welcomeTemplate } from './templates/welcome';
 import { courseJoinedTemplate } from './templates/course-joined';
 import { duelChallengeTemplate } from './templates/duel-challenge';
+import { passwordRecoveryTemplate } from './templates/password-recovery';
 
 @Injectable()
 export class MailService {
@@ -106,6 +107,27 @@ export class MailService {
     } catch (error) {
       this.logger.error(
         `Failed to send duel challenge email to ${email}`,
+        error,
+      );
+    }
+  }
+
+  async sendPasswordRecovery(email: string, username: string, code: string) {
+    try {
+      const html = passwordRecoveryTemplate(username, code);
+
+      await this.transporter.sendMail({
+        from: this.fromAddress,
+        to: email,
+        subject: '⚔️ SYSTEM MESSAGE // SECURE ACCESS OVERRIDE',
+        html,
+        text: `Player: ${username}\nStatus: LOCKED OUT\n\nWe received a request to override the security protocols for your account.\n\nUse the following recovery code to regain entry into the Arena:\n\n${code}\n\nThis code will self-destruct in 15 minutes.\n\nIf you did not request this override, you can safely ignore this transmission.`,
+      });
+
+      this.logger.log(`Sent password recovery email to ${email}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password recovery email to ${email}`,
         error,
       );
     }

@@ -28,7 +28,7 @@ export class BundlerService {
   private readonly ENTRYPOINT = '0x0000000071727De22E5E9d8BAf0edAc6f37da032' as const;
 
   // Chain ID → public viem client + bundler RPC URL
-  private readonly chainClients = new Map<number, ReturnType<typeof createPublicClient>>();
+  private readonly chainClients = new Map<number, any>();
   private readonly bundlerUrls = new Map<number, string>();
 
   constructor(private configService: ConfigService) {

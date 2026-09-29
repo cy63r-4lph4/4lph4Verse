@@ -136,28 +136,42 @@ function PostActions({
   // Edit mode — replaces the entire card body area
   if (editing) {
     return (
-      <div className="space-y-2">
-        <textarea
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={4}
-          className="w-full bg-white/[0.04] border border-white/[0.10] rounded-xl px-3 py-2.5 font-display text-[12px] text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 resize-none transition-colors leading-snug"
-        />
+      <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/30 via-transparent to-primary/10 rounded-2xl blur opacity-50 group-focus-within:opacity-100 transition-opacity" />
+          <div className="relative bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-inner">
+            <textarea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={4}
+              className="w-full bg-transparent px-4 py-3 font-sans text-[13px] text-white/90 placeholder:text-white/30 focus:outline-none resize-none transition-colors leading-relaxed"
+            />
+            {/* Future multimedia toolbar could go here */}
+            <div className="h-8 bg-white/[0.02] border-t border-white/[0.05] flex items-center px-3 gap-2">
+              <div className="h-4 w-4 rounded bg-white/10 opacity-50" />
+              <div className="h-4 w-4 rounded bg-white/10 opacity-50" />
+              <div className="flex-1" />
+              <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{draft.length} chars</span>
+            </div>
+          </div>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => { setDraft(item.content); setEditing(false); }}
-            className="flex-1 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] font-display text-[10px] font-black text-white/40 uppercase tracking-[.2em] flex items-center justify-center gap-1.5 hover:bg-white/[0.06] transition-all active:scale-95"
+            className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/5 font-display text-[10px] font-black text-white/50 uppercase tracking-[.2em] flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white transition-all active:scale-95"
           >
-            <X size={11} /> Cancel
+            <X size={13} /> Cancel
           </button>
           <button
             onClick={submitEdit}
             disabled={!draft.trim() || draft === item.content}
-            className="flex-1 py-2 rounded-xl font-display text-[10px] font-black text-black uppercase tracking-[.2em] flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-30"
+            className="flex-1 py-2.5 rounded-xl font-display text-[10px] font-black text-black uppercase tracking-[.2em] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-30 disabled:scale-100 relative overflow-hidden group"
             style={{ background: "hsl(var(--primary))" }}
           >
-            <Check size={11} /> Save
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+            <Check size={13} className="relative z-10" />
+            <span className="relative z-10">Save Edits</span>
           </button>
         </div>
       </div>
@@ -637,43 +651,53 @@ function AnnouncementBody({
   onEdit?:   (text: string) => void;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header row with actions */}
       <div className="flex items-center gap-2">
         <Megaphone size={13} className="text-amber-400 shrink-0" />
-        <span className="font-display text-[9px] font-black text-white/30 uppercase tracking-[.25em]">
+        <span className="font-display text-[9px] font-black text-white/40 uppercase tracking-[.25em]">
           Announcement
         </span>
         {item.pinned && (
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/25 shrink-0">
-            <Pin size={7} className="text-amber-400" />
-            <span className="font-display text-[7px] font-black text-amber-400 uppercase tracking-wider">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/25 shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.1)]">
+            <Pin size={8} className="text-amber-400" />
+            <span className="font-display text-[8px] font-black text-amber-400 uppercase tracking-widest">
               Pinned
             </span>
           </div>
         )}
-        <div className="h-px flex-1 bg-white/[0.05]" />
-        <span className="font-display text-[9px] font-bold text-white/20 uppercase tracking-wider shrink-0">
+        <div className="h-px flex-1 bg-gradient-to-r from-amber-400/20 to-transparent" />
+        <span className="font-display text-[9px] font-bold text-white/30 uppercase tracking-wider shrink-0">
           {item.time}
         </span>
         <PostActions item={item} onDelete={onDelete} onEdit={onEdit} />
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <ArenaAvatar src={item.instructor.avatar} size="sm" />
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="absolute inset-0 bg-amber-400/20 rounded-full blur-md" />
+          <ArenaAvatar src={item.instructor.avatar} size="sm" className="relative z-10 border border-amber-400/30" />
+        </div>
         <div className="flex-1 min-w-0">
-          <p className="font-display text-[10px] font-black text-white/50 uppercase tracking-wide truncate">
+          <p className="font-display text-[12px] font-black text-white/90 uppercase tracking-wide truncate">
             {item.instructor.name}
           </p>
-          <p className="font-display text-[8px] font-bold text-amber-400/40 uppercase tracking-wider">
+          <p className="font-display text-[9px] font-bold text-amber-400/60 uppercase tracking-widest">
             Instructor
           </p>
         </div>
       </div>
 
-      <p className="font-display text-[13px] font-bold text-white/80 leading-snug break-words">
-        {item.content}
-      </p>
+      <div className="relative group">
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400/50 to-transparent rounded-full" />
+        <div className="pl-4 py-1">
+          <p className="font-sans text-[14px] text-white/90 leading-relaxed whitespace-pre-wrap break-words">
+            {item.content}
+          </p>
+          {/* Future multimedia container */}
+          {/* <div className="mt-3 rounded-xl bg-white/5 border border-white/10 overflow-hidden h-32 flex items-center justify-center text-white/20 font-mono text-[10px] uppercase">Media Attachment</div> */}
+        </div>
+      </div>
     </div>
   );
 }
@@ -690,35 +714,50 @@ function PostBody({
   const Icon      = item.postType === "question" ? HelpCircle : Lightbulb;
   const iconColor = item.postType === "question" ? "text-sky-400" : "text-amber-400/70";
   const typeLabel = item.postType === "question" ? "Asked" : "Shared";
+  const gradientClass = item.postType === "question" ? "from-sky-400/20" : "from-amber-400/20";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header row with actions */}
       <div className="flex items-center gap-2">
-        <Icon size={13} className={cn("shrink-0", iconColor)} />
-        <span className="font-display text-[9px] font-black text-white/30 uppercase tracking-[.25em]">
+        <Icon size={14} className={cn("shrink-0", iconColor)} />
+        <span className="font-display text-[9px] font-black text-white/40 uppercase tracking-[.25em]">
           {typeLabel}
         </span>
-        <div className="h-px flex-1 bg-white/[0.05]" />
-        <span className="font-display text-[9px] font-bold text-white/20 uppercase tracking-wider shrink-0">
+        <div className={cn("h-px flex-1 bg-gradient-to-r to-transparent", gradientClass)} />
+        <span className="font-display text-[9px] font-bold text-white/30 uppercase tracking-wider shrink-0">
           {item.time}
         </span>
         <PostActions item={item} onDelete={onDelete} onEdit={onEdit} />
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <ArenaAvatar src={item.author.avatar} size="sm" glow glowColor="primary" />
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-50" />
+          <ArenaAvatar src={item.author.avatar} size="sm" glow glowColor="primary" className="relative z-10" />
+        </div>
         {/* min-w-0 on the text container prevents flex overflow */}
         <div className="flex-1 min-w-0">
-          <p className="font-display text-[10px] font-black text-white/50 uppercase tracking-wide truncate">
+          <p className="font-display text-[12px] font-black text-white/90 uppercase tracking-wide truncate">
             {item.author.name}
+          </p>
+          <p className="font-display text-[8px] font-bold text-primary/60 uppercase tracking-widest mt-0.5">
+            Fighter
           </p>
         </div>
       </div>
 
-      <p className="font-display text-[13px] font-bold text-white/80 leading-snug whitespace-pre-wrap break-words">
-        {item.content}
-      </p>
+      <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 shadow-sm relative group overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary/40 to-transparent opacity-50" />
+        <p className="font-sans text-[14px] text-white/90 leading-relaxed whitespace-pre-wrap break-words">
+          {item.content}
+        </p>
+        {/* Future multimedia container */}
+        {/* <div className="mt-3 rounded-lg bg-black/40 border border-white/5 overflow-hidden h-40 flex flex-col items-center justify-center text-white/20 gap-2">
+          <div className="p-3 bg-white/5 rounded-full"><ImageIcon size={20} /></div>
+          <span className="font-mono text-[9px] uppercase tracking-widest">Attached Media</span>
+        </div> */}
+      </div>
     </div>
   );
 }
